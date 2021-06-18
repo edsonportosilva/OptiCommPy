@@ -58,26 +58,27 @@ plt.grid()
 
 # ## Formatos de modulação
 
-# $\mathbf{E}(t)=\hat{\mathbf{e}} A_{0} \cos \left(\omega_{0} t-\phi_{0}\right)$
+# $\mathbf{E}(t)=\hat{\mathbf{e}} A \cos \left(\omega_c t + \phi\right)$ em que $\omega_c = 2\pi f_{c}$ rad/s
 
 # +
-ϕ0, omega0, A0, t = sp.symbols('ϕ0, omega0, A0, t', real=True)
+ϕ, omega_c, A, t = sp.symbols('ϕ, omega_c, A, t', real=True)
 
 j = sp.I
+π = sp.pi
 
-E = A0*cos(omega0*t - ϕ0)
+E = A*cos(omega_c*t + ϕ)
 E
 # -
 
-# $\mathbf{E}(t)=\operatorname{Re}\left[\hat{\mathbf{e}} A_{0} e^{j \phi_{0}} \exp \left(-j \omega_{0} t\right)\right]$
+# $\mathbf{E}(t)=\operatorname{Re}\left[\hat{\mathbf{e}} A e^{j \phi} \exp \left(j \omega_c t\right)\right]$
 
-sp.re(A0*exp(j*ϕ0)*exp(-j*omega0*t)).simplify()
+sp.re(A*exp(j*ϕ)*exp(j*omega_c*t)).simplify()
 
 sp.expand_trig(E).cancel()
 
 # ### Chaveamento por deslocamento de amplitude (*amplitude shift-keing* - ASK) ou modulação de amplitude de pulso (*pulse amplitude modulation* - PAM)
 
-# $ E(t)=\operatorname{Re}\left[A_{0}(t) e^{j \phi_{0}} \exp \left(-j \omega_{0} t\right)\right]$
+# $ E(t)=\operatorname{Re}\left[A(t) e^{j \phi} \exp \left(j \omega_c t\right)\right]$
 
 # $ A_{0}(t)=\sqrt{P_{0}} \sum_{n} b_{n} p\left(t-n T_{s}\right)$
 
@@ -94,7 +95,7 @@ Ts     = 1/Rs          # Período de símbolo em segundos
 Fa     = 1/(Ts/SpS)    # Frequência de amostragem do sinal (amostras/segundo)
 Ta     = 1/Fa          # Período de amostragem
 P0     = 1             # Potência
-   
+
 
 # +
 # gera sequência de bits pseudo-aleatórios
@@ -106,7 +107,9 @@ symbTx = np.sqrt(P0)*bits
 
 plt.figure(1)
 plt.stem(symbTx, use_line_collection=True)
+plt.xlabel('n')
 plt.grid()
+plt.xticks(np.arange(0, bits.size));
 
 # +
 # upsampling
@@ -145,7 +148,7 @@ plt.grid()
 
 t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
 for ind in range(0, bits.size):
-    plt.vlines(t[ind], 0, 1, linestyles='dashed')
+    plt.vlines(t[ind], 0, 1, linestyles='dashed', color = 'k')
 
 # +
 # pulso NRZ típico
@@ -178,12 +181,12 @@ plt.figure(2)
 plt.plot(t, sigTx.real,'-')
 plt.plot(t, symbolsUp.real,'o')
 plt.xlabel('tempo [ps]')
-plt.ylabel('amplitude [V/m]')
+plt.ylabel('amplitude')
 plt.grid()
 
 t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
 for ind in range(0, bits.size):
-    plt.vlines(t[ind], 0, 1, linestyles='dashed')
+    plt.vlines(t[ind], 0, 1, linestyles='dashed', color = 'k')
 
 # +
 # pulso cosseno levantado (raised cosine)
@@ -205,7 +208,7 @@ plt.grid()
 t = (-0.2*Ts + np.arange(0, (Ncoeffs/SpS)*Ts, Ts))/1e-12
 for ind in range(0, t.size):
     plt.vlines(t[ind], -0.2, 1, linestyles='dotted', color='r')
-    plt.vlines(t[ind]+ 0.5*(Ts/1e-12), -0.2, 1, linestyles='dashed')
+    plt.vlines(t[ind]+ 0.5*(Ts/1e-12), -0.2, 1, linestyles='dashed', color = 'k')
 
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
@@ -224,7 +227,7 @@ plt.figure(2)
 plt.plot(t, sigTx.real,'-')
 plt.plot(t, symbolsUp.real,'o')
 plt.xlabel('tempo [ps]')
-plt.ylabel('amplitude [V/m]')
+plt.ylabel('amplitude')
 plt.grid()
 # -
 
@@ -303,8 +306,8 @@ plt.ylim(-200,-50);
 # +
 Nsamples = 20000
 
-# # diagrama de olho
-# eyediagram(sigTx, Nsamples, SpS, n=3)
+# diagrama de olho
+eyediagram(sigTx, Nsamples, SpS, n=3)
 # -
 
 
