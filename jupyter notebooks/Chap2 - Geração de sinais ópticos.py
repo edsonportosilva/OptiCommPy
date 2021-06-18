@@ -94,7 +94,9 @@ Ts     = 1/Rs          # Período de símbolo em segundos
 Fa     = 1/(Ts/SpS)    # Frequência de amostragem do sinal (amostras/segundo)
 Ta     = 1/Fa          # Período de amostragem
 P0     = 1             # Potência
-    
+   
+
+# +
 # gera sequência de bits pseudo-aleatórios
 bits   = np.random.randint(2, size=20)    
 n      = np.arange(0, bits.size)
@@ -120,6 +122,7 @@ plt.figure(1)
 plt.plot(t, pulse,'-', label = 'pulso')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
+plt.xlim(min(t), max(t))
 plt.grid()
 
 # formatação de pulso retangular
@@ -155,6 +158,7 @@ plt.figure(1)
 plt.plot(t, pulse,'-', label = 'pulso')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
+plt.xlim(min(t), max(t))
 plt.grid()
 
 # upsampling
@@ -177,6 +181,10 @@ plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude [V/m]')
 plt.grid()
 
+t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
+for ind in range(0, bits.size):
+    plt.vlines(t[ind], 0, 1, linestyles='dashed')
+
 # +
 # pulso cosseno levantado (raised cosine)
 Ncoeffs = 500
@@ -191,6 +199,7 @@ plt.figure(1)
 plt.plot(t, pulse,'-', label = 'pulso')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
+plt.xlim(min(t), max(t))
 plt.grid()
 
 t = (-0.2*Ts + np.arange(0, (Ncoeffs/SpS)*Ts, Ts))/1e-12
@@ -237,12 +246,12 @@ symbolsUp = upsample(symbTx, SpS)
 Ncoeffs = 2000
 rolloff = 0.01
 
-pulse = pulseShape('rc', SpS, Ncoeffs, rolloff, Ts)
-pulse = pulse/max(abs(pulse))
-
-# # pulso NRZ típico
-# pulse = pulseShape('nrz', SpS)
+# pulse = pulseShape('rc', SpS, Ncoeffs, rolloff, Ts)
 # pulse = pulse/max(abs(pulse))
+
+# pulso NRZ típico
+pulse = pulseShape('nrz', SpS)
+pulse = pulse/max(abs(pulse))
 
 # formatação de pulso
 sigTx  = firFilter(pulse, symbolsUp)
