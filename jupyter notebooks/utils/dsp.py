@@ -1,6 +1,6 @@
 from scipy.signal import lfilter
 import numpy as np
-from commpy.filters import rrcosfilter
+from commpy.filters import rrcosfilter, rcosfilter
 from scipy.stats.kde import gaussian_kde
 import matplotlib.pyplot as plt
 
@@ -36,6 +36,8 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
         filterCoeffs = np.convolve(np.ones(SpS), 2/(np.sqrt(np.pi)*Te)*np.exp(-t**2/Te), mode='full')        
     elif pulseType == 'rrc':
         tindex, filterCoeffs = rrcosfilter(N, alpha, Ts, Fa)
+    elif pulseType == 'rc':
+        tindex, filterCoeffs = rcosfilter(N, alpha, Ts, Fa)
         
     return filterCoeffs/np.sqrt(np.sum(filterCoeffs**2))
 

@@ -19,11 +19,42 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sympy import cos, sin, exp
 
+# +
+from IPython.core.display import HTML
+from IPython.core.pylabtools import figsize
+
+HTML("""
+<style>
+.output_png {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+}
+</style>
+""")
+# -
+
+figsize(10, 3)
+
 # # Geração de sinais ópticos
 #
 # Num sistema de comunicação digital óptica, a função do transmissor é converter uma dada sequência de bits num trem de pulsos elétricos que, por sua vez, será utilizado na modulação de uma portadora óptica (laser). A modulação de portadoras ópticas é realizada por meio de dispositivos de conversão eletro-óptica.
 #
-# Diversas técnicas de modulação podem ser implementadaas e diversos fatores podem influenciar o projeto de um transmissor óptico. 
+# Diversas técnicas de modulação podem ser implementadas e diversos fatores podem influenciar o projeto de um transmissor óptico. 
+
+# +
+Rs  = 10e9          # Taxa de símbolos
+Ts  = 1/Rs          # Período de símbolo em segundos
+
+t = np.arange(0, 11*Ts, Ts)/1e-12
+
+for ind in range(0, 11):
+    plt.vlines(t[ind], 0, 1, linestyles='dashed')
+    
+plt.xlabel('tempo [ps]');
+plt.title('intervalos de sinalização');
+plt.grid()
+# -
 
 # ## Formatos de modulação
 
@@ -83,19 +114,21 @@ symbolsUp = upsample(symbTx, SpS)
 pulse = pulseShape('rect', SpS)
 pulse = pulse/max(abs(pulse))
 
-t = np.arange(0, pulse.size)*Ta
+t = np.arange(0, pulse.size)*(Ta/1e-12)
 
 plt.figure(1)
 plt.plot(t, pulse,'-', label = 'pulso')
-plt.xlabel('tempo [s]')
+plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
 plt.grid()
 
 # formatação de pulso retangular
 sigTx  = firFilter(pulse, symbolsUp)
 
-t = np.arange(0, sigTx.size)*Ta
+# plota sinal 
+t = np.arange(0, sigTx.size)*(Ta/1e-12)
 
+# instantes centrais dos intervalos de sinalização
 symbolsUp = upsample(2*bits-1, SpS)
 symbolsUp[symbolsUp==0] = np.nan
 symbolsUp = (symbolsUp + 1)/2
@@ -103,20 +136,24 @@ symbolsUp = (symbolsUp + 1)/2
 plt.figure(2)
 plt.plot(t, sigTx.real,'-')
 plt.plot(t, symbolsUp.real,'o')
-plt.xlabel('tempo (s)')
-plt.ylabel('amplitude (s)')
+plt.xlabel('tempo [ps]')
+plt.ylabel('amplitude')
 plt.grid()
+
+t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
+for ind in range(0, bits.size):
+    plt.vlines(t[ind], 0, 1, linestyles='dashed')
 
 # +
 # pulso NRZ típico
 pulse = pulseShape('nrz', SpS)
 pulse = pulse/max(abs(pulse))
 
-t = np.arange(0, pulse.size)*Ta
+t = np.arange(0, pulse.size)*(Ta/1e-12)
 
 plt.figure(1)
 plt.plot(t, pulse,'-', label = 'pulso')
-plt.xlabel('tempo [s]')
+plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
 plt.grid()
 
@@ -126,8 +163,9 @@ symbolsUp = upsample(symbTx, SpS)
 # formatação de pulso retangular
 sigTx  = firFilter(pulse, symbolsUp)
 
-t = np.arange(0, sigTx.size)*Ta
+t = np.arange(0, sigTx.size)*(Ta/1e-12)
 
+# instantes centrais dos intervalos de sinalização
 symbolsUp = upsample(2*bits-1, SpS)
 symbolsUp[symbolsUp==0] = np.nan
 symbolsUp = (symbolsUp + 1)/2
@@ -135,12 +173,53 @@ symbolsUp = (symbolsUp + 1)/2
 plt.figure(2)
 plt.plot(t, sigTx.real,'-')
 plt.plot(t, symbolsUp.real,'o')
-plt.xlabel('tempo [s]')
+plt.xlabel('tempo [ps]')
+plt.ylabel('amplitude [V/m]')
+plt.grid()
+
+# +
+# pulso cosseno levantado (raised cosine)
+Ncoeffs = 500
+rolloff = 0.1
+
+pulse = pulseShape('rc', SpS, Ncoeffs, rolloff, Ts)
+pulse = pulse/max(abs(pulse))
+
+t = np.arange(0, pulse.size)*(Ta/1e-12)
+
+plt.figure(1)
+plt.plot(t, pulse,'-', label = 'pulso')
+plt.xlabel('tempo [ps]')
+plt.ylabel('amplitude')
+plt.grid()
+
+t = (-0.2*Ts + np.arange(0, (Ncoeffs/SpS)*Ts, Ts))/1e-12
+for ind in range(0, t.size):
+    plt.vlines(t[ind], -0.2, 1, linestyles='dotted', color='r')
+    plt.vlines(t[ind]+ 0.5*(Ts/1e-12), -0.2, 1, linestyles='dashed')
+
+# upsampling
+symbolsUp = upsample(symbTx, SpS)
+
+# formatação de pulso 
+sigTx  = firFilter(pulse, symbolsUp)
+
+t = np.arange(0, sigTx.size)*(Ta/1e-12)
+
+# instantes centrais dos intervalos de sinalização
+symbolsUp = upsample(2*bits-1, SpS)
+symbolsUp[symbolsUp==0] = np.nan
+symbolsUp = (symbolsUp + 1)/2
+
+plt.figure(2)
+plt.plot(t, sigTx.real,'-')
+plt.plot(t, symbolsUp.real,'o')
+plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude [V/m]')
 plt.grid()
 # -
 
-# ## Espectro do sinal modulado
+# ## Densidade espectral de potência do sinal modulado
 
 # +
 # gera sequência de bits pseudo-aleatórios
@@ -154,14 +233,21 @@ symbTx = np.sqrt(P0)*symbTx/np.sqrt(signal_power(symbTx))
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
 
-# pulso NRZ típico
-pulse = pulseShape('nrz', SpS)
+# pulso cosseno levantado (raised cosine)
+Ncoeffs = 2000
+rolloff = 0.01
+
+pulse = pulseShape('rc', SpS, Ncoeffs, rolloff, Ts)
 pulse = pulse/max(abs(pulse))
+
+# # pulso NRZ típico
+# pulse = pulseShape('nrz', SpS)
+# pulse = pulse/max(abs(pulse))
 
 # formatação de pulso
 sigTx  = firFilter(pulse, symbolsUp)
 
-# plot spectrums
+# plota psd
 plt.figure();
 plt.psd(sigTx,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal OOK')
 plt.legend(loc='upper left');
@@ -171,8 +257,8 @@ plt.ylim(-200,-50);
 # +
 Nsamples = 20000
 
-# diagrama de olho
-eyediagram(sigTx, Nsamples, SpS, n=3)
+# # diagrama de olho
+# eyediagram(sigTx, Nsamples, SpS, n=3)
 # -
 
 # ### PAM4
@@ -198,7 +284,7 @@ pulse = pulse/max(abs(pulse))
 # formatação de pulso
 sigTx  = firFilter(pulse, symbolsUp)
 
-# plot spectrums
+# plota psd
 plt.figure();
 plt.psd(sigTx,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal OOK')
 plt.legend(loc='upper left');
@@ -208,8 +294,8 @@ plt.ylim(-200,-50);
 # +
 Nsamples = 20000
 
-# diagrama de olho
-eyediagram(sigTx, Nsamples, SpS, n=3)
+# # diagrama de olho
+# eyediagram(sigTx, Nsamples, SpS, n=3)
 # -
 
 
