@@ -148,7 +148,8 @@ bits   = np.random.randint(2, size=10000)
 n      = np.arange(0, bits.size)
 
 # mapeia bits para símbolos OOK
-symbTx = np.sqrt(P0)*bits
+symbTx = bits
+symbTx = np.sqrt(P0)*symbTx/np.sqrt(signal_power(symbTx))
 
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
@@ -184,7 +185,8 @@ bits2   = np.random.randint(2, size=10000)
 n      = np.arange(0, bits.size)
 
 # mapeia bits para símbolos PAM4
-symbTx = np.sqrt(P0)*((2/3)*bits1 + (1/3)*bits2)
+symbTx = (2/3)*bits1 + (1/3)*bits2
+symbTx = np.sqrt(P0)*symbTx/np.sqrt(signal_power(symbTx))
 
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
