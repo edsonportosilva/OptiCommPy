@@ -44,43 +44,21 @@ sp.re(A0*exp(j*ϕ0)*exp(-j*omega0*t)).simplify()
 
 sp.expand_trig(E).cancel()
 
-# ### Chaveamento por deslocamento de amplitude (*amplitude shift-keing* - ASK)
+# ### Chaveamento por deslocamento de amplitude (*amplitude shift-keing* - ASK) ou modulação de amplitude de pulso (*pulse amplitude modulation* - PAM)
 
 # $ E(t)=\operatorname{Re}\left[A_{0}(t) e^{j \phi_{0}} \exp \left(-j \omega_{0} t\right)\right]$
 
-# $ A_{0}(t)=\sqrt{P_{0}} \sum_{n} b_{n} p\left(t-n T_{b}\right)$
+# $ A_{0}(t)=\sqrt{P_{0}} \sum_{n} b_{n} p\left(t-n T_{s}\right)$
 
-# +
 from commpy.modulation import Modem, QAMModem
 from commpy.utilities  import signal_power, upsample
-from commpy.filters    import rrcosfilter
-from scipy.signal import lfilter
-
-def filterNoDelay(h, x):
-    """
-    h: impulse response (symmetric)
-    x: input signal 
-    y: output signal
-    """   
-    N = h.size
-    x = np.pad(x, (0, int(N/2)),'constant')
-    y = lfilter(h,1,x)
-    
-    return y[int(N/2):y.size]
-
-# def upsample(x, n):
-    
-#     x_up = np.zeros(x.size*n)   
-#     x_up[0::n] = x
-    
-#     return x_up
-
+from utils.dsp import firFilter, pulseShape, eyediagram
 
 # +
 # parâmetros da simulação
 SpS = 32
 
-Rs     = 10e9          # Taxa de símbolos
+Rs     = 10e9          # Taxa de símbolos (para o caso do OOK Rs = Rb)
 Ts     = 1/Rs          # Período de símbolo em segundos
 Fa     = 1/(Ts/SpS)    # Frequência de amostragem do sinal (amostras/segundo)
 Ta     = 1/Fa          # Período de amostragem
@@ -101,15 +79,20 @@ plt.grid()
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
 
-# pulso retangular
-pulse = np.ones(int(SpS/2))
+# pulso retangular ideal
+pulse = pulseShape('rect', SpS)
+pulse = pulse/max(abs(pulse))
 
-plt.figure(2)
-plt.plot(pulse,'-')
+t = np.arange(0, pulse.size)*Ta
+
+plt.figure(1)
+plt.plot(t, pulse,'-', label = 'pulso')
+plt.xlabel('tempo [s]')
+plt.ylabel('amplitude')
 plt.grid()
 
-# formatação de pulso
-sigTx  = filterNoDelay(pulse, symbolsUp)
+# formatação de pulso retangular
+sigTx  = firFilter(pulse, symbolsUp)
 
 t = np.arange(0, sigTx.size)*Ta
 
@@ -117,12 +100,47 @@ symbolsUp = upsample(2*bits-1, SpS)
 symbolsUp[symbolsUp==0] = np.nan
 symbolsUp = (symbolsUp + 1)/2
 
-plt.figure(3)
-plt.plot(t, sigTx,'-')
-plt.plot(t, symbolsUp,'o')
+plt.figure(2)
+plt.plot(t, sigTx.real,'-')
+plt.plot(t, symbolsUp.real,'o')
 plt.xlabel('tempo (s)')
-plt.xlabel('amplitude (s)')
+plt.ylabel('amplitude (s)')
 plt.grid()
+
+# +
+# pulso NRZ típico
+pulse = pulseShape('nrz', SpS)
+pulse = pulse/max(abs(pulse))
+
+t = np.arange(0, pulse.size)*Ta
+
+plt.figure(1)
+plt.plot(t, pulse,'-', label = 'pulso')
+plt.xlabel('tempo [s]')
+plt.ylabel('amplitude')
+plt.grid()
+
+# upsampling
+symbolsUp = upsample(symbTx, SpS)
+
+# formatação de pulso retangular
+sigTx  = firFilter(pulse, symbolsUp)
+
+t = np.arange(0, sigTx.size)*Ta
+
+symbolsUp = upsample(2*bits-1, SpS)
+symbolsUp[symbolsUp==0] = np.nan
+symbolsUp = (symbolsUp + 1)/2
+
+plt.figure(2)
+plt.plot(t, sigTx.real,'-')
+plt.plot(t, symbolsUp.real,'o')
+plt.xlabel('tempo [s]')
+plt.ylabel('amplitude [V/m]')
+plt.grid()
+# -
+
+# ## Espectro do sinal modulado
 
 # +
 # gera sequência de bits pseudo-aleatórios
@@ -135,17 +153,61 @@ symbTx = np.sqrt(P0)*bits
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
 
-# pulso retangular
-pulse = np.ones(int(SpS/2))
+# pulso NRZ típico
+pulse = pulseShape('nrz', SpS)
+pulse = pulse/max(abs(pulse))
 
 # formatação de pulso
-sigTx  = filterNoDelay(pulse, symbolsUp)
+sigTx  = firFilter(pulse, symbolsUp)
 
 # plot spectrums
 plt.figure();
-plt.psd(sigTx,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Tx spectrum')
+plt.psd(sigTx,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal OOK')
 plt.legend(loc='upper left');
-plt.xlim(-8*Rs,8*Rs);
+plt.xlim(-3*Rs,3*Rs);
+plt.ylim(-200,-50);
+
+# +
+Nsamples = 20000
+
+# diagrama de olho
+eyediagram(sigTx, Nsamples, SpS, n=3)
+# -
+
+# ### PAM4
+
+# +
+# gera sequência de bits pseudo-aleatórios
+bits1   = np.random.randint(2, size=10000)  
+bits2   = np.random.randint(2, size=10000) 
+
+n      = np.arange(0, bits.size)
+
+# mapeia bits para símbolos PAM4
+symbTx = np.sqrt(P0)*((2/3)*bits1 + (1/3)*bits2)
+
+# upsampling
+symbolsUp = upsample(symbTx, SpS)
+
+# pulso NRZ típico
+pulse = pulseShape('nrz', SpS)
+pulse = pulse/max(abs(pulse))
+
+# formatação de pulso
+sigTx  = firFilter(pulse, symbolsUp)
+
+# plot spectrums
+plt.figure();
+plt.psd(sigTx,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal OOK')
+plt.legend(loc='upper left');
+plt.xlim(-3*Rs,3*Rs);
+plt.ylim(-200,-50);
+
+# +
+Nsamples = 20000
+
+# diagrama de olho
+eyediagram(sigTx, Nsamples, SpS, n=3)
 # -
 
 
