@@ -97,7 +97,6 @@ sp.expand_trig(E).cancel()
 
 # $ A(t)= \sqrt{P_{0}} \left[ \sum_{n} b_{n} \delta \left(t-n T_{s}\right)\right] \ast p(t) = \sqrt{P_{0}} \sum_{n} b_{n} p\left(t-n T_{s}\right)$
 
-from commpy.modulation import Modem, QAMModem
 from commpy.utilities  import signal_power, upsample
 from utils.dsp import firFilter, pulseShape, eyediagram
 
@@ -228,7 +227,7 @@ plt.legend()
 
 t = (-0.2*Ts + np.arange(0, (Ncoeffs/SpS)*Ts, Ts))/1e-12
 for ind in range(0, t.size):
-    plt.vlines(t[ind], -0.2, 1, linestyles='dotted', color='r')
+    #plt.vlines(t[ind], -0.2, 0.2, linestyles='dotted', color='r')
     plt.vlines(t[ind]+ 0.5*(Ts/1e-12), -0.2, 1, linestyles='dashed', color = 'k')
 
 # upsampling
@@ -251,6 +250,10 @@ plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
 plt.title('$\sqrt{P_0}\; \sum_{n}b_{n}p(t-n T_s)$')
 plt.grid()
+
+t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
+for ind in range(0, bits.size):
+    plt.vlines(t[ind], 0, 1, linestyles='dashed', color = 'k')
 # -
 
 # ## Densidade espectral de potência do sinal modulado
