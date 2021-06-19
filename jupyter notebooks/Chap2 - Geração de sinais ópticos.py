@@ -43,22 +43,23 @@ figsize(10, 3)
 # Diversas técnicas de modulação podem ser implementadas e diversos fatores podem influenciar o projeto de um transmissor óptico. 
 
 # +
-Rs  = 10e9          # Taxa de símbolos
+Rs  = 10e9          # Taxa de símbolos (baud rate)
 Ts  = 1/Rs          # Período de símbolo em segundos
 
 t = np.arange(0, 11*Ts, Ts)/1e-12
 
 for ind in range(0, 11):
-    plt.vlines(t[ind], 0, 1, linestyles='dashed')
+    plt.vlines(t[ind], 0, 1, linestyles='dashed', color = 'k')
     
 plt.xlabel('tempo [ps]');
 plt.title('intervalos de sinalização');
 plt.grid()
+plt.xticks(t);
 # -
 
 # ## Formatos de modulação
 
-# $\mathbf{E}(t)=\hat{\mathbf{e}} A \cos \left(\omega_c t + \phi\right)$ em que $\omega_c = 2\pi f_{c}$ rad/s
+# $$\begin{equation} \mathbf{E}(t)=\hat{\mathbf{e}} A \cos \left(\omega_c t + \phi\right) \end{equation}$$ em que $\omega_c = 2\pi f_{c}$ rad/s
 
 # +
 ϕ, omega_c, A, t = sp.symbols('ϕ, omega_c, A, t', real=True)
@@ -75,6 +76,20 @@ E
 sp.re(A*exp(j*ϕ)*exp(j*omega_c*t)).simplify()
 
 sp.expand_trig(E).cancel()
+
+# $$\begin{equation}
+# \frac{\hat{E}_{\text {out }}(t)}{\hat{E}_{\text {in }}(t)}=\frac{1}{2} \left(e^{j \varphi_{1}(t)}+e^{j \varphi_{2}(t)}\right)
+# \end{equation}$$
+
+# $$
+# \varphi_{1}(t)=\frac{u_{1}(t)}{V_{\pi_{1}}} \pi, \varphi_{2}(t)=\frac{u_{2}(t)}{V_{\pi_{2}}} \pi
+# $$
+
+# $$\begin{equation}
+# \hat{E}_{\text {out}}(t)=\hat{E}_{\text {in }}(t)\cos \left(\frac{\Delta \varphi_{M Z M}(t)}{2}\right)=\hat{E}_{i n}(t) \cos \left(\frac{u(t)}{2 V_{\pi}} \pi\right)
+# \end{equation}$$
+#
+# em que $\Delta \varphi_{M Z M}(t)=\varphi_{1}(t)-\varphi_{2}(t)=2 \varphi_{1}(t)$
 
 # ### Chaveamento por deslocamento de amplitude (*amplitude shift-keing* - ASK) ou modulação de amplitude de pulso (*pulse amplitude modulation* - PAM)
 
