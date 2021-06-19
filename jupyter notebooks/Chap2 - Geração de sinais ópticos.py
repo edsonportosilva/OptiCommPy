@@ -91,11 +91,11 @@ sp.expand_trig(E).cancel()
 #
 # em que $\Delta \varphi_{M Z M}(t)=\varphi_{1}(t)-\varphi_{2}(t)=2 \varphi_{1}(t)$
 
-# ### Chaveamento por deslocamento de amplitude (*amplitude shift-keing* - ASK) ou modulação de amplitude de pulso (*pulse amplitude modulation* - PAM)
+# ### Chaveamento por deslocamento de amplitude (*amplitude shift-keying* - ASK) ou modulação de amplitude de pulso (*pulse amplitude modulation* - PAM)
 
 # $ E(t)=\operatorname{Re}\left[A(t) e^{j \phi} \exp \left(j \omega_c t\right)\right]$
 
-# $ A_{0}(t)=\sqrt{P_{0}} \sum_{n} b_{n} p\left(t-n T_{s}\right)$
+# $ A(t)= \sqrt{P_{0}} \left[ \sum_{n} b_{n} \delta \left(t-n T_{s}\right)\right] \ast p(t) = \sqrt{P_{0}} \sum_{n} b_{n} p\left(t-n T_{s}\right)$
 
 from commpy.modulation import Modem, QAMModem
 from commpy.utilities  import signal_power, upsample
@@ -114,15 +114,16 @@ P0     = 1             # Potência
 
 # +
 # gera sequência de bits pseudo-aleatórios
-bits   = np.random.randint(2, size=20)    
+bits   = np.random.randint(2, size=30)    
 n      = np.arange(0, bits.size)
 
 # mapeia bits para símbolos OOK
 symbTx = np.sqrt(P0)*bits
 
 plt.figure(1)
-plt.stem(symbTx, use_line_collection=True)
+plt.stem(symbTx, basefmt=" ", use_line_collection=True)
 plt.xlabel('n')
+plt.ylabel('$b_n$')
 plt.grid()
 plt.xticks(np.arange(0, bits.size));
 
@@ -137,11 +138,12 @@ pulse = pulse/max(abs(pulse))
 t = np.arange(0, pulse.size)*(Ta/1e-12)
 
 plt.figure(1)
-plt.plot(t, pulse,'-', label = 'pulso')
+plt.plot(t, pulse,'-', label = 'p(t)', linewidth=3)
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
 plt.xlim(min(t), max(t))
 plt.grid()
+plt.legend()
 
 # formatação de pulso retangular
 sigTx  = firFilter(pulse, symbolsUp)
@@ -155,10 +157,11 @@ symbolsUp[symbolsUp==0] = np.nan
 symbolsUp = (symbolsUp + 1)/2
 
 plt.figure(2)
-plt.plot(t, sigTx.real,'-')
-plt.plot(t, symbolsUp.real,'o')
+plt.plot(t, sigTx.real,'-', linewidth=3)
+plt.plot(t, symbolsUp.real, 'o')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
+plt.title('$\sqrt{P_0}\; \sum_{n}b_{n}p(t-n T_s)$')
 plt.grid()
 
 t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
@@ -173,11 +176,12 @@ pulse = pulse/max(abs(pulse))
 t = np.arange(0, pulse.size)*(Ta/1e-12)
 
 plt.figure(1)
-plt.plot(t, pulse,'-', label = 'pulso')
+plt.plot(t, pulse,'-', label = 'p(t)', linewidth=3)
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
 plt.xlim(min(t), max(t))
 plt.grid()
+plt.legend()
 
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
@@ -193,10 +197,11 @@ symbolsUp[symbolsUp==0] = np.nan
 symbolsUp = (symbolsUp + 1)/2
 
 plt.figure(2)
-plt.plot(t, sigTx.real,'-')
+plt.plot(t, sigTx.real,'-',linewidth=3)
 plt.plot(t, symbolsUp.real,'o')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
+plt.title('$\sqrt{P_0}\; \sum_{n}b_{n}p(t-n T_s)$')
 plt.grid()
 
 t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
@@ -214,11 +219,12 @@ pulse = pulse/max(abs(pulse))
 t = np.arange(0, pulse.size)*(Ta/1e-12)
 
 plt.figure(1)
-plt.plot(t, pulse,'-', label = 'pulso')
+plt.plot(t, pulse,'-', label = 'p(t)', linewidth=3)
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
 plt.xlim(min(t), max(t))
 plt.grid()
+plt.legend()
 
 t = (-0.2*Ts + np.arange(0, (Ncoeffs/SpS)*Ts, Ts))/1e-12
 for ind in range(0, t.size):
@@ -239,10 +245,11 @@ symbolsUp[symbolsUp==0] = np.nan
 symbolsUp = (symbolsUp + 1)/2
 
 plt.figure(2)
-plt.plot(t, sigTx.real,'-')
+plt.plot(t, sigTx.real,'-', linewidth=3)
 plt.plot(t, symbolsUp.real,'o')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
+plt.title('$\sqrt{P_0}\; \sum_{n}b_{n}p(t-n T_s)$')
 plt.grid()
 # -
 
@@ -261,15 +268,15 @@ symbTx = np.sqrt(P0)*symbTx/np.sqrt(signal_power(symbTx))
 symbolsUp = upsample(symbTx, SpS)
 
 # pulso cosseno levantado (raised cosine)
-Ncoeffs = 2000
-rolloff = 0.01
+Ncoeffs = 500
+rolloff = 0.1
 
-# pulse = pulseShape('rc', SpS, Ncoeffs, rolloff, Ts)
-# pulse = pulse/max(abs(pulse))
-
-# pulso NRZ típico
-pulse = pulseShape('nrz', SpS)
+pulse = pulseShape('rc', SpS, Ncoeffs, rolloff, Ts)
 pulse = pulse/max(abs(pulse))
+
+# # pulso NRZ típico
+# pulse = pulseShape('nrz', SpS)
+# pulse = pulse/max(abs(pulse))
 
 # formatação de pulso
 sigTx  = firFilter(pulse, symbolsUp)
@@ -321,8 +328,8 @@ plt.ylim(-200,-50);
 # +
 Nsamples = 20000
 
-# diagrama de olho
-eyediagram(sigTx, Nsamples, SpS, n=3)
+# # diagrama de olho
+# eyediagram(sigTx, Nsamples, SpS, n=3)
 # -
 
 
