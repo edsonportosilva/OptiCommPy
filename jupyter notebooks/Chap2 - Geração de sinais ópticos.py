@@ -17,7 +17,7 @@
 import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
-from sympy import cos, sin, exp
+from sympy import cos, sin, exp, Matrix
 
 # +
 from IPython.core.display import HTML
@@ -59,7 +59,11 @@ plt.xticks(t);
 
 # ## Formatos de modulação
 
-# $$\begin{equation} \mathbf{E}(t)=\hat{\mathbf{e}} A \cos \left(\omega_c t + \phi\right) \end{equation}$$ em que $\omega_c = 2\pi f_{c}$ rad/s
+# O campo elétrico $\mathbf{E}(t)$ da portadora óptica portadora óptica de onda contínua pode ser representado como 
+#
+# $$\begin{equation} \mathbf{E}(t) = A \cos \left(\omega_c t + \phi\right) \mathbf{e} \end{equation}$$ 
+#
+# em que $\omega_c = 2\pi f_{c}\label{eq1} $ rad/s é a frequência angular de oscilação, $A$ a amplitude e $\phi$ a fase da onda.
 
 # +
 ϕ, omega_c, A, t = sp.symbols('ϕ, omega_c, A, t', real=True)
@@ -71,31 +75,66 @@ E = A*cos(omega_c*t + ϕ)
 E
 # -
 
-# $\mathbf{E}(t)=\operatorname{Re}\left[\hat{\mathbf{e}} A e^{j \phi} \exp \left(j \omega_c t\right)\right]$
+# $\mathbf{E}(t)=\operatorname{Re}\left[A e^{j \phi} \exp \left(j \omega_c t\right)\right]$
 
 sp.re(A*exp(j*ϕ)*exp(j*omega_c*t)).simplify()
 
 sp.expand_trig(E).cancel()
 
-# $$\begin{equation}
-# \frac{\hat{E}_{\text {out }}(t)}{\hat{E}_{\text {in }}(t)}=\frac{1}{2} \left(e^{j \varphi_{1}(t)}+e^{j \varphi_{2}(t)}\right)
-# \end{equation}$$
-
-# $$
-# \varphi_{1}(t)=\frac{u_{1}(t)}{V_{\pi_{1}}} \pi, \varphi_{2}(t)=\frac{u_{2}(t)}{V_{\pi_{2}}} \pi
-# $$
-
-# $$\begin{equation}
-# \hat{E}_{\text {out}}(t)=\hat{E}_{\text {in }}(t)\cos \left(\frac{\Delta \varphi_{M Z M}(t)}{2}\right)=\hat{E}_{i n}(t) \cos \left(\frac{u(t)}{2 V_{\pi}} \pi\right)
-# \end{equation}$$
+# ## Modulador de Mach-Zehnder
 #
-# em que $\Delta \varphi_{M Z M}(t)=\varphi_{1}(t)-\varphi_{2}(t)=2 \varphi_{1}(t)$
+# $$\begin{equation}
+# \left[\begin{array}{l}
+# \hat{E}_{1} \\
+# \hat{E}_{2}
+# \end{array}\right]=\frac{1}{2}\left[\begin{array}{ll}
+# 1 & j \\
+# j & 1
+# \end{array}\right]\left[\begin{array}{cc}
+# e^{j \phi_{1}} & 0 \\
+# 0 & e^{j \phi_{2}}
+# \end{array}\right]\left[\begin{array}{ll}
+# 1 & j \\
+# j & 1
+# \end{array}\right]\left[\begin{array}{c}
+# \hat{E}_{i} \\
+# 0
+# \end{array}\right]
+# \end{equation}$$
+
+# +
+ϕ1, ϕ2 = sp.symbols('ϕ1, ϕ2', real=True)
+
+Ei     = sp.symbols('E_i')
+
+C  = Matrix([[1, j],[j, 1]])
+MZ = Matrix([[exp(j*ϕ1), 0],[0, exp(j*ϕ2)]])
+
+E = Matrix([[Ei],[0]])
+
+T = (1/2)*C*MZ*C
+
+H = T*E
+H
+# -
+
+# $$\begin{equation}
+# \frac{\hat{E}_{\text {out }}(t)}{\hat{E}_{\text {in }}(t)}=\frac{1}{2} \left(e^{j \varphi(t)}+e^{-j \varphi(t)}\right)e^{j\frac{\pi}{2}}
+# \end{equation}$$
+
+# $$
+# \varphi(t)=\frac{u(t)}{2V_{\pi}} \pi
+# $$
+
+# $$\begin{equation}
+# A_{\text {out}}(t) = A_{i n}(t) \cos \left(\frac{u(t)}{2 V_{\pi}} \pi\right)
+# \end{equation}$$
 
 # ### Chaveamento por deslocamento de amplitude (*amplitude shift-keying* - ASK) ou modulação de amplitude de pulso (*pulse amplitude modulation* - PAM)
 
 # $ E(t)=\operatorname{Re}\left[A(t) e^{j \phi} \exp \left(j \omega_c t\right)\right]$
 
-# $ A(t)= \sqrt{P_{0}} \left[ \sum_{n} b_{n} \delta \left(t-n T_{s}\right)\right] \ast p(t) = \sqrt{P_{0}} \sum_{n} b_{n} p\left(t-n T_{s}\right)$
+# $$ \begin{align} A(t) &= \sqrt{P_{0}} \left[ \sum_{n} b_{n} \delta \left(t-n T_{s}\right)\right] \ast p(t) \nonumber \\ & = \sqrt{P_{0}} \sum_{n} b_{n} p\left(t-n T_{s}\right)\end{align}$$
 
 from commpy.utilities  import signal_power, upsample
 from utils.dsp import firFilter, pulseShape, eyediagram
@@ -113,7 +152,7 @@ P0     = 1             # Potência
 
 # +
 # gera sequência de bits pseudo-aleatórios
-bits   = np.random.randint(2, size=30)    
+bits   = np.random.randint(2, size=20)    
 n      = np.arange(0, bits.size)
 
 # mapeia bits para símbolos OOK
@@ -209,8 +248,8 @@ for ind in range(0, bits.size):
 
 # +
 # pulso cosseno levantado (raised cosine)
-Ncoeffs = 500
-rolloff = 0.1
+Ncoeffs = 640
+rolloff = 0.01
 
 pulse = pulseShape('rc', SpS, Ncoeffs, rolloff, Ts)
 pulse = pulse/max(abs(pulse))
@@ -225,10 +264,9 @@ plt.xlim(min(t), max(t))
 plt.grid()
 plt.legend()
 
-t = (-0.2*Ts + np.arange(0, (Ncoeffs/SpS)*Ts, Ts))/1e-12
-for ind in range(0, t.size):
-    #plt.vlines(t[ind], -0.2, 0.2, linestyles='dotted', color='r')
-    plt.vlines(t[ind]+ 0.5*(Ts/1e-12), -0.2, 1, linestyles='dashed', color = 'k')
+t = (-0.0*Ts + np.arange(0, (Ncoeffs/SpS)*Ts, Ts))/1e-12
+for ind in range(0, t.size):    
+    plt.vlines(t[ind] + 0.5*(Ts/1e-12), -0.2, 1, linestyles='dashed', color = 'k')
 
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
@@ -271,7 +309,7 @@ symbTx = np.sqrt(P0)*symbTx/np.sqrt(signal_power(symbTx))
 symbolsUp = upsample(symbTx, SpS)
 
 # pulso cosseno levantado (raised cosine)
-Ncoeffs = 500
+Ncoeffs = 640
 rolloff = 0.1
 
 pulse = pulseShape('rc', SpS, Ncoeffs, rolloff, Ts)
@@ -294,8 +332,8 @@ plt.ylim(-200,-50);
 # +
 Nsamples = 20000
 
-# # diagrama de olho
-# eyediagram(sigTx, Nsamples, SpS, n=3)
+# diagrama de olho
+# eyediagram(sigTx, Nsamples, SpS)
 # -
 
 # ### PAM4
@@ -332,7 +370,7 @@ plt.ylim(-200,-50);
 Nsamples = 20000
 
 # # diagrama de olho
-# eyediagram(sigTx, Nsamples, SpS, n=3)
+# eyediagram(sigTx, Nsamples, SpS)
 # -
 
 
