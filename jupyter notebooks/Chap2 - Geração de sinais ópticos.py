@@ -83,6 +83,10 @@ sp.expand_trig(E).cancel()
 
 # ## Modulador de Mach-Zehnder
 #
+#
+# <img src="./figuras/MZM.png" width="600">
+#
+#
 # $$\begin{equation}
 # \left[\begin{array}{l}
 # \hat{E}_{1} \\
@@ -104,8 +108,7 @@ sp.expand_trig(E).cancel()
 
 # +
 ϕ1, ϕ2 = sp.symbols('ϕ1, ϕ2', real=True)
-
-Ei     = sp.symbols('E_i')
+Ei     = sp.symbols('E_i', complex=True)
 
 C  = Matrix([[1, j],[j, 1]])
 MZ = Matrix([[exp(j*ϕ1), 0],[0, exp(j*ϕ2)]])
@@ -123,12 +126,31 @@ H
 # \end{equation}$$
 
 # $$
-# \varphi(t)=\frac{u(t)}{2V_{\pi}} \pi
+# \varphi(t)=\frac{1}{2V_{\pi}}[u(t)+V_b]\pi
 # $$
 
 # $$\begin{equation}
-# A_{\text {out}}(t) = A_{i n}(t) \cos \left(\frac{u(t)}{2 V_{\pi}} \pi\right)
+# A_{\text {out}}(t) = A_{i n}(t) \cos \left(\frac{1}{2V_{\pi}}[u(t)+V_b]\pi\right)
 # \end{equation}$$
+
+# +
+Vπ = 2
+Vb = Vπ/2
+
+π = np.pi
+
+u = np.arange(-2*Vπ, 2*Vπ, 0.01)
+
+Ai = 1
+
+Ao = Ai*np.cos(0.5/Vπ*(u+Vb)*π)
+
+plt.plot(u, Ao, linewidth = 2);
+plt.xlabel('Tensão (V)')
+plt.ylabel('Amplitude de saída (Ao)')
+plt.grid()
+plt.xlim(min(u), max(u));
+# -
 
 # ### Chaveamento por deslocamento de amplitude (*amplitude shift-keying* - ASK) ou modulação de amplitude de pulso (*pulse amplitude modulation* - PAM)
 
