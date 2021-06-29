@@ -135,7 +135,7 @@ H
 
 # +
 Vπ = 2
-Vb = Vπ/2
+Vb = -Vπ/2
 
 π = np.pi
 
@@ -145,11 +145,16 @@ Ai = 1
 
 Ao = Ai*np.cos(0.5/Vπ*(u+Vb)*π)
 
-plt.plot(u, Ao, linewidth = 2);
+plt.figure(figsize=(6,4))
+plt.plot(u, Ao, label = 'amplitude', linewidth = 2);
 plt.xlabel('Tensão (V)')
-plt.ylabel('Amplitude de saída (Ao)')
-plt.grid()
 plt.xlim(min(u), max(u));
+
+plt.plot(u, np.abs(Ao)**2, label = 'potência', linewidth = 2);
+plt.xlabel('Tensão (V)')
+plt.xlim(min(u), max(u));
+plt.legend()
+plt.grid()
 # -
 
 # ### Chaveamento por deslocamento de amplitude (*amplitude shift-keying* - ASK) ou modulação de amplitude de pulso (*pulse amplitude modulation* - PAM)
