@@ -152,7 +152,7 @@ def mzm(Ai, Vπ, u, Vb):
     
 
 
-# ## Transmitindo informação na potência 
+# ## Transmitindo informação na intensidade (potência) da portadora óptica
 
 # +
 Vπ = 2
@@ -161,7 +161,6 @@ Vb = -Vπ/2
 u = np.arange(-2*Vπ, 2*Vπ, 0.01)
 
 Ai = 1
-
 Ao = mzm(Ai, Vπ, u, Vb)
 
 plt.figure(figsize=(6,4))
@@ -531,6 +530,35 @@ Nsamples = 10000
 
 # diagrama de olho
 eyediagram(np.abs(sigTxo)**2, Nsamples, SpS)
+
+# +
+t = np.arange(0, sigTxo.size)*Ta
+
+Vπ = 2 
+Vb = Vπ/2
+Ai = 1
+
+senoideRF = Vπ/2*np.cos(2*np.pi*Rs*t + np.pi)
+
+sigTxo_   = mzm(sigTxo, Vπ, senoideRF, Vb)
+
+Nsamples = 10000
+
+# diagrama de olho
+eyediagram(np.abs(sigTxo)**2, Nsamples, SpS, ptype='fancy', plotlabel='óptico')
+eyediagram(np.abs(mzm(Ai, Vπ, senoideRF, Vb))**2, Nsamples, SpS)
+eyediagram(np.abs(sigTxo_)**2, Nsamples, SpS)
+
+# +
+plt.figure(figsize=(6,6))
+plt.plot(sigTxo.real,sigTxo.imag)
+plt.grid()
+plt.axis('equal');
+
+plt.figure(figsize=(6,6))
+plt.plot(sigTxo_.real,sigTxo_.imag)
+plt.grid()
+plt.axis('equal');
 # -
 
 
