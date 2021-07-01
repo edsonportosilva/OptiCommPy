@@ -31,7 +31,7 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     Te = 1       
     
     if pulseType == 'rect':
-        filterCoeffs = np.ones(SpS)        
+        filterCoeffs = np.concatenate((np.zeros(int(SpS/2)), np.ones(SpS), np.zeros(int(SpS/2))))       
     elif pulseType == 'nrz':
         filterCoeffs = np.convolve(np.ones(SpS), 2/(np.sqrt(np.pi)*Te)*np.exp(-t**2/Te), mode='full')        
     elif pulseType == 'rrc':

@@ -206,18 +206,18 @@ plt.grid()
 # $$ \begin{align} A(t) &= \sqrt{P_{0}} \left[ \sum_{n} b_{n} \delta \left(t-n T_{s}\right)\right] \ast p(t) \nonumber \\ & = \sqrt{P_{0}} \sum_{n} b_{n} p\left(t-n T_{s}\right)\end{align}$$
 
 # +
-Rs  = 10e9          # Taxa de símbolos (baud rate)
-Ts  = 1/Rs          # Período de símbolo em segundos
+Rs  = 10e9  # Taxa de símbolos [baud]
+Ts  = 1/Rs  # Período de símbolo em segundos
+N   = 10    # número de intervalos de sinalização
 
-t = np.arange(0, 11*Ts, Ts)/1e-12
+t = np.arange(0, N+1)*(Ts/1e-12) # tempo em picosegundos (ps)
 
-for ind in range(0, 11):
-    plt.vlines(t[ind], 0, 1, linestyles='dashed', color = 'k')
-    
+plt.vlines(t, 0, 1, linestyles='dashed', color = 'k')    
 plt.xlabel('tempo [ps]');
 plt.title('intervalos de sinalização');
 plt.grid()
 plt.xticks(t);
+plt.xlim(0, t.max());
 # -
 
 from commpy.utilities  import signal_power, upsample
@@ -231,7 +231,6 @@ Rs     = 10e9          # Taxa de símbolos (para o caso do OOK Rs = Rb)
 Ts     = 1/Rs          # Período de símbolo em segundos
 Fa     = 1/(Ts/SpS)    # Frequência de amostragem do sinal (amostras/segundo)
 Ta     = 1/Fa          # Período de amostragem
-P0     = 1             # Potência
 
 
 # +
@@ -240,7 +239,7 @@ bits   = np.random.randint(2, size=20)
 n      = np.arange(0, bits.size)
 
 # mapeia bits para símbolos binários
-symbTx = np.sqrt(P0)*(2*bits-1)
+symbTx = 2*bits-1
 
 plt.figure(1)
 plt.stem(bits, basefmt=" ", use_line_collection=True)
@@ -248,6 +247,13 @@ plt.xlabel('n')
 plt.ylabel('$b_n$')
 plt.grid()
 plt.xticks(np.arange(0, bits.size));
+
+plt.figure(2)
+plt.stem(symbTx, basefmt=" ", use_line_collection=True)
+plt.xlabel('n')
+plt.ylabel('$s_n$')
+plt.grid()
+plt.xticks(np.arange(0, symbTx.size));
 
 # +
 # upsampling
@@ -257,7 +263,7 @@ symbolsUp = upsample(symbTx, SpS)
 pulse = pulseShape('rect', SpS)
 pulse = pulse/max(abs(pulse))
 
-t = np.arange(0, pulse.size)*(Ta/1e-12)
+t = (0.5+np.arange(0, pulse.size))*(Ta/1e-12)
 
 plt.figure(1)
 plt.plot(t, pulse,'-', label = 'p(t)', linewidth=3)
@@ -269,6 +275,7 @@ plt.legend()
 
 # formatação de pulso retangular
 sigTx  = firFilter(pulse, symbolsUp)
+sigTx  = sigTx.real
 
 # plota sinal 
 t = np.arange(0, sigTx.size)*(Ta/1e-12)
@@ -276,19 +283,38 @@ t = np.arange(0, sigTx.size)*(Ta/1e-12)
 # instantes centrais dos intervalos de sinalização
 symbolsUp = upsample(2*bits-1, SpS)
 symbolsUp[symbolsUp==0] = np.nan
-#symbolsUp = (symbolsUp + 1)/2
 
 plt.figure(2)
-plt.plot(t, sigTx.real,'-', linewidth=3)
+plt.plot(t, sigTx,'-', linewidth=3)
 plt.plot(t, symbolsUp.real, 'o')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
-plt.title('$\sqrt{P_0}\; \sum_{n}b_{n}p(t-n T_s)$')
+plt.title('$\sum_{n}\;s_{n}p(t-n T_s)$')
 plt.grid()
 
-t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
-for ind in range(0, bits.size):
-    plt.vlines(t[ind], -1, 1, linestyles='dashed', color = 'k')
+t = (0.5 + np.arange(0, bits.size))*(Ts/1e-12)
+plt.vlines(t, -1, 1, linestyles='dashed', color = 'k');
+plt.xlim(0, max(t));
+
+# modulação óptica
+P0 = 100e-3 # potência da portadora CW na entrada no MZM
+Vπ = 2 
+Vb = -Vπ/2
+Ai = np.sqrt(P0)
+sigTxo = mzm(Ai, Vπ, sigTx, Vb)
+
+# plota sinal 
+t = np.arange(0, sigTxo.size)*(Ta/1e-12)
+
+plt.figure(3)
+plt.plot(t, np.abs(sigTxo)**2,'-', linewidth=3)
+plt.xlabel('tempo [ps]')
+plt.ylabel('amplitude')
+plt.title('$\sqrt{P_0}\;\sum_{n}\;\;b_{n}p(t-n T_s)$')
+plt.grid()
+
+t = (0.5 + np.arange(0, bits.size))*(Ts/1e-12)
+plt.xlim(0, max(t));
 
 # +
 # pulso NRZ típico
@@ -310,6 +336,7 @@ symbolsUp = upsample(symbTx, SpS)
 
 # formatação de pulso retangular
 sigTx  = firFilter(pulse, symbolsUp)
+sigTx = sigTx.real
 
 t = np.arange(0, sigTx.size)*(Ta/1e-12)
 
@@ -319,16 +346,36 @@ symbolsUp[symbolsUp==0] = np.nan
 #symbolsUp = (symbolsUp + 1)/2
 
 plt.figure(2)
-plt.plot(t, sigTx.real,'-',linewidth=3)
+plt.plot(t, sigTx,'-',linewidth=3)
 plt.plot(t, symbolsUp.real,'o')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
-plt.title('$\sqrt{P_0}\; \sum_{n}b_{n}p(t-n T_s)$')
+plt.title('$\sum_{n}s_{n}p(t-n T_s)$')
 plt.grid()
 
 t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
-for ind in range(0, bits.size):
-    plt.vlines(t[ind], -1, 1, linestyles='dashed', color = 'k')
+plt.vlines(t, -1, 1, linestyles='dashed', color = 'k');
+plt.xlim(0, max(t));
+
+# modulação óptica
+P0 = 100e-3 # potência da portadora CW na entrada no MZM
+Vπ = 2 
+Vb = -Vπ/2
+Ai = np.sqrt(P0)
+sigTxo = mzm(Ai, Vπ, sigTx, Vb)
+
+# plota sinal 
+t = np.arange(0, sigTxo.size)*(Ta/1e-12)
+
+plt.figure(3)
+plt.plot(t, np.abs(sigTxo)**2,'-', linewidth=3)
+plt.xlabel('tempo [ps]')
+plt.ylabel('amplitude')
+plt.title('$\sqrt{P_0}\;\sum_{n}\;\;b_{n}p(t-n T_s)$')
+plt.grid()
+
+t = (0.5 + np.arange(0, bits.size))*(Ts/1e-12)
+plt.xlim(0, max(t));
 
 # +
 # pulso cosseno levantado (raised cosine)
@@ -349,33 +396,53 @@ plt.grid()
 plt.legend()
 
 t = (-0.0*Ts + np.arange(0, (Ncoeffs/SpS)*Ts, Ts))/1e-12
-for ind in range(0, t.size):    
-    plt.vlines(t[ind] + 0.5*(Ts/1e-12), -0.2, 1, linestyles='dashed', color = 'k')
+plt.vlines(t + 0.5*(Ts/1e-12), -0.2, 1, linestyles='dashed', color = 'k')
 
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
 
 # formatação de pulso 
 sigTx  = firFilter(pulse, symbolsUp)
+sigTx = sigTx.real
 
 t = np.arange(0, sigTx.size)*(Ta/1e-12)
 
 # instantes centrais dos intervalos de sinalização
 symbolsUp = upsample(2*bits-1, SpS)
 symbolsUp[symbolsUp==0] = np.nan
-#symbolsUp = (symbolsUp + 1)/2
+
 
 plt.figure(2)
-plt.plot(t, sigTx.real,'-', linewidth=3)
+plt.plot(t, sigTx,'-', linewidth=3)
 plt.plot(t, symbolsUp.real,'o')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
-plt.title('$\sqrt{P_0}\; \sum_{n}b_{n}p(t-n T_s)$')
+plt.title('$\sum_{n}s_{n}p(t-n T_s)$')
 plt.grid()
 
 t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
-for ind in range(0, bits.size):
-    plt.vlines(t[ind], -1, 1, linestyles='dashed', color = 'k')
+plt.vlines(t, -1, 1, linestyles='dashed', color = 'k');
+plt.xlim(0, max(t));
+
+# modulação óptica
+P0 = 100e-3 # potência da portadora CW na entrada no MZM
+Vπ = 2 
+Vb = -Vπ/2
+Ai = np.sqrt(P0)
+sigTxo = mzm(Ai, Vπ, sigTx, Vb)
+
+# plota sinal 
+t = np.arange(0, sigTxo.size)*(Ta/1e-12)
+
+plt.figure(3)
+plt.plot(t, np.abs(sigTxo)**2,'-', linewidth=3)
+plt.xlabel('tempo [ps]')
+plt.ylabel('amplitude')
+plt.title('$\sqrt{P_0}\;\sum_{n}\;\;b_{n}p(t-n T_s)$')
+plt.grid()
+
+t = (0.5 + np.arange(0, bits.size))*(Ts/1e-12)
+plt.xlim(0, max(t));
 # -
 
 # ## Densidade espectral de potência do sinal modulado
@@ -387,7 +454,7 @@ n      = np.arange(0, bits.size)
 
 # mapeia bits para pulsos elétricos
 symbTx = 2*bits-1
-symbTx = np.sqrt(P0)*symbTx/np.sqrt(signal_power(symbTx))
+symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
@@ -414,16 +481,17 @@ plt.xlim(-3*Rs,3*Rs);
 plt.ylim(-200,-50);
 
 # +
+P0 = 100e-3 # potência da portadora CW na entrada no MZM
 
 Vπ = 2 
 Vb = -Vπ/2
-Ai = 1
+Ai = np.sqrt(P0)
 
 sigTxo = mzm(Ai, Vπ, sigTx, Vb)
 
 # plota psd
 plt.figure();
-plt.psd(np.abs(sigTxo)**2,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal OOK')
+plt.psd(np.abs(sigTxo)**2,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal óptico [OOK]')
 plt.legend(loc='upper left');
 plt.xlim(-3*Rs,3*Rs);
 plt.ylim(-200,-50);
@@ -559,6 +627,29 @@ plt.figure(figsize=(6,6))
 plt.plot(sigTxo_.real,sigTxo_.imag)
 plt.grid()
 plt.axis('equal');
+
+# +
+# from matplotlib.animation import FuncAnimation
+
+# fig = plt.figure()
+# ax = plt.axes(xlim=(0, 4), ylim=(-2, 2))
+# line, = ax.plot([], [], lw=3)
+
+# def init():
+#     line.set_data([], [])
+#     return line,
+# def animate(i):
+#     x = np.linspace(0, 4, 200)
+#     y = np.sin(2*np.pi*x[0:i])
+#     line.set_data(x[0:i], y)
+#     return line,
+
+# anim = FuncAnimation(fig, animate, init_func=init,
+#                                frames=200, interval=20, blit=True)
+
+# anim.save('sine_wave.gif', writer='imagemagick')
 # -
+
+# ![SegmentLocal](sine_wave.gif "segment")
 
 
