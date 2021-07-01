@@ -19,6 +19,7 @@ import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
 from sympy import cos, sin, exp, Matrix, sqrt
+import pandas as pd
 
 from IPython.display import display, Math
 from IPython.display import display as disp
@@ -172,7 +173,7 @@ def mzm(Ai, Vπ, u, Vb):
 
 # +
 Vπ = 2
-Vb = -Vπ/2
+Vb = 0#-Vπ/2
 
 u = np.arange(-2*Vπ, 2*Vπ, 0.01)
 
@@ -270,6 +271,11 @@ plt.xlabel('n')
 plt.ylabel('$s_n$')
 plt.grid()
 plt.xticks(np.arange(0, symbTx.size));
+# -
+
+# ## Gerando sinais binários
+#
+# ### Pulso retangular ideal
 
 # +
 # upsampling
@@ -305,7 +311,7 @@ plt.plot(t, sigTx,'-', linewidth=3)
 plt.plot(t, symbolsUp.real, 'o')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude [V]')
-plt.title('$\sum_{n}\;s_{n}p(t-n T_s)$')
+plt.title('$\sum_{n}\;s_{n}\;p(t-n T_s)$')
 plt.grid()
 
 t = (0.5 + np.arange(0, bits.size))*(Ts/1e-12)
@@ -331,6 +337,9 @@ plt.grid()
 
 t = (0.5 + np.arange(0, bits.size))*(Ts/1e-12)
 plt.xlim(0, max(t));
+# -
+
+# ### Pulso NRZ típico
 
 # +
 # pulso NRZ típico
@@ -366,7 +375,7 @@ plt.plot(t, sigTx,'-',linewidth=3)
 plt.plot(t, symbolsUp.real,'o')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude [V]')
-plt.title('$\sum_{n}s_{n}p(t-n T_s)$')
+plt.title('$\sum_{n}\;s_{n}\;p(t-n T_s)$')
 plt.grid()
 
 t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
@@ -392,6 +401,9 @@ plt.grid()
 
 t = (0.5 + np.arange(0, bits.size))*(Ts/1e-12)
 plt.xlim(0, max(t));
+# -
+
+# ### Pulso cosseno levantado
 
 # +
 # pulso cosseno levantado (raised cosine)
@@ -433,7 +445,7 @@ plt.plot(t, sigTx,'-', linewidth=3)
 plt.plot(t, symbolsUp.real,'o')
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude [V]')
-plt.title('$\sum_{n}s_{n}p(t-n T_s)$')
+plt.title('$\sum_{n}\;s_{n}\;p(t-n T_s)$')
 plt.grid()
 
 t = (0.5*Ts + np.arange(0, bits.size*Ts, Ts))/1e-12
@@ -524,14 +536,91 @@ eyediagram(sigTx, Nsamples, SpS)
 
 # +
 # gera sequência de bits pseudo-aleatórios
-bits1   = np.random.randint(2, size=10000)  
-bits2   = np.random.randint(2, size=10000) 
+bits_a   = np.random.randint(2, size=20)
+bits_b   = np.random.randint(2, size=20)
+
+# mapeia bits para símbolos PAM4
+symbTx = 2/3*(2*bits_a-1) + 1/3*(2*bits_b-1)
+
+plt.figure(2)
+plt.stem(symbTx, basefmt=" ", use_line_collection=True)
+plt.xlabel('n')
+plt.ylabel('$s_n$')
+plt.grid()
+plt.xticks(np.arange(0, symbTx.size));
+
+pd.set_option('display.max_columns', 500)
+pd.options.display.float_format = '{:,d}'.format
+df = pd.DataFrame({'bits a': bits_a, 'bits b': bits_b})
+
+display(df.T)
+
+# +
+# upsampling
+symbolsUp = upsample(symbTx, SpS)
+
+# pulso NRZ típico
+pulse = pulseShape('nrz', SpS)
+pulse = pulse/max(abs(pulse))
+
+# formatação de pulso
+sigTx  = firFilter(pulse, symbolsUp)
+sigTx = sigTx.real
+
+t = np.arange(0, sigTx.size)*(Ta/1e-12)
+
+# instantes centrais dos intervalos de sinalização
+symbolsUp = upsample(symbTx, SpS)
+symbolsUp[symbolsUp==0] = np.nan
+
+plt.figure(2)
+plt.plot(t, sigTx,'-',linewidth=3)
+plt.plot(t, symbolsUp.real,'o')
+plt.xlabel('tempo [ps]')
+plt.ylabel('amplitude [V]')
+plt.title('$\sum_{n}\;s_{n}\;p(t-n T_s)$')
+plt.grid()
+
+t = (0.5*Ts + np.arange(0, symbTx.size*Ts, Ts))/1e-12
+plt.vlines(t, -1, 1, linestyles='dashed', color = 'k');
+plt.xlim(0, max(t));
+
+# modulação óptica
+P0 = 100e-3 # potência da portadora CW na entrada no MZM
+Vπ = 2 
+Vb = -Vπ/2
+Ai = np.sqrt(P0)
+sigTxo = mzm(Ai, Vπ, sigTx, Vb)
+
+# plota sinal 
+t = np.arange(0, sigTxo.size)*(Ta/1e-12)
+
+plt.figure(3)
+plt.plot(t, np.abs(sigTxo)**2,'-', linewidth=3)
+plt.xlabel('tempo [ps]')
+plt.ylabel('potência [W]')
+plt.title('$\sqrt{P_0}\;\sum_{n}\;\;b_{n}p(t-n T_s)$')
+plt.grid()
+
+t = (0.5 + np.arange(0, symbTx.size))*(Ts/1e-12)
+plt.xlim(0, max(t));
+
+# # plota psd
+# plt.figure();
+# plt.psd(sigTx,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal OOK')
+# plt.legend(loc='upper left');
+# plt.xlim(-3*Rs,3*Rs);
+# plt.ylim(-200,-50);
+
+# +
+# gera sequência de bits pseudo-aleatórios
+bits1   = np.random.randint(2, size=1e4)  
+bits2   = np.random.randint(2, size=1e4) 
 
 n      = np.arange(0, bits.size)
 
 # mapeia bits para símbolos PAM4
-symbTx = (2/3)*bits1 + (1/3)*bits2
-symbTx = np.sqrt(P0)*symbTx/np.sqrt(signal_power(symbTx))
+symbTx = 2/3*(2*bits1-1) + 1/3*(2*bits2-1)
 
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
@@ -542,19 +631,12 @@ pulse = pulse/max(abs(pulse))
 
 # formatação de pulso
 sigTx  = firFilter(pulse, symbolsUp)
+sigTx = sigTx.real
 
-# plota psd
-plt.figure();
-plt.psd(sigTx,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal OOK')
-plt.legend(loc='upper left');
-plt.xlim(-3*Rs,3*Rs);
-plt.ylim(-200,-50);
-
-# +
 Nsamples = 20000
 
-# # diagrama de olho
-# eyediagram(sigTx, Nsamples, SpS)
+# diagrama de olho
+eyediagram(sigTx, Nsamples, SpS)
 # -
 # ### QPSK
 
@@ -592,7 +674,7 @@ plt.legend(loc='upper left');
 plt.xlim(-3*Rs,3*Rs);
 plt.ylim(-200,-50);
 
-
+# modulação óptica
 Vπ = 2 
 Vb = -Vπ
 Ai = 1
