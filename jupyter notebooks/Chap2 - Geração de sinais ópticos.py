@@ -18,7 +18,7 @@
 import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
-from sympy import cos, sin, exp, Matrix
+from sympy import cos, sin, exp, Matrix, sqrt
 
 from IPython.display import display, Math
 from IPython.display import display as disp
@@ -44,33 +44,33 @@ figsize(10, 3)
 #
 # Num sistema de comunicação digital óptica, a função do transmissor é converter uma dada sequência de bits num trem de pulsos elétricos que, por sua vez, será utilizado na modulação de uma portadora óptica (laser). A modulação de portadoras ópticas é realizada por meio de dispositivos de conversão eletro-óptica.
 #
-# <img src="./figuras/Tx_OOK.png" width="500">
+# <img src="./figuras/Tx_OOK.png" width="400">
 #
 # Diversas técnicas de modulação podem ser implementadas e diversos fatores podem influenciar o projeto de um transmissor óptico. 
 
-# ## Formatos de modulação
+# ## Representações para a portadora óptica
 
 # O campo elétrico $\mathbf{E}(t)$ da portadora óptica portadora óptica de onda contínua pode ser representado por
 #
-# $$\begin{equation} \mathbf{E}(t) = A \cos \left(\omega_c t + \phi\right) \mathbf{e} \end{equation}$$ 
+# $$\begin{equation} \mathbf{E}(t) = A \cos \left(\omega_c t + \theta\right) \mathbf{e} \end{equation}$$ 
 #
-# em que $\omega_c = 2\pi f_{c}\label{eq1} $ rad/s é a frequência angular de oscilação, $A$ a amplitude e $\phi$ a fase da onda.
+# em que $\omega_c = 2\pi f_{c}\label{eq1} $ rad/s é a frequência angular de oscilação, $A$ a amplitude e $\theta$ a fase da onda.
 
 # +
-ϕ, omega_c, A, t = sp.symbols('ϕ, omega_c, A, t', real=True)
+θ, omega_c, A, t = sp.symbols('θ, omega_c, A, t', real=True)
 
 j = sp.I
 π = sp.pi
 
-E = A*cos(omega_c*t + ϕ)
+E = A*cos(omega_c*t + θ)
 
 disp(Math('E(t) = '+sp.latex(E)))
 # -
 
-# $\mathbf{E}(t)=\operatorname{Re}\left[A e^{j \phi} \exp \left(j \omega_c t\right)\right]$
+# $E(t)=\operatorname{Re}\left[A e^{j \theta} \exp \left(j \omega_c t\right)\right]$
 
 # +
-E = sp.re(A*exp(j*ϕ)*exp(j*omega_c*t)).simplify()
+E = sp.re(A*exp(j*θ)*exp(j*omega_c*t)).simplify()
 
 disp(Math('E(t) = '+sp.latex(E)))
 
@@ -79,6 +79,9 @@ E = sp.expand_trig(E).cancel()
 
 disp(Math('E(t) = '+sp.latex(E)))
 # -
+
+E = E.subs({θ:0})
+disp(Math('E(t) = '+sp.latex(E)))
 
 # ## Modulador de Mach-Zehnder
 #
@@ -90,13 +93,13 @@ disp(Math('E(t) = '+sp.latex(E)))
 # \left[\begin{array}{l}
 # \hat{E}_{1} \\
 # \hat{E}_{2}
-# \end{array}\right]=\frac{1}{2}\left[\begin{array}{ll}
+# \end{array}\right]=\frac{1}{\sqrt{2}}\left[\begin{array}{ll}
 # 1 & j \\
 # j & 1
 # \end{array}\right]\left[\begin{array}{cc}
 # e^{j \phi_{1}} & 0 \\
 # 0 & e^{j \phi_{2}}
-# \end{array}\right]\left[\begin{array}{ll}
+# \end{array}\right]\frac{1}{\sqrt{2}}\left[\begin{array}{ll}
 # 1 & j \\
 # j & 1
 # \end{array}\right]\left[\begin{array}{c}
@@ -105,22 +108,35 @@ disp(Math('E(t) = '+sp.latex(E)))
 # \end{array}\right]
 # \end{equation}$$
 
+ϕ1, ϕ2, ϕ = sp.symbols('ϕ1, ϕ2, ϕ', real=True)
+Ai        = sp.symbols('A_i', real=True)
+
 # +
-ϕ1, ϕ2 = sp.symbols('ϕ1, ϕ2', real=True)
-Ei     = sp.symbols('E_i', complex=True)
+C  = 1/sqrt(2)*Matrix([[1, j],[j, 1]])
 
-C  = Matrix([[1, j],[j, 1]])
-MZ = Matrix([[exp(j*ϕ1), 0],[0, exp(j*ϕ2)]])
+disp(Math('C = '+sp.latex(C)))
 
-E = Matrix([[Ei],[0]])
+# +
+M = Matrix([[exp(j*ϕ1), 0],[0, exp(j*ϕ2)]])
 
-T = (1/2)*C*MZ*C
+disp(Math('M = '+sp.latex(M)))
 
-H = T*E
-H
+# +
+T = C*MZ*C
 
+disp(Math('T = '+sp.latex(T)))
 
+# +
+Ei = Matrix([[Ai],[0]])
+
+disp(Math('\hat{E}_i = '+sp.latex(Ei)))
 # -
+
+Eo = T*Ei
+disp(Math('\hat{E}_o = '+sp.latex(Eo)))
+
+Eo[1].subs({ϕ1:ϕ, ϕ2:-ϕ}).simplify()
+
 
 # $$\begin{equation}
 # \frac{\hat{E}_{\text {out }}(t)}{\hat{E}_{\text {in }}(t)}=\frac{1}{2} \left(e^{j \varphi(t)}+e^{-j \varphi(t)}\right)e^{j\frac{\pi}{2}}
@@ -288,7 +304,7 @@ plt.figure(2)
 plt.plot(t, sigTx,'-', linewidth=3)
 plt.plot(t, symbolsUp.real, 'o')
 plt.xlabel('tempo [ps]')
-plt.ylabel('amplitude')
+plt.ylabel('amplitude [V]')
 plt.title('$\sum_{n}\;s_{n}p(t-n T_s)$')
 plt.grid()
 
@@ -309,7 +325,7 @@ t = np.arange(0, sigTxo.size)*(Ta/1e-12)
 plt.figure(3)
 plt.plot(t, np.abs(sigTxo)**2,'-', linewidth=3)
 plt.xlabel('tempo [ps]')
-plt.ylabel('amplitude')
+plt.ylabel('potência [W]')
 plt.title('$\sqrt{P_0}\;\sum_{n}\;\;b_{n}p(t-n T_s)$')
 plt.grid()
 
@@ -349,7 +365,7 @@ plt.figure(2)
 plt.plot(t, sigTx,'-',linewidth=3)
 plt.plot(t, symbolsUp.real,'o')
 plt.xlabel('tempo [ps]')
-plt.ylabel('amplitude')
+plt.ylabel('amplitude [V]')
 plt.title('$\sum_{n}s_{n}p(t-n T_s)$')
 plt.grid()
 
@@ -370,7 +386,7 @@ t = np.arange(0, sigTxo.size)*(Ta/1e-12)
 plt.figure(3)
 plt.plot(t, np.abs(sigTxo)**2,'-', linewidth=3)
 plt.xlabel('tempo [ps]')
-plt.ylabel('amplitude')
+plt.ylabel('potência [W]')
 plt.title('$\sqrt{P_0}\;\sum_{n}\;\;b_{n}p(t-n T_s)$')
 plt.grid()
 
@@ -416,7 +432,7 @@ plt.figure(2)
 plt.plot(t, sigTx,'-', linewidth=3)
 plt.plot(t, symbolsUp.real,'o')
 plt.xlabel('tempo [ps]')
-plt.ylabel('amplitude')
+plt.ylabel('amplitude [V]')
 plt.title('$\sum_{n}s_{n}p(t-n T_s)$')
 plt.grid()
 
@@ -437,7 +453,7 @@ t = np.arange(0, sigTxo.size)*(Ta/1e-12)
 plt.figure(3)
 plt.plot(t, np.abs(sigTxo)**2,'-', linewidth=3)
 plt.xlabel('tempo [ps]')
-plt.ylabel('amplitude')
+plt.ylabel('potência [W]')
 plt.title('$\sqrt{P_0}\;\sum_{n}\;\;b_{n}p(t-n T_s)$')
 plt.grid()
 
@@ -648,8 +664,9 @@ plt.axis('equal');
 #                                frames=200, interval=20, blit=True)
 
 # anim.save('sine_wave.gif', writer='imagemagick')
-# -
 
-# ![SegmentLocal](sine_wave.gif "segment")
+# +
+#![SegmentLocal](sine_wave.gif "segment")
+# -
 
 
