@@ -28,15 +28,23 @@ from IPython.display import display as disp
 from IPython.core.display import HTML
 from IPython.core.pylabtools import figsize
 
-HTML("""
-<style>
-.output_png {
-    display: table-cell;
-    text-align: center;
-    vertical-align: middle;
+# HTML("""
+# <style>
+# .output_png {
+#     display: table-cell;
+#     text-align: center;
+#     vertical-align: middle;
+# }
+# </style>
+# """)
+
+CSS = """
+.output {
+    align-items: center;
 }
-</style>
-""")
+"""
+
+HTML('<style>{}</style>'.format(CSS))
 # -
 
 figsize(10, 3)
@@ -123,7 +131,7 @@ M = Matrix([[exp(j*ϕ1), 0],[0, exp(j*ϕ2)]])
 disp(Math('M = '+sp.latex(M)))
 
 # +
-T = C*MZ*C
+T = C*M*C
 
 disp(Math('T = '+sp.latex(T)))
 
@@ -542,7 +550,6 @@ bits_b   = np.random.randint(2, size=20)
 # mapeia bits para símbolos PAM4
 symbTx = 2/3*(2*bits_a-1) + 1/3*(2*bits_b-1)
 
-plt.figure(2)
 plt.stem(symbTx, basefmt=" ", use_line_collection=True)
 plt.xlabel('n')
 plt.ylabel('$s_n$')
@@ -550,6 +557,7 @@ plt.grid()
 plt.xticks(np.arange(0, symbTx.size));
 
 pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 2000)
 pd.options.display.float_format = '{:,d}'.format
 df = pd.DataFrame({'bits a': bits_a, 'bits b': bits_b})
 
@@ -614,8 +622,8 @@ plt.xlim(0, max(t));
 
 # +
 # gera sequência de bits pseudo-aleatórios
-bits1   = np.random.randint(2, size=1e4)  
-bits2   = np.random.randint(2, size=1e4) 
+bits1   = np.random.randint(2, size=10000)  
+bits2   = np.random.randint(2, size=10000) 
 
 n      = np.arange(0, bits.size)
 
