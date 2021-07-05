@@ -20,6 +20,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sympy import cos, sin, exp, Matrix, sqrt
 import pandas as pd
+from scipy.interpolate import interp1d
 
 from IPython.display import display, Math
 from IPython.display import display as disp
@@ -28,23 +29,23 @@ from IPython.display import display as disp
 from IPython.core.display import HTML
 from IPython.core.pylabtools import figsize
 
-# HTML("""
-# <style>
-# .output_png {
-#     display: table-cell;
-#     text-align: center;
-#     vertical-align: middle;
-# }
-# </style>
-# """)
-
-CSS = """
-.output {
-    align-items: center;
+HTML("""
+<style>
+.output_png {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
 }
-"""
+</style>
+""")
 
-HTML('<style>{}</style>'.format(CSS))
+# CSS = """
+# .output {
+#     align-items: center;
+# }
+# """
+
+# HTML('<style>{}</style>'.format(CSS))
 # -
 
 figsize(10, 3)
@@ -174,7 +175,6 @@ def mzm(Ai, Vπ, u, Vb):
     Ao = Ai*np.cos(0.5/Vπ*(u+Vb)*π)
     
     return Ao
-    
 
 
 # ## Transmitindo informação na intensidade (potência) da portadora óptica
@@ -246,7 +246,33 @@ plt.xlim(0, t.max());
 # -
 
 from commpy.utilities  import signal_power, upsample
-from utils.dsp import firFilter, pulseShape, eyediagram
+from utils.dsp import firFilter, pulseShape, eyediagram, sincInterp
+
+# +
+Fa = 400   # frequência de amostragem
+fs = 100   # banda da sinc
+Ta = 1/Fa  # período de amostragem
+
+d = 20
+t = np.arange(0, 2*d)*Ta
+x = np.sinc(2*fs*(t-d*Ta) + np.pi/15)
+
+# plota psd
+x_psd = np.sinc(2*fs*((np.arange(0, 2000)*Ta)-1000*Ta))
+plt.figure();
+plt.psd(x_psd, Fs=Fa, NFFT = 16*1024, sides='twosided')
+plt.xlim(-Fa/2, Fa/2);
+
+x_interp, t_interp = sincInterp(x, Fa);
+sinc_original = interp1d(t, x, kind='cubic',fill_value="extrapolate")
+
+plt.figure()
+plt.plot(t_interp, x_interp,'--k',label ='$\hat{x}(t) =\sum_{k}\;x_{k}\;sinc(t-k T_a)$');
+plt.plot(t_interp, np.sinc(2*fs*(t_interp-d*Ta)+ np.pi/15),'-',label = 'função x(t) original')
+# plt.plot(t, x,'-')
+plt.xlim(min(t), max(t))
+plt.grid();
+plt.legend();
 
 # +
 # parâmetros da simulação
@@ -293,7 +319,7 @@ symbolsUp = upsample(symbTx, SpS)
 pulse = pulseShape('rect', SpS)
 pulse = pulse/max(abs(pulse))
 
-t = (0.5+np.arange(0, pulse.size))*(Ta/1e-12)
+t = (0.5+np.arange(0, pulse.size))*(Ta/1e-12) # tempo em ps
 
 plt.figure(1)
 plt.plot(t, pulse,'-', label = 'p(t)', linewidth=3)
@@ -301,8 +327,9 @@ plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
 plt.xlim(min(t), max(t))
 plt.grid()
-plt.legend()
+plt.legend();
 
+# +
 # formatação de pulso retangular
 sigTx  = firFilter(pulse, symbolsUp)
 sigTx  = sigTx.real
@@ -362,8 +389,9 @@ plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
 plt.xlim(min(t), max(t))
 plt.grid()
-plt.legend()
+plt.legend();
 
+# +
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
 
@@ -376,7 +404,6 @@ t = np.arange(0, sigTx.size)*(Ta/1e-12)
 # instantes centrais dos intervalos de sinalização
 symbolsUp = upsample(2*bits-1, SpS)
 symbolsUp[symbolsUp==0] = np.nan
-#symbolsUp = (symbolsUp + 1)/2
 
 plt.figure(2)
 plt.plot(t, sigTx,'-',linewidth=3)
@@ -412,6 +439,21 @@ plt.xlim(0, max(t));
 # -
 
 # ### Pulso cosseno levantado
+#
+# $$\large
+# p(t)=\left\{\begin{array}{ll}
+# \frac{\pi}{4 T} \operatorname{sinc}\left(\frac{1}{2 \beta}\right), & t=\pm \frac{T}{2 \beta} \\
+# \frac{1}{T} \operatorname{sinc}\left(\frac{t}{T}\right) \frac{\cos \left(\frac{\pi \beta t}{T}\right)}{1-\left(\frac{2 \beta t}{T}\right)^{2}}, & \text { caso contrário }
+# \end{array}\right.
+# $$
+#
+# $$\large
+# P(f)=\left\{\begin{array}{ll}
+# 1, & |f| \leq \frac{1-\beta}{2 T} \\
+# \frac{1}{2}\left[1+\cos \left(\frac{\pi T}{\beta}\left[|f|-\frac{1-\beta}{2 T}\right]\right)\right], & \frac{1-\beta}{2 T}<|f| \leq \frac{1+\beta}{2 T} \\
+# 0, & \text { caso contrário }
+# \end{array}\right.
+# $$
 
 # +
 # pulso cosseno levantado (raised cosine)
@@ -432,8 +474,9 @@ plt.grid()
 plt.legend()
 
 t = (-0.0*Ts + np.arange(0, (Ncoeffs/SpS)*Ts, Ts))/1e-12
-plt.vlines(t + 0.5*(Ts/1e-12), -0.2, 1, linestyles='dashed', color = 'k')
+plt.vlines(t + 0.5*(Ts/1e-12), -0.2, 1, linestyles='dashed', color = 'k');
 
+# +
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
 
@@ -513,7 +556,7 @@ sigTx  = firFilter(pulse, symbolsUp)
 plt.figure();
 plt.psd(sigTx,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal elétrico')
 plt.legend(loc='upper left');
-plt.xlim(-3*Rs,3*Rs);
+plt.xlim(-4*Rs,4*Rs);
 plt.ylim(-200,-50);
 
 # +
@@ -529,7 +572,7 @@ sigTxo = mzm(Ai, Vπ, sigTx, Vb)
 plt.figure();
 plt.psd(np.abs(sigTxo)**2,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal óptico [OOK]')
 plt.legend(loc='upper left');
-plt.xlim(-3*Rs,3*Rs);
+plt.xlim(-4*Rs,4*Rs);
 plt.ylim(-200,-50);
 
 # +
@@ -679,7 +722,7 @@ sigTx  = firFilter(pulse, symbolsUp)
 plt.figure();
 plt.psd(sigTx,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro elétrico do sinal QPSK')
 plt.legend(loc='upper left');
-plt.xlim(-3*Rs,3*Rs);
+plt.xlim(-4*Rs,4*Rs);
 plt.ylim(-200,-50);
 
 # modulação óptica
@@ -696,7 +739,7 @@ sigTxo = sigTxo_I + 1j*sigTxo_Q
 plt.figure();
 plt.psd(sigTxo, Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro óptico do sinal QPSK')
 plt.legend(loc='upper left');
-plt.xlim(-3*Rs,3*Rs);
+plt.xlim(-4*Rs,4*Rs);
 plt.ylim(-200,-50);
 
 # +
@@ -723,6 +766,13 @@ eyediagram(np.abs(sigTxo)**2, Nsamples, SpS, ptype='fancy', plotlabel='óptico')
 eyediagram(np.abs(mzm(Ai, Vπ, senoideRF, Vb))**2, Nsamples, SpS)
 eyediagram(np.abs(sigTxo_)**2, Nsamples, SpS)
 
+# plota psd
+plt.figure();
+plt.psd(sigTxo_,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal óptico RZ')
+plt.legend(loc='upper left');
+plt.xlim(-4*Rs,4*Rs);
+plt.ylim(-200,-50);
+
 # +
 plt.figure(figsize=(6,6))
 plt.plot(sigTxo.real,sigTxo.imag)
@@ -733,6 +783,28 @@ plt.figure(figsize=(6,6))
 plt.plot(sigTxo_.real,sigTxo_.imag)
 plt.grid()
 plt.axis('equal');
+
+# +
+t = np.arange(0, sigTxo.size*8)*Ta
+
+Vπ = 2 
+Vb = Vπ/2
+Ai = 1
+
+senoideRF = 2*Vπ/2*np.cos(2*np.pi*Rs*t + np.pi)
+
+sigTxo_   = mzm(Ai, Vπ, senoideRF, Vb)
+#sigTxo_   = mzm(sigTxo_, Vπ, 5*senoideRF, Vb)
+
+# plota psd
+plt.figure();
+plt.psd(sigTxo_,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal óptico')
+plt.legend(loc='upper left');
+plt.xlim(-16*Rs,16*Rs);
+#plt.ylim(-200,-50);
+
+plt.figure();
+plt.plot(abs(sigTxo_[0:160])**2);
 
 # +
 # from matplotlib.animation import FuncAnimation
@@ -757,6 +829,34 @@ plt.axis('equal');
 
 # +
 #![SegmentLocal](sine_wave.gif "segment")
+# +
+#![SegmentLocal](arrow.gif "segment")
+
+# +
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+fig, ax = plt.subplots()
+xdata, ydata = [], []
+ln, = plt.plot([], [], '*')
+
+def init():
+    ax.set_xlim(-2, 2)
+    ax.set_ylim(-2, 2)
+    return ln,
+
+def update(frame):
+    xdata.append(frame)
+    ydata.append(np.sin(frame))
+    ln.set_data(xdata, ydata)
+    return ln,
+
+ani = FuncAnimation(fig, update, frames=np.linspace(0, 2*np.pi, 128),
+                    init_func=init, blit=True)
+plt.show()
+
+ani.save('arrow.gif', writer='imagemagick')
 # -
 
 

@@ -1,6 +1,7 @@
 from scipy.signal import lfilter
 import numpy as np
 from commpy.filters import rrcosfilter, rcosfilter
+from commpy.utilities  import upsample
 from scipy.stats.kde import gaussian_kde
 import matplotlib.pyplot as plt
 
@@ -92,5 +93,28 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype='fast', plotlabel=None):
                 
             plt.grid()
             plt.show();
-
     
+def sincInterp(x, Fa):
+    
+    Fa_sinc = 32*Fa
+    Ta_sinc = 1/Fa_sinc
+    Ta = 1/Fa
+    t = np.arange(0, x.size*32)*Ta_sinc
+    
+    plt.figure()  
+    y = upsample(x,32)
+    y[y==0] = np.nan
+    plt.plot(t,y.real,'o', label='x[k]')
+    
+    x_sum = 0
+    for k in range(0, x.size):
+        xk_interp = x[k]*np.sinc((t-k*Ta)/Ta)
+        x_sum += xk_interp
+        plt.plot(t, xk_interp)           
+    
+    plt.plot(t,x_sum,'k--', label ='$\hat{x}(t) =\sum_{k}\;x_{k}\;sinc(t-k T_a)$')
+    plt.legend(loc="upper right")
+    plt.xlim(min(t), max(t))
+    plt.grid()
+    
+    return x_sum, t
