@@ -104,7 +104,7 @@ def sincInterp(x, Fa):
     plt.figure()  
     y = upsample(x,32)
     y[y==0] = np.nan
-    plt.plot(t,y.real,'o', label='x[k]')
+    plt.plot(t,y.real,'ko', label='x[k]')
     
     x_sum = 0
     for k in range(0, x.size):
@@ -112,7 +112,7 @@ def sincInterp(x, Fa):
         x_sum += xk_interp
         plt.plot(t, xk_interp)           
     
-    plt.plot(t,x_sum,'k--', label ='$\hat{x}(t) =\sum_{k}\;x_{k}\;sinc(t-k T_a)$')
+    #plt.plot(t,x_sum,'k--',label ='$\hat{x}(t) =\sum_{k}\;x_{k}\;sinc[(t-kT_a)/T_a]$')
     plt.legend(loc="upper right")
     plt.xlim(min(t), max(t))
     plt.grid()

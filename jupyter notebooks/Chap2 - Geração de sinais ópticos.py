@@ -14,6 +14,10 @@
 #     name: python3
 # ---
 
+# + [markdown] toc=true
+# <h1>Table of Contents<span class="tocSkip"></span></h1>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Representações-para-a-portadora-óptica" data-toc-modified-id="Representações-para-a-portadora-óptica-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Representações para a portadora óptica</a></span><ul class="toc-item"><li><span><a href="#Modulações-digitais" data-toc-modified-id="Modulações-digitais-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>Modulações digitais</a></span></li><li><span><a href="#Diagramas-de-constelação" data-toc-modified-id="Diagramas-de-constelação-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>Diagramas de constelação</a></span></li></ul></li><li><span><a href="#Modulador-de-Mach-Zehnder" data-toc-modified-id="Modulador-de-Mach-Zehnder-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Modulador de Mach-Zehnder</a></span><ul class="toc-item"><li><span><a href="#Transmitindo-informação-na-intensidade-(potência)-da-portadora-óptica" data-toc-modified-id="Transmitindo-informação-na-intensidade-(potência)-da-portadora-óptica-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>Transmitindo informação na intensidade (potência) da portadora óptica</a></span></li><li><span><a href="#Transmitindo-informação-na-amplitude-do-campo-elétrico" data-toc-modified-id="Transmitindo-informação-na-amplitude-do-campo-elétrico-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>Transmitindo informação na amplitude do campo elétrico</a></span></li></ul></li><li><span><a href="#Intervalos-de-sinalização" data-toc-modified-id="Intervalos-de-sinalização-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Intervalos de sinalização</a></span><ul class="toc-item"><li><span><a href="#Teorema-da-amostragem" data-toc-modified-id="Teorema-da-amostragem-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>Teorema da amostragem</a></span></li></ul></li><li><span><a href="#Chaveamento-por-deslocamento-de-amplitude-(amplitude-shift-keying---ASK-ou-pulse-amplitude-modulation---PAM)" data-toc-modified-id="Chaveamento-por-deslocamento-de-amplitude-(amplitude-shift-keying---ASK-ou-pulse-amplitude-modulation---PAM)-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Chaveamento por deslocamento de amplitude (<em>amplitude shift-keying</em> - ASK ou <em>pulse amplitude modulation</em> - PAM)</a></span><ul class="toc-item"><li><span><a href="#Gerando-sinais-binários" data-toc-modified-id="Gerando-sinais-binários-4.1"><span class="toc-item-num">4.1&nbsp;&nbsp;</span>Gerando sinais binários</a></span><ul class="toc-item"><li><span><a href="#Pulso-retangular-ideal" data-toc-modified-id="Pulso-retangular-ideal-4.1.1"><span class="toc-item-num">4.1.1&nbsp;&nbsp;</span>Pulso retangular ideal</a></span></li><li><span><a href="#Pulso-NRZ-típico" data-toc-modified-id="Pulso-NRZ-típico-4.1.2"><span class="toc-item-num">4.1.2&nbsp;&nbsp;</span>Pulso NRZ típico</a></span></li><li><span><a href="#Pulso-cosseno-levantado" data-toc-modified-id="Pulso-cosseno-levantado-4.1.3"><span class="toc-item-num">4.1.3&nbsp;&nbsp;</span>Pulso cosseno levantado</a></span></li></ul></li><li><span><a href="#Densidade-espectral-de-potência-do-sinal-modulado" data-toc-modified-id="Densidade-espectral-de-potência-do-sinal-modulado-4.2"><span class="toc-item-num">4.2&nbsp;&nbsp;</span>Densidade espectral de potência do sinal modulado</a></span></li><li><span><a href="#4-PAM" data-toc-modified-id="4-PAM-4.3"><span class="toc-item-num">4.3&nbsp;&nbsp;</span>4-PAM</a></span></li></ul></li><li><span><a href="#QPSK" data-toc-modified-id="QPSK-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>QPSK</a></span></li></ul></div>
+
 # +
 import sympy as sp
 import numpy as np
@@ -54,7 +58,7 @@ figsize(10, 3)
 #
 # Num sistema de comunicação digital óptica, a função do transmissor é converter uma dada sequência de bits num trem de pulsos elétricos que, por sua vez, será utilizado na modulação de uma portadora óptica (laser). A modulação de portadoras ópticas é realizada por meio de dispositivos de conversão eletro-óptica.
 #
-# <img src="./figuras/Tx_OOK.png" width="400">
+# <img src="./figuras/Tx_OOK.png" width="500">
 #
 # Diversas técnicas de modulação podem ser implementadas e diversos fatores podem influenciar o projeto de um transmissor óptico. 
 
@@ -88,10 +92,63 @@ disp(Math('E(t) = '+sp.latex(E)))
 E = sp.expand_trig(E).cancel()
 
 disp(Math('E(t) = '+sp.latex(E)))
+
+# +
+print('Portadora:')
+disp(Math('E(t) = '+sp.latex(E)))
+
+
+print('Representação fasorial polar:')
+disp(Math('\hat{E}(t) = '+sp.latex(A*exp(j*θ))))
+
+
+print('Representação fasorial cartesiana:')
+A_I = sp.re(A*exp(j*θ))
+A_Q = sp.im(A*exp(j*θ))
+
+disp(Math('\hat{E}(t) = '+sp.latex(A_I + j*A_Q)))
+
+disp(Math('A_I = '+sp.latex(A_I)))
+disp(Math('A_Q = '+sp.latex(A_Q)))
+
+
 # -
+
+# ### Modulações digitais
+#
+# Uma modulação digital é uma função $F$ que mapeia bits ou conjuntos de bits a símbolos (fasores) no plano complexo
+#
+# $$ F: \{0, 1\}^k\rightarrow \{A_m,\theta_m\}_{m=1}^M$$
+#
+# em que sequências de $k$ bits são mapeadas num conjunto de $M$ símbolos.
+#
+# Ex.1: $\{0, 1\}\rightarrow \{(0, 0), (A, 0)\}$ (modulação OOK) 
+#
+#
+# Ex.2: $\{0, 1\}\rightarrow \{(A, 0), (A, \pi )\}$ (modulação BPSK)
+#
+#
+# Ex.3: $\{(0, 0),(0, 1),(1, 0),(1, 1)\}\rightarrow \{(A, 0), (A/3, 0), (2A/3, 0), (A, 0)\}$ (modulação 4-PAM ou 4-ASK)
+#
+#
+# Ex.4: $\{(0, 0),(0, 1),(1, 0),(1, 1)\}\rightarrow \{(A, \pi/4), (A, 3\pi/4), (A, 5\pi/4), (A, 7\pi/4)\}$ (modulação QPSK)
+
+# ### Diagramas de constelação
+
+plt.figure(figsize=(6,6))
+plt.plot([],[])
+plt.vlines(0,-1,1)
+plt.hlines(0,-1,1)
+plt.grid()
+plt.ylabel('$A_Q$', fontsize=14)
+plt.xlabel('$A_I$', fontsize=14)
+plt.axis('square')
+plt.xlim(-1,1)
+plt.ylim(-1,1);
 
 E = E.subs({θ:0})
 disp(Math('E(t) = '+sp.latex(E)))
+disp(Math('\hat{E}(t) = '+sp.latex(A)))
 
 # ## Modulador de Mach-Zehnder
 #
@@ -177,7 +234,7 @@ def mzm(Ai, Vπ, u, Vb):
     return Ao
 
 
-# ## Transmitindo informação na intensidade (potência) da portadora óptica
+# ### Transmitindo informação na intensidade (potência) da portadora óptica
 
 # +
 Vπ = 2
@@ -200,7 +257,7 @@ plt.legend()
 plt.grid()
 # -
 
-# ## Transmitindo informação na amplitude do campo elétrico
+# ### Transmitindo informação na amplitude do campo elétrico
 
 # +
 Vπ = 2
@@ -224,11 +281,7 @@ plt.legend()
 plt.grid()
 # -
 
-# ### Chaveamento por deslocamento de amplitude (*amplitude shift-keying* - ASK) ou modulação de amplitude de pulso (*pulse amplitude modulation* - PAM)
-
-# $ E(t)=\operatorname{Re}\left[A(t) e^{j \phi} \exp \left(j \omega_c t\right)\right]$
-
-# $$ \begin{align} A(t) &= \sqrt{P_{0}} \left[ \sum_{n} b_{n} \delta \left(t-n T_{s}\right)\right] \ast p(t) \nonumber \\ & = \sqrt{P_{0}} \sum_{n} b_{n} p\left(t-n T_{s}\right)\end{align}$$
+# ## Intervalos de sinalização
 
 # +
 Rs  = 10e9  # Taxa de símbolos [baud]
@@ -245,11 +298,26 @@ plt.xticks(t);
 plt.xlim(0, t.max());
 # -
 
+# ### Teorema da amostragem
+#
+# Considerre $x(t)$ um sinal limitado em banda, i.e. o espectro de frequências de $X(f)=\mathcal{F}\{x(t)\}$ está contido no intervalo $-B<f<B$. 
+#
+# $$ X(f) = \int_{-\infty}^{\infty} x(t)e^{j2\pi f t} dt$$
+#
+# Suponha que obtenhamos um sinal discreto no tempo $x[k]$ a partir de um conjunto de amostras equiespaçadas de $x(t)$, ou seja $x[k]=x(kT_a)$, em que $T_a = \frac{1}{f_a}$ é o período de amostragem e $f_a$ a frequência de amostragem.
+#
+# Se $f_a\geq 2B$, $x(t)$ pode ser perfeitamente recuperado a partir de suas amostras $x[k]$ fazendo
+#
+# $$
+# x(t)=\sum_{n=-\infty}^{\infty} x(k T_a) \operatorname{sinc}\left(\frac{t-kT_a}{T_a}\right)
+# $$
+#
+
 from commpy.utilities  import signal_power, upsample
 from utils.dsp import firFilter, pulseShape, eyediagram, sincInterp
 
 # +
-Fa = 400   # frequência de amostragem
+Fa = 800   # frequência de amostragem
 fs = 100   # banda da sinc
 Ta = 1/Fa  # período de amostragem
 
@@ -257,22 +325,37 @@ d = 20
 t = np.arange(0, 2*d)*Ta
 x = np.sinc(2*fs*(t-d*Ta) + np.pi/15)
 
+plt.figure()
+plt.plot(t,x,'-', label = 'x(t)')
+plt.plot(t,x,'ko', label = '$x[kT_a]$')
+plt.grid()
+plt.legend()
+plt.xlim(min(t), max(t))
+
 # plota psd
 x_psd = np.sinc(2*fs*((np.arange(0, 2000)*Ta)-1000*Ta))
 plt.figure();
 plt.psd(x_psd, Fs=Fa, NFFT = 16*1024, sides='twosided')
 plt.xlim(-Fa/2, Fa/2);
 
+# +
 x_interp, t_interp = sincInterp(x, Fa);
 sinc_original = interp1d(t, x, kind='cubic',fill_value="extrapolate")
 
 plt.figure()
-plt.plot(t_interp, x_interp,'--k',label ='$\hat{x}(t) =\sum_{k}\;x_{k}\;sinc(t-k T_a)$');
+plt.plot(t_interp, x_interp,'--k',label ='$\hat{x}(t) =\sum_{k}\;x_{k}\;sinc[(t-kT_a)/T_a]$');
 plt.plot(t_interp, np.sinc(2*fs*(t_interp-d*Ta)+ np.pi/15),'-',label = 'função x(t) original')
 # plt.plot(t, x,'-')
 plt.xlim(min(t), max(t))
 plt.grid();
 plt.legend();
+# -
+
+# ## Chaveamento por deslocamento de amplitude (*amplitude shift-keying* - ASK ou *pulse amplitude modulation* - PAM)
+
+# $ E(t)=\operatorname{Re}\left[A(t) e^{j \theta} \exp \left(j \omega_c t\right)\right]$
+
+# $$ \begin{align} A(t) &= \sqrt{P_{0}} \left[ \sum_{n} s_{n} \delta \left(t-n T_{s}\right)\right] \ast p(t) \nonumber \\ & = \sqrt{P_{0}} \sum_{n} s_{n} p\left(t-n T_{s}\right)\end{align}$$
 
 # +
 # parâmetros da simulação
@@ -307,9 +390,9 @@ plt.grid()
 plt.xticks(np.arange(0, symbTx.size));
 # -
 
-# ## Gerando sinais binários
+# ### Gerando sinais binários
 #
-# ### Pulso retangular ideal
+# #### Pulso retangular ideal
 
 # +
 # upsampling
@@ -322,7 +405,7 @@ pulse = pulse/max(abs(pulse))
 t = (0.5+np.arange(0, pulse.size))*(Ta/1e-12) # tempo em ps
 
 plt.figure(1)
-plt.plot(t, pulse,'-', label = 'p(t)', linewidth=3)
+plt.plot(t, pulse,'-o', label = 'p(t)', linewidth=3)
 plt.xlabel('tempo [ps]')
 plt.ylabel('amplitude')
 plt.xlim(min(t), max(t))
@@ -374,7 +457,7 @@ t = (0.5 + np.arange(0, bits.size))*(Ts/1e-12)
 plt.xlim(0, max(t));
 # -
 
-# ### Pulso NRZ típico
+# #### Pulso NRZ típico
 
 # +
 # pulso NRZ típico
@@ -438,7 +521,7 @@ t = (0.5 + np.arange(0, bits.size))*(Ts/1e-12)
 plt.xlim(0, max(t));
 # -
 
-# ### Pulso cosseno levantado
+# #### Pulso cosseno levantado
 #
 # $$\large
 # p(t)=\left\{\begin{array}{ll}
@@ -524,7 +607,7 @@ t = (0.5 + np.arange(0, bits.size))*(Ts/1e-12)
 plt.xlim(0, max(t));
 # -
 
-# ## Densidade espectral de potência do sinal modulado
+# ### Densidade espectral de potência do sinal modulado
 
 # +
 # gera sequência de bits pseudo-aleatórios
@@ -583,7 +666,7 @@ eyediagram(np.abs(sigTxo)**2, Nsamples, SpS)
 eyediagram(sigTx, Nsamples, SpS)
 # -
 
-# ### PAM4
+# ### 4-PAM
 
 # +
 # gera sequência de bits pseudo-aleatórios
@@ -689,7 +772,7 @@ Nsamples = 20000
 # diagrama de olho
 eyediagram(sigTx, Nsamples, SpS)
 # -
-# ### QPSK
+# ## QPSK
 
 
 # +
