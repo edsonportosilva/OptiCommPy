@@ -54,7 +54,7 @@ figsize(10, 3)
 
 # + [markdown] toc=true
 # <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#Representações-para-a-portadora-óptica" data-toc-modified-id="Representações-para-a-portadora-óptica-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Representações para a portadora óptica</a></span><ul class="toc-item"><li><span><a href="#Modulações-digitais" data-toc-modified-id="Modulações-digitais-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>Modulações digitais</a></span></li><li><span><a href="#Diagramas-de-constelação" data-toc-modified-id="Diagramas-de-constelação-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>Diagramas de constelação</a></span></li></ul></li><li><span><a href="#Modulador-de-Mach-Zehnder" data-toc-modified-id="Modulador-de-Mach-Zehnder-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Modulador de Mach-Zehnder</a></span><ul class="toc-item"><li><span><a href="#Transmitindo-informação-na-intensidade-(potência)-da-portadora-óptica" data-toc-modified-id="Transmitindo-informação-na-intensidade-(potência)-da-portadora-óptica-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>Transmitindo informação na intensidade (potência) da portadora óptica</a></span></li><li><span><a href="#Transmitindo-informação-na-amplitude-do-campo-elétrico" data-toc-modified-id="Transmitindo-informação-na-amplitude-do-campo-elétrico-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>Transmitindo informação na amplitude do campo elétrico</a></span></li><li><span><a href="#Razão-de-extinção" data-toc-modified-id="Razão-de-extinção-2.3"><span class="toc-item-num">2.3&nbsp;&nbsp;</span>Razão de extinção</a></span></li></ul></li><li><span><a href="#Intervalos-de-sinalização" data-toc-modified-id="Intervalos-de-sinalização-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Intervalos de sinalização</a></span><ul class="toc-item"><li><span><a href="#Teorema-da-amostragem" data-toc-modified-id="Teorema-da-amostragem-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>Teorema da amostragem</a></span></li></ul></li><li><span><a href="#Chaveamento-por-deslocamento-de-amplitude-(amplitude-shift-keying---ASK-ou-pulse-amplitude-modulation---PAM)" data-toc-modified-id="Chaveamento-por-deslocamento-de-amplitude-(amplitude-shift-keying---ASK-ou-pulse-amplitude-modulation---PAM)-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Chaveamento por deslocamento de amplitude (<em>amplitude shift-keying</em> - ASK ou <em>pulse amplitude modulation</em> - PAM)</a></span><ul class="toc-item"><li><span><a href="#Gerando-sinais-binários-OOK" data-toc-modified-id="Gerando-sinais-binários-OOK-4.1"><span class="toc-item-num">4.1&nbsp;&nbsp;</span>Gerando sinais binários OOK</a></span><ul class="toc-item"><li><span><a href="#Pulso-retangular-ideal" data-toc-modified-id="Pulso-retangular-ideal-4.1.1"><span class="toc-item-num">4.1.1&nbsp;&nbsp;</span>Pulso retangular ideal</a></span></li><li><span><a href="#Pulso-NRZ-típico" data-toc-modified-id="Pulso-NRZ-típico-4.1.2"><span class="toc-item-num">4.1.2&nbsp;&nbsp;</span>Pulso NRZ típico</a></span></li><li><span><a href="#Pulso-cosseno-levantado" data-toc-modified-id="Pulso-cosseno-levantado-4.1.3"><span class="toc-item-num">4.1.3&nbsp;&nbsp;</span>Pulso cosseno levantado</a></span></li></ul></li><li><span><a href="#Densidade-espectral-de-potência-do-sinal-modulado" data-toc-modified-id="Densidade-espectral-de-potência-do-sinal-modulado-4.2"><span class="toc-item-num">4.2&nbsp;&nbsp;</span>Densidade espectral de potência do sinal modulado</a></span></li><li><span><a href="#Gerando-sinais-4-PAM" data-toc-modified-id="Gerando-sinais-4-PAM-4.3"><span class="toc-item-num">4.3&nbsp;&nbsp;</span>Gerando sinais 4-PAM</a></span></li></ul></li><li><span><a href="#Gerando-sinais-QPSK" data-toc-modified-id="Gerando-sinais-QPSK-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Gerando sinais QPSK</a></span></li><li><span><a href="#Formatação--de-pulso-óptica:-pulsos-retorno-a-zero-(RZ)" data-toc-modified-id="Formatação--de-pulso-óptica:-pulsos-retorno-a-zero-(RZ)-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Formatação  de pulso óptica: pulsos retorno-a-zero (RZ)</a></span></li></ul></div>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Representações-para-a-portadora-óptica" data-toc-modified-id="Representações-para-a-portadora-óptica-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Representações para a portadora óptica</a></span><ul class="toc-item"><li><span><a href="#Modulações-digitais" data-toc-modified-id="Modulações-digitais-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>Modulações digitais</a></span></li><li><span><a href="#Diagramas-de-constelação" data-toc-modified-id="Diagramas-de-constelação-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>Diagramas de constelação</a></span></li></ul></li><li><span><a href="#Modulador-de-Mach-Zehnder" data-toc-modified-id="Modulador-de-Mach-Zehnder-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Modulador de Mach-Zehnder</a></span><ul class="toc-item"><li><span><a href="#Transmitindo-informação-na-intensidade-(potência)-da-portadora-óptica" data-toc-modified-id="Transmitindo-informação-na-intensidade-(potência)-da-portadora-óptica-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>Transmitindo informação na intensidade (potência) da portadora óptica</a></span></li><li><span><a href="#Transmitindo-informação-na-amplitude-do-campo-elétrico" data-toc-modified-id="Transmitindo-informação-na-amplitude-do-campo-elétrico-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>Transmitindo informação na amplitude do campo elétrico</a></span></li><li><span><a href="#Razão-de-extinção" data-toc-modified-id="Razão-de-extinção-2.3"><span class="toc-item-num">2.3&nbsp;&nbsp;</span>Razão de extinção</a></span></li></ul></li><li><span><a href="#Intervalos-de-sinalização" data-toc-modified-id="Intervalos-de-sinalização-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Intervalos de sinalização</a></span><ul class="toc-item"><li><span><a href="#Teorema-da-amostragem" data-toc-modified-id="Teorema-da-amostragem-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>Teorema da amostragem</a></span></li><li><span><a href="#Exemplo-1:-função-sinc(t)" data-toc-modified-id="Exemplo-1:-função-sinc(t)-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>Exemplo 1: função sinc(t)</a></span></li><li><span><a href="#Exemplo-2:-chirp-de-frequência-linear" data-toc-modified-id="Exemplo-2:-chirp-de-frequência-linear-3.3"><span class="toc-item-num">3.3&nbsp;&nbsp;</span>Exemplo 2: chirp de frequência linear</a></span></li></ul></li><li><span><a href="#Chaveamento-por-deslocamento-de-amplitude-(amplitude-shift-keying---ASK-ou-pulse-amplitude-modulation---PAM)" data-toc-modified-id="Chaveamento-por-deslocamento-de-amplitude-(amplitude-shift-keying---ASK-ou-pulse-amplitude-modulation---PAM)-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Chaveamento por deslocamento de amplitude (<em>amplitude shift-keying</em> - ASK ou <em>pulse amplitude modulation</em> - PAM)</a></span><ul class="toc-item"><li><span><a href="#Gerando-sinais-binários-OOK" data-toc-modified-id="Gerando-sinais-binários-OOK-4.1"><span class="toc-item-num">4.1&nbsp;&nbsp;</span>Gerando sinais binários OOK</a></span><ul class="toc-item"><li><span><a href="#Pulso-retangular-ideal" data-toc-modified-id="Pulso-retangular-ideal-4.1.1"><span class="toc-item-num">4.1.1&nbsp;&nbsp;</span>Pulso retangular ideal</a></span></li><li><span><a href="#Pulso-NRZ-típico" data-toc-modified-id="Pulso-NRZ-típico-4.1.2"><span class="toc-item-num">4.1.2&nbsp;&nbsp;</span>Pulso NRZ típico</a></span></li><li><span><a href="#Pulso-cosseno-levantado" data-toc-modified-id="Pulso-cosseno-levantado-4.1.3"><span class="toc-item-num">4.1.3&nbsp;&nbsp;</span>Pulso cosseno levantado</a></span></li></ul></li><li><span><a href="#Densidade-espectral-de-potência-do-sinal-modulado" data-toc-modified-id="Densidade-espectral-de-potência-do-sinal-modulado-4.2"><span class="toc-item-num">4.2&nbsp;&nbsp;</span>Densidade espectral de potência do sinal modulado</a></span></li><li><span><a href="#Gerando-sinais-4-PAM" data-toc-modified-id="Gerando-sinais-4-PAM-4.3"><span class="toc-item-num">4.3&nbsp;&nbsp;</span>Gerando sinais 4-PAM</a></span></li></ul></li><li><span><a href="#Gerando-sinais-QPSK" data-toc-modified-id="Gerando-sinais-QPSK-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Gerando sinais QPSK</a></span></li><li><span><a href="#Formatação--de-pulso-óptica:-pulsos-retorno-a-zero-(RZ)" data-toc-modified-id="Formatação--de-pulso-óptica:-pulsos-retorno-a-zero-(RZ)-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Formatação  de pulso óptica: pulsos retorno-a-zero (RZ)</a></span></li></ul></div>
 # -
 
 # # Geração de sinais ópticos
@@ -363,16 +363,18 @@ plt.grid()
 # -
 
 # ### Razão de extinção
+#
+# $$ER_{dB} = 10\log_{10}\frac{P_1}{P_0} $$
 
 # +
+# parâmetros do MZM
 Vπ = 2
-Vb = -Vπ
+Vb = 0
 
-u  = np.arange(-1.5*Vπ, 1.5*Vπ, 0.00013) # gera valores entre -2Vπ e 2Vπ
+u  = np.arange(-2*Vπ, 2*Vπ, 0.013) # gera valores entre -2Vπ e 2Vπ
 
 Ai = 1
-
-Ao = mzm(Ai, Vπ, u, Vb)
+Ao = mzm(Ai, Vπ, 0.9*u, Vb)
 
 plt.figure(figsize=(6,4))
 plt.plot(u, Ao, label = 'amplitude $A$', linewidth = 2);
@@ -385,7 +387,7 @@ plt.xlim(min(u), max(u));
 plt.legend()
 plt.grid()
 
-P = 10*np.log((np.abs(Ao)**2 + 0.05*np.max(np.abs(Ao)**2)))
+P  = 10*np.log((np.abs(Ao)**2 + 0.05))
 
 plt.figure()
 plt.plot(u, P, label = 'potência $|A|^2$', linewidth = 2);
@@ -400,6 +402,12 @@ print('ER = %.2f dB'%(max(P)-min(P)))
 # -
 
 # ## Intervalos de sinalização
+#
+# Transmissores digitais fazem uso do canal de comunicação para transmitir informação de acordo com uma base de tempo, geralmente denomidade de **intervalo de sinalização** ($T_s$). O intervalo de sinalização é o intervalo de tempo no qual o transmissor envia um símbolo discreto mapeado num pulso contínuo. O inverso do intervalo de sinalização é denominado de taxa de transmissão de símbolos ($R_s$), i.e. $R_s=1/T_s$.
+#
+# A quantidade de bits enviada em cada intervalo de sinalização multiplicada por $R_s$ corresponde à taxa de transmissão de bits do sistema ($R_b$). Assumindo que cada símbolo de uma modulação digital representa uma sequência de $k$ bits, temos que:
+#
+# $$R_b = kR_s $$
 
 # +
 Rs  = 10e9  # Taxa de símbolos [baud]
@@ -418,9 +426,11 @@ plt.xlim(0, t.max());
 
 # ### Teorema da amostragem
 #
-# Considerre $x(t)$ um sinal limitado em banda, i.e. o espectro de frequências de $X(f)=\mathcal{F}\{x(t)\}$ está contido no intervalo $-B\leq f \leq B$. 
+# O teorema de amostragem de *Nyquist-Shannon* é um dos resultados mais importantes utilizados em processamento digital de sinais, servindo como uma ponte fundamental entre sinais de tempo contínuo e sinais de tempo discreto. O teorema estabelece uma **condição suficiente** para uma taxa de amostragem que permite que uma sequência discreta de amostras capture toda a informação de um sinal contínuo no tempo e de largura de banda finita.
 #
-# $$ X(f) = \int_{-\infty}^{\infty} x(t)e^{j2\pi f t} dt$$
+# Considerre $x(t)$ um sinal limitado em banda, i.e. o espectro de frequências de $X(f)=\mathcal{F}\{x(t)\}$ está contido no intervalo $-B\leq f \leq B$, ou seja 
+#
+# $$ X(f) = \int_{-\infty}^{\infty} x(t)e^{j2\pi f t} dt = 0 \text{, se } f < -B \text{ ou } f > B$$
 #
 # Suponha que obtenhamos um sinal discreto no tempo $x[k]$ a partir de um conjunto de amostras equiespaçadas de $x(t)$, ou seja $x[k]=x(kT_a)$, em que $T_a = \frac{1}{f_a}$ é o período de amostragem e $f_a$ a frequência de amostragem.
 #
@@ -434,18 +444,24 @@ plt.xlim(0, t.max());
 from commpy.utilities  import signal_power, upsample
 from utils.dsp import firFilter, pulseShape, eyediagram, sincInterp
 
+# ### Exemplo 1: função sinc(t)
+
 # +
-Fa = 800   # frequência de amostragem
+Fa = 400   # frequência de amostragem
 B  = 100   # banda da sinc
 Ta = 1/Fa  # período de amostragem
 
-d = 20
-t = np.arange(0, 2*d)*Ta
-x = np.sinc(2*B*(t-d*Ta) + np.pi/15)
+t = np.arange(0, 0.2, Ta/16) # duração do sinal [s]
+d = t.size/2
+x = np.sinc(2*B*(t-d*(Ta/16)))
+
+# sinal amostrado com frequência de amostragem fa
+xa = x[::16]
+ta = t[::16]
 
 plt.figure()
-plt.plot(t,x,'-', label = 'x(t)')
-plt.plot(t,x,'ko', label = '$x[kT_a]$')
+plt.plot(t, x,'-', label = 'x(t)')
+plt.plot(ta, xa,'ko', label = '$x[kT_a]$')
 plt.grid()
 plt.legend()
 plt.xlim(min(t), max(t))
@@ -457,15 +473,57 @@ plt.psd(x_psd, Fs=Fa, NFFT = 16*1024, sides='twosided')
 plt.xlim(-Fa/2, Fa/2);
 
 # +
-x_interp, t_interp = sincInterp(x, Fa);
-sinc_original = interp1d(t, x, kind='cubic',fill_value="extrapolate")
+x_interp, t_interp = sincInterp(xa, Fa);
 
 plt.figure()
 plt.plot(t_interp, x_interp,'--k',label ='$\hat{x}(t) =\sum_{k}\;x_{k}\;sinc[(t-kT_a)/T_a]$');
-plt.plot(t_interp, np.sinc(2*B*(t_interp-d*Ta)+ np.pi/15),'-',label = 'função x(t) original')
+plt.plot(t, x,'-',label = 'função x(t) original')
 plt.xlim(min(t), max(t))
 plt.grid()
 plt.legend();
+# -
+
+# ### Exemplo 2: chirp de frequência linear
+
+# +
+from scipy.signal import chirp
+
+Fa = 200   # frequência de amostragem
+Ta = 1/Fa  # período de amostragem
+B  = 100
+
+d = 1600
+t = np.arange(0, 0.5, Ta/16) # duração do sinal [s]
+
+x = chirp(t, f0=-100, f1=100, t1=max(t), method='linear')
+
+# sinal amostrado com frequência de amostragem fa
+xa = x[::16]
+ta = t[::16]
+
+plt.figure()
+plt.plot(t, x,'-', label = 'y(t)')
+plt.plot(ta, xa,'ko', markersize = 4, label = '$x[kT_a]$')
+plt.xlabel('tempo (s)')
+plt.grid()
+plt.legend()
+plt.xlim(min(t), max(t))
+
+# plota psd
+plt.figure();
+plt.psd(xa, Fs=Fa, NFFT = 16*1024, sides='twosided')
+plt.xlim(-Fa/2, Fa/2);
+
+# +
+x_interp, t_interp = sincInterp(xa, Fa);
+
+plt.figure()
+plt.plot(t_interp, x_interp,'--k',label ='$\hat{x}(t) =\sum_{k}\;x_{k}\;sinc[(t-kT_a)/T_a]$');
+plt.plot(t, x,'-',label = 'função x(t) original')
+plt.xlabel('tempo (s)')
+plt.xlim(min(t), max(t))
+plt.grid()
+plt.legend(loc='upper right');
 # -
 
 # ## Chaveamento por deslocamento de amplitude (*amplitude shift-keying* - ASK ou *pulse amplitude modulation* - PAM)
