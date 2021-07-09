@@ -20,7 +20,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sympy import cos, sin, exp, Matrix, sqrt
 import pandas as pd
-from scipy.interpolate import interp1d
 
 from IPython.display import display, Math
 from IPython.display import display as disp
@@ -283,7 +282,7 @@ disp(Math('\hat{E}_i = '+sp.latex(Ei)))
 Eo = T*Ei
 disp(Math('\hat{E}_o = '+sp.latex(Eo)))
 
-Eo[1].subs({ϕ1:ϕ, ϕ2:-ϕ}).simplify()
+Eo[0].subs({ϕ1:ϕ, ϕ2:-ϕ}).simplify()
 
 
 # $$\begin{equation}
@@ -371,7 +370,7 @@ plt.grid()
 Vπ = 2
 Vb = 0
 
-u  = np.arange(-2*Vπ, 2*Vπ, 0.013) # gera valores entre -2Vπ e 2Vπ
+u  = np.arange(-2*Vπ, 2*Vπ, 0.00013) # gera valores entre -2Vπ e 2Vπ
 
 Ai = 1
 Ao = mzm(Ai, Vπ, 0.9*u, Vb)
