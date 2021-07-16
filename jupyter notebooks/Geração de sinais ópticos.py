@@ -1018,7 +1018,7 @@ Vπ = 2
 Vb = -Vπ/2
 Ai = np.sqrt(P0)
 
-sigTxo = mzm(Ai, Vπ, sigTx, Vb)
+sigTxo = mzm(Ai, Vπ, 0.25*sigTx, Vb)
 
 # plota psd
 plt.figure();
@@ -1031,8 +1031,8 @@ plt.legend(loc='upper left');
 Nsamples = 10000
 
 # diagrama de olho
-eyediagram(np.abs(sigTxo)**2, Nsamples, SpS)
 eyediagram(sigTx, Nsamples, SpS)
+eyediagram(np.abs(sigTxo)**2, Nsamples, SpS)
 # -
 
 # ## Gerando sinais 4-PAM
@@ -1157,17 +1157,19 @@ Nsamples = 20000
 
 # plota psd
 plt.figure();
-plt.psd(sigTx,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal elétrico 4-PAM')
-plt.legend(loc='upper left');
 plt.xlim(-4*Rs,4*Rs);
 plt.ylim(-250,-50);
+plt.psd(sigTx,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal elétrico 4-PAM')
+plt.legend(loc='upper left');
+
 
 # plota psd
 plt.figure();
-plt.psd(np.abs(sigTxo)**2,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal óptico 4-PAM')
-plt.legend(loc='upper left');
 plt.xlim(-4*Rs,4*Rs);
 plt.ylim(-250,-50);
+plt.psd(np.abs(sigTxo)**2,Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal óptico 4-PAM')
+plt.legend(loc='upper left');
+
 # +
 # diagrama de olho
 eyediagram(sigTx, Nsamples, SpS, plotlabel='elétrico')
@@ -1272,7 +1274,7 @@ eyediagram(np.abs(sigTxo)**2, Nsamples, SpS)
 # ## Formatação  de pulso óptica: pulsos retorno-ao-zero (RZ)
 
 # +
-# Pulsos RZ 50%: Vb = Vπ/2, Vs = Vπ/2, fs = Rs,    ϕs = π
+# Pulsos RZ 50%: Vb = Vπ/2, Vs = Vπ/2, fs = Rs,   ϕs = π
 # Pulsos RZ 33%: Vb = 0,    Vs = Vπ,   fs = Rs/2, ϕs = π/2
 # Pulsos RZ 67%: Vb = Vπ,   Vs = Vπ,   fs = Rs/2, ϕs = 0
 
@@ -1348,7 +1350,7 @@ Vπ = 2
 Vb = Vπ/2
 Ai = 1
 
-senoideRF = 2*Vπ/2*np.cos(2*np.pi*Rs*t + np.pi)
+senoideRF = 2*Vπ/2*np.cos(2*np.pi*4*Rs*t + np.pi)
 
 sigTxo_   = mzm(Ai, Vπ, senoideRF, Vb)
 #sigTxo_   = mzm(sigTxo_, Vπ, 5*senoideRF, Vb)
