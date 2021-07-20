@@ -37,14 +37,6 @@ HTML("""
 }
 </style>
 """)
-
-# CSS = """
-# .output {
-#     align-items: center;
-# }
-# """
-
-# HTML('<style>{}</style>'.format(CSS))
 # -
 
 figsize(10, 3)
