@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 
 def firFilter(h, x):
     """
+    Implements FIR filtering and compensates filter delay
+    (assuming the impulse response is symmetric)
+    
     :param h: impulse response (symmetric)
     :param x: input signal 
     :return y: output filtered signal    
@@ -19,14 +22,17 @@ def firFilter(h, x):
 
 def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     """
+    Generate pulse shaping filters
+    
     :param pulseType: 'rect','nrz','rrc'
     :param SpS: samples per symbol
     :param N: number of filter coefficients
     :param alpha: RRC rolloff factor
     :param Ts: symbol period
+    
     :return filterCoeffs: normalized filter coefficients   
     """  
-    Fa = (1/Ts)*SpS
+    fa = (1/Ts)*SpS
     
     t = np.linspace(-2, 2, SpS)
     Te = 1       
@@ -36,9 +42,9 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     elif pulseType == 'nrz':
         filterCoeffs = np.convolve(np.ones(SpS), 2/(np.sqrt(np.pi)*Te)*np.exp(-t**2/Te), mode='full')        
     elif pulseType == 'rrc':
-        tindex, filterCoeffs = rrcosfilter(N, alpha, Ts, Fa)
+        tindex, filterCoeffs = rrcosfilter(N, alpha, Ts, fa)
     elif pulseType == 'rc':
-        tindex, filterCoeffs = rcosfilter(N, alpha, Ts, Fa)
+        tindex, filterCoeffs = rcosfilter(N, alpha, Ts, fa)
         
     return filterCoeffs/np.sqrt(np.sum(filterCoeffs**2))
 
@@ -94,11 +100,11 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype='fast', plotlabel=None):
             plt.grid()
             plt.show();
     
-def sincInterp(x, Fa):
+def sincInterp(x, fa):
     
-    Fa_sinc = 32*Fa
-    Ta_sinc = 1/Fa_sinc
-    Ta = 1/Fa
+    fa_sinc = 32*fa
+    Ta_sinc = 1/fa_sinc
+    Ta = 1/fa
     t = np.arange(0, x.size*32)*Ta_sinc
     
     plt.figure()  
@@ -112,9 +118,31 @@ def sincInterp(x, Fa):
         x_sum += xk_interp
         plt.plot(t, xk_interp)           
     
-    #plt.plot(t,x_sum,'k--',label ='$\hat{x}(t) =\sum_{k}\;x_{k}\;sinc[(t-kT_a)/T_a]$')
     plt.legend(loc="upper right")
     plt.xlim(min(t), max(t))
     plt.grid()
     
     return x_sum, t
+
+def lowPassFIR(fc, fa, N, typeF = 'rect'):
+    """
+    Calculate FIR coeffs for a lowpass filter
+    
+    :param fc : cutoff frequency
+    :param fa : sampling frequency
+    :param N  : number of coefficients
+    :param typeF : 'rect' or 'gauss'
+    
+    :return h : FIR filter coefficients
+    """
+    fu = fc/fa    
+    d  = (N-1)/2    
+    n  = np.arange(0, N)    
+  
+    # calculate filter coefficients
+    if typeF == 'rect':
+        h = (2*fu)*np.sinc(2*fu*(n-d))
+    elif typeF == 'gauss':    
+        h = np.sqrt(2*np.pi/np.log(2))*(2/np.log(2))*np.exp(-np.pi*fu*(n-d)**2)
+    
+    return h
