@@ -143,6 +143,6 @@ def lowPassFIR(fc, fa, N, typeF = 'rect'):
     if typeF == 'rect':
         h = (2*fu)*np.sinc(2*fu*(n-d))
     elif typeF == 'gauss':    
-        h = np.sqrt(2*np.pi/np.log(2))*(2/np.log(2))*np.exp(-np.pi*fu*(n-d)**2)
+        h = np.sqrt(2*np.pi/np.log(2))*fu*np.exp(-(2/np.log(2))*(np.pi*fu*(n-d))**2)
     
     return h
