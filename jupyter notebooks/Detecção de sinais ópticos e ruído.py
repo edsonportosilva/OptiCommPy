@@ -14,6 +14,11 @@
 #     name: python3
 # ---
 
+# + [markdown] toc=true
+# <h1>Table of Contents<span class="tocSkip"></span></h1>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Fontes-de-ruído-em-receptores-ópticos" data-toc-modified-id="Fontes-de-ruído-em-receptores-ópticos-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Fontes de ruído em receptores ópticos</a></span><ul class="toc-item"><li><span><a href="#Ruído-de-disparo-(ou-ruído-balístico)" data-toc-modified-id="Ruído-de-disparo-(ou-ruído-balístico)-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>Ruído de disparo (ou ruído balístico)</a></span></li><li><span><a href="#Potência-do-ruído-de-disparo" data-toc-modified-id="Potência-do-ruído-de-disparo-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>Potência do ruído de disparo</a></span><ul class="toc-item"><li><span><a href="#Calculando-a-potência-de-um-sinal" data-toc-modified-id="Calculando-a-potência-de-um-sinal-1.2.1"><span class="toc-item-num">1.2.1&nbsp;&nbsp;</span>Calculando a potência de um sinal</a></span></li></ul></li><li><span><a href="#Ruído-térmico" data-toc-modified-id="Ruído-térmico-1.3"><span class="toc-item-num">1.3&nbsp;&nbsp;</span>Ruído térmico</a></span></li><li><span><a href="#Potência-de-ruído-térmico" data-toc-modified-id="Potência-de-ruído-térmico-1.4"><span class="toc-item-num">1.4&nbsp;&nbsp;</span>Potência de ruído térmico</a></span></li><li><span><a href="#Razão-sinal-ruído-(signal-to-noise-ratio---SNR)" data-toc-modified-id="Razão-sinal-ruído-(signal-to-noise-ratio---SNR)-1.5"><span class="toc-item-num">1.5&nbsp;&nbsp;</span>Razão sinal-ruído (<em>signal-to-noise ratio</em> - SNR)</a></span></li><li><span><a href="#Receptores-p-i-n" data-toc-modified-id="Receptores-p-i-n-1.6"><span class="toc-item-num">1.6&nbsp;&nbsp;</span>Receptores p-i-n</a></span><ul class="toc-item"><li><span><a href="#Limite-de-ruído-térmico-$(\sigma_{T}^{2}-\gg-\sigma_{s}^{2})$" data-toc-modified-id="Limite-de-ruído-térmico-$(\sigma_{T}^{2}-\gg-\sigma_{s}^{2})$-1.6.1"><span class="toc-item-num">1.6.1&nbsp;&nbsp;</span>Limite de ruído térmico $(\sigma_{T}^{2} \gg \sigma_{s}^{2})$</a></span></li><li><span><a href="#Limite-de-ruído-de-disparo-$(\sigma_{s}^{2}-\gg-\sigma_{T}^{2})$" data-toc-modified-id="Limite-de-ruído-de-disparo-$(\sigma_{s}^{2}-\gg-\sigma_{T}^{2})$-1.6.2"><span class="toc-item-num">1.6.2&nbsp;&nbsp;</span>Limite de ruído de disparo $(\sigma_{s}^{2} \gg \sigma_{T}^{2})$</a></span></li><li><span><a href="#Parâmetros-típicos" data-toc-modified-id="Parâmetros-típicos-1.6.3"><span class="toc-item-num">1.6.3&nbsp;&nbsp;</span>Parâmetros típicos</a></span></li></ul></li><li><span><a href="#Simulando-o-transmissor-10G-OOK" data-toc-modified-id="Simulando-o-transmissor-10G-OOK-1.7"><span class="toc-item-num">1.7&nbsp;&nbsp;</span>Simulando o transmissor 10G OOK</a></span></li><li><span><a href="#Simulando-as-fontes-de-ruído-do-receptor-p-i-n" data-toc-modified-id="Simulando-as-fontes-de-ruído-do-receptor-p-i-n-1.8"><span class="toc-item-num">1.8&nbsp;&nbsp;</span>Simulando as fontes de ruído do receptor p-i-n</a></span></li><li><span><a href="#Receptores-baseados-em-APDs" data-toc-modified-id="Receptores-baseados-em-APDs-1.9"><span class="toc-item-num">1.9&nbsp;&nbsp;</span>Receptores baseados em APDs</a></span><ul class="toc-item"><li><span><a href="#Ruído-de-disparo" data-toc-modified-id="Ruído-de-disparo-1.9.1"><span class="toc-item-num">1.9.1&nbsp;&nbsp;</span>Ruído de disparo</a></span></li></ul></li></ul></li><li><span><a href="#Sensitividade-de-receptores" data-toc-modified-id="Sensitividade-de-receptores-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Sensitividade de receptores</a></span><ul class="toc-item"><li><span><a href="#Canal-AWGN-(Additive-White-Gaussian-Noise-Channel)" data-toc-modified-id="Canal-AWGN-(Additive-White-Gaussian-Noise-Channel)-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>Canal AWGN (<em>Additive White Gaussian Noise Channel</em>)</a></span></li><li><span><a href="#Filtragem-no-receptor" data-toc-modified-id="Filtragem-no-receptor-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>Filtragem no receptor</a></span></li><li><span><a href="#Filtro-casado" data-toc-modified-id="Filtro-casado-2.3"><span class="toc-item-num">2.3&nbsp;&nbsp;</span>Filtro casado</a></span></li><li><span><a href="#Decisor-ótimo:-avaliando-probabilidades" data-toc-modified-id="Decisor-ótimo:-avaliando-probabilidades-2.4"><span class="toc-item-num">2.4&nbsp;&nbsp;</span>Decisor ótimo: avaliando probabilidades</a></span><ul class="toc-item"><li><span><a href="#Métrica-de-probabilidades-a-posteriori-(MP)" data-toc-modified-id="Métrica-de-probabilidades-a-posteriori-(MP)-2.4.1"><span class="toc-item-num">2.4.1&nbsp;&nbsp;</span>Métrica de <em>probabilidades a posteriori</em> (MP)</a></span></li></ul></li><li><span><a href="#Limiar-de-decisão-$I_d$" data-toc-modified-id="Limiar-de-decisão-$I_d$-2.5"><span class="toc-item-num">2.5&nbsp;&nbsp;</span>Limiar de decisão $I_d$</a></span></li></ul></li></ul></div>
+# -
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -291,7 +296,7 @@ print('Potência do ruído (em dBm) = %.2f dBm' %(10*np.log10(Pn/1e-3)))
 # \end{equation}
 # $$
 
-# ## Razão sinal-ruído (*signal-to-noise ratio* - SNR)
+# ### Razão sinal-ruído (*signal-to-noise ratio* - SNR)
 #
 # A relação sinal-ruído (ou razão sinal-ruído, *signal-to-noise ratio* (SNR), em Inglês) é uma das grandezas mais importantes na engenharia de sistemas de comunicações. A SNR é uma medida da influência do ruído num dado sistema.
 #
@@ -314,16 +319,58 @@ print('Potência do ruído (em dBm) = %.2f dBm' %(10*np.log10(Pn/1e-3)))
 # $$
 #
 # Quanto maior a SNR maior a diferença entre a potência do sinal de interesse e a potência do ruído adicionado á mesma. Dessa forma, quanto maior a SNR melhor a qualidade do sinal.
-#
+
 # ### Receptores p-i-n
 #
 # Para receptores p-i-n, considerando a presença de ruído de disparo e ruído térmico, temos a seguinte expressão para a SNR do sinal elétrico na saída do fotodiodo
 #
 # $$
-# \begin{equation}
+# \begin{equation}\label{eq16}
 # \mathrm{SNR}=\frac{R_{d}^{2} P_{i n}^{2}}{2 q\left(R_{d} P_{i n}+I_{d}\right)B + 4\left(k_{B} T / R_{L}\right) F_{n} B}.
 # \end{equation}
 # $$
+#
+# #### Limite de ruído térmico $(\sigma_{T}^{2} \gg \sigma_{s}^{2})$
+#
+# $$
+# \begin{equation}\label{eq17}
+# \mathrm{SNR}=\frac{R_{L} R_{d}^{2} P_{\text {in }}^{2}}{4 k_{B} T F_{n} \Delta f}
+# \end{equation}
+# $$
+#
+# Potência equivalente de ruído (*noise-equivalent power* - $\mathrm{NEP}$)
+#
+# $$
+# \begin{equation}\label{eq18}
+# \mathrm{NEP}=\frac{P_{\mathrm{in}}}{\sqrt{\Delta f}}=\left(\frac{4 k_{\mathrm{B}} T F_{n}}{R_{L} R_{d}^{2}}\right)^{1 / 2}=\frac{h \nu}{\eta q}\left(\frac{4 k_{\mathrm{B}} T F_{n}}{R_{\mathrm{L}}}\right)^{1 / 2}
+# \end{equation}
+# $$
+#
+# #### Limite de ruído de disparo $(\sigma_{s}^{2} \gg \sigma_{T}^{2})$
+#
+# $$
+# \begin{equation}\label{eq19}
+# \mathrm{SNR}=\frac{R_{d} P_{\mathrm{in}}}{2 q \Delta f}=\frac{\eta P_{\mathrm{in}}}{2 h \nu \Delta f}
+# \end{equation}
+# $$
+#
+# #### Parâmetros típicos
+#
+# $$
+# \begin{array}{lcclll}
+# \hline
+# \text { Parâmetro } & \text { Símbolo } & \text { Unidade } & \text { Si } & \text { Ge } & \text { InGaAs } \\
+# \hline \text { Comprimento de onda } & \lambda & \mu \mathrm{m} & 0,4-1,1 & 0,8-1,8 & 1,0-1,7 \\
+# \text { Responsividade } & R_{d} & \mathrm{~A} / \mathrm{W} & 0,4-0,6 & 0,5-0,7 & 0,6-0,9 \\
+# \text { Eficiência quântica } & \eta & \% & 75-90 & 50-55 & 60-70 \\
+# \text { Corrente no escuro } & I_{d} & \mathrm{n} \mathrm{A} & 1-10 & 50-500 & 1-20 \\
+# \text { Tempo de subida } & T_{r} & \mathrm{~ns} & 0,5-1 & 0,1-0,5 & 0,02-0,5 \\
+# \text { Largura de banda } & \Delta f & \mathrm{GHz} & 0,3-0,6 & 0,5-3 & 1-10 \\
+# \text { Tensão de polarização } & V_{b} & \mathrm{~V} & 50-100 & 6-10 & 5-6 \\
+# \hline
+# \end{array}
+# $$
+# <center> Fonte: Tabela 4.1, Agrawal, Sistemas de Comunicações por Fibra Óptica, 4ª edição, 2014. </center>
 
 # ### Simulando o transmissor 10G OOK
 
@@ -336,9 +383,9 @@ Ts     = 1/Rs          # Período de símbolo em segundos
 Fa     = 1/(Ts/SpS)    # Frequência de amostragem do sinal (amostras/segundo)
 Ta     = 1/Fa          # Período de amostragem
 
-Pi_dBm = -17  # potência de sinal óptico em dBm
+Pi_dBm = -17  # potência de sinal óptico na entrada do modulador em dBm
 
-# parâmetros do modulador
+# parâmetros do MZM
 Vπ = 2
 Vb = -Vπ/2
 Pi = 10**(Pi_dBm/10)*1e-3 # potência de sinal óptico em W na entrada do MZM
@@ -388,7 +435,7 @@ plt.legend(loc='upper left');
 # +
 # parâmetros do receptor
 Tc  = 25        # temperatura em Celsius
-B   = 10e9     # banda do receptor em Hz
+B   = 10e9      # banda do receptor em Hz
 Rd  = 0.85      # responsividade em A/W
 Id  = 5e-9      # corrente de escuro em nA
 RL  = 50        # RL em Ohms
@@ -443,7 +490,10 @@ Ip_Rx  = firFilter(h, Ip)
 Is_Rx  = firFilter(h, Is)
 It_Rx  = firFilter(h, It)
 
+# SNR teórica [Eq. (16)]
 SNR_th  = (Ip**2).mean()/(σ2_s + σ2_T)
+
+# SNR estimada numericamente na simulação
 SNR_est = (Ip_Rx**2).mean()/(Is_Rx**2 + It_Rx**2).mean()
 
 print('Pin[Rx] = %.2f dBm '%(10*np.log10(Pin/1e-3)))
@@ -455,22 +505,244 @@ eyediagram(Ip,  Nsamples, SpS)
 eyediagram(I_Rx, Nsamples, SpS)
 # -
 
+# ### Receptores baseados em APDs
+#
+#
 # $$
-# \begin{array}{lcclll}
-# \hline
-# \text { Parâmetro } & \text { Símbolo } & \text { Unidade } & \text { Si } & \text { Ge } & \text { InGaAs } \\
-# \hline \text { Comprimento de onda } & \lambda & \mu \mathrm{m} & 0,4-1,1 & 0,8-1,8 & 1,0-1,7 \\
-# \text { Responsividade } & R_{d} & \mathrm{~A} / \mathrm{W} & 0,4-0,6 & 0,5-0,7 & 0,6-0,9 \\
-# \text { Eficiência quântica } & \eta & \% & 75-90 & 50-55 & 60-70 \\
-# \text { Corrente no escuro } & I_{d} & \mathrm{n} \mathrm{A} & 1-10 & 50-500 & 1-20 \\
-# \text { Tempo de subida } & T_{r} & \mathrm{~ns} & 0,5-1 & 0,1-0,5 & 0,02-0,5 \\
-# \text { Largura de banda } & \Delta f & \mathrm{GHz} & 0,3-0,6 & 0,5-3 & 1-10 \\
-# \text { Tensão de polarização } & V_{b} & \mathrm{~V} & 50-100 & 6-10 & 5-6 \\
-# \hline
-# \end{array}
+# \begin{equation}\label{eq20}
+# I_{p}=M R_{d} P_{i n}=R_{\mathrm{APD}} P_{\mathrm{in}}
+# \end{equation}
 # $$
-# <center> Fonte: Tabela 4.1, Agrawal, Sistemas de Comunicações por Fibra Óptica, 4ª edição, 2014. </center>
+#
+# em que $R_{\mathrm{APD}} \equiv M R_{d}$ é a responsividade do APD e $M$ o fator multiplicativo associado.
+#
+# #### Ruído de disparo
+#
+# A potência de ruído de disparo de um APD é dada por
+# $$
+# \begin{equation}\label{eq21}
+# \sigma_{s}^{2}=2 q M^{2} F_{A}\left(R_{d} P_{\mathrm{in}}+I_{d}\right) \Delta f,
+# \end{equation}
+# $$
+#
+# em que $F_{A}$ é o fator de excesso de ruído, dado por
+#
+# $$
+# \begin{equation}\label{eq22}
+# F_{A}(M)=k_{A} M+\left(1-k_{A}\right)(2-1 / M).
+# \end{equation}
+# $$
+#
+# $$
+# \begin{equation}\label{eq23}
+# \mathrm{SNR}=\frac{I_{p}^{2}}{\sigma_{s}^{2}+\sigma_{T}^{2}}=\frac{\left(M R_{d} P_{\text {in }}\right)^{2}}{2 q M^{2} F_{A}\left(R_{d} P_{\text {in }}+I_{d}\right) \Delta f+4\left(k_{B} T / R_{L}\right) F_{n} \Delta f}
+# \end{equation}
+# $$
 
-q
+# ## Sensitividade de receptores
+#
+# Uma vez presente no sistema, o ruído impõe limitações no desempenho dos receptores e, consequentemente, nas taxas de transmissão que podem ser atingidas pelo sistema de comunicação.
+#
+# Um dos parâmetros desempenho mais importantes em receptores ópticos digitais é a taxa de erro de bits (*bit-error rate* - BER) que indica a frequência em que o circuito decisor comete um erro na identificação de um bit transmitido a partir do sinal recebido. Por exemplo, se o circuito decisor comete em média um erro a cada um milhão de bits transmitidos, temos uma $\mathrm{BER} = 1/10^6=1 \times 10^{-6}$. Os padrões adotados na engenheria de sistemas de comunicações ópticas geralmente requerem valores de BER $< 10^{-9}$, ou $<10^{-12}$.
+#
+# A BER de um dado sistema, por sua vez, depende dos valores de SNR dos sinais detectados no receptor. Como visto anteriormente, a SNR depende diretamente da potência de sinal óptico $P_{in}$ presente na entrada do receptor. Um parâmetro comum associado a todo receptor óptico é a *sensitividade*, que se refere ao menor valor de potência recebida necessário para que o receptor opere com uma certa BER.
 
+#
+# ### Canal AWGN (*Additive White Gaussian Noise Channel*)
+#
+# Assumindo que sinal óptico detectado gera um sinal elétrico $y(t)$ que corresponde ao sinal transmitido $x(t)$ somado ao sinal $n(t)$, resultante da adição do ruído de disparo e do ruído térmico no *front-end* do receptor, temos que
+#
+# $$
+# \begin{align}
+# y(t) &= x(t) + n(t)\nonumber\\
+#      &= \sum_k s_kp(t-kT_s) + n(t).
+# \end{align}
+# $$
+#
+# Por simplicidade e sem perda de generalidade, assumimos que o sinal elétrico $x(t)$ possui média nula.
+#
+# ### Filtragem no receptor
+#
+# <img src="./figuras/MF.png" width="500">
+#
+# Primeiramente, o sinal recebido $y(t)$ deve passar por um filtro de resposta ao impulso $h(t)$, cuja função é eliminar componentes de ruído fora da banda de $x(t)$ e entregar o um sinal $\hat{y}(t)$ com um máximo de SNR para o circuito decisor. Logo,
+#
+# $$
+# \begin{align}
+# \hat{y}(t) &= y(t) \ast h(t)\nonumber\\
+#            &= \left[\sum_k s_kp(t-kT_s)\right]\ast h(t)  + n(t)\ast h(t)\nonumber\\
+#            &= \sum_k s_k\int_{-\infty}^{-\infty}p(\tau-kT_s)h(t-\tau)d\tau  + \int_{-\infty}^{-\infty}n(t)h(t-\tau)d\tau\nonumber\\
+#            &= \hat{x}(t)  + \hat{n}(t).
+# \end{align}
+# $$
 
+# Em seguida, o sinal $\hat{y}(t)$ será amostrado nos instantes $t=kT_s$, ou seja, no meio do intervalo de sinalização, onde sua SNR é máxima. Para cada intervalo de sinalização, o circuito decisisor receberá uma amostra $\hat{y}(kT_s)$ dada por
+#
+# $$
+# \begin{equation}
+# \hat{y}(kT_s) = \hat{x}(kT_s) + \hat{n}(kT_s).             
+# \end{equation}
+# $$
+#
+# Dessa forma, podemos agora calcular a SNR do sinal $\hat{y}(kT_s)$ entregue ao circuito decisor. Para a potência de sinal, $P_s$, temos que
+#
+# $$
+# \begin{align}
+# P_s &= E[\hat{x}(kT_s)^2] \nonumber\\
+#     &= E\left[ \left(s_k\int_{-\infty}^{-\infty}p(\tau-kT_s)h(kT_s-\tau)d\tau\right)^2 \right] \nonumber\\
+#     &= E\left[s_k^2\right] \left(\int_{-\infty}^{-\infty}p(\tau-kT_s)h(kT_s-\tau)d\tau\right)^2.
+# \end{align}
+# $$
+#
+# Para a potência do ruído, $P_n$, temos 
+#
+# $$
+# \begin{align}
+# P_n &= E[\hat{n}(kT_s)^2] \nonumber\\
+#     &= E\left[\left(\int_{-\infty}^{-\infty}n(\tau)h(kT_s-\tau)d\tau\int_{-\infty}^{-\infty}n(u)h(kT_s-u)du\right) \right] \nonumber\\
+#     &= \int_{-\infty}^{-\infty}\int_{-\infty}^{-\infty}E\left[n(\tau)n(u)\right]h(kT_s-\tau)h(kT_s-u)d\tau du\nonumber\\
+#     &= \sigma_n^2 \int_{-\infty}^{-\infty}\int_{-\infty}^{-\infty}\delta(\tau-u)h(kT_s-\tau)h(kT_s-u)d\tau du\nonumber\\
+#     &= \sigma_n^2 \int_{-\infty}^{-\infty}h^2(kT_s-\tau)d\tau.
+# \end{align}
+# $$
+#
+# Logo,
+#
+# $$
+# \begin{align}
+# \mathrm{SNR} &= \frac{P_s}{P_n} = \frac{E[\hat{x}(kT_s)^2]}{E[\hat{n}(kT_s)^2]} \nonumber\\
+#              &= \frac{E\left[s_k^2\right] \left(\int_{-\infty}^{-\infty}p(\tau-kT_s)h(kT_s-\tau)d\tau\right)^2}{\sigma_n^2 \int_{-\infty}^{-\infty}h^2(kT_s-\tau)d\tau}
+# \end{align}
+# $$
+
+# ### Filtro casado
+#
+# Deseja-se escolher um filtro cuja resposta ao impulso $h(t)$ maximize o valor da SNR em $t=kT_s$. Para tanto, observando o resultado da desigualdade de Cauchy–Schwarz, sejam $g_{1}(t)$ e $ g_{2}(t)$ sinais de energia finita, tem-se que
+#
+# $$
+# \begin{equation}
+# \left[\int_{-\infty}^{\infty} g_{1}(t) g_{2}(t) d t\right]^{2} \leq \int_{-\infty}^{\infty} g_{1}^{2}(t) d t \int_{-\infty}^{\infty} g_{2}^{2}(t) d t
+# \end{equation}
+# $$
+# com igualdade se, e somente se, $g_{1}(t) = C g_{2}(t)$ para qualquer constante arbritrária $C$. Temos então
+#
+# $$
+# \begin{equation}
+# \frac{\left[\int_{-\infty}^{\infty} g_{1}(t) g_{2}(t) d t\right]^{2}}{\int_{-\infty}^{\infty} g_{2}^{2}(t) d t} \leq  \int_{-\infty}^{\infty} g_{1}^{2}(t) d t
+# \end{equation}
+# $$
+#
+# Sejam $g_{1}(\tau)=p(\tau-kT_s)$ e $g_{2}(\tau)=h(kT_s-\tau)$, podemos escrever
+#
+# $$
+# \begin{equation}
+# \frac{\left[\int_{-\infty}^{\infty} p(\tau-kT_s) h(kT_s-\tau) d \tau\right]^{2}}{\int_{-\infty}^{\infty} h^2(kT_s-\tau) d \tau} \leq  \int_{-\infty}^{\infty} p^2(\tau-kT_s) d \tau
+# \end{equation}
+# $$
+#
+# Portanto, o máximo valor que a SNR poderá alcançar está limitado a
+#
+# $$
+# \begin{align}
+# \mathrm{SNR} &= \frac{E\left[s_k^2\right] \left(\int_{-\infty}^{-\infty}p(\tau-kT_s)h(kT_s-\tau)d\tau\right)^2}{\sigma_n^2 \int_{-\infty}^{-\infty}h^2(kT_s-\tau)d\tau}\nonumber\\
+#              &\leq  \frac{E\left[s_k^2\right]}{\sigma_n^2} \int_{-\infty}^{\infty} p^2(\tau-kT_s) d \tau
+# \end{align}
+# $$
+#
+# Além disso, o teorema de Cauchy–Schwarz nos informa que para alcançar o máximo de SNR podemos fazer $h(t)=p(-t)$. Nesse caso, diz-se que $h(t)$ é o "filtro casado" ao pulso $p(t)$. Portanto, ao filtrar-se o sinal recebido com um filtro casado no receptor, garante-se que a SNR entregue ao circuito decisor é a máxima possível e igual a
+#
+# $$
+# \begin{align}
+# \mathrm{SNR} = \frac{E\left[s_k^2\right]}{\sigma_n^2} \int_{-\infty}^{\infty} p^2(\tau-kT_s) d \tau
+# \end{align}
+# $$
+#
+#
+
+# ### Decisor ótimo: avaliando probabilidades
+#
+# O decisor ótimo utiliza uma regra de decisão que maximiza a probabilidade de acerto *a posteriori* ou, equivalentemente, que minimiza a probabilidade de erro *a posteriori*. Para obtenção de decisores ótimos se faz necessário caracterizar probabilisticamente o canal de comunicações.
+#
+# #### Métrica de *probabilidades a posteriori* (MP)
+#
+# De acordo com o teorema de Bayes, uma métrica proporcional à probabilidade *a posteriori* $p(b_k|y_k)$ é dada por
+#
+# $$
+# \begin{equation}
+# \mathrm{MP}(b_k, y_k) = p(y_k|b_k)P(b_k)
+# \end{equation}
+# $$
+#
+# em que $P(b_k)$ é a probabilidade *a priori* associada ao bit $b_k$ e $p(y_k|b_k)$ é a distribuição condicional ou função de verossimilhança associada ao canal de comunicações.
+#
+# Regra de decisão: se $\mathrm{MP}(b_k=1,\hat{y}_k) > \mathrm{MP}(b_k=0,\hat{y}_k)$, então $b_k=1$; se $\mathrm{MP}(b_k=0|\hat{y}_k) > \mathrm{MP}(b_k=1|\hat{y}_k)$, então $b_k=0$.
+#
+# Sabemos que:
+#
+# $$ p(y_k|b_k=0) = \frac{1}{\sigma_{0} \sqrt{2 \pi}} e^{-\frac{\left(y_k-I_0\right)^{2}}{2 \sigma_0^{2}}}$$
+#
+# $$ p(y_k|b_k=1) = \frac{1}{\sigma_{1} \sqrt{2 \pi}} e^{-\frac{\left(y_k-I_1\right)^{2}}{2 \sigma_1^{2}}}$$
+
+# Logo, podemos definir a razão $\Lambda$ entre MPs
+#
+# $$
+# \begin{align}
+# \Lambda &= \frac{\mathrm{MP}(b_k=1, y_k)}{\mathrm{MP}(b_k=0, y_k)} 
+#          = \frac{p(y_k|b_k=1)P(b_k=1)}{p(y_k|b_k=0)P(b_k=0)}\\
+#         &= \frac{\sigma_0}{\sigma_1} \frac{P_1}{P_0} \left[\frac{e^{-\frac{\left(y_k-I_1\right)^{2}}{2 \sigma_1^{2}}}}{e^{-\frac{\left(y_k-I_0\right)^2}{2 \sigma_0^{2}}}}\right].        
+# \end{align}
+# $$
+#
+# Note que $0\leq\Lambda\leq 1$. Em função de $\Lambda$, a regra de decisão torna-se: se $\Lambda>1$, $b_k=1$; se $\Lambda<1$, $b_k=0$.
+#
+# Aplicando o logaritmo 
+# $$
+# \begin{align}
+# \ln \Lambda &= \ln{\frac{\sigma_0}{\sigma_1} \frac{P_1}{P_0} \left[\frac{e^{-\frac{\left(y_k-I_1\right)^{2}}{2 \sigma_1^{2}}}}{e^{-\frac{\left(y_k-I_0\right)^2}{2 \sigma_0^{2}}}}\right]}\\ 
+#             &=\ln\left[\frac{\sigma_0}{\sigma_1}\right] + \ln\left[\frac{P_1}{P_0}\right] + \ln{\left[\frac{e^{-\frac{\left(y_k-I_1\right)^{2}}{2 \sigma_1^{2}}}}{e^{-\frac{\left(y_k-I_0\right)^2}{2 \sigma_0^{2}}}}\right]}\\
+#             &=\ln\left[\frac{\sigma_0}{\sigma_1}\right] + \ln\left[\frac{P_1}{P_0}\right] -\frac{\left(y_k-I_1\right)^{2}}{2 \sigma_1^{2}} +\frac{\left(y_k-I_0\right)^2}{2 \sigma_0^{2}}
+# \end{align}
+# $$
+#
+# Em função de $\ln \Lambda$, a regra de decisão torna-se: se $\ln\Lambda>0$, $b_k=1$; se $\ln \Lambda<0$, $b_k=0$.
+#
+# Assumindo que os bits são equiprováveis, temos que $\frac{P_1}{P_0}=1$, ou seja, $\ln\left[\frac{P_1}{P_0}\right]= 0$ e também que, na prática, $\ln\left[\frac{\sigma_0}{\sigma_1}\right]\approx 0$.
+#
+# $$
+# \begin{equation}
+# \ln \Lambda = -\frac{\left(y_k-I_1\right)^{2}}{2 \sigma_1^{2}} +\frac{\left(y_k-I_0\right)^2}{2 \sigma_0^{2}}
+# \end{equation}
+# $$
+#
+# ### Limiar de decisão $I_d$
+#
+# No limiar de decisão $I_d$, temos $\ln \Lambda = 0$, ou seja
+#
+# $$
+# \begin{equation}
+# \frac{\left(I_d-I_1\right)^{2}}{2 \sigma_1^{2}} = \frac{\left(I_d-I_0\right)^2}{2 \sigma_0^{2}}
+# \end{equation}
+# $$
+#
+# $$
+# \begin{equation}
+# \frac{|I_d-I_1|}{\sigma_1} = \frac{|I_d-I_0|}{\sigma_0}
+# \end{equation}
+# $$
+#
+# Como $I_0\leq I_d \leq I_1$, temos que $|I_d-I_1|=I_1-I_d$ e $|I_d-I_0|=I_d-I_0$, e então
+#
+# $$
+# \begin{equation}
+# \frac{I_1-I_d}{\sigma_1} = \frac{I_d-I_0}{\sigma_0}.
+# \end{equation}
+# $$
+#
+# Finalmente, 
+#
+# $$
+# \begin{equation}
+# I_d = \frac{\sigma_0I_1 + \sigma_1I_0}{\sigma_0 + \sigma_1}.
+# \end{equation}
+# $$
+#
