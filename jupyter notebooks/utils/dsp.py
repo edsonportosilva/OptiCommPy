@@ -99,6 +99,7 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype='fast', plotlabel=None):
                 
             plt.grid()
             plt.show();
+    return None
     
 def sincInterp(x, fa):
     

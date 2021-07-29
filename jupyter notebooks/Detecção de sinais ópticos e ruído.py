@@ -16,7 +16,7 @@
 
 # + [markdown] toc=true
 # <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#Fontes-de-ruído-em-receptores-ópticos" data-toc-modified-id="Fontes-de-ruído-em-receptores-ópticos-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Fontes de ruído em receptores ópticos</a></span><ul class="toc-item"><li><span><a href="#Ruído-de-disparo-(ou-ruído-balístico)" data-toc-modified-id="Ruído-de-disparo-(ou-ruído-balístico)-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>Ruído de disparo (ou ruído balístico)</a></span></li><li><span><a href="#Potência-do-ruído-de-disparo" data-toc-modified-id="Potência-do-ruído-de-disparo-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>Potência do ruído de disparo</a></span><ul class="toc-item"><li><span><a href="#Calculando-a-potência-de-um-sinal" data-toc-modified-id="Calculando-a-potência-de-um-sinal-1.2.1"><span class="toc-item-num">1.2.1&nbsp;&nbsp;</span>Calculando a potência de um sinal</a></span></li></ul></li><li><span><a href="#Ruído-térmico" data-toc-modified-id="Ruído-térmico-1.3"><span class="toc-item-num">1.3&nbsp;&nbsp;</span>Ruído térmico</a></span></li><li><span><a href="#Potência-de-ruído-térmico" data-toc-modified-id="Potência-de-ruído-térmico-1.4"><span class="toc-item-num">1.4&nbsp;&nbsp;</span>Potência de ruído térmico</a></span></li><li><span><a href="#Razão-sinal-ruído-(signal-to-noise-ratio---SNR)" data-toc-modified-id="Razão-sinal-ruído-(signal-to-noise-ratio---SNR)-1.5"><span class="toc-item-num">1.5&nbsp;&nbsp;</span>Razão sinal-ruído (<em>signal-to-noise ratio</em> - SNR)</a></span></li><li><span><a href="#Receptores-p-i-n" data-toc-modified-id="Receptores-p-i-n-1.6"><span class="toc-item-num">1.6&nbsp;&nbsp;</span>Receptores p-i-n</a></span><ul class="toc-item"><li><span><a href="#Limite-de-ruído-térmico-$(\sigma_{T}^{2}-\gg-\sigma_{s}^{2})$" data-toc-modified-id="Limite-de-ruído-térmico-$(\sigma_{T}^{2}-\gg-\sigma_{s}^{2})$-1.6.1"><span class="toc-item-num">1.6.1&nbsp;&nbsp;</span>Limite de ruído térmico $(\sigma_{T}^{2} \gg \sigma_{s}^{2})$</a></span></li><li><span><a href="#Limite-de-ruído-de-disparo-$(\sigma_{s}^{2}-\gg-\sigma_{T}^{2})$" data-toc-modified-id="Limite-de-ruído-de-disparo-$(\sigma_{s}^{2}-\gg-\sigma_{T}^{2})$-1.6.2"><span class="toc-item-num">1.6.2&nbsp;&nbsp;</span>Limite de ruído de disparo $(\sigma_{s}^{2} \gg \sigma_{T}^{2})$</a></span></li><li><span><a href="#Parâmetros-típicos" data-toc-modified-id="Parâmetros-típicos-1.6.3"><span class="toc-item-num">1.6.3&nbsp;&nbsp;</span>Parâmetros típicos</a></span></li></ul></li><li><span><a href="#Simulando-o-transmissor-10G-OOK" data-toc-modified-id="Simulando-o-transmissor-10G-OOK-1.7"><span class="toc-item-num">1.7&nbsp;&nbsp;</span>Simulando o transmissor 10G OOK</a></span></li><li><span><a href="#Simulando-as-fontes-de-ruído-do-receptor-p-i-n" data-toc-modified-id="Simulando-as-fontes-de-ruído-do-receptor-p-i-n-1.8"><span class="toc-item-num">1.8&nbsp;&nbsp;</span>Simulando as fontes de ruído do receptor p-i-n</a></span></li><li><span><a href="#Receptores-baseados-em-APDs" data-toc-modified-id="Receptores-baseados-em-APDs-1.9"><span class="toc-item-num">1.9&nbsp;&nbsp;</span>Receptores baseados em APDs</a></span><ul class="toc-item"><li><span><a href="#Ruído-de-disparo" data-toc-modified-id="Ruído-de-disparo-1.9.1"><span class="toc-item-num">1.9.1&nbsp;&nbsp;</span>Ruído de disparo</a></span></li></ul></li></ul></li><li><span><a href="#Sensitividade-de-receptores" data-toc-modified-id="Sensitividade-de-receptores-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Sensitividade de receptores</a></span><ul class="toc-item"><li><span><a href="#Canal-AWGN-(Additive-White-Gaussian-Noise-Channel)" data-toc-modified-id="Canal-AWGN-(Additive-White-Gaussian-Noise-Channel)-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>Canal AWGN (<em>Additive White Gaussian Noise Channel</em>)</a></span></li><li><span><a href="#Filtragem-no-receptor" data-toc-modified-id="Filtragem-no-receptor-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>Filtragem no receptor</a></span></li><li><span><a href="#Filtro-casado" data-toc-modified-id="Filtro-casado-2.3"><span class="toc-item-num">2.3&nbsp;&nbsp;</span>Filtro casado</a></span></li><li><span><a href="#Decisor-ótimo:-avaliando-probabilidades" data-toc-modified-id="Decisor-ótimo:-avaliando-probabilidades-2.4"><span class="toc-item-num">2.4&nbsp;&nbsp;</span>Decisor ótimo: avaliando probabilidades</a></span><ul class="toc-item"><li><span><a href="#Métrica-de-probabilidades-a-posteriori-(MP)" data-toc-modified-id="Métrica-de-probabilidades-a-posteriori-(MP)-2.4.1"><span class="toc-item-num">2.4.1&nbsp;&nbsp;</span>Métrica de <em>probabilidades a posteriori</em> (MP)</a></span></li></ul></li><li><span><a href="#Limiar-de-decisão-$I_d$" data-toc-modified-id="Limiar-de-decisão-$I_d$-2.5"><span class="toc-item-num">2.5&nbsp;&nbsp;</span>Limiar de decisão $I_d$</a></span></li></ul></li></ul></div>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Fontes-de-ruído-em-receptores-ópticos" data-toc-modified-id="Fontes-de-ruído-em-receptores-ópticos-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Fontes de ruído em receptores ópticos</a></span><ul class="toc-item"><li><span><a href="#Ruído-de-disparo-(ou-ruído-balístico)" data-toc-modified-id="Ruído-de-disparo-(ou-ruído-balístico)-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>Ruído de disparo (ou ruído balístico)</a></span></li><li><span><a href="#Potência-do-ruído-de-disparo" data-toc-modified-id="Potência-do-ruído-de-disparo-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>Potência do ruído de disparo</a></span><ul class="toc-item"><li><span><a href="#Calculando-a-potência-de-um-sinal" data-toc-modified-id="Calculando-a-potência-de-um-sinal-1.2.1"><span class="toc-item-num">1.2.1&nbsp;&nbsp;</span>Calculando a potência de um sinal</a></span></li></ul></li><li><span><a href="#Ruído-térmico" data-toc-modified-id="Ruído-térmico-1.3"><span class="toc-item-num">1.3&nbsp;&nbsp;</span>Ruído térmico</a></span></li><li><span><a href="#Potência-de-ruído-térmico" data-toc-modified-id="Potência-de-ruído-térmico-1.4"><span class="toc-item-num">1.4&nbsp;&nbsp;</span>Potência de ruído térmico</a></span></li><li><span><a href="#Razão-sinal-ruído-(signal-to-noise-ratio---SNR)" data-toc-modified-id="Razão-sinal-ruído-(signal-to-noise-ratio---SNR)-1.5"><span class="toc-item-num">1.5&nbsp;&nbsp;</span>Razão sinal-ruído (<em>signal-to-noise ratio</em> - SNR)</a></span></li><li><span><a href="#Receptores-p-i-n" data-toc-modified-id="Receptores-p-i-n-1.6"><span class="toc-item-num">1.6&nbsp;&nbsp;</span>Receptores p-i-n</a></span><ul class="toc-item"><li><span><a href="#Limite-de-ruído-térmico-$(\sigma_{T}^{2}-\gg-\sigma_{s}^{2})$" data-toc-modified-id="Limite-de-ruído-térmico-$(\sigma_{T}^{2}-\gg-\sigma_{s}^{2})$-1.6.1"><span class="toc-item-num">1.6.1&nbsp;&nbsp;</span>Limite de ruído térmico $(\sigma_{T}^{2} \gg \sigma_{s}^{2})$</a></span></li><li><span><a href="#Limite-de-ruído-de-disparo-$(\sigma_{s}^{2}-\gg-\sigma_{T}^{2})$" data-toc-modified-id="Limite-de-ruído-de-disparo-$(\sigma_{s}^{2}-\gg-\sigma_{T}^{2})$-1.6.2"><span class="toc-item-num">1.6.2&nbsp;&nbsp;</span>Limite de ruído de disparo $(\sigma_{s}^{2} \gg \sigma_{T}^{2})$</a></span></li><li><span><a href="#Parâmetros-típicos" data-toc-modified-id="Parâmetros-típicos-1.6.3"><span class="toc-item-num">1.6.3&nbsp;&nbsp;</span>Parâmetros típicos</a></span></li></ul></li><li><span><a href="#Simulando-o-transmissor-10G-OOK" data-toc-modified-id="Simulando-o-transmissor-10G-OOK-1.7"><span class="toc-item-num">1.7&nbsp;&nbsp;</span>Simulando o transmissor 10G OOK</a></span></li><li><span><a href="#Simulando-as-fontes-de-ruído-do-receptor-p-i-n" data-toc-modified-id="Simulando-as-fontes-de-ruído-do-receptor-p-i-n-1.8"><span class="toc-item-num">1.8&nbsp;&nbsp;</span>Simulando as fontes de ruído do receptor p-i-n</a></span></li><li><span><a href="#Receptores-baseados-em-APDs" data-toc-modified-id="Receptores-baseados-em-APDs-1.9"><span class="toc-item-num">1.9&nbsp;&nbsp;</span>Receptores baseados em APDs</a></span><ul class="toc-item"><li><span><a href="#Ruído-de-disparo" data-toc-modified-id="Ruído-de-disparo-1.9.1"><span class="toc-item-num">1.9.1&nbsp;&nbsp;</span>Ruído de disparo</a></span></li></ul></li></ul></li><li><span><a href="#Sensitividade-de-receptores" data-toc-modified-id="Sensitividade-de-receptores-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Sensitividade de receptores</a></span><ul class="toc-item"><li><span><a href="#Canal-AWGN-(Additive-White-Gaussian-Noise-Channel)" data-toc-modified-id="Canal-AWGN-(Additive-White-Gaussian-Noise-Channel)-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>Canal AWGN (<em>Additive White Gaussian Noise Channel</em>)</a></span></li><li><span><a href="#Filtragem-no-receptor" data-toc-modified-id="Filtragem-no-receptor-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>Filtragem no receptor</a></span></li><li><span><a href="#Filtro-casado" data-toc-modified-id="Filtro-casado-2.3"><span class="toc-item-num">2.3&nbsp;&nbsp;</span>Filtro casado</a></span></li><li><span><a href="#Decisor-ótimo:-avaliando-probabilidades" data-toc-modified-id="Decisor-ótimo:-avaliando-probabilidades-2.4"><span class="toc-item-num">2.4&nbsp;&nbsp;</span>Decisor ótimo: avaliando probabilidades</a></span><ul class="toc-item"><li><span><a href="#Métrica-de-probabilidades-a-posteriori-(MP)" data-toc-modified-id="Métrica-de-probabilidades-a-posteriori-(MP)-2.4.1"><span class="toc-item-num">2.4.1&nbsp;&nbsp;</span>Métrica de <em>probabilidades a posteriori</em> (MP)</a></span></li><li><span><a href="#Limiar-de-decisão-$I_d$" data-toc-modified-id="Limiar-de-decisão-$I_d$-2.4.2"><span class="toc-item-num">2.4.2&nbsp;&nbsp;</span>Limiar de decisão $I_d$</a></span></li></ul></li></ul></li></ul></div>
 # -
 
 import matplotlib.pyplot as plt
@@ -507,6 +507,7 @@ eyediagram(I_Rx, Nsamples, SpS)
 
 # ### Receptores baseados em APDs
 #
+# A fotocorrente gerada por um fotodiodo de avalanche (*avalanche photodiode* - APD) é dada por
 #
 # $$
 # \begin{equation}\label{eq20}
@@ -661,6 +662,8 @@ eyediagram(I_Rx, Nsamples, SpS)
 
 # ### Decisor ótimo: avaliando probabilidades
 #
+# A função do decisor é fornecer uma estimativa $\hat{b}_k$ do k-ésimo bit transmitido a partir de $\hat{y}_k$. Diversas regras de decisão podem ser definidas.
+#
 # O decisor ótimo utiliza uma regra de decisão que maximiza a probabilidade de acerto *a posteriori* ou, equivalentemente, que minimiza a probabilidade de erro *a posteriori*. Para obtenção de decisores ótimos se faz necessário caracterizar probabilisticamente o canal de comunicações.
 #
 # #### Métrica de *probabilidades a posteriori* (MP)
@@ -675,7 +678,7 @@ eyediagram(I_Rx, Nsamples, SpS)
 #
 # em que $P(b_k)$ é a probabilidade *a priori* associada ao bit $b_k$ e $p(y_k|b_k)$ é a distribuição condicional ou função de verossimilhança associada ao canal de comunicações.
 #
-# Regra de decisão: se $\mathrm{MP}(b_k=1,\hat{y}_k) > \mathrm{MP}(b_k=0,\hat{y}_k)$, então $b_k=1$; se $\mathrm{MP}(b_k=0|\hat{y}_k) > \mathrm{MP}(b_k=1|\hat{y}_k)$, então $b_k=0$.
+# Regra de decisão: se $\mathrm{MP}(b_k=1,\hat{y}_k) > \mathrm{MP}(b_k=0,\hat{y}_k)$, então $\hat{b}_k=1$; se $\mathrm{MP}(b_k=0|\hat{y}_k) > \mathrm{MP}(b_k=1|\hat{y}_k)$, então $\hat{b}_k=0$.
 #
 # Sabemos que:
 #
@@ -693,7 +696,7 @@ eyediagram(I_Rx, Nsamples, SpS)
 # \end{align}
 # $$
 #
-# Note que $0\leq\Lambda\leq 1$. Em função de $\Lambda$, a regra de decisão torna-se: se $\Lambda>1$, $b_k=1$; se $\Lambda<1$, $b_k=0$.
+# Note que $0\leq\Lambda\leq 1$. Em função de $\Lambda$, a regra de decisão torna-se: se $\Lambda>1$, $\hat{b}_k=1$; se $\Lambda<1$, $\hat{b}_k=0$.
 #
 # Aplicando o logaritmo 
 # $$
@@ -704,7 +707,7 @@ eyediagram(I_Rx, Nsamples, SpS)
 # \end{align}
 # $$
 #
-# Em função de $\ln \Lambda$, a regra de decisão torna-se: se $\ln\Lambda>0$, $b_k=1$; se $\ln \Lambda<0$, $b_k=0$.
+# Em função de $\ln \Lambda$, a regra de decisão torna-se: se $\ln\Lambda>0$, $\hat{b}_k=1$; se $\ln \Lambda<0$, $\hat{b}_k=0$.
 #
 # Assumindo que os bits são equiprováveis, temos que $\frac{P_1}{P_0}=1$, ou seja, $\ln\left[\frac{P_1}{P_0}\right]= 0$ e também que, na prática, $\ln\left[\frac{\sigma_0}{\sigma_1}\right]\approx 0$.
 #
@@ -714,9 +717,9 @@ eyediagram(I_Rx, Nsamples, SpS)
 # \end{equation}
 # $$
 #
-# ### Limiar de decisão $I_d$
+# #### Limiar de decisão ótimo $I_d$
 #
-# No limiar de decisão $I_d$, temos $\ln \Lambda = 0$, ou seja
+# No limiar de decisão ótimo $I_d$, temos $\ln \Lambda = 0$, ou seja
 #
 # $$
 # \begin{equation}
@@ -746,3 +749,220 @@ eyediagram(I_Rx, Nsamples, SpS)
 # \end{equation}
 # $$
 #
+# Em função de do limiar de decisão ótimo $I_d$, a regra de decisão ótima torna-se: se $y_k>I_d$, $\hat{b}_k=1$; se $y_k<I_d$, $\hat{b}_k=0$.
+
+# ### Probabilidade de erro de bit $P_b$
+#
+# A probabilidade de erro de bit é definida como sendo a probabilidade do bit $\hat{b}_k$ estimado pelo decisor ser diferente do transmitido $b_k$.
+#
+# $$
+# \begin{align}
+# P_b &= P(\hat{b}_k=0, b_k=1) + P(\hat{b}_k=1, b_k=0) \nonumber\\
+#     &= P(\hat{b}_k=0\mid b_k=1)P(b_k=1) + P(\hat{b}_k=1\mid b_k=0)P(b_k=0) \nonumber\\
+#     &= P(y_k < I_d\mid b_k=1)P(b_k=1) + P(y_k > I_d\mid b_k=0)P(b_k=0)
+# \end{align}
+# $$
+#
+# $$
+# \begin{align}
+# &P(y_k < I_d\mid b_k=1)&=\frac{1}{\sigma_{1} \sqrt{2 \pi}} \int_{-\infty}^{I_d} \exp \left(-\frac{\left(y_k-I_{1}\right)^{2}}{2 \sigma_{1}^{2}}\right) dy_k=\frac{1}{2} \operatorname{erfc}\left(\frac{I_{1}-I_d}{\sigma_{1} \sqrt{2}}\right) \\
+# &P(y_k > I_d\mid b_k=0)&=\frac{1}{\sigma_{0} \sqrt{2 \pi}} \int_{I_d}^{\infty} \exp \left(-\frac{\left(y_k-I_{0}\right)^{2}}{2 \sigma_{0}^{2}}\right) d y_k=\frac{1}{2} \operatorname{erfc}\left(\frac{I_d-I_{0}}{\sigma_{0} \sqrt{2}}\right)
+# \end{align}
+# $$
+#
+# em que $\operatorname{erfc}(x)$ é a função erro complementar, definida por
+#
+# $$
+# \begin{equation}
+# \operatorname{erfc}(x)=\frac{2}{\sqrt{\pi}} \int_{x}^{\infty} \exp \left(-\gamma^{2}\right) d \gamma.
+# \end{equation}
+# $$
+#
+# Sejam $P(b_k=0) = P(b_k=1) = 0.5$, temos
+#
+# $$
+# \begin{equation}
+# P_b=\frac{1}{4}\left[\operatorname{erfc}\left(\frac{I_{1}-I_{D}}{\sigma_{1} \sqrt{2}}\right)+\operatorname{erfc}\left(\frac{I_{D}-I_{0}}{\sigma_{0} \sqrt{2}}\right)\right]
+# \end{equation}
+# $$
+#
+# Encontramos uma expressão mais conveniente para $P_b$ em função do parâmetro $Q$, definido por
+#
+# $$
+# \begin{equation}
+# Q \equiv \frac{I_1-I_d}{\sigma_1} = \frac{I_d-I_0}{\sigma_0}.
+# \end{equation}
+# $$
+#
+# Substituindo $I_d = (\sigma_0I_1 + \sigma_1I_0)/(\sigma_0 + \sigma_1)$, temos 
+#
+# $$
+# \begin{equation}
+# Q \equiv \frac{I_1-I_0}{\sigma_0 + \sigma_1},
+# \end{equation}
+# $$
+#
+# e 
+#
+# $$
+# \begin{equation}
+# P_b=\frac{1}{2} \operatorname{erfc}\left(\frac{Q}{\sqrt{2}}\right) \approx \frac{\exp \left(-Q^{2} / 2\right)}{Q \sqrt{2 \pi}}
+# \end{equation}
+# $$
+
+from scipy.special import erfc
+
+# +
+Q  = np.arange(0, 8.1, 0.1)
+Pb = 0.5*erfc(Q/np.sqrt(2))
+
+plt.figure(figsize=(7,5))
+plt.plot(Q, np.log10(Pb),label='Pb')
+plt.title('Pb vs Q - OOK')
+plt.xlabel('Q')
+plt.ylabel('$\log_{10}(P_b)$');
+plt.xlim(min(Q),max(Q))
+plt.grid()
+# -
+
+# #### Exemplo: simulação 10G OOK
+
+# +
+# parâmetros da simulação
+SpS    = 16            # número de amostras por símbolo
+Rs     = 10e9          # Taxa de símbolos (para o caso do OOK Rs = Rb)
+Ts     = 1/Rs          # Período de símbolo em segundos
+Fa     = 1/(Ts/SpS)    # Frequência de amostragem do sinal (amostras/segundo)
+Ta     = 1/Fa          # Período de amostragem
+
+Pi_dBm = -20  # potência de sinal óptico na entrada do modulador em dBm
+
+# parâmetros do MZM
+Vπ = 2
+Vb = -Vπ/2
+Pi = 10**(Pi_dBm/10)*1e-3 # potência de sinal óptico em W na entrada do MZM
+
+# parâmetros do receptor
+Tc  = 25        # temperatura em Celsius
+Rd  = 0.85      # responsividade em A/W
+Id  = 5e-9      # corrente de escuro em nA
+RL  = 50        # RL em Ohms
+B   = 5e9       # banda do receptor em Hz
+
+############# Simulação #############
+
+### Transmissor
+
+# gera sequência de bits pseudo-aleatórios
+bitsTx   = np.random.randint(2, size=100000)    
+n        = np.arange(0, bitsTx.size)
+
+# mapeia bits para pulsos elétricos
+symbTx = 2*bitsTx-1
+symbTx = symbTx/np.sqrt(signal_power(symbTx))
+
+# upsampling
+symbolsUp = upsample(symbTx, SpS)
+
+# pulso
+pulse = pulseShape('nrz', SpS)
+#pulse = pulseShape('rrc', SpS, alpha=0.001, N = 2048)
+pulse = pulse/max(abs(pulse))
+
+# formatação de pulso
+sigTx  = firFilter(pulse, symbolsUp)
+
+# modulação óptica
+Ai     = np.sqrt(Pi)
+sigTxo = mzm(Ai, Vπ, sigTx, Vb)
+
+### Receptor
+Pin = (np.abs(sigTxo)**2).mean() # Potência óptica média média recebida
+
+# fotocorrente livre de ruído
+Ip = Rd*np.abs(sigTxo)**2
+
+# ruído de disparo 
+σ2_s = 2*q*(Rd*Pin + Id)*B  # variância  
+
+# ruído térmico
+T = Tc + 273.15     # temperatura em Kelvin
+σ2_T = 4*kB*T*B/RL  # variância do ruído térmico
+
+# adiciona ruído do receptor p-i-n aos sinais
+Is   = normal(0, np.sqrt(Fa*(σ2_s/(2*B))), Ip.size)
+It   = normal(0, np.sqrt(Fa*(σ2_T/(2*B))), Ip.size)  
+
+I = Ip + Is + It
+
+# filtragem Rx
+
+# h = pulseShape('nrz', SpS)
+# h = pulse/max(abs(h))
+# h = pulseShape('rrc', SpS, alpha=0.001, N = 2048)
+
+N = 8001
+h = lowPassFIR(B, Fa, N, typeF='rect')
+
+I_Rx  = firFilter(h, I)
+I_Rx = I_Rx/np.std(I_Rx)
+
+# calculando a SNR na simulação
+Ip_Rx  = firFilter(h, Ip)
+Is_Rx  = firFilter(h, Is)
+It_Rx  = firFilter(h, It)
+
+# gera sinal para visualizaçã do diagrama de olho
+I_eye = I_Rx[100*SpS:I_Rx.size-100*SpS]
+
+Nsamples = 10000
+eyediagram(Ip/np.std(Ip),  Nsamples, SpS)
+eyediagram(I_eye/np.std(I_eye), Nsamples, SpS)
+
+# SNR estimada numericamente na simulação
+SNR_est = np.var(Ip_Rx)/(np.var(Is_Rx) + np.var(It_Rx))
+
+print('Pin[Rx] = %.2f dBm '%(10*np.log10(Pin/1e-3)))
+print('SNR[sim] = %.2f dB \n'%(10*np.log10(SNR_est)))
+
+# captura amostras no meio dos intervalos de sinalização
+I_Rx  = I_Rx[0::SpS]
+
+# obtém estatísticas do sinal recebido
+
+I1 = np.mean(I_Rx[bitsTx==1]) # valor médio de I1
+I0 = np.mean(I_Rx[bitsTx==0]) # valor médio de I0
+
+σ1 = np.std(I_Rx[bitsTx==1]) # desvio padrão σ1 de I1 
+σ0 = np.std(I_Rx[bitsTx==0]) # desvio padrão σ0 de I0 
+
+Id = (σ1*I0 + σ0*I1)/(σ1 + σ0) # limiar de decisão ótimo
+Q  = (I1-I0)/(σ1 + σ0)         # fator Q
+
+print('I0 = %.2f  '%(I0))
+print('I1 = %.2f  '%(I1))
+print('σ0 = %.2f  '%(σ0))
+print('σ1 = %.2f  '%(σ1))
+print('Limiar ótimo Id = %.2f  '%(Id))
+print('Q = %.2f   \n'%(Q))
+
+# Aplica a regra de decisão ótima
+bitsRx = np.empty(bitsTx.size)
+bitsRx[I_Rx>  Id] = 1
+bitsRx[I_Rx<= Id] = 0
+
+discard = 100
+err = np.logical_xor(bitsRx[discard:bitsRx.size-discard], bitsTx[discard:bitsTx.size-discard])
+BER = np.mean(err)
+
+plt.plot(err,'o', label = 'erros')
+plt.legend()
+plt.grid()
+
+Pb = 0.5*erfc(Q/np.sqrt(2)) # probabilidade de erro teórica
+
+print('BER = %.2e  '%(BER))
+print('Pb = %.2e  '%(Pb))
+# -
+
+
