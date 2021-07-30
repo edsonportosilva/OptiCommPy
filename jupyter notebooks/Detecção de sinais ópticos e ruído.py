@@ -696,7 +696,7 @@ eyediagram(I_Rx, Nsamples, SpS)
 # \end{align}
 # $$
 #
-# Note que $0\leq\Lambda\leq 1$. Em função de $\Lambda$, a regra de decisão torna-se: se $\Lambda>1$, $\hat{b}_k=1$; se $\Lambda<1$, $\hat{b}_k=0$.
+# Note que $\Lambda\geq 0$. Em função de $\Lambda$, a regra de decisão torna-se: se $\Lambda>1$, $\hat{b}_k=1$; se $\Lambda<1$, $\hat{b}_k=0$.
 #
 # Aplicando o logaritmo 
 # $$
@@ -835,7 +835,7 @@ Ts     = 1/Rs          # Período de símbolo em segundos
 Fa     = 1/(Ts/SpS)    # Frequência de amostragem do sinal (amostras/segundo)
 Ta     = 1/Fa          # Período de amostragem
 
-Pi_dBm = -20  # potência de sinal óptico na entrada do modulador em dBm
+Pi_dBm = -10  # potência de sinal óptico na entrada do modulador em dBm
 
 # parâmetros do MZM
 Vπ = 2
@@ -874,7 +874,7 @@ sigTx  = firFilter(pulse, symbolsUp)
 
 # modulação óptica
 Ai     = np.sqrt(Pi)
-sigTxo = mzm(Ai, Vπ, sigTx, Vb)
+sigTxo = mzm(Ai, Vπ, 0.5*sigTx, Vb)
 
 ### Receptor
 Pin = (np.abs(sigTxo)**2).mean() # Potência óptica média média recebida
@@ -955,14 +955,14 @@ discard = 100
 err = np.logical_xor(bitsRx[discard:bitsRx.size-discard], bitsTx[discard:bitsTx.size-discard])
 BER = np.mean(err)
 
+Pb = 0.5*erfc(Q/np.sqrt(2)) # probabilidade de erro teórica
+print('Total de erros contados = %d  '%(err.sum()))
+print('BER = %.2e  '%(BER))
+print('Pb = %.2e  '%(Pb))
+
 plt.plot(err,'o', label = 'erros')
 plt.legend()
 plt.grid()
-
-Pb = 0.5*erfc(Q/np.sqrt(2)) # probabilidade de erro teórica
-
-print('BER = %.2e  '%(BER))
-print('Pb = %.2e  '%(Pb))
 # -
 
 
