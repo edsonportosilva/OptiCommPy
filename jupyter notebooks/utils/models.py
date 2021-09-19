@@ -55,7 +55,18 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     Nfft = len(Ei)
 
     ω = 2*np.pi*Fs*fftfreq(Nfft)
+    ω = ω.reshape(ω.size,1)
+    
+    try:
+        Nmodes = Ei.shape[1]
+    except IndexError:
+        Nmodes = 1
+        Ei = Ei.reshape(Ei.size,Nmodes)
 
-    Eo = ifft(fft(Ei)*np.exp(-α*L + 1j*(β2/2)*(ω**2)*L))
-
+    ω = np.tile(ω,(1, Nmodes))
+    Eo = ifft(fft(Ei,axis=0)*np.exp(-α*L + 1j*(β2/2)*(ω**2)*L), axis=0)
+    
+    if Nmodes == 1:
+        Eo = Eo.reshape(Eo.size,)
+        
     return Eo
