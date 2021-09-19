@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.fft import fft, ifft, fftfreq
 
 def mzm(Ai, Vπ, u, Vb):
     """
@@ -31,3 +32,30 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
     Ao = mzm(Ai/np.sqrt(2), Vπ, u.real, VbI) + 1j*mzm(Ai/np.sqrt(2), Vπ, u.imag, VbQ)
     
     return Ao
+
+def linFiberCh(Ei, L, alpha, D, Fc, Fs):
+    """
+    Linear fiber channel 
+
+    :param Ei: optical signal at the input of the fiber
+    :param L: fiber length [km]
+    :param alpha: loss coeficient [dB/km]
+    :param D: chromatic dispersion parameter [ps/nm/km]   
+    :param Fc: carrier frequency [Hz]
+    :param Fs: sampling frequency
+    
+    :return Eo: optical signal at the output of the fiber
+    """
+    c  = 299792458   # speed of light [m/s](vacuum)    
+    c_kms = c/1e3
+    λ  = c_kms/Fc
+    α  = alpha/(10*np.log10(np.exp(1)))
+    β2 = -(D*λ**2)/(2*np.pi*c_kms)
+    
+    Nfft = len(Ei)
+
+    ω = 2*np.pi*Fs*fftfreq(Nfft)
+
+    Eo = ifft(fft(Ei)*np.exp(-α*L + 1j*(β2/2)*(ω**2)*L))
+
+    return Eo
