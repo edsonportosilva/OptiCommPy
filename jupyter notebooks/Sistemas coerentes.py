@@ -591,7 +591,7 @@ def iqm(Ai, sig, Vπ, VbI, VbQ):
 
 # +
 # parâmetros da simulação
-M      = 16
+M      = 4
 SpS    = 16            # número de amostras por símbolo
 Rs     = 32e9          # Taxa de símbolos 
 Ts     = 1/Rs          # Período de símbolo em segundos
@@ -607,7 +607,7 @@ Vb = -Vπ
 Pi = 10**(Pi_dBm/10)*1e-3 # potência de sinal óptico em W na entrada do MZM
 
 # parâmetros do canal óptico
-Ltotal = 2    # km
+Ltotal = 10   # km
 alpha = 0.2   # dB/km
 D = 16        # ps/nm/km
 Fc = 193.1e12 # Hz
@@ -712,7 +712,6 @@ eyediagram(sigTx,  Nsamples, SpS, plotlabel = 'Tx')
 eyediagram(sigEye, Nsamples, SpS, plotlabel = 'Coh-Rx')
 eyediagram(np.abs(sigTxo_DDRx)**2, Nsamples, SpS, plotlabel = 'DD-Rx')
 
-
 # captura amostras no meio dos intervalos de sinalização
 sigRx = sigRx[0::SpS]
 
@@ -722,7 +721,7 @@ ind = np.arange(discard, sigRx.size-discard)
 # normaliza constelação recebida
 sigRx = sigRx/np.sqrt(signal_power(sigRx[ind]))
 
-# compensa rotação
+# compensa (possível) rotação de fase adicionada pelo canal
 rot = np.mean(symbTx[ind]/sigRx[ind])
 sigRx  = rot*sigRx
 
@@ -746,14 +745,6 @@ print('BER = %.2e  '%(BER))
 plt.plot(err,'o', label = 'erros')
 plt.legend()
 plt.grid()
-# -
-c = 299792458   # speed of light (vacuum)
-c_kms = c/1e3
-λ  = c_kms/Fc
-α  = alpha/(10*np.log10(np.exp(1)))
-β2 = -(D*λ**2)/(2*np.pi*c_kms)
-print(λ, β2)
-
 # +
 plt.figure(figsize=(4,4))
 plt.ylabel('$S_Q$', fontsize=14)

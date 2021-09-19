@@ -42,7 +42,7 @@ def CDcompensation(Ex, Ey, Ltotal, D, Fc, Fs):
     
     c = 299792458   # speed of light (vacuum)
     c_kms = c/1e3
-    λ = c/Fc
+    λ = c_kms/Fc
     β2 = -(D*λ**2)/(2*np.pi*c_kms)
     γ = gamma
     
@@ -69,7 +69,7 @@ def manakovSSF(Ex, Ey, hz, Lspan, Ltotal, alpha, gamma, D, Fc, Fs):
     
     c = 299792458   # speed of light (vacuum)
     c_kms = c/1e3
-    λ  = c/Fc
+    λ  = c_kms/Fc
     α  = alpha/(10*np.log10(np.exp(1)))
     β2 = -(D*λ**2)/(2*np.pi*c_kms)
     γ  = gamma
