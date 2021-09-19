@@ -780,6 +780,86 @@ for f in freqGrid:
 plt.figure()
 plt.psd(sig_WDM, Fs=Fa, NFFT = 4*1024, sides='twosided', label = 'Espectro óptico do sinal + ruído')
 plt.legend(loc='upper left');
+
+
+# -
+def simpleWDMTx(param):
+    
+    # transmitter parameters
+    Ts  = 1/param.Rs        # symbol period [s]
+    Fa  = 1/(Ts/param.SpS)  # sampling frequency [samples/s]
+    Ta  = 1/Fa              # sampling period
+
+    # IQM parameters
+    Ai = 1
+    Vπ = 2
+    Vb = -Vπ
+    Pch = 10**(param.Pch_dBm/10)*1e-3   # optical signal power per WDM channel
+        
+    π = np.pi
+    
+    t = np.arange(0, int((param.Nbits)/np.log2(M)*param.SpS))
+    sigTxWDM = np.zeros(t.size)
+
+    for f in param.freqGrid:
+        # generate random bits
+        bitsTx   = np.random.randint(2, size=param.Nbits)    
+
+        # map bits to constellation symbols
+        mod = QAMModem(m=param.M)
+        symbTx = mod.modulate(bitsTx)
+        Es = mod.Es
+
+        # normalize symbols energy to 1
+        symbTx = symbTx/np.sqrt(Es)
+
+        # upsampling
+        symbolsUp = upsample(symbTx, param.SpS)
+
+        # pulse shaping
+        if param.pulse == 'nrz':
+            pulse = pulseShape('nrz', param.SpS)
+        elif param.pulse == 'rrc':
+            pulse = pulseShape('rrc', param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts)
+
+        pulse = pulse/np.max(np.abs(pulse))
+
+        # formatação de pulso
+        sigTx  = firFilter(pulse, symbolsUp)
+
+        # optical modulation
+        sigTxCh = iqm(Ai, 0.5*sigTx, Vπ, Vb, Vb)
+        sigTxCh = np.sqrt(Pch)*sigTxCh/np.sqrt(signal_power(sigTxCh))
+        
+        print('channel power : %.2f dBm'%(10*np.log10(signal_power(sigTxCh)/1e-3)))
+        sigTxWDM = sigTxWDM + sigTxCh*np.exp(1j*2*π*(f/(Fa/2))*t)
+    
+    return sigTxWDM
+
+
+# +
+#
+param = lambda:0
+param.M   = 16
+param.Rs  = 32e9
+param.SpS = 16
+param.Nbits = 40000
+param.pulse = 'rrc'
+param.Ntaps = 4096
+param.alphaRRC = 0.01
+param.Pch_dBm = -3
+
+freqSpac = 37.5e9 
+freqGrid = np.arange(-3,4,1)*freqSpac/2
+
+param.freqGrid = freqGrid
+
+sigWDM = simpleWDMTx(param)
+
+# plota psd
+plt.figure()
+plt.psd(sigWDM, Fs=SpS*Rs, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum')
+plt.legend(loc='upper left');
 # -
 
 
