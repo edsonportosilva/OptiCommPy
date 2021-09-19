@@ -837,9 +837,12 @@ def simpleWDMTx(param):
     return sigTxWDM
 
 
+class parameters:
+    pass
+
+
 # +
-#
-param = lambda:0
+param = parameters()
 param.M   = 16
 param.Rs  = 32e9
 param.SpS = 16
@@ -860,6 +863,3 @@ sigWDM = simpleWDMTx(param)
 plt.figure()
 plt.psd(sigWDM, Fs=SpS*Rs, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum')
 plt.legend(loc='upper left');
-# -
-
-
