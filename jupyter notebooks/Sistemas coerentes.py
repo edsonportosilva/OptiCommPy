@@ -576,14 +576,13 @@ plt.grid()
 
 plt.plot(sigRx[ind].real,sigRx[ind].imag,'.', markersize=4, label='Rx')
 plt.plot(symbTx[ind].real,symbTx[ind].imag,'k.', markersize=4, label='Tx');
+
+
 # -
 
-signal_power(symbTx[ind])
+def iqm(Ai, sig, Vπ, VbI, VbQ):
 
-
-def iqm(Ai, Vπ, sig, Vb):
-
-    sigOut = mzm(Ai/np.sqrt(2), Vπ, sig.real, Vb) + 1j*mzm(Ai/np.sqrt(2), Vπ, sig.imag, Vb)
+    sigOut = mzm(Ai/np.sqrt(2), Vπ, sig.real, VbI) + 1j*mzm(Ai/np.sqrt(2), Vπ, sig.imag, VbQ)
     
     return sigOut
 
