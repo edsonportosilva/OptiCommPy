@@ -21,7 +21,7 @@ from numpy.random import normal
 from commpy.utilities  import signal_power, upsample
 from commpy.modulation import Modem, QAMModem
 from utils.dsp import firFilter, pulseShape, eyediagram, lowPassFIR
-from utils.models import mzm
+from utils.models import mzm, linFiberCh
 
 # +
 from IPython.core.display import HTML
@@ -606,6 +606,12 @@ Vπ = 2
 Vb = -Vπ
 Pi = 10**(Pi_dBm/10)*1e-3 # potência de sinal óptico em W na entrada do MZM
 
+# parâmetros do canal óptico
+Ltotal = 2    # km
+alpha = 0.2   # dB/km
+D = 16        # ps/nm/km
+Fc = 193.1e12 # Hz
+
 # parâmetros do receptor
 B  = 32e9     # banda do receptor em Hz
 
@@ -644,8 +650,8 @@ sigTx  = firFilter(pulse, symbolsUp)
 
 # modulação óptica
 Ai      = np.sqrt(Pi)
-sigTxo_ = iqm(Ai, Vπ, 0.5*sigTx, Vb)
-
+sigTxo_ = iqm(Ai, 0.5*sigTx, Vπ, Vb, Vb)
+    
 # adiciona ruído ASE ao sinal óptico
 σASE  = 1e-8
 ruido = normal(0, np.sqrt(Fa*(σASE/(2*B))), sigTxo_.size) + 1j*normal(0, np.sqrt(Fa*(σASE/(2*B))), sigTxo_.size)
@@ -661,6 +667,11 @@ plt.ylim(-250,-50);
 plt.psd(sigTxo, Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro óptico do sinal + ruído')
 plt.legend(loc='upper left');
 plt.xlim(-4*Rs,4*Rs);
+
+### Canal óptico linear
+
+sigTxo = linFiberCh(sigTxo, Ltotal, alpha, D, Fc, Fa)
+#sigTxo = linFiberCh(sigTxo, Ltotal, -alpha, -D, Fc, Fa)
 
 ### Recepcão coerente
 Pin = (np.abs(sigTxo)**2).mean() # Potência óptica média média recebida
@@ -701,6 +712,7 @@ eyediagram(sigTx,  Nsamples, SpS, plotlabel = 'Tx')
 eyediagram(sigEye, Nsamples, SpS, plotlabel = 'Coh-Rx')
 eyediagram(np.abs(sigTxo_DDRx)**2, Nsamples, SpS, plotlabel = 'DD-Rx')
 
+
 # captura amostras no meio dos intervalos de sinalização
 sigRx = sigRx[0::SpS]
 
@@ -709,6 +721,10 @@ ind = np.arange(discard, sigRx.size-discard)
 
 # normaliza constelação recebida
 sigRx = sigRx/np.sqrt(signal_power(sigRx[ind]))
+
+# compensa rotação
+rot = np.mean(symbTx[ind]/sigRx[ind])
+sigRx  = rot*sigRx
 
 # estima SNR da constelação recebida
 SNR = signal_power(symbTx[ind])/signal_power(sigRx[ind]-symbTx[ind])
@@ -730,6 +746,14 @@ print('BER = %.2e  '%(BER))
 plt.plot(err,'o', label = 'erros')
 plt.legend()
 plt.grid()
+# -
+c = 299792458   # speed of light (vacuum)
+c_kms = c/1e3
+λ  = c_kms/Fc
+α  = alpha/(10*np.log10(np.exp(1)))
+β2 = -(D*λ**2)/(2*np.pi*c_kms)
+print(λ, β2)
+
 # +
 plt.figure(figsize=(4,4))
 plt.ylabel('$S_Q$', fontsize=14)
