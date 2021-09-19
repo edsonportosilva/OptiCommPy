@@ -590,8 +590,11 @@ def iqm(Ai, sig, Vπ, VbI, VbQ):
 # ## Exemplo: simulação com formatos QPSK, QAM
 
 # +
+plotEyeDiagrams = False
+plotPSD         = False
+
 # parâmetros da simulação
-M      = 4
+M      = 16
 SpS    = 16            # número de amostras por símbolo
 Rs     = 32e9          # Taxa de símbolos 
 Ts     = 1/Rs          # Período de símbolo em segundos
@@ -607,7 +610,7 @@ Vb = -Vπ
 Pi = 10**(Pi_dBm/10)*1e-3 # potência de sinal óptico em W na entrada do MZM
 
 # parâmetros do canal óptico
-Ltotal = 10   # km
+Ltotal = 5   # km
 alpha = 0.2   # dB/km
 D = 16        # ps/nm/km
 Fc = 193.1e12 # Hz
@@ -662,11 +665,12 @@ sigTxo = sigTxo_ + ruido
 OSNR = signal_power(sigTxo_)/(signal_power(ruido)*(B/Fa))
 
 # plota psd
-plt.figure();
-plt.ylim(-250,-50);
-plt.psd(sigTxo, Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro óptico do sinal + ruído')
-plt.legend(loc='upper left');
-plt.xlim(-4*Rs,4*Rs);
+if plotPSD:
+    plt.figure();
+    plt.ylim(-250,-50);
+    plt.psd(sigTxo, Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro óptico do sinal + ruído')
+    plt.legend(loc='upper left');
+    plt.xlim(-4*Rs,4*Rs);
 
 ### Canal óptico linear
 
@@ -689,15 +693,15 @@ sigRx = coherentReceiver(sigTxo, sigLO)
 # filtragem Rx
 N = 4001
 h = lowPassFIR(B, Fa, N, typeF='rect')
-
 sigRx = firFilter(pulse, sigRx)
 
 # plota psd
-plt.figure();
-plt.ylim(-250,-50);
-plt.psd(sigRx, Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal recebido')
-plt.legend(loc='upper left');
-plt.xlim(-4*Rs,4*Rs);
+if plotPSD:
+    plt.figure();
+    plt.ylim(-250,-50);
+    plt.psd(sigRx, Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal recebido')
+    plt.legend(loc='upper left');
+    plt.xlim(-4*Rs,4*Rs);
 
 # calculando a OSNR na simulação
 #sigTxo_Rx   = firFilter(h, sigTxo_)
@@ -708,9 +712,10 @@ Nsamples = 16000
 sigEye = sigRx.copy()
 
 #visualiza diagramas de olho
-eyediagram(sigTx,  Nsamples, SpS, plotlabel = 'Tx')
-eyediagram(sigEye, Nsamples, SpS, plotlabel = 'Coh-Rx')
-eyediagram(np.abs(sigTxo_DDRx)**2, Nsamples, SpS, plotlabel = 'DD-Rx')
+if plotEyeDiagrams:
+    eyediagram(sigTx,  Nsamples, SpS, plotlabel = 'Tx')
+    eyediagram(sigEye, Nsamples, SpS, plotlabel = 'Coh-Rx')
+    eyediagram(np.abs(sigTxo_DDRx)**2, Nsamples, SpS, plotlabel = 'DD-Rx')
 
 # captura amostras no meio dos intervalos de sinalização
 sigRx = sigRx[0::SpS]
@@ -742,6 +747,7 @@ print('SNR[est] = %.2f dB \n'%(10*np.log10(SNR)))
 print('Total de erros contados = %d  '%(err.sum()))
 print('BER = %.2e  '%(BER))
 
+plt.figure()
 plt.plot(err,'o', label = 'erros')
 plt.legend()
 plt.grid()

@@ -16,6 +16,7 @@
 
 from numpy.fft import fft, ifft, fftshift, ifftshift, fftfreq
 import numpy as np
+from tqdm import tqdm
 from scipy import special as spec
 
 
@@ -84,7 +85,7 @@ def manakovSSF(Ex, Ey, hz, Lspan, Ltotal, alpha, gamma, D, Fc, Fs):
     Ex = fft(Ex) #Pol. X 
     Ey = fft(Ey) #Pol. Y 
     
-    for spanN in range(1, Nspans+1):
+    for spanN in tqdm(range(1, Nspans+1)):
         for stepN in range(1, Nsteps+1):
             
             # First linear step (frequency domain)
@@ -181,10 +182,10 @@ Lspan  = 50
 hz = 1
 alpha = 0.2
 gamma = 1.3
-D = 4
+D = 16
 Fc = 193.1e12
 Fs = 64e9
-P0 = 4e-3
+P0 = 1e-3
 
 # simulation parameters
 
@@ -194,10 +195,10 @@ SpS = 8
 Rs     = 32e9
 Ts     = 1/Rs         # Período de símbolo em segundos
 Fa     = 1/(Ts/SpS)   # Frequência de amostragem do sinal (amostras/segundo)
-alpha  = 1            # Rolloff do filtro RRC
+alphaRRC  = 0.01            # Rolloff do filtro RRC
 N      = 4*1024       # Número de coeficientes do filtro RRC
 EbN0dB = 20
-   
+
 # generate random bits
 np.random.seed(33)
 bits_x   = np.random.randint(2, size=3*2**14)    
@@ -220,7 +221,7 @@ symbolsUp_x = upsample(symb_x, SpS)
 symbolsUp_y = upsample(symb_y, SpS)
 
 # pulse shaping
-tindex, rrcFilter = rrcosfilter(N, alpha, Ts, Fa)
+tindex, rrcFilter = rrcosfilter(N, alphaRRC, Ts, Fa)
 sig_x  = filterNoDelay(rrcFilter, symbolsUp_x)     
 sig_y  = filterNoDelay(rrcFilter, symbolsUp_y)
 
@@ -234,7 +235,7 @@ sig_x_out, sig_y_out = CDcompensation(sig_x_out, sig_y_out, Ltotal, D, Fc, Fa)
 
 # plot spectrums
 plt.figure(2);
-plt.psd(sig_x_out,Fs=Fa, NFFT = 16*1024, label = 'Noise spectrum')
+plt.psd(sig_x_out,Fs=Fa, NFFT = 16*1024, label = 'Rx spectrum')
 plt.psd(sig_x,Fs=Fa, NFFT = 16*1024, label = 'Tx spectrum')
 plt.legend(loc='upper left');
 plt.xlim(-Fa/2,Fa/2);
