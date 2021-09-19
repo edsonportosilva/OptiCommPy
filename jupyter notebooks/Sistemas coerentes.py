@@ -847,18 +847,18 @@ class parameters:
 
 # +
 param = parameters()
-param.M   = 16
-param.Rs  = 32e9
-param.SpS = 16
-param.Nbits = 40000
-param.pulse = 'rrc'
-param.Ntaps = 4096
-param.alphaRRC = 0.01
-param.Pch_dBm = -3
-param.Nch     = 7
-param.Fc      = 193.1e12 # central frequency of the WDM spectrum
-param.freqSpac = 40e9    # WDM frequency grid spacing
-param.Nmodes = 2
+param.M   = 16           # ordem do formato de modulação
+param.Rs  = 32e9         # taxa de sinalização [baud]
+param.SpS = 16           # número de amostras por símbolo
+param.Nbits = 40000      # número de bits
+param.pulse = 'rrc'      # formato de pulso
+param.Ntaps = 4096       # número de coeficientes do filtro RRC
+param.alphaRRC = 0.01    # rolloff do filtro RRC
+param.Pch_dBm = -3       # potência média por canal WDM [dBm]
+param.Nch     = 7        # número de canais WDM
+param.Fc      = 193.1e12 # frequência central do espectro WDM
+param.freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
+param.Nmodes = 2         # número de modos de polarização
 
 sigWDM = simpleWDMTx(param)
 
