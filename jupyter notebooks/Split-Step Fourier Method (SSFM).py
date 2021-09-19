@@ -112,6 +112,16 @@ def manakovSSF(Ex, Ey, hz, Lspan, Ltotal, alpha, gamma, D, Fc, Fs):
     
     return Ex, Ey
     
+def edfa_lin(signal, gain, nf, fc, fs):
+    nf_lin   = 10**(nf/10)
+    gain_lin = 10**(gain/10)
+    nsp      = (gain_lin*nf_lin - 1)/(2*(gain_lin - 1))
+    s_ase    = (gain_lin - 1) * nsp * h * freq
+    p_noise  = s_ase*fs
+    mean_noise = 0
+    noise    = np.random.normal(mean_noise, np.sqrt(p_noise), signal.shape) + 1j*np.random.normal(mean_noise, np.sqrt(p_noise), signal.shape)
+    return signal*np.sqrt(gain_lin) + noise
+
 
 
 # -
