@@ -858,7 +858,7 @@ param.Pch_dBm = -3       # potência média por canal WDM [dBm]
 param.Nch     = 7        # número de canais WDM
 param.Fc      = 193.1e12 # frequência central do espectro WDM
 param.freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
-param.Nmodes = 2         # número de modos de polarização
+param.Nmodes = 1         # número de modos de polarização
 
 sigWDM = simpleWDMTx(param)
 
@@ -869,15 +869,3 @@ plt.figure()
 plt.psd(sigWDM[:,0], Fs=SpS*Rs, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum')
 plt.psd(sigWDM[:,1], Fs=SpS*Rs, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum')
 plt.legend(loc='upper left');
-linFiberCh(sigWDM, Ltotal, alpha, D, Fc, Fa)
-
-plt.plot(np.abs(np.fft.fft(sigWDM, axis=0)))
-
-sigWDM.shape[1]
-
-sigTxo.shape[1]
-
-x = sigTxo.reshape(sigTxo.size,)
-x.shape
-
-
