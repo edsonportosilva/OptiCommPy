@@ -610,7 +610,7 @@ Vb = -Vπ
 Pi = 10**(Pi_dBm/10)*1e-3 # potência de sinal óptico em W na entrada do MZM
 
 # parâmetros do canal óptico
-Ltotal = 5   # km
+Ltotal = 5    # km
 alpha = 0.2   # dB/km
 D = 16        # ps/nm/km
 Fc = 193.1e12 # Hz
@@ -761,35 +761,25 @@ plt.grid()
 
 plt.plot(sigRx[ind].real,sigRx[ind].imag,'.', markersize=4, label='Rx')
 plt.plot(symbTx[ind].real,symbTx[ind].imag,'k.', markersize=4, label='Tx');
-# -
-
-freqSpac = 37.5e9
-Nchannels = 
-freqGrid = np.arange(-3,4,1)*freqSpac/2
-freqGrid
-
-# +
-sig_WDM = np.zeros(sigTxo.size)
-
-t = np.arange(0, sigTxo.size)
-
-for f in freqGrid:
-    sig_WDM = sig_WDM + sigTxo*np.exp(1j*2*π*(f/(Fa/2))*t)
-
-# plota psd
-plt.figure()
-plt.psd(sig_WDM, Fs=Fa, NFFT = 4*1024, sides='twosided', label = 'Espectro óptico do sinal + ruído')
-plt.legend(loc='upper left');
 
 
 # -
+
+# ## Sistemas WDM coerentes
+
 def simpleWDMTx(param):
     
     # transmitter parameters
     Ts  = 1/param.Rs        # symbol period [s]
     Fa  = 1/(Ts/param.SpS)  # sampling frequency [samples/s]
-    Ta  = 1/Fa              # sampling period
-
+    Ta  = 1/Fa              # sampling period [s]
+    
+    # central frequencies of the WDM channels
+    freqGrid = np.arange(-np.floor(param.Nch/2), np.floor(param.Nch/2)+1,1)*param.freqSpac
+    
+    if (param.Nch % 2) == 0:
+        freqGrid += param.freqSpac/2
+        
     # IQM parameters
     Ai = 1
     Vπ = 2
@@ -801,7 +791,7 @@ def simpleWDMTx(param):
     t = np.arange(0, int((param.Nbits)/np.log2(M)*param.SpS))
     sigTxWDM = np.zeros(t.size)
 
-    for f in param.freqGrid:
+    for indCh in range(0, param.Nch):
         # generate random bits
         bitsTx   = np.random.randint(2, size=param.Nbits)    
 
@@ -831,8 +821,13 @@ def simpleWDMTx(param):
         sigTxCh = iqm(Ai, 0.5*sigTx, Vπ, Vb, Vb)
         sigTxCh = np.sqrt(Pch)*sigTxCh/np.sqrt(signal_power(sigTxCh))
         
-        print('channel power : %.2f dBm'%(10*np.log10(signal_power(sigTxCh)/1e-3)))
-        sigTxWDM = sigTxWDM + sigTxCh*np.exp(1j*2*π*(f/(Fa/2))*t)
+        print('channel %d power : %.2f dBm, fc : %3.4f THz' 
+              %(indCh+1, 10*np.log10(signal_power(sigTxCh)/1e-3), 
+                (param.Fc+freqGrid[indCh])/1e12))
+        
+        sigTxWDM = sigTxWDM + sigTxCh*np.exp(1j*2*π*(freqGrid[indCh]/Fa)*t)
+        
+    print('total WDM signal power: %.2f dBm'%(10*np.log10(signal_power(sigTxWDM)/1e-3)))
     
     return sigTxWDM
 
@@ -851,11 +846,9 @@ param.pulse = 'rrc'
 param.Ntaps = 4096
 param.alphaRRC = 0.01
 param.Pch_dBm = -3
-
-freqSpac = 37.5e9 
-freqGrid = np.arange(-3,4,1)*freqSpac/2
-
-param.freqGrid = freqGrid
+param.Nch     = 7
+param.Fc      = 193.1e12 # central frequency of the WDM spectrum
+param.freqSpac = 40e9    # WDM frequency grid spacing
 
 sigWDM = simpleWDMTx(param)
 
@@ -863,3 +856,6 @@ sigWDM = simpleWDMTx(param)
 plt.figure()
 plt.psd(sigWDM, Fs=SpS*Rs, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum')
 plt.legend(loc='upper left');
+# -
+
+
