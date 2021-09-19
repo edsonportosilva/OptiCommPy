@@ -35,14 +35,14 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
 
 def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     """
-    Linear fiber channel 
+    Linear fiber channel w/ loss and chromatic dispersion
 
     :param Ei: optical signal at the input of the fiber
     :param L: fiber length [km]
     :param alpha: loss coeficient [dB/km]
     :param D: chromatic dispersion parameter [ps/nm/km]   
     :param Fc: carrier frequency [Hz]
-    :param Fs: sampling frequency
+    :param Fs: sampling frequency [Hz]
     
     :return Eo: optical signal at the output of the fiber
     """
