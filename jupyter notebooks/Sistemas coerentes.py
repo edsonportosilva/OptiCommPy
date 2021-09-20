@@ -57,12 +57,14 @@ def symdisp(expr, var, unit=' '):
     display(Math(expr+sp.latex(var)+'\;'+unit))
 
 
-# + [markdown] toc=true
-# <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#Por-que-comunicações-ópticas-coerentes?" data-toc-modified-id="Por-que-comunicações-ópticas-coerentes?-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Por que comunicações ópticas coerentes?</a></span></li><li><span><a href="#Detecção-coerente-de-sinais-ópticos" data-toc-modified-id="Detecção-coerente-de-sinais-ópticos-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Detecção coerente de sinais ópticos</a></span></li><li><span><a href="#Batimento-do-sinal-recebido-com-o-oscilador-local" data-toc-modified-id="Batimento-do-sinal-recebido-com-o-oscilador-local-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Batimento do sinal recebido com o oscilador local</a></span></li><li><span><a href="#Híbrida-$2\times-4$-90°" data-toc-modified-id="Híbrida-$2\times-4$-90°-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Híbrida $2\times 4$ 90°</a></span><ul class="toc-item"><li><span><a href="#Exemplo-de-um-circuito-fotônico-que-implementa-uma-híbrida" data-toc-modified-id="Exemplo-de-um-circuito-fotônico-que-implementa-uma-híbrida-4.1"><span class="toc-item-num">4.1&nbsp;&nbsp;</span>Exemplo de um circuito fotônico que implementa uma híbrida</a></span></li><li><span><a href="#Matriz-de-transferência-entrada-saída" data-toc-modified-id="Matriz-de-transferência-entrada-saída-4.2"><span class="toc-item-num">4.2&nbsp;&nbsp;</span>Matriz de transferência entrada-saída</a></span></li><li><span><a href="#Derivação-das-expressões-para-o-front-end-coerente" data-toc-modified-id="Derivação-das-expressões-para-o-front-end-coerente-4.3"><span class="toc-item-num">4.3&nbsp;&nbsp;</span>Derivação das expressões para o front-end coerente</a></span></li><li><span><a href="#Tipos-de-detecção-óptica-coerente" data-toc-modified-id="Tipos-de-detecção-óptica-coerente-4.4"><span class="toc-item-num">4.4&nbsp;&nbsp;</span>Tipos de detecção óptica coerente</a></span></li></ul></li><li><span><a href="#Exemplo:-detecção-coerente-de-um-laser-não-modulado" data-toc-modified-id="Exemplo:-detecção-coerente-de-um-laser-não-modulado-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Exemplo: detecção coerente de um laser não-modulado</a></span></li><li><span><a href="#Exemplo:-simulação-10G-OOK-vs-10G-BPSK" data-toc-modified-id="Exemplo:-simulação-10G-OOK-vs-10G-BPSK-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Exemplo: simulação 10G OOK vs 10G BPSK</a></span></li><li><span><a href="#Exemplo:-simulação-com-formatos-QPSK,-QAM" data-toc-modified-id="Exemplo:-simulação-com-formatos-QPSK,-QAM-7"><span class="toc-item-num">7&nbsp;&nbsp;</span>Exemplo: simulação com formatos QPSK, QAM</a></span></li></ul></div>
 # -
 
 # # Comunicações Ópticas Coerentes
+
+# + [markdown] toc=true
+# <h1>Table of Contents<span class="tocSkip"></span></h1>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Por-que-comunicações-ópticas-coerentes?" data-toc-modified-id="Por-que-comunicações-ópticas-coerentes?-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Por que comunicações ópticas coerentes?</a></span></li><li><span><a href="#Detecção-coerente-de-sinais-ópticos" data-toc-modified-id="Detecção-coerente-de-sinais-ópticos-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Detecção coerente de sinais ópticos</a></span><ul class="toc-item"><li><span><a href="#Receptor-IM/DD" data-toc-modified-id="Receptor-IM/DD-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>Receptor IM/DD</a></span></li><li><span><a href="#Receptor-coerente" data-toc-modified-id="Receptor-coerente-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>Receptor coerente</a></span></li></ul></li><li><span><a href="#Batimento-entre-sinal-e-laser-oscilador-local-(LO)" data-toc-modified-id="Batimento-entre-sinal-e-laser-oscilador-local-(LO)-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Batimento entre sinal e laser oscilador local (LO)</a></span><ul class="toc-item"><li><span><a href="#Batimentos-entre-um-sinal-e-um-oscilador-local" data-toc-modified-id="Batimentos-entre-um-sinal-e-um-oscilador-local-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>Batimentos entre um sinal e um oscilador local</a></span></li></ul></li><li><span><a href="#Híbrida-$2\times-4$-90°" data-toc-modified-id="Híbrida-$2\times-4$-90°-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Híbrida $2\times 4$ 90°</a></span><ul class="toc-item"><li><span><a href="#Exemplo-de-um-circuito-fotônico-que-implementa-uma-híbrida" data-toc-modified-id="Exemplo-de-um-circuito-fotônico-que-implementa-uma-híbrida-4.1"><span class="toc-item-num">4.1&nbsp;&nbsp;</span>Exemplo de um circuito fotônico que implementa uma híbrida</a></span></li><li><span><a href="#Matriz-de-transferência-entrada-saída" data-toc-modified-id="Matriz-de-transferência-entrada-saída-4.2"><span class="toc-item-num">4.2&nbsp;&nbsp;</span>Matriz de transferência entrada-saída</a></span></li><li><span><a href="#Derivação-das-expressões-para-o-front-end-coerente" data-toc-modified-id="Derivação-das-expressões-para-o-front-end-coerente-4.3"><span class="toc-item-num">4.3&nbsp;&nbsp;</span>Derivação das expressões para o front-end coerente</a></span></li><li><span><a href="#Tipos-de-detecção-óptica-coerente" data-toc-modified-id="Tipos-de-detecção-óptica-coerente-4.4"><span class="toc-item-num">4.4&nbsp;&nbsp;</span>Tipos de detecção óptica coerente</a></span></li></ul></li><li><span><a href="#Exemplo:-detecção-coerente-de-um-laser-não-modulado" data-toc-modified-id="Exemplo:-detecção-coerente-de-um-laser-não-modulado-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Exemplo: detecção coerente de um laser não-modulado</a></span></li><li><span><a href="#Exemplo:-simulação-10G-OOK-vs-10G-BPSK" data-toc-modified-id="Exemplo:-simulação-10G-OOK-vs-10G-BPSK-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Exemplo: simulação 10G OOK vs 10G BPSK</a></span></li><li><span><a href="#Exemplo:-simulação-com-formatos-QPSK,-QAM" data-toc-modified-id="Exemplo:-simulação-com-formatos-QPSK,-QAM-7"><span class="toc-item-num">7&nbsp;&nbsp;</span>Exemplo: simulação com formatos QPSK, QAM</a></span></li><li><span><a href="#Sistemas-WDM-coerentes" data-toc-modified-id="Sistemas-WDM-coerentes-8"><span class="toc-item-num">8&nbsp;&nbsp;</span>Sistemas WDM coerentes</a></span></li></ul></div>
+# -
 
 # ## Por que comunicações ópticas coerentes?
 #
@@ -78,14 +80,18 @@ def symdisp(expr, var, unit=' '):
 
 # ## Detecção coerente de sinais ópticos
 #
-#
+# ### Receptor IM/DD
 # <img src="./figuras/Rx_OOK.png" width="400">
 #
+# ### Receptor coerente
 # <img src="./figuras/hibrida_4x90.png" width="750">
 
 # +
-t, A, ω_c, ω_lo, ϕ, ϕ_lo, Δω, Δϕ = sp.symbols('t, A, ω_c, ω_{LO}, ϕ, ϕ_{LO}, Δω, Δϕ', real=True)
+t, ω_c, ω_lo, ϕ_lo, Δω, Δϕ = sp.symbols('t, ω_c, ω_{LO}, ϕ_{LO}, Δω, Δϕ', real=True)
 P_s, P_lo, R = sp.symbols('P_s, P_{LO}, R_d', real=True, positive=True)
+
+A = sp.Function('A', real=True)(t)
+ϕ = sp.Function('ϕ', real=True)(t)
 
 π = sp.pi
 j = sp.I
@@ -107,7 +113,7 @@ E_lo = sp.sqrt(P_lo)*sp.exp(j*(ω_lo*t + ϕ_lo))
 symdisp('E_{LO}(t) =', E_lo)
 # -
 
-# ## Batimento do sinal recebido com o oscilador local
+# ## Batimento entre sinal e laser oscilador local (LO)
 #
 # $$
 # \begin{aligned}
@@ -129,70 +135,88 @@ symdisp('E_{LO}(t) =', E_lo)
 #
 # em que $\Delta \omega_c = \omega - \omega_{LO}$ e $\Delta \phi = \phi - \phi_{LO}$.
 
+# ### Batimentos entre um sinal e um oscilador local
+#
 # **Fotocorrente $i_1(t)\propto |E_s + jE_{LO}|^2$**
 
 # +
-i_1 = R*(E_s + j*E_lo)*sp.conjugate(E_s + j*E_lo)
+Ei1 = (E_s + j*E_lo)/2
 
-i_1 = sp.re(i_1).simplify().expand()
+symdisp('E_{i_1}(t) =', Ei1)
 
-symdisp('i_1(t) =', i_1)
+i1 = R*sp.Abs(Ei1)**2
+
+i1 = sp.re(i1).simplify().expand()
+
+symdisp('i_1(t) =', i1)
 # -
 
 # **Fotocorrente $i_2(t) \propto |E_s - jE_{LO}|^2$**
 
 # +
-i_2 = R*(E_s -j*E_lo)*sp.conjugate(E_s -j*E_lo)
+Ei2 = (E_s - j*E_lo)/2
 
-i_2 = sp.re(i_2).simplify().expand()
+symdisp('E_{i_2}(t) =', Ei2)
 
-symdisp('i_2(t) =', i_2)
+i2 = R*sp.Abs(Ei2)**2
+
+i2 = sp.re(i2).simplify().expand()
+
+symdisp('i_2(t) =', i2)
 # -
 
 # **Corrente $s_Q(t) = i_1(t)-i_2(t)$**
 
 # +
-s_Q = i_1 - i_2 # saída do fotodetector balanceado
+sQ = i1 - i2 # saída do fotodetector balanceado
 
-s_Q = s_Q.simplify()
+sQ = sQ.simplify()
 
-symdisp('s_Q(t) =', s_Q)
+symdisp('s_Q(t) =', sQ)
 # -
 
 # **Fotocorrente $i_3(t) \propto |E_s + E_{LO}|^2$**
 
 # +
-i_3 = R*(E_s + E_lo)*sp.conjugate(E_s + E_lo)
+Ei3 = (E_s + E_lo)/2
 
-i_3 = sp.re(i_3).simplify().expand()
+symdisp('E_{i_3}(t) =', Ei3)
 
-symdisp('i_3(t) =', i_3)
+i3 = R*sp.Abs(Ei3)**2
+
+i3 = sp.re(i3).simplify().expand()
+
+symdisp('i_3(t) =', i3)
 # -
 
 # **Fotocorrente $i_4(t) \propto |E_s - E_{LO}|^2$**
 
 # +
-i_4 = R*(E_s - E_lo)*sp.conjugate(E_s - E_lo)
+Ei4 = (E_s - E_lo)/2
 
-i_4 = sp.re(i_4).simplify().expand()
+symdisp('E_{i_4}(t) =', Ei4)
 
-symdisp('i_4(t) =', i_4)
+i4 = R*sp.Abs(Ei4)**2
+
+i4 = sp.re(i4).simplify().expand()
+
+symdisp('i_4(t) =', i4)
 # -
 
 # **Corrente $s_I(t) = i_3(t)-i_4(t)$**
 
 # +
-s_I = i_3 - i_4 # saída do fotodetector balanceado
+sI = i3 - i4 # saída do fotodetector balanceado
 
-s_I = s_I.simplify()
+sI = sI.simplify()
 
-symdisp('s_I(t) =', s_I)
+symdisp('s_I(t) =', sI)
 # -
 
 # **Sinal complexo detectado $s(t) = s_I(t) + js_Q(t)$**
 
 # +
-s = s_I + j*s_Q
+s = sI + j*sQ
 
 s = s.simplify()
 
@@ -268,8 +292,8 @@ def hybrid_2x4_90(E1, E2):
 # fotodetector balanceado
 def bpd(E1, E2, R=1):
     
-    i1 = E1*sp.conjugate(E1) # |E1|^2
-    i2 = E2*sp.conjugate(E2) # |E2|^2
+    i1 = sp.Abs(E1)**2 # |E1|^2
+    i2 = sp.Abs(E2)**2 # |E2|^2
     i = i1 - i2
     
     return R*sp.re(i).simplify().expand()
@@ -288,23 +312,25 @@ symdisp('E_o = ', Eo)
 # **Fotodetecção balanceada**
 
 # +
-s_I = bpd(Eo[1], Eo[0], R) # fotodetecão balanceada de Eo[1] e Eo[0]
-s_Q = bpd(Eo[2], Eo[3], R) # fotodetecão balanceada de Eo[2] e Eo[3]
+sI = bpd(Eo[1], Eo[0], R) # fotodeteccão balanceada de Eo[1] e Eo[0]
+sQ = bpd(Eo[2], Eo[3], R) # fotodeteccão balanceada de Eo[2] e Eo[3]
 
-symdisp('s_I = ', s_I)
-symdisp('s_Q = ', s_Q)
+symdisp('s_I = ', sI)
+symdisp('s_Q = ', sQ)
 # -
 
 # **Campo elétrico recuperado**
 
 # +
-s  = s_I + j*s_Q
+s  = sI + j*sQ
 s  = s.simplify()
 
 symdisp('s = ', s)
 
 # +
-s = (s.subs({ω_lo:ω_c + Δω, ϕ:ϕ_lo + Δϕ})).simplify()
+s = s.subs({ω_lo:ω_c + Δω, ϕ:ϕ_lo + Δϕ})
+
+s = s.simplify().doit()
 
 symdisp('s = ', s)
 # -
@@ -317,9 +343,11 @@ symdisp('s = ', s)
 #
 # * **Detecção intradina (*intradyne detection*)**($\Delta\omega \approx 0$): a frequência do laser do transmissor e do laser oscilador local são "ligeiramente" diferentes.
 
+# **Assumindo coerência perfeita entre os lasers do transmissor e do receptor($Δω=0, ϕ_{LO}=0$)**
+
 # +
 # assumindo que portadora e oscilador local estão sincronizados em fase e frequência
-s = s.subs({Δω:0})/(sp.sqrt(P_s)*sp.sqrt(P_lo)*R)
+s = s.subs({Δω:0, Δϕ:ϕ})/(sp.sqrt(P_s)*sp.sqrt(P_lo)*R)
 
 symdisp('s = ', s)
 
@@ -333,6 +361,11 @@ def balancedPD(E1, E2, R):
     '''
     Balanced photodetector (BPD)
     
+    :param E1: input field [nparray]
+    :param E2: input field [nparray]
+    :param R: photodiode responsivity
+    
+    :return: balanced photocurrent
     '''
     i1 = R*E1*np.conj(E1)
     i2 = R*E2*np.conj(E2)
@@ -392,7 +425,7 @@ def phaseNoise(lw, Nsamples, Ts):
 Fa     = 128e9    # Frequência de amostragem do sinal
 Ta     = 1/Fa     # Período de amostragem
 
-Nsamples = 5000
+Nsamples = 1000
 
 #Pi_dBm = 10  # potência de sinal óptico na entrada do modulador em dBm
 π = np.pi
@@ -416,9 +449,18 @@ f_lo = 2e9  # frequência do oscilador local
 
 # oscilador local
 t     = np.arange(0, Nsamples)*Ta
-sig   = np.sqrt(Pin)*np.exp(1j*(2*π*f_sig*t + ϕs   + pn_sig))*np.ones(t.size)
-sigLO = np.sqrt(Plo)*np.exp(1j*(2*π*f_lo*t + ϕ_lo + pn_lo))
+sig   = np.sqrt(Pin)*np.exp(1j*(2*π*f_sig*t + ϕs   + pn_sig))*np.ones(t.size) # campo elétrico do sinal
+sigLO = np.sqrt(Plo)*np.exp(1j*(2*π*f_lo*t + ϕ_lo + pn_lo)) # campo elétrico do oscilador local
 
+fig, axs = plt.subplots(2)
+fig.suptitle('Campo elétrico')
+axs[0].plot(t, sig.real, label = 'sig [real]')
+axs[0].plot(t, sig.imag, label = 'sig [imag]')
+axs[0].legend();
+axs[1].plot(t, sigLO.real, label = 'LO [real]')
+axs[1].plot(t, sigLO.imag, label = 'LO [imag]');
+axs[1].legend();
+# +
 # receptor coerente
 sigRx = coherentReceiver(sig, sigLO)
 
@@ -430,10 +472,14 @@ plt.xlim(-1.1,1.1)
 plt.ylim(-1.1,1.1)
 plt.grid()
 
+plt.arrow(0, 0, sigRx[-1].real,sigRx[-1].imag, length_includes_head=True, shape ='full',
+                                         alpha = 0.5, width = 0.015, edgecolor = 'blue', 
+                                         facecolor = 'blue', lw = 2, zorder = 5, label='Recebido')
+
 plt.arrow(0, 0, sig[0].real,sig[0].imag, length_includes_head=True, shape ='full',
-                                         alpha = 0.5, width = 0.015, edgecolor = 'black', 
-                                         facecolor = 'black', lw = 2, zorder = 5, label='Tx')
-plt.legend(loc='upper right');
+                                         alpha = 0.5, width = 0.015, edgecolor = 'red', 
+                                         facecolor = 'red', lw = 2, zorder = 5, label='Transmitido')
+plt.legend(loc='lower left');
 # -
 # ## Exemplo: simulação 10G OOK vs 10G BPSK
 
