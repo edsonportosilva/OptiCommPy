@@ -20,8 +20,8 @@ from sympy import Matrix, zeros
 from numpy.random import normal
 from commpy.utilities  import signal_power, upsample
 from commpy.modulation import Modem, QAMModem
-from utils.dsp import firFilter, pulseShape, eyediagram, lowPassFIR
-from utils.models import mzm, linFiberCh, edc, iqm
+from utils.dsp import firFilter, pulseShape, eyediagram, lowPassFIR, edc
+from utils.models import mzm, linFiberCh, iqm
 
 # +
 from IPython.core.display import HTML
@@ -369,7 +369,7 @@ symdisp('s = ', s)
 # **Funções para modelagem de um receptor coerente utilizando o numpy**
 
 # +
-def balancedPD(E1, E2, R):
+def balancedPD(E1, E2, R=1):
     '''
     Balanced photodetector (BPD)
     
@@ -379,6 +379,7 @@ def balancedPD(E1, E2, R):
     
     :return: balanced photocurrent
     '''
+    assert R > 0, 'PD responsivity should be a positive scalar'
     assert E1.size == E2.size, 'E1 and E2 need to have the same size'
     
     i1 = R*E1*np.conj(E1)
@@ -420,6 +421,7 @@ def coherentReceiver(Es, Elo, Rd=1):
     
     :return: downconverted signal after balanced detection    
     '''
+    assert Rd > 0, 'PD responsivity should be a positive scalar'
     assert Es.size == Elo.size, 'Es and Elo need to have the same size'
     
     # optical 2 x 4 90° hybrid 
@@ -668,7 +670,7 @@ plotEyeDiagrams = False
 plotPSD         = False
 
 # parâmetros da simulação
-M      = 256
+M      = 64
 SpS    = 16            # número de amostras por símbolo
 Rs     = 32e9          # Taxa de símbolos 
 Ts     = 1/Rs          # Período de símbolo em segundos
@@ -704,7 +706,7 @@ Plo = 10**(Plo_dBm/10)*1e-3 # potência do oscilador local na entrada do recepto
 ### Transmissor
 
 # gera sequência de bits pseudo-aleatórios
-bitsTx   = np.random.randint(2, size=80000)    
+bitsTx   = np.random.randint(2, size=120000)    
 
 # mapeia bits para símbolos QAM
 mod = QAMModem(m=M)
