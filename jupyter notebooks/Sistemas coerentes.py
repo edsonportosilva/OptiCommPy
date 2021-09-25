@@ -21,7 +21,7 @@ from numpy.random import normal
 from commpy.utilities  import signal_power, upsample
 from commpy.modulation import Modem, QAMModem
 from utils.dsp import firFilter, pulseShape, eyediagram, lowPassFIR
-from utils.models import mzm, linFiberCh
+from utils.models import mzm, linFiberCh, EDC
 
 # +
 from IPython.core.display import HTML
@@ -489,7 +489,7 @@ axs[1].plot(t, sigLO.imag, label = 'LO [imag]');
 axs[1].legend();
 # +
 # receptor coerente
-sigRx = coherentReceiver(sig[1:500], sigLO)
+sigRx = coherentReceiver(sig, sigLO)
 
 plt.figure(figsize=(4,4))
 plt.plot(sigRx.real,sigRx.imag,'o-', markersize=3, label='Rx')
@@ -684,7 +684,7 @@ Vb = -Vπ
 Pi = 10**(Pi_dBm/10)*1e-3 # potência de sinal óptico em W na entrada do MZM
 
 # parâmetros do canal óptico
-Ltotal = 5    # km
+Ltotal = 50    # km
 alpha = 0.2   # dB/km
 D = 16        # ps/nm/km
 Fc = 193.1e12 # Hz
@@ -790,6 +790,9 @@ if plotEyeDiagrams:
     eyediagram(sigTx,  Nsamples, SpS, plotlabel = 'Tx')
     eyediagram(sigEye, Nsamples, SpS, plotlabel = 'Coh-Rx')
     eyediagram(np.abs(sigTxo_DDRx)**2, Nsamples, SpS, plotlabel = 'DD-Rx')
+
+# compensa dispersão cromática
+sigRx = EDC(sigRx, Ltotal, D, Fc, Fa)
 
 # captura amostras no meio dos intervalos de sinalização
 sigRx = sigRx[0::SpS]
