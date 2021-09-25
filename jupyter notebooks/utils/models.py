@@ -70,19 +70,3 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
         Eo = Eo.reshape(Eo.size,)
         
     return Eo
-
-def edc(Ei, L, D, Fc, Fs):
-    """
-    Electronic chromatic dispersion compensation (EDC)
-
-    :param Ei: dispersed signal
-    :param L: fiber length [km]    
-    :param D: chromatic dispersion parameter [ps/nm/km]   
-    :param Fc: carrier frequency [Hz]
-    :param Fs: sampling frequency [Hz]
-    
-    :return Eo: CD compensated signal
-    """
-    Eo = linFiberCh(Ei, L, 0, -D, Fc, Fs)
-    
-    return Eo

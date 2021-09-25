@@ -3,6 +3,7 @@ import numpy as np
 from commpy.filters import rrcosfilter, rcosfilter
 from commpy.utilities  import upsample
 from scipy.stats.kde import gaussian_kde
+from utils.models import linFiberCh
 import matplotlib.pyplot as plt
 
 def firFilter(h, x):
@@ -147,3 +148,19 @@ def lowPassFIR(fc, fa, N, typeF = 'rect'):
         h = np.sqrt(2*np.pi/np.log(2))*fu*np.exp(-(2/np.log(2))*(np.pi*fu*(n-d))**2)
     
     return h
+
+def edc(Ei, L, D, Fc, Fs):
+    """
+    Electronic chromatic dispersion compensation (EDC)
+
+    :param Ei: dispersed signal
+    :param L: fiber length [km]    
+    :param D: chromatic dispersion parameter [ps/nm/km]   
+    :param Fc: carrier frequency [Hz]
+    :param Fs: sampling frequency [Hz]
+    
+    :return Eo: CD compensated signal
+    """
+    Eo = linFiberCh(Ei, L, 0, -D, Fc, Fs)
+    
+    return Eo
