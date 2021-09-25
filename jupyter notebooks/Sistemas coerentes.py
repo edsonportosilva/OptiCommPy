@@ -379,6 +379,8 @@ def balancedPD(E1, E2, R):
     
     :return: balanced photocurrent
     '''
+    assert E1.size == E2.size, 'E1 and E2 need to have the same size'
+    
     i1 = R*E1*np.conj(E1)
     i2 = R*E2*np.conj(E2)    
 
@@ -393,6 +395,8 @@ def hybrid_2x4_90deg(E1, E2):
         
     :return: hybrid outputs
     '''
+    assert E1.size == E2.size, 'E1 and E2 need to have the same size'
+    
     # optical hybrid transfer matrix    
     T = np.array([[ 1/2,  1j/2,  1j/2, -1/2],
                   [ 1j/2, -1/2,  1/2,  1j/2],
@@ -416,6 +420,8 @@ def coherentReceiver(Es, Elo, Rd=1):
     
     :return: downconverted signal after balanced detection    
     '''
+    assert Es.size == Elo.size, 'Es and Elo need to have the same size'
+    
     # optical 2 x 4 90° hybrid 
     Eo = hybrid_2x4_90deg(Es, Elo)
         
@@ -483,7 +489,7 @@ axs[1].plot(t, sigLO.imag, label = 'LO [imag]');
 axs[1].legend();
 # +
 # receptor coerente
-sigRx = coherentReceiver(sig, sigLO)
+sigRx = coherentReceiver(sig[1:500], sigLO)
 
 plt.figure(figsize=(4,4))
 plt.plot(sigRx.real,sigRx.imag,'o-', markersize=3, label='Rx')
