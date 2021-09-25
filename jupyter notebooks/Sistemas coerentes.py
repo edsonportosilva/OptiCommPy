@@ -863,10 +863,10 @@ def simpleWDMTx(param):
         
     π = np.pi
     
-    t = np.arange(0, int((param.Nbits)/np.log2(M)*param.SpS))
+    t = np.arange(0, int(((param.Nbits)/np.log2(param.M))*param.SpS))
     
     # allocate array 
-    sigTxWDM = np.zeros((t.size, param.Nmodes), dtype='complex')
+    sigTxWDM = np.zeros((len(t), param.Nmodes), dtype='complex')
     
     Psig = 0
     
@@ -902,7 +902,7 @@ def simpleWDMTx(param):
             # optical modulation
             sigTxCh = iqm(Ai, 0.5*sigTx, Vπ, Vb, Vb)
             sigTxCh = np.sqrt(Pch/param.Nmodes)*sigTxCh/np.sqrt(signal_power(sigTxCh))
-
+            
             print('channel %d power : %.2f dBm, fc : %3.4f THz' 
                   %(indCh+1, 10*np.log10(signal_power(sigTxCh)/1e-3), 
                     (param.Fc+freqGrid[indCh])/1e12))
@@ -933,7 +933,7 @@ param.Pch_dBm = -3       # potência média por canal WDM [dBm]
 param.Nch     = 7        # número de canais WDM
 param.Fc      = 193.1e12 # frequência central do espectro WDM
 param.freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
-param.Nmodes = 1         # número de modos de polarização
+param.Nmodes = 2         # número de modos de polarização
 
 sigWDM = simpleWDMTx(param)
 
