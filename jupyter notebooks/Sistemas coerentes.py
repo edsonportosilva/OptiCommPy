@@ -21,7 +21,7 @@ from numpy.random import normal
 from commpy.utilities  import signal_power, upsample
 from commpy.modulation import Modem, QAMModem
 from utils.dsp import firFilter, pulseShape, eyediagram, lowPassFIR
-from utils.models import mzm, linFiberCh, EDC
+from utils.models import mzm, linFiberCh, edc, iqm
 
 # +
 from IPython.core.display import HTML
@@ -668,7 +668,7 @@ plotEyeDiagrams = False
 plotPSD         = False
 
 # parâmetros da simulação
-M      = 16
+M      = 256
 SpS    = 16            # número de amostras por símbolo
 Rs     = 32e9          # Taxa de símbolos 
 Ts     = 1/Rs          # Período de símbolo em segundos
@@ -703,15 +703,15 @@ Plo = 10**(Plo_dBm/10)*1e-3 # potência do oscilador local na entrada do recepto
 
 ### Transmissor
 
-# generate random bits
+# gera sequência de bits pseudo-aleatórios
 bitsTx   = np.random.randint(2, size=80000)    
 
-# map bits to constellation symbols
+# mapeia bits para símbolos QAM
 mod = QAMModem(m=M)
 symbTx = mod.modulate(bitsTx)
 Es = mod.Es;
 
-# normalize symbols energy to 1
+# normaliza energia média dos símbolos para 1
 symbTx = symbTx/np.sqrt(Es)
 
 # upsampling
@@ -747,9 +747,7 @@ if plotPSD:
     plt.xlim(-4*Rs,4*Rs);
 
 ### Canal óptico linear
-
 sigTxo = linFiberCh(sigTxo, Ltotal, alpha, D, Fc, Fa)
-#sigTxo = linFiberCh(sigTxo, Ltotal, -alpha, -D, Fc, Fa)
 
 ### Recepcão coerente
 Pin = (np.abs(sigTxo)**2).mean() # Potência óptica média média recebida
@@ -762,7 +760,7 @@ sigLO = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
 # receptor coerente
 sigRx = coherentReceiver(sigTxo, sigLO)
-#sigRx = sigRx/np.sqrt(signal_power(sigRx))
+
 
 # filtragem Rx
 N = 4001
@@ -792,7 +790,7 @@ if plotEyeDiagrams:
     eyediagram(np.abs(sigTxo_DDRx)**2, Nsamples, SpS, plotlabel = 'DD-Rx')
 
 # compensa dispersão cromática
-sigRx = EDC(sigRx, Ltotal, D, Fc, Fa)
+sigRx = edc(sigRx, Ltotal, D, Fc, Fa)
 
 # captura amostras no meio dos intervalos de sinalização
 sigRx = sigRx[0::SpS]
