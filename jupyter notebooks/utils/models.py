@@ -71,7 +71,7 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
         
     return Eo
 
-def EDC(Ei, L, D, Fc, Fs):
+def edc(Ei, L, D, Fc, Fs):
     """
     Electronic chromatic dispersion compensation (EDC)
 
