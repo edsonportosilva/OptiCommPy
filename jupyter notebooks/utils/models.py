@@ -70,3 +70,67 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
         Eo = Eo.reshape(Eo.size,)
         
     return Eo
+
+def balancedPD(E1, E2, R=1):
+    '''
+    Balanced photodetector (BPD)
+    
+    :param E1: input field [nparray]
+    :param E2: input field [nparray]
+    :param R: photodiode responsivity [scalar]
+    
+    :return: balanced photocurrent
+    '''
+    assert R > 0, 'PD responsivity should be a positive scalar'
+    assert E1.size == E2.size, 'E1 and E2 need to have the same size'
+    
+    i1 = R*E1*np.conj(E1)
+    i2 = R*E2*np.conj(E2)    
+
+    return i1-i2
+
+def hybrid_2x4_90deg(E1, E2):
+    '''
+    Optical 2 x 4 90° hybrid
+    
+    :param E1: input signal field [nparray]
+    :param E2: input LO field [nparray]
+        
+    :return: hybrid outputs
+    '''
+    assert E1.size == E2.size, 'E1 and E2 need to have the same size'
+    
+    # optical hybrid transfer matrix    
+    T = np.array([[ 1/2,  1j/2,  1j/2, -1/2],
+                  [ 1j/2, -1/2,  1/2,  1j/2],
+                  [ 1j/2,  1/2, -1j/2, -1/2],
+                  [-1/2,  1j/2, -1/2,  1j/2]])
+    
+    Ei = np.array([E1, np.zeros((E1.size,)), 
+                   np.zeros((E1.size,)), E2])    
+    
+    Eo = T@Ei
+    
+    return Eo
+    
+def coherentReceiver(Es, Elo, Rd=1):
+    '''
+    Single polarization coherent optical front-end
+    
+    :param Es: input signal field [nparray]
+    :param Elo: input LO field [nparray]
+    :param Rd: photodiode resposivity [scalar]
+    
+    :return: downconverted signal after balanced detection    
+    '''
+    assert Rd > 0, 'PD responsivity should be a positive scalar'
+    assert Es.size == Elo.size, 'Es and Elo need to have the same size'
+    
+    # optical 2 x 4 90° hybrid 
+    Eo = hybrid_2x4_90deg(Es, Elo)
+        
+    # balanced photodetection
+    sI = balancedPD(Eo[1,:], Eo[0,:], Rd)
+    sQ = balancedPD(Eo[2,:], Eo[3,:], Rd)
+    
+    return sI + 1j*sQ
