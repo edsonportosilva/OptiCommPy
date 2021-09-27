@@ -96,9 +96,12 @@ def manakovSSF(Ex, Ey, hz, Lspan, Ltotal, alpha, gamma, D, Fc, Fs):
             Ex = ifft(Ex);
             Ey = ifft(Ey);
             
-            Ex = Ex*np.exp(1j*γ*8/9*(np.abs(Ex)**2 + np.abs(Ey)**2)*hz)
-            Ey = Ey*np.exp(1j*γ*8/9*(np.abs(Ex)**2 + np.abs(Ey)**2)*hz)
-   
+#             Ex = Ex*np.exp(1j*γ*8/9*(np.abs(Ex)**2 + np.abs(Ey)**2)*hz)
+#             Ey = Ey*np.exp(1j*γ*8/9*(np.abs(Ex)**2 + np.abs(Ey)**2)*hz)
+
+            Ex = Ex*np.exp(1j*γ*8/9*(Ex*np.conj(Ex) + Ey*np.conj(Ey))*hz)
+            Ey = Ey*np.exp(1j*γ*8/9*(Ex*np.conj(Ex) + Ey*np.conj(Ey))*hz)
+        
             # Second linear step (frequency domain)
             Ex = fft(Ex);
             Ey = fft(Ey);
@@ -160,6 +163,7 @@ from commpy.modulation import Modem, QAMModem
 from commpy.utilities  import signal_power, upsample
 from commpy.filters    import rrcosfilter
 from scipy.signal import lfilter
+import time as tempo
 
 
 def filterNoDelay(h, x):
@@ -185,7 +189,7 @@ gamma = 1.3
 D = 16
 Fc = 193.1e12
 Fs = 64e9
-P0 = 1e-3
+P0 = 3e-3
 
 # simulation parameters
 
@@ -228,8 +232,11 @@ sig_y  = filterNoDelay(rrcFilter, symbolsUp_y)
 sig_x  = np.sqrt(P0/2)*sig_x/np.sqrt(signal_power(sig_x))
 sig_y  = np.sqrt(P0/2)*sig_y/np.sqrt(signal_power(sig_y))
 
-
+s = tempo.time()
 sig_x_out, sig_y_out = manakovSSF(sig_x, sig_y, hz, Lspan, Ltotal, alpha, gamma, D, Fc, Fa)
+e = tempo.time()
+print(e - s)
+
 sig_x_out, sig_y_out = CDcompensation(sig_x_out, sig_y_out, Ltotal, D, Fc, Fa)
 # -
 
@@ -239,6 +246,8 @@ plt.psd(sig_x_out,Fs=Fa, NFFT = 16*1024, label = 'Rx spectrum')
 plt.psd(sig_x,Fs=Fa, NFFT = 16*1024, label = 'Tx spectrum')
 plt.legend(loc='upper left');
 plt.xlim(-Fa/2,Fa/2);
+
+bits_x.shape
 
 # +
 sigRx = sig_x_out
@@ -306,8 +315,10 @@ zi = k(np.vstack([xi.flatten(), yi.flatten()]))
 plt.pcolormesh(xi, yi, zi.reshape(xi.shape), alpha=1);
 
 # +
-y = (sigRx[0:30000]).real
-x = (sigRx[0:30000]).imag
+from scipy.stats.kde import gaussian_kde
+
+y = (symbRx[0:30000]).real
+x = (symbRx[0:30000]).imag
 
 k = gaussian_kde(np.vstack([x, y]))
 k.set_bandwidth(bw_method=k.factor/2)
