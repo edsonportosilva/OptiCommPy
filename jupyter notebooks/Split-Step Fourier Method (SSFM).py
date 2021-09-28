@@ -96,9 +96,6 @@ def manakovSSF(Ex, Ey, hz, Lspan, Ltotal, alpha, gamma, D, Fc, Fs):
             Ex = ifft(Ex);
             Ey = ifft(Ey);
             
-#             Ex = Ex*np.exp(1j*γ*8/9*(np.abs(Ex)**2 + np.abs(Ey)**2)*hz)
-#             Ey = Ey*np.exp(1j*γ*8/9*(np.abs(Ex)**2 + np.abs(Ey)**2)*hz)
-
             Ex = Ex*np.exp(1j*γ*8/9*(Ex*np.conj(Ex) + Ey*np.conj(Ey))*hz)
             Ey = Ey*np.exp(1j*γ*8/9*(Ex*np.conj(Ex) + Ey*np.conj(Ey))*hz)
         

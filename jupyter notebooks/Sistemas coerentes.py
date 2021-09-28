@@ -14,6 +14,7 @@
 #     name: python3
 # ---
 
+# +
 import matplotlib.pyplot as plt
 import numpy as np
 from sympy import Matrix, zeros
@@ -22,6 +23,10 @@ from commpy.utilities  import signal_power, upsample
 from commpy.modulation import Modem, QAMModem
 from utils.dsp import firFilter, pulseShape, eyediagram, lowPassFIR, edc
 from utils.models import mzm, linFiberCh, iqm
+
+from numpy.fft import fft, ifft, fftshift, ifftshift, fftfreq
+from tqdm import tqdm_notebook as tqdm
+from scipy import signal
 
 # +
 from IPython.core.display import HTML
@@ -63,7 +68,7 @@ def symdisp(expr, var, unit=' '):
 
 # + [markdown] toc=true
 # <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#Por-que-comunicações-ópticas-coerentes?" data-toc-modified-id="Por-que-comunicações-ópticas-coerentes?-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Por que comunicações ópticas coerentes?</a></span></li><li><span><a href="#Transmissão-de-formatos-de-modulação-coerentes" data-toc-modified-id="Transmissão-de-formatos-de-modulação-coerentes-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Transmissão de formatos de modulação coerentes</a></span></li><li><span><a href="#Detecção-coerente-de-sinais-ópticos" data-toc-modified-id="Detecção-coerente-de-sinais-ópticos-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Detecção coerente de sinais ópticos</a></span><ul class="toc-item"><li><span><a href="#Receptor-IM/DD" data-toc-modified-id="Receptor-IM/DD-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>Receptor IM/DD</a></span></li><li><span><a href="#Receptor-coerente" data-toc-modified-id="Receptor-coerente-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>Receptor coerente</a></span></li></ul></li><li><span><a href="#Batimento-entre-sinal-e-laser-oscilador-local-(LO)" data-toc-modified-id="Batimento-entre-sinal-e-laser-oscilador-local-(LO)-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Batimento entre sinal e laser oscilador local (LO)</a></span><ul class="toc-item"><li><span><a href="#Batimentos-entre-um-sinal-e-um-oscilador-local" data-toc-modified-id="Batimentos-entre-um-sinal-e-um-oscilador-local-4.1"><span class="toc-item-num">4.1&nbsp;&nbsp;</span>Batimentos entre um sinal e um oscilador local</a></span></li><li><span><a href="#Potência-do-sinal-detectado-$s(t)$" data-toc-modified-id="Potência-do-sinal-detectado-$s(t)$-4.2"><span class="toc-item-num">4.2&nbsp;&nbsp;</span>Potência do sinal detectado $s(t)$</a></span></li></ul></li><li><span><a href="#Híbrida-$2\times-4$-90°" data-toc-modified-id="Híbrida-$2\times-4$-90°-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Híbrida $2\times 4$ 90°</a></span><ul class="toc-item"><li><span><a href="#Exemplo-de-um-circuito-fotônico-que-implementa-uma-híbrida" data-toc-modified-id="Exemplo-de-um-circuito-fotônico-que-implementa-uma-híbrida-5.1"><span class="toc-item-num">5.1&nbsp;&nbsp;</span>Exemplo de um circuito fotônico que implementa uma híbrida</a></span></li><li><span><a href="#Matriz-de-transferência-entrada-saída" data-toc-modified-id="Matriz-de-transferência-entrada-saída-5.2"><span class="toc-item-num">5.2&nbsp;&nbsp;</span>Matriz de transferência entrada-saída</a></span></li><li><span><a href="#Derivação-das-expressões-para-o-front-end-coerente" data-toc-modified-id="Derivação-das-expressões-para-o-front-end-coerente-5.3"><span class="toc-item-num">5.3&nbsp;&nbsp;</span>Derivação das expressões para o front-end coerente</a></span></li><li><span><a href="#Tipos-de-detecção-óptica-coerente" data-toc-modified-id="Tipos-de-detecção-óptica-coerente-5.4"><span class="toc-item-num">5.4&nbsp;&nbsp;</span>Tipos de detecção óptica coerente</a></span></li></ul></li><li><span><a href="#Exemplo:-detecção-coerente-de-um-laser-não-modulado" data-toc-modified-id="Exemplo:-detecção-coerente-de-um-laser-não-modulado-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Exemplo: detecção coerente de um laser não-modulado</a></span></li><li><span><a href="#Transmissão-óptica-coerente" data-toc-modified-id="Transmissão-óptica-coerente-7"><span class="toc-item-num">7&nbsp;&nbsp;</span>Transmissão óptica coerente</a></span><ul class="toc-item"><li><span><a href="#Exemplo:-simulação-10G-OOK-vs-10G-BPSK" data-toc-modified-id="Exemplo:-simulação-10G-OOK-vs-10G-BPSK-7.1"><span class="toc-item-num">7.1&nbsp;&nbsp;</span>Exemplo: simulação 10G OOK vs 10G BPSK</a></span></li><li><span><a href="#Exemplo:-simulação-com-formatos-QPSK,-QAM" data-toc-modified-id="Exemplo:-simulação-com-formatos-QPSK,-QAM-7.2"><span class="toc-item-num">7.2&nbsp;&nbsp;</span>Exemplo: simulação com formatos QPSK, QAM</a></span></li></ul></li><li><span><a href="#Sistemas-WDM-coerentes" data-toc-modified-id="Sistemas-WDM-coerentes-8"><span class="toc-item-num">8&nbsp;&nbsp;</span>Sistemas WDM coerentes</a></span></li></ul></div>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Por-que-comunicações-ópticas-coerentes?" data-toc-modified-id="Por-que-comunicações-ópticas-coerentes?-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Por que comunicações ópticas coerentes?</a></span></li><li><span><a href="#Transmissão-de-formatos-de-modulação-coerentes" data-toc-modified-id="Transmissão-de-formatos-de-modulação-coerentes-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Transmissão de formatos de modulação coerentes</a></span></li><li><span><a href="#Detecção-coerente-de-sinais-ópticos" data-toc-modified-id="Detecção-coerente-de-sinais-ópticos-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Detecção coerente de sinais ópticos</a></span><ul class="toc-item"><li><span><a href="#Receptor-IM/DD" data-toc-modified-id="Receptor-IM/DD-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>Receptor IM/DD</a></span></li><li><span><a href="#Receptor-coerente" data-toc-modified-id="Receptor-coerente-3.2"><span class="toc-item-num">3.2&nbsp;&nbsp;</span>Receptor coerente</a></span></li></ul></li><li><span><a href="#Batimento-entre-sinal-e-laser-oscilador-local-(LO)" data-toc-modified-id="Batimento-entre-sinal-e-laser-oscilador-local-(LO)-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Batimento entre sinal e laser oscilador local (LO)</a></span><ul class="toc-item"><li><span><a href="#Batimentos-entre-um-sinal-e-um-oscilador-local" data-toc-modified-id="Batimentos-entre-um-sinal-e-um-oscilador-local-4.1"><span class="toc-item-num">4.1&nbsp;&nbsp;</span>Batimentos entre um sinal e um oscilador local</a></span></li><li><span><a href="#Potência-do-sinal-detectado-$s(t)$" data-toc-modified-id="Potência-do-sinal-detectado-$s(t)$-4.2"><span class="toc-item-num">4.2&nbsp;&nbsp;</span>Potência do sinal detectado $s(t)$</a></span></li></ul></li><li><span><a href="#Híbrida-$2\times-4$-90°" data-toc-modified-id="Híbrida-$2\times-4$-90°-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Híbrida $2\times 4$ 90°</a></span><ul class="toc-item"><li><span><a href="#Exemplo-de-um-circuito-fotônico-que-implementa-uma-híbrida" data-toc-modified-id="Exemplo-de-um-circuito-fotônico-que-implementa-uma-híbrida-5.1"><span class="toc-item-num">5.1&nbsp;&nbsp;</span>Exemplo de um circuito fotônico que implementa uma híbrida</a></span></li><li><span><a href="#Matriz-de-transferência-entrada-saída" data-toc-modified-id="Matriz-de-transferência-entrada-saída-5.2"><span class="toc-item-num">5.2&nbsp;&nbsp;</span>Matriz de transferência entrada-saída</a></span></li><li><span><a href="#Derivação-das-expressões-para-o-front-end-coerente" data-toc-modified-id="Derivação-das-expressões-para-o-front-end-coerente-5.3"><span class="toc-item-num">5.3&nbsp;&nbsp;</span>Derivação das expressões para o front-end coerente</a></span></li><li><span><a href="#Tipos-de-detecção-óptica-coerente" data-toc-modified-id="Tipos-de-detecção-óptica-coerente-5.4"><span class="toc-item-num">5.4&nbsp;&nbsp;</span>Tipos de detecção óptica coerente</a></span></li></ul></li><li><span><a href="#Exemplo:-detecção-coerente-de-um-laser-não-modulado" data-toc-modified-id="Exemplo:-detecção-coerente-de-um-laser-não-modulado-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Exemplo: detecção coerente de um laser não-modulado</a></span></li><li><span><a href="#Transmissão-óptica-coerente" data-toc-modified-id="Transmissão-óptica-coerente-7"><span class="toc-item-num">7&nbsp;&nbsp;</span>Transmissão óptica coerente</a></span><ul class="toc-item"><li><span><a href="#Exemplo:-simulação-10G-OOK-vs-10G-BPSK" data-toc-modified-id="Exemplo:-simulação-10G-OOK-vs-10G-BPSK-7.1"><span class="toc-item-num">7.1&nbsp;&nbsp;</span>Exemplo: simulação 10G OOK vs 10G BPSK</a></span></li><li><span><a href="#Exemplo:-simulação-com-formatos-QPSK,-QAM" data-toc-modified-id="Exemplo:-simulação-com-formatos-QPSK,-QAM-7.2"><span class="toc-item-num">7.2&nbsp;&nbsp;</span>Exemplo: simulação com formatos QPSK, QAM</a></span></li></ul></li><li><span><a href="#Multiplexação-de-polarização" data-toc-modified-id="Multiplexação-de-polarização-8"><span class="toc-item-num">8&nbsp;&nbsp;</span>Multiplexação de polarização</a></span></li><li><span><a href="#Sistemas-WDM-coerentes" data-toc-modified-id="Sistemas-WDM-coerentes-9"><span class="toc-item-num">9&nbsp;&nbsp;</span>Sistemas WDM coerentes</a></span></li></ul></div>
 # -
 
 # ## Por que comunicações ópticas coerentes?
@@ -460,7 +465,7 @@ Nsamples = 1000
 π = np.pi
 
 #
-lw = 0*100e3
+lw = 100e6
 pn_sig = phaseNoise(lw, Nsamples, Ta)
 pn_lo  = phaseNoise(lw, Nsamples, Ta)
 
@@ -847,8 +852,13 @@ plt.plot(symbTx[ind].real,symbTx[ind].imag,'k.', markersize=4, label='Tx');
 
 # -
 
+# ## Multiplexação de polarização
+#
+# <img src="./figuras/sistemaCoerentePM.png" width="900">
+
 # ## Sistemas WDM coerentes
 
+# +
 def simpleWDMTx(param):
     
     # transmitter parameters
@@ -873,7 +883,8 @@ def simpleWDMTx(param):
     t = np.arange(0, int(((param.Nbits)/np.log2(param.M))*param.SpS))
     
     # allocate array 
-    sigTxWDM = np.zeros((len(t), param.Nmodes), dtype='complex')
+    sigTxWDM  = np.zeros((len(t), param.Nmodes), dtype='complex')
+    symbTxWDM = np.zeros((int(len(t)/param.SpS), param.Nmodes, param.Nch), dtype='complex')
     
     Psig = 0
     
@@ -891,7 +902,9 @@ def simpleWDMTx(param):
 
             # normalize symbols energy to 1
             symbTx = symbTx/np.sqrt(Es)
-
+            
+            symbTxWDM[:,indMode,indCh] = symbTx
+            
             # upsampling
             symbolsUp = upsample(symbTx, param.SpS)
 
@@ -920,34 +933,197 @@ def simpleWDMTx(param):
         
     print('total WDM signal power: %.2f dBm'%(10*np.log10(Psig/1e-3)))
     
-    return sigTxWDM
+    return sigTxWDM, symbTxWDM, freqGrid
 
+def ssfm(Ein, hz, Lspan, Ltotal, alpha, gamma, D, Fc, Fs):      
+                 
+    c = 299792458   # speed of light (vacuum)
+    c_kms = c/1e3
+    λ  = c_kms/Fc
+    α  = alpha/(10*np.log10(np.exp(1)))
+    β2 = -(D*λ**2)/(2*np.pi*c_kms)
+    γ  = gamma
+            
+    Nfft = len(Ein)
+
+    ω = 2*np.pi*Fs*fftfreq(Nfft)
+    
+    Nspans = int(np.floor(Ltotal/Lspan))
+    Nsteps = int(np.floor(Lspan/hz))
+    
+    Ech = Ein.reshape(len(Ein),)    
+    Ech = fft(Ech) #single-polarization field    
+    
+    linOperator = np.exp(-α*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))
+    
+    for spanN in tqdm(range(1, Nspans+1)):
+        for stepN in range(1, Nsteps+1):            
+            # First linear step (frequency domain)
+            Ech = Ech*linOperator            
+                      
+            # Nonlinear step (time domain)
+            Ech = ifft(Ech)
+            Ech = Ech*np.exp(1j*γ*(Ech*np.conj(Ech)*hz))
+                       
+            # Second linear step (frequency domain)
+            Ech = fft(Ech)       
+            Ech = Ech*linOperator           
+            
+        Ech = Ech*np.exp(α*Nsteps*hz)  
+                
+    Ech = ifft(Ech)    
+           
+    return Ech.reshape(len(Ech), 1)
+
+
+# -
 
 class parameters:
     pass
 
 
 # +
+canalLinear = False
+
 param = parameters()
-param.M   = 16           # ordem do formato de modulação
+param.M   = 64           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 16           # número de amostras por símbolo
-param.Nbits = 40000      # número de bits
+param.Nbits = 60000      # número de bits
 param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
-param.Pch_dBm = -3       # potência média por canal WDM [dBm]
-param.Nch     = 7        # número de canais WDM
+param.Pch_dBm = -5       # potência média por canal WDM [dBm]
+param.Nch     = 9        # número de canais WDM
 param.Fc      = 193.1e12 # frequência central do espectro WDM
 param.freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
-param.Nmodes = 2         # número de modos de polarização
+param.Nmodes = 1         # número de modos de polarização
 
-sigWDM = simpleWDMTx(param)
+sigWDM_Tx, symbTx_, freqGrid = simpleWDMTx(param)
+# +
+# parâmetros do canal óptico
+Ltotal = 800   # km
+Lspan  = 80    # km
+alpha = 0.2    # dB/km
+D = 16         # ps/nm/km
+Fc = 193.1e12  # Hz
+hz = 1         # km
+gamma = 1.3    # 1/W
 
-sigWDM = linFiberCh(sigWDM, Ltotal, alpha, D, Fc, Fa)
+if canalLinear:
+    sigWDM = linFiberCh(sigWDM_Tx, Ltotal, alpha, D, Fc, param.Rs*param.SpS)
+else:
+    sigWDM = ssfm(sigWDM_Tx, hz, Lspan, Ltotal, alpha, gamma, D, Fc, param.Rs*param.SpS) 
 # -
+
 # plota psd
 plt.figure()
-plt.psd(sigWDM[:,0], Fs=SpS*Rs, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum')
-plt.psd(sigWDM[:,1], Fs=SpS*Rs, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum')
-plt.legend(loc='upper left');
+plt.psd(sigWDM_Tx[:,0], Fs=param.SpS*param.Rs, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Tx')
+plt.psd(sigWDM[:,0], Fs=param.SpS*param.Rs, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Rx')
+plt.legend(loc='upper left')
+plt.xlim(-param.SpS*param.Rs/2,param.SpS*param.Rs/2);
+
+# +
+plotPSD = True
+
+Fa = param.SpS*param.Rs
+Ta = 1/Fa
+mod = QAMModem(m=param.M)
+
+chIndex = 4 # índice do canal a ser demodulado
+
+sigWDM = sigWDM.reshape(len(sigWDM),)
+symbTx = symbTx_[:,:,chIndex].reshape(len(symbTx_),)
+
+# Fc do canal a ser demodulado
+Δf_lo   = freqGrid[chIndex]
+lw      = 0
+Plo_dBm = 10 
+Plo     = 10**(Plo_dBm/10)*1e-3
+ϕ_lo    = 0
+π       = np.pi
+
+# gera sinal do oscilador local
+t       = np.arange(0, len(sigWDM))*Ta
+ϕ_pn_lo = phaseNoise(lw, len(sigWDM), Ta)
+
+sigLO = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
+
+# receptor óptico coerente
+sigRx = coherentReceiver(sigWDM, sigLO)
+
+# filtragem Rx
+
+# filtro casado
+if param.pulse == 'nrz':
+    pulse = pulseShape('nrz', param.SpS)
+elif param.pulse == 'rrc':
+    pulse = pulseShape('rrc', param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=1/param.Rs)
+
+pulse = pulse/np.max(np.abs(pulse))            
+sigRx = firFilter(pulse, sigRx)
+
+# plota psd
+if plotPSD:
+    plt.figure();
+   # plt.ylim(-250,-50);
+    plt.psd(sigRx, Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal recebido')
+    plt.legend(loc='upper left');
+    plt.xlim(-Fa/2,Fa/2);
+
+# compensação dispersão cromática
+sigRx = edc(sigRx, Ltotal, D, Fc-Δf_lo, Fa)
+
+# captura amostras no meio dos intervalos de sinalização
+varVector = np.var((sigRx.T).reshape(-1,param.SpS), axis=0) # acha o melhor instante de amostragem
+sampDelay = np.where(varVector == np.amax(varVector))[0][0]
+
+# downsampling
+sigRx = sigRx[sampDelay::param.SpS]
+
+# calcula atraso gerado pelo walkoff
+symbDelay = np.argmax(signal.correlate(np.abs(symbTx), np.abs(sigRx)))-sigRx.size+1 
+
+# compensa atraso do walkoff
+sigRx = np.roll(sigRx, symbDelay)
+
+discard = 1000
+ind = np.arange(discard, sigRx.size-discard)
+
+# normaliza constelação recebida
+sigRx = sigRx/np.sqrt(signal_power(sigRx[ind]))
+
+# corrige (possível) rotação de fase adicionada pelo canal
+rot = np.mean(symbTx[ind]/sigRx[ind])
+sigRx  = rot*sigRx
+
+# estima SNR da constelação recebida
+SNR = signal_power(symbTx[ind])/signal_power(sigRx[ind]-symbTx[ind])
+
+# Aplica a regra de decisão brusca        
+bitsRx = mod.demodulate(np.sqrt(mod.Es)*sigRx, demod_type = 'hard') 
+bitsTx = mod.demodulate(np.sqrt(mod.Es)*symbTx, demod_type = 'hard') 
+
+err = np.logical_xor(bitsRx[discard:bitsRx.size-discard], 
+                     bitsTx[discard:bitsTx.size-discard])
+BER = np.mean(err)
+
+print('SNR[est] = %.2f dB \n'%(10*np.log10(SNR)))
+print('Total de erros contados = %d  '%(err.sum()))
+print('BER = %.2e  '%(BER))
+
+plt.figure()
+plt.plot(err,'o', label = 'erros')
+plt.legend()
+plt.grid()
+
+# +
+plt.figure(figsize=(4,4))
+plt.ylabel('$S_Q$', fontsize=14)
+plt.xlabel('$S_I$', fontsize=14)
+#plt.xlim(-1.1,1.1)
+#plt.ylim(-1.1,1.1)
+plt.grid()
+
+plt.plot(sigRx[ind].real,sigRx[ind].imag,'.', markersize=4, label='Rx')
+plt.plot(symbTx[ind].real,symbTx[ind].imag,'k.', markersize=4, label='Tx');
