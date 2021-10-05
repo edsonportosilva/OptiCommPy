@@ -27,6 +27,7 @@ from utils.models import mzm, linFiberCh, iqm, ssfm, edfa
 from numpy.fft import fft, ifft, fftshift, ifftshift, fftfreq
 from tqdm import tqdm_notebook as tqdm
 from scipy import signal
+import scipy.constants as const
 import numba
 
 # +
@@ -862,9 +863,8 @@ plt.plot(symbTx[ind].real,symbTx[ind].imag,'k.', markersize=4, label='Tx');
 
 from numba import jit
 
-# +
-import scipy.constants as const
 
+# +
 def simpleWDMTx(param):
     
     # transmitter parameters
@@ -954,6 +954,7 @@ def edfa(Ei, G, nf, Fc, Fs):
     p_noise  = N_ase*Fs    
     noise    = np.random.normal(0, np.sqrt(p_noise), Ei.shape) + 1j*np.random.normal(0, np.sqrt(p_noise), Ei.shape)
     return Ei*np.sqrt(G_lin) + noise
+
 
 def ssfm(Ein, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12, amp='edfa', NF=4.5):      
     '''
@@ -1114,15 +1115,15 @@ ax1.title.set_text('Saída do front-end coerente')
 ax1.grid()
 
 # digital backpropagation
-hzDBP = 5
-Pin   = 10**(param.Pch_dBm/10)*1e-3
-sigRx = sigRx/np.sqrt(signal_power(sigRx))
-sigRx = dbp(np.sqrt(Pin)*sigRx, Fa, Ltotal, Lspan, hzDBP, alpha, -gamma, D, Fc)
-sigRx = sigRx.reshape(len(sigRx),)
-sigRx = firFilter(pulse, sigRx)
+# hzDBP = 5
+# Pin   = 10**(param.Pch_dBm/10)*1e-3
+# sigRx = sigRx/np.sqrt(signal_power(sigRx))
+# sigRx = dbp(np.sqrt(Pin)*sigRx, Fa, Ltotal, Lspan, hzDBP, alpha, -gamma, D, Fc)
+# sigRx = sigRx.reshape(len(sigRx),)
+# sigRx = firFilter(pulse, sigRx)
     
 # compensação dispersão cromática
-# sigRx = edc(sigRx, Ltotal, D, Fc-Δf_lo, Fa)
+sigRx = edc(sigRx, Ltotal, D, Fc-Δf_lo, Fa)
 
 # captura amostras no meio dos intervalos de sinalização
 varVector = np.var((sigRx.T).reshape(-1,param.SpS), axis=0) # acha o melhor instante de amostragem
@@ -1285,12 +1286,6 @@ def dbp(Ein, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12)
     return Ech.reshape(len(Ech), 1)
 
 
-import scipy.constants as const
-
-const.h
-
-
-
 # +
 @numba.njit
 def CPR(Ei, N, constSymb, symbTx):    
@@ -1342,6 +1337,3 @@ def fourthPowerFOE(Ei, Ts):
     plt.grid()
     
     return f[indFO]/4
-# -
-
-
