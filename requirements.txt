@@ -5,3 +5,4 @@ sympy>=1.7.1
 pandas>=1.3.2
 scikit-commpy>=0.7.0
 xeus-python>=0.12.5
+tqdm
