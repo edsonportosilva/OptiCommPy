@@ -2,9 +2,11 @@ from scipy.signal import lfilter
 import numpy as np
 from commpy.filters import rrcosfilter, rcosfilter
 from commpy.utilities  import upsample
-from scipy.stats.kde import gaussian_kde
+from scipy.stats.kde import gaussian_kde]
+import scipy.constants as const
 from utils.models import linFiberCh
 import matplotlib.pyplot as plt
+from numpy.fft import fft, ifft, fftfreq
 
 def firFilter(h, x):
     """
@@ -164,3 +166,108 @@ def edc(Ei, L, D, Fc, Fs):
     Eo = linFiberCh(Ei, L, 0, -D, Fc, Fs)
     
     return Eo
+
+def CPR(Ei, N, constSymb, symbTx):    
+    '''
+    Carrier phase recovery (CPR)
+    
+    '''    
+    ϕ  = np.zeros(Ei.shape)    
+    θ  = np.zeros(Ei.shape)
+    
+    for k in range(0,len(Ei)):
+        
+        decided = np.argmin(np.abs(Ei[k]*np.exp(1j*θ[k-1]) - constSymb)) # find closest constellation symbol
+        
+        if k % 50 == 0:
+            ϕ[k] = np.angle(symbTx[k]/(Ei[k])) # phase estimation with pilot symbol
+        else:
+            ϕ[k] = np.angle(constSymb[decided]/(Ei[k])) # phase estimation after symbol decision
+                
+        if k > N:
+            θ[k]  = np.mean(ϕ[k-N:k]) # moving average filter
+        else:           
+            θ[k] = ϕ[k]
+            
+    Eo = Ei*np.exp(1j*θ) # compensate phase rotation
+        
+    return Eo, ϕ, θ
+
+def fourthPowerFOE(Ei, Ts, plotSpec=False):
+    """
+    4th power frequency offset estimator (FOE)    
+    """
+        
+    Fs = 1/Ts
+    Nfft = len(Ei)
+    
+    f = Fs*fftfreq(Nfft)
+    f = fftshift(f)
+    
+    f4 = 10*np.log10(np.abs(fftshift(fft(Ei**4))))    
+    indFO = np.argmax(f4)
+
+    if plotSpec:
+        plt.figure()
+        plt.plot(f, f4, label = '$|FFT(s[k]^4)|[dB]$')
+        plt.plot(f[indFO], f4[indFO],'x',label='$4f_o$')
+        plt.legend()
+        plt.xlim(min(f), max(f))
+        plt.grid()
+    
+    return f[indFO]/4
+
+def dbp(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12):      
+    """
+    Digital backpropagation (symmetric, single-pol.)
+
+    :param Ei: input signal
+    :param Ltotal: total fiber length [km]
+    :param Lspan: span length [km]
+    :param hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+    :param alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+    :param D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+    :param gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+    :param Fc: carrier frequency [Hz][default: 193.1e12 Hz]
+    :param Fs: sampling frequency [Hz]
+
+    :return Ech: backpropagated signal
+    """           
+    #c = 299792458   # speed of light (vacuum)
+    c_kms = const.c/1e3
+    λ  = c_kms/Fc
+    α  = -alpha/(10*np.log10(np.exp(1)))
+    β2 = (D*λ**2)/(2*np.pi*c_kms)
+    γ  = gamma
+            
+    Nfft = len(Ei)
+
+    ω = 2*np.pi*Fs*fftfreq(Nfft)
+    
+    Nspans = int(np.floor(Ltotal/Lspan))
+    Nsteps = int(np.floor(Lspan/hz))   
+        
+    Ech = Ei.reshape(len(Ei),)    
+    Ech = fft(Ech) #single-polarization field    
+    
+    linOperator = np.exp(-(α/2)*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))
+        
+    for spanN in tqdm(range(0, Nspans)):
+        
+        Ech = Ech*np.exp((α/2)*Nsteps*hz)
+                
+        for stepN in range(0, Nsteps):            
+            # First linear step (frequency domain)
+            Ech = Ech*linOperator            
+                      
+            # Nonlinear step (time domain)
+            Ech = ifft(Ech)
+            Ech = Ech*np.exp(1j*γ*(Ech*np.conj(Ech))*hz)
+            
+            # Second linear step (frequency domain)
+            Ech = fft(Ech)       
+            Ech = Ech*linOperator             
+                
+    Ech = ifft(Ech) 
+       
+    return Ech.reshape(len(Ech), 1)
