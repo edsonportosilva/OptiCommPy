@@ -853,6 +853,8 @@ plt.grid()
 
 plt.plot(sigRx[ind].real,sigRx[ind].imag,'.', markersize=4, label='Rx')
 plt.plot(symbTx[ind].real,symbTx[ind].imag,'k.', markersize=4, label='Tx');
+
+
 # -
 
 # ## Multiplexação de polarização
@@ -860,9 +862,6 @@ plt.plot(symbTx[ind].real,symbTx[ind].imag,'k.', markersize=4, label='Tx');
 # <img src="./figuras/sistemaCoerentePM.png" width="900">
 
 # ## Sistemas WDM coerentes
-
-from numba import jit
-
 
 # +
 def simpleWDMTx(param):
