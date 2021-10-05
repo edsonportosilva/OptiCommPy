@@ -1003,7 +1003,7 @@ def ssfm(Ein, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12
         elif amp == None:
             ;         
           
-    return Ech.reshape(len(Ech), 1)
+    return Ech.reshape(len(Ech),)
 
 
 # -
@@ -1012,9 +1012,10 @@ class parameters:
     pass
 
 
-# +
-canalLinear = False
+# **Geração de sinal WDM**
 
+# +
+# Parâmetros do transmissor:
 param = parameters()
 param.M   = 16           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
@@ -1034,18 +1035,21 @@ sigWDM_Tx, symbTx_, freqGrid = simpleWDMTx(param)
 # **Transmissão via fibra SMF (split-step Fourier)**
 
 # +
+canalLinear = False
+
 # parâmetros do canal óptico
 Ltotal = 800   # km
 Lspan  = 80    # km
 alpha = 0.2    # dB/km
 D = 16         # ps/nm/km
 Fc = 193.1e12  # Hz
-hz = 0.5       # km
+hz = 1         # km
 gamma = 1.3    # 1/(W.km)
 
 if canalLinear:
     sigWDM = linFiberCh(sigWDM_Tx, Ltotal, alpha, D, Fc, param.Rs*param.SpS)
 else:
+    powerProfile(param.Pch_dBm, alpha, Lspan, Ltotal/Lspan)
     sigWDM = ssfm(sigWDM_Tx, param.Rs*param.SpS, Ltotal, Lspan, hz, alpha, gamma, D, Fc, amp='edfa') 
 # -
 
@@ -1053,32 +1057,45 @@ else:
 
 # plota psd
 plt.figure()
-plt.psd(sigWDM_Tx[:,0], Fs=param.SpS*param.Rs, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Tx')
-plt.psd(sigWDM[:,0], Fs=param.SpS*param.Rs, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Rx')
-plt.legend(loc='upper left')
-plt.xlim(-param.SpS*param.Rs/2,param.SpS*param.Rs/2);
+plt.xlim(Fc-param.SpS*param.Rs/2,Fc+param.SpS*param.Rs/2);
+plt.psd(sigWDM_Tx[:,0], Fs=param.SpS*param.Rs, Fc=Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Tx')
+plt.psd(sigWDM, Fs=param.SpS*param.Rs, Fc=Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Rx')
+plt.legend(loc='lower left')
+plt.title('Espectro óptico dos canais WDM');
+
+
+# **Recepção dos canais WDM**
 
 # +
+### Receptor
+
+# parâmetros
+chIndex = 4 # índice do canal a ser demodulado
 plotPSD = True
 
 Fa = param.SpS*param.Rs
 Ta = 1/Fa
 mod = QAMModem(m=param.M)
 
-chIndex = 4 # índice do canal a ser demodulado
+print('Demodulando canal #%d , fc: %.4f THz, λ: %.4f nm'\
+      %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
 
-sigWDM = sigWDM.reshape(len(sigWDM),)
+#sigWDM = sigWDM.reshape(len(sigWDM),)
 symbTx = symbTx_[:,:,chIndex].reshape(len(symbTx_),)
 
-# Fc do canal a ser demodulado
-Δf_lo   = freqGrid[chIndex]+128e6
-lw      = 200e3
-Plo_dBm = 10 
-Plo     = 10**(Plo_dBm/10)*1e-3
-ϕ_lo    = 0
-π       = np.pi
+# parâmetros do oscilador local:
+FO      = 128e6                 # desvio de frequência
+Δf_lo   = freqGrid[chIndex]+FO  # downshift canal a ser demodulado
+lw      = 100e3                 # largura de linha
+Plo_dBm = 10                    # potência em dBm
+Plo     = 10**(Plo_dBm/10)*1e-3 # potência em W
+ϕ_lo    = 0                     # fase inicial em rad     
+
+print('Oscilador local P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz'\
+      %(Plo_dBm, lw/1e3, FO/1e6))
 
 # gera sinal do oscilador local
+π       = np.pi
 t       = np.arange(0, len(sigWDM))*Ta
 ϕ_pn_lo = phaseNoise(lw, len(sigWDM), Ta)
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
@@ -1114,15 +1131,15 @@ ax1.title.set_text('Saída do front-end coerente')
 ax1.grid()
 
 # digital backpropagation
-# hzDBP = 5
-# Pin   = 10**(param.Pch_dBm/10)*1e-3
-# sigRx = sigRx/np.sqrt(signal_power(sigRx))
-# sigRx = dbp(np.sqrt(Pin)*sigRx, Fa, Ltotal, Lspan, hzDBP, alpha, -gamma, D, Fc)
-# sigRx = sigRx.reshape(len(sigRx),)
-# sigRx = firFilter(pulse, sigRx)
+hzDBP = 5
+Pin   = 10**(param.Pch_dBm/10)*1e-3
+sigRx = sigRx/np.sqrt(signal_power(sigRx))
+sigRx = dbp(np.sqrt(Pin)*sigRx, Fa, Ltotal, Lspan, hzDBP, alpha, -gamma, D, Fc)
+sigRx = sigRx.reshape(len(sigRx),)
+sigRx = firFilter(pulse, sigRx)
     
 # compensação dispersão cromática
-sigRx = edc(sigRx, Ltotal, D, Fc-Δf_lo, Fa)
+# sigRx = edc(sigRx, Ltotal, D, Fc-Δf_lo, Fa)
 
 # captura amostras no meio dos intervalos de sinalização
 varVector = np.var((sigRx.T).reshape(-1,param.SpS), axis=0) # acha o melhor instante de amostragem
@@ -1154,7 +1171,7 @@ sigRx = sigRx/np.sqrt(signal_power(sigRx[ind]))
 
 # estima e compensa desvio de frequência entre sinal e LO
 fo = fourthPowerFOE(sigRx, 1/Rs)
-print('FO : %3.4e Hz'%fo)
+print('FO estimado: %3.4f Hz'%(fo/1e6))
 
 sigRx = sigRx*np.exp(-1j*2*π*fo*np.arange(0,len(sigRx))/Rs)
 
@@ -1336,3 +1353,22 @@ def fourthPowerFOE(Ei, Ts):
     plt.grid()
     
     return f[indFO]/4
+
+
+# -
+
+def powerProfile(Pin, alpha, Lspan, Nspans):
+    
+    L = np.linspace(0, Nspans*Lspan, 2000)
+    
+    power = Pin-alpha*(L%Lspan)
+    
+    plt.plot(L, power,'')
+    plt.xlabel('L [km]')
+    plt.ylabel('power [dBm]')
+    plt.title('Power profile')
+    plt.grid()
+    plt.xlim(min(L), max(L))
+
+
+powerProfile(10, 0.2, 80, 10)
