@@ -196,7 +196,7 @@ plt.title('optical WDM spectrum');
 # **WDM channels coherent detection and demodulation**
 
 # +
-### Receptor
+### Receiver
 
 # parameters
 chIndex = 4     # index of the channel to be demodulated
@@ -340,7 +340,7 @@ ax4.grid()
 # estimate SNR of the received constellation
 SNR = signal_power(symbTx[ind])/signal_power(sigRx[ind]-symbTx[ind])
 
-# hard decision demodulation    
+# hard decision demodulation of the received symbols    
 bitsRx = mod.demodulate(np.sqrt(mod.Es)*sigRx, demod_type = 'hard') 
 bitsTx = mod.demodulate(np.sqrt(mod.Es)*symbTx, demod_type = 'hard') 
 
