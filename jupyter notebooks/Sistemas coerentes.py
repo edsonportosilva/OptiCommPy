@@ -1043,7 +1043,7 @@ Lspan  = 80    # km
 alpha = 0.2    # dB/km
 D = 16         # ps/nm/km
 Fc = 193.1e12  # Hz
-hz = 1         # km
+hz = 2         # km
 gamma = 1.3    # 1/(W.km)
 
 if canalLinear:
@@ -1139,7 +1139,7 @@ sigRx = sigRx.reshape(len(sigRx),)
 sigRx = firFilter(pulse, sigRx)
     
 # compensação dispersão cromática
-# sigRx = edc(sigRx, Ltotal, D, Fc-Δf_lo, Fa)
+#sigRx = edc(sigRx, Ltotal, D, Fc-Δf_lo, Fa)
 
 # captura amostras no meio dos intervalos de sinalização
 varVector = np.var((sigRx.T).reshape(-1,param.SpS), axis=0) # acha o melhor instante de amostragem
@@ -1171,7 +1171,7 @@ sigRx = sigRx/np.sqrt(signal_power(sigRx[ind]))
 
 # estima e compensa desvio de frequência entre sinal e LO
 fo = fourthPowerFOE(sigRx, 1/Rs)
-print('FO estimado: %3.4f Hz'%(fo/1e6))
+print('FO estimado: %3.4f MHz'%(fo/1e6))
 
 sigRx = sigRx*np.exp(-1j*2*π*fo*np.arange(0,len(sigRx))/Rs)
 
