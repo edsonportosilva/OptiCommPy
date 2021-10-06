@@ -73,7 +73,7 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     return Eo
 
 def balancedPD(E1, E2, R=1):
-    '''
+    """
     Balanced photodetector (BPD)
     
     :param E1: input field [nparray]
@@ -81,7 +81,7 @@ def balancedPD(E1, E2, R=1):
     :param R: photodiode responsivity [scalar]
     
     :return: balanced photocurrent
-    '''
+    """
     assert R > 0, 'PD responsivity should be a positive scalar'
     assert E1.size == E2.size, 'E1 and E2 need to have the same size'
     
@@ -91,14 +91,14 @@ def balancedPD(E1, E2, R=1):
     return i1-i2
 
 def hybrid_2x4_90deg(E1, E2):
-    '''
+    """
     Optical 2 x 4 90° hybrid
     
     :param E1: input signal field [nparray]
     :param E2: input LO field [nparray]
         
     :return: hybrid outputs
-    '''
+    """
     assert E1.size == E2.size, 'E1 and E2 need to have the same size'
     
     # optical hybrid transfer matrix    
@@ -115,7 +115,7 @@ def hybrid_2x4_90deg(E1, E2):
     return Eo
     
 def coherentReceiver(Es, Elo, Rd=1):
-    '''
+    """
     Single polarization coherent optical front-end
     
     :param Es: input signal field [nparray]
@@ -123,7 +123,7 @@ def coherentReceiver(Es, Elo, Rd=1):
     :param Rd: photodiode resposivity [scalar]
     
     :return: downconverted signal after balanced detection    
-    '''
+    """
     assert Rd > 0, 'PD responsivity should be a positive scalar'
     assert Es.size == Elo.size, 'Es and Elo need to have the same size'
     
@@ -137,10 +137,10 @@ def coherentReceiver(Es, Elo, Rd=1):
     return sI + 1j*sQ
 
 def edfa(Ei, G, nf, Fc, Fs):
-    '''
+    """
     Simple EDFA model
     
-    '''
+    """
     nf_lin   = 10**(nf/10)
     G_lin    = 10**(G/10)
     nsp      = (G_lin*nf_lin - 1)/(2*(G_lin - 1))
@@ -150,7 +150,7 @@ def edfa(Ei, G, nf, Fc, Fs):
     return Ei*np.sqrt(G_lin) + noise
 
 def ssfm(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12, amp='edfa', NF=4.5):      
-    '''
+    """
     Split-step Fourier method (symmetric, single-pol.)
 
     :param Ei: input signal
@@ -166,7 +166,7 @@ def ssfm(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12,
     :param Fs: sampling frequency [Hz]
 
     :return Ech: propagated signal
-    '''             
+    """             
     #c = 299792458   # speed of light (vacuum)
     c_kms = const.c/1e3
     λ  = c_kms/Fc
