@@ -114,9 +114,7 @@ def simpleWDMTx(param):
                 pulse = pulseShape('rrc', param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts)
 
             pulse = pulse/np.max(np.abs(pulse))
-
-            # formatação de pulso
-            sigTx  = firFilter(pulse, symbolsUp)
+            sigTx = firFilter(pulse, symbolsUp)
 
             # optical modulation
             sigTxCh = iqm(Ai, 0.5*sigTx, Vπ, Vb, Vb)
@@ -164,7 +162,7 @@ sigWDM_Tx, symbTx_, freqGrid = simpleWDMTx(param)
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
 # +
-canalLinear = False
+linearChannel = False
 
 # optical channel parameters
 Ltotal = 400   # km
@@ -175,7 +173,7 @@ Fc = 193.1e12  # Hz
 hz = 0.5       # km
 gamma = 1.3    # 1/(W.km)
 
-if canalLinear:
+if linearChannel:
     hz = Lspan  # km
     gamma = 0   # 1/(W.km)
     
