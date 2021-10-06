@@ -167,7 +167,7 @@ def edc(Ei, L, D, Fc, Fs):
     
     return Eo
 
-def CPR(Ei, N, constSymb, symbTx):    
+def cpr(Ei, N, constSymb, symbTx):    
     """
     Carrier phase recovery (CPR)
     
