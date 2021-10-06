@@ -78,7 +78,7 @@ def balancedPD(E1, E2, R=1):
     
     :param E1: input field [nparray]
     :param E2: input field [nparray]
-    :param R: photodiode responsivity [scalar]
+    :param R: photodiode responsivity [A/W][scalar, default: 1 A/W]
     
     :return: balanced photocurrent
     """
@@ -136,14 +136,24 @@ def coherentReceiver(Es, Elo, Rd=1):
     
     return sI + 1j*sQ
 
-def edfa(Ei, G, nf, Fc, Fs):
+def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
     Simple EDFA model
-    
+
+    :param Ei: input signal field [nparray]
+    :param Fs: sampling frequency [Hz][scalar]
+    :param G: gain [dB][scalar, default: 20 dB]
+    :param NF: EDFA noise figure [dB][scalar, default: 4.5 dB]
+    :param Fc: optical center frequency [Hz][scalar, default: 193.1e12 Hz]    
+
+    :return: amplified noisy optical signal [nparray]
     """
-    nf_lin   = 10**(nf/10)
+    assert G > 0, 'EDFA gain should be a positive scalar'
+    assert NF >= 3, 'The minimal EDFA noise figure is 3 dB'
+    
+    NF_lin   = 10**(NF/10)
     G_lin    = 10**(G/10)
-    nsp      = (G_lin*nf_lin - 1)/(2*(G_lin - 1))
+    nsp      = (G_lin*NF_lin - 1)/(2*(G_lin - 1))
     N_ase    = (G_lin - 1)*nsp*const.h*Fc
     p_noise  = N_ase*Fs    
     noise    = np.random.normal(0, np.sqrt(p_noise), Ei.shape) + 1j*np.random.normal(0, np.sqrt(p_noise), Ei.shape)
