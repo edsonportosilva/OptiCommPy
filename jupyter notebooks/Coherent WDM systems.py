@@ -164,7 +164,7 @@ sigWDM_Tx, symbTx_, freqGrid = simpleWDMTx(param)
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
 # +
-canalLinear = True
+canalLinear = False
 
 # optical channel parameters
 Ltotal = 400   # km
@@ -198,43 +198,43 @@ plt.title('optical WDM spectrum');
 # +
 ### Receptor
 
-# parâmetros
-chIndex = 4 # índice do canal a ser demodulado
+# parameters
+chIndex = 4     # index of the channel to be demodulated
 plotPSD = True
 
 Fa = param.SpS*param.Rs
 Ta = 1/Fa
 mod = QAMModem(m=param.M)
 
-print('Demodulando canal #%d , fc: %.4f THz, λ: %.4f nm'\
+print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm'\
       %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
 
 sigWDM = sigWDM.reshape(len(sigWDM),)
 symbTx = symbTx_[:,:,chIndex].reshape(len(symbTx_),)
 
-# parâmetros do oscilador local:
-FO      = 0*128e6                 # desvio de frequência
-Δf_lo   = freqGrid[chIndex]+FO  # downshift canal a ser demodulado
-lw      = 0*100e3                 # largura de linha
-Plo_dBm = 10                    # potência em dBm
-Plo     = 10**(Plo_dBm/10)*1e-3 # potência em W
-ϕ_lo    = 0                     # fase inicial em rad     
+# local oscillator (LO) parameters:
+FO      = 128e6                 # frequency offset
+Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
+lw      = 100e3                 # linewidth
+Plo_dBm = 10                    # power in dBm
+Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
+ϕ_lo    = 0                     # initial phase in rad    
 
-print('Oscilador local P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz'\
+print('Local oscillator P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz'\
       %(Plo_dBm, lw/1e3, FO/1e6))
 
-# gera sinal do oscilador local
+# generate LO field
 π       = np.pi
 t       = np.arange(0, len(sigWDM))*Ta
 ϕ_pn_lo = phaseNoise(lw, len(sigWDM), Ta)
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
-# receptor óptico coerente
+# single-polarization coherent optical receiver
 sigRx = coherentReceiver(sigWDM, sigLO)
 
-# filtragem Rx
+# Rx filtering
 
-# filtro casado
+# Matched filter
 if param.pulse == 'nrz':
     pulse = pulseShape('nrz', param.SpS)
 elif param.pulse == 'rrc':
@@ -243,20 +243,20 @@ elif param.pulse == 'rrc':
 pulse = pulse/np.max(np.abs(pulse))            
 sigRx = firFilter(pulse, sigRx)
 
-# plota psd
+# plot psd
 if plotPSD:
     plt.figure();
    # plt.ylim(-250,-50);
-    plt.psd(sigRx, Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Espectro do sinal recebido')
+    plt.psd(sigRx, Fs=Fa, NFFT = 16*1024, sides='twosided', label = 'Spectrum of the received signal')
     plt.legend(loc='upper left');
     plt.xlim(-Fa/2,Fa/2);
 
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4,figsize=(15,4.5))
-fig.suptitle('Sequência de processamentos no domínio digital')
+fig.suptitle('Sequence of DSP blocks')
 
 ax1.plot(sigRx.real, sigRx.imag,'.', markersize=4)
 ax1.axis('square')
-ax1.title.set_text('Saída do front-end coerente')
+ax1.title.set_text('Output of coherent front-end')
 ax1.grid()
 
 # digital backpropagation
@@ -267,11 +267,11 @@ ax1.grid()
 # sigRx = sigRx.reshape(len(sigRx),)
 # sigRx = firFilter(pulse, sigRx)
     
-# compensação dispersão cromática
+# CD compensation
 sigRx = edc(sigRx, Ltotal, D, Fc-Δf_lo, Fa)
 
-# captura amostras no meio dos intervalos de sinalização
-varVector = np.var((sigRx.T).reshape(-1,param.SpS), axis=0) # acha o melhor instante de amostragem
+# simple timing recovery
+varVector = np.var((sigRx.T).reshape(-1,param.SpS), axis=0) # finds best sampling instant
 sampDelay = np.where(varVector == np.amax(varVector))[0][0]
 
 # downsampling
@@ -280,67 +280,67 @@ sigRx = sigRx[sampDelay::param.SpS]
 discard = 1000
 ind = np.arange(discard, sigRx.size-discard)
 
-# normaliza símbolos recebidos
+# symbol normalization
 sigRx = sigRx/np.sqrt(signal_power(sigRx[ind]))
 
-# plota constelação após compensação da dispersão cromática
+# plot constellation after CD compensation
 ax2.plot(sigRx.real, sigRx.imag,'.', markersize=4)
 ax2.axis('square')
-ax2.title.set_text('Após CD comp.')
+ax2.title.set_text('After CD comp.')
 ax2.grid()
 
-# calcula atraso gerado pelo walkoff
+# calculate time delay due to walkoff
 symbDelay = np.argmax(signal.correlate(np.abs(symbTx), np.abs(sigRx)))-sigRx.size+1 
 
-# compensa atraso do walkoff
+# compensate walkoff time delay
 sigRx = np.roll(sigRx, symbDelay)
 
-# normaliza constelação recebida
+# symbol normalization
 sigRx = sigRx/np.sqrt(signal_power(sigRx[ind]))
 
-# estima e compensa desvio de frequência entre sinal e LO
+# estimate and compensate LO frequency offset
 fo = fourthPowerFOE(sigRx, 1/param.Rs)
-print('FO estimado: %3.4f MHz'%(fo/1e6))
+print('Estimated FO : %3.4f MHz'%(fo/1e6))
 
 sigRx = sigRx*np.exp(-1j*2*π*fo*np.arange(0,len(sigRx))/param.Rs)
 
-# plota constelação após compensação do desvio de frequência entre sinal e LO
+# plot constellation after LO frequency offset compensation
 ax3.plot(sigRx[ind].real, sigRx[ind].imag,'.', markersize=4)
 ax3.axis('square')
-ax3.title.set_text('Após CFR (4th-power FOE)')
+ax3.title.set_text('After CFR (4th-power FOE)')
 ax3.grid()
 
-# compensa ruído de fase
-windowSize = 80
+# compensate phase noise (carrier phase recovery - cpr)
+windowSize = 40
 c  = mod.constellation/np.sqrt(mod.Es)
 sigRx, ϕ, θ = cpr(sigRx, windowSize, c, symbTx)
 
-# plota saídas do estimador de fase
+# plot phases estimated by cpr
 phaseOffSet = np.mean(np.roll(ϕ_pn_lo[::param.SpS], symbDelay)-θ)
 plt.figure()
-plt.plot(np.roll(ϕ_pn_lo[::param.SpS], symbDelay), label='ruído de fase do LO');
-plt.plot(θ+phaseOffSet, label='fase estimada pelo algoritmo de CPR');
+plt.plot(np.roll(ϕ_pn_lo[::param.SpS], symbDelay), label='phase of the LO');
+plt.plot(θ+phaseOffSet, label='phase estimated by CPR');
 plt.grid()
 plt.xlim(0,θ.size)
 plt.legend();
 
-# corrige (possível) ambiguidade de fase adicionada ao sinal
+# correct (possible) phase ambiguity
 rot = np.mean(symbTx[ind]/sigRx[ind])
 sigRx  = rot*sigRx
 
-# normaliza símbolos recebidos
+# symbol normalization
 sigRx = sigRx/np.sqrt(signal_power(sigRx[ind]))
 
-# plota constelação após compensação do ruído de fase
+# plot constellation after cpr
 ax4.plot(sigRx[ind].real, sigRx[ind].imag,'.', markersize=4)
 ax4.axis('square')
-ax4.title.set_text('Após CPR (DD-PLL)')
+ax4.title.set_text('After CPR (DD-PLL)')
 ax4.grid()
 
-# estima SNR da constelação recebida
+# estimate SNR of the received constellation
 SNR = signal_power(symbTx[ind])/signal_power(sigRx[ind]-symbTx[ind])
 
-# Demodulação com aplicação a regra de decisão brusca        
+# hard decision demodulation    
 bitsRx = mod.demodulate(np.sqrt(mod.Es)*sigRx, demod_type = 'hard') 
 bitsTx = mod.demodulate(np.sqrt(mod.Es)*symbTx, demod_type = 'hard') 
 
@@ -349,12 +349,12 @@ err = np.logical_xor(bitsRx[discard:bitsRx.size-discard],
 BER = np.mean(err)
 
 print('SNR[est] = %.2f dB \n'%(10*np.log10(SNR)))
-print('Total de bits = %d  '%(err.size))
-print('Total de erros contados = %d  '%(err.sum()))
+print('Total counted bits = %d  '%(err.size))
+print('Total of counted errors = %d  '%(err.sum()))
 print('BER = %.2e  '%(BER))
 
 plt.figure()
-plt.plot(err,'o', label = 'erros')
+plt.plot(err,'o', label = 'errors location')
 plt.legend()
 plt.grid()
 
