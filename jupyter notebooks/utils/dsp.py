@@ -271,4 +271,4 @@ def dbp(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12):
                 
     Ech = ifft(Ech) 
        
-    return Ech.reshape(len(Ech), 1)
+    return Ech.reshape(len(Ech),)
