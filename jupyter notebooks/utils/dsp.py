@@ -168,10 +168,10 @@ def edc(Ei, L, D, Fc, Fs):
     return Eo
 
 def CPR(Ei, N, constSymb, symbTx):    
-    '''
+    """
     Carrier phase recovery (CPR)
     
-    '''    
+    """    
     ϕ  = np.zeros(Ei.shape)    
     θ  = np.zeros(Ei.shape)
     
@@ -238,7 +238,7 @@ def dbp(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12):
     λ  = c_kms/Fc
     α  = -alpha/(10*np.log10(np.exp(1)))
     β2 = (D*λ**2)/(2*np.pi*c_kms)
-    γ  = gamma
+    γ  = -gamma
             
     Nfft = len(Ei)
 
