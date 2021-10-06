@@ -2,7 +2,7 @@ from scipy.signal import lfilter
 import numpy as np
 from commpy.filters import rrcosfilter, rcosfilter
 from commpy.utilities  import upsample
-from scipy.stats.kde import gaussian_kde]
+from scipy.stats.kde import gaussian_kde
 import scipy.constants as const
 from utils.models import linFiberCh
 import matplotlib.pyplot as plt
