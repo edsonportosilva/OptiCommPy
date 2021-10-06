@@ -1,6 +1,8 @@
 import numpy as np
 from numpy.fft import fft, ifft, fftfreq
+from numpy.random import normal
 import scipy.constants as const
+from tqdm.notebook import tqdm
 
 def mzm(Ai, Vπ, u, Vb):
     """
@@ -156,7 +158,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     nsp      = (G_lin*NF_lin - 1)/(2*(G_lin - 1))
     N_ase    = (G_lin - 1)*nsp*const.h*Fc
     p_noise  = N_ase*Fs    
-    noise    = np.random.normal(0, np.sqrt(p_noise), Ei.shape) + 1j*np.random.normal(0, np.sqrt(p_noise), Ei.shape)
+    noise    = normal(0, np.sqrt(p_noise), Ei.shape) + 1j*normal(0, np.sqrt(p_noise), Ei.shape)
     return Ei*np.sqrt(G_lin) + noise
 
 def ssfm(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12, amp='edfa', NF=4.5):      
@@ -220,4 +222,14 @@ def ssfm(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12,
         elif amp == None:
             Ech = Ech*np.exp(0);         
           
-    return Ech.reshape(len(Ech), 1)
+    return Ech.reshape(len(Ech),)
+
+def phaseNoise(lw, Nsamples, Ts):
+    
+    σ2 = 2*np.pi*lw*Ts    
+    phi = np.zeros(Nsamples)
+    
+    for ind in range(0, Nsamples-1):
+        phi[ind+1] = phi[ind] + normal(0, np.sqrt(σ2))
+        
+    return phi
