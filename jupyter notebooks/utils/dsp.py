@@ -188,7 +188,7 @@ def cpr(Ei, N, constSymb, symbTx):
         if k > N:
             θ[k]  = np.mean(ϕ[k-N:k]) # moving average filter
         else:           
-            θ[k] = ϕ[k]
+            θ[k] = np.angle(symbTx[k]/(Ei[k]))
             
     Eo = Ei*np.exp(1j*θ) # compensate phase rotation
         
