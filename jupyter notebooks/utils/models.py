@@ -214,7 +214,7 @@ def ssfm(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12,
         # amplification step
         Ech = ifft(Ech)
         if amp =='edfa':
-            Ech = edfa(Ech, alpha*Lspan, NF, Fc, Fs)
+            Ech = edfa(Ech, Fs, alpha*Lspan, NF, Fc)
         elif amp =='ideal':
             Ech = Ech*np.exp(α/2*Nsteps*hz)
         elif amp == None:
