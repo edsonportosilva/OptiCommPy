@@ -184,7 +184,7 @@ def ssfm(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12,
     β2 = -(D*λ**2)/(2*np.pi*c_kms)
     γ  = gamma
             
-    Nfft = len(Ein)
+    Nfft = len(Ei)
 
     ω = 2*np.pi*Fs*fftfreq(Nfft)
     
