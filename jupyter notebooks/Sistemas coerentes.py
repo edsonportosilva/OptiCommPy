@@ -21,11 +21,11 @@ from sympy import Matrix, zeros
 from numpy.random import normal
 from commpy.utilities  import signal_power, upsample
 from commpy.modulation import Modem, QAMModem
-from utils.dsp import firFilter, pulseShape, eyediagram, lowPassFIR, edc, fourthPowerFOE, dbp, CPR
-from utils.models import mzm, linFiberCh, iqm, ssfm, edfa
+from utils.dsp import firFilter, pulseShape, eyediagram, lowPassFIR, edc, fourthPowerFOE, dbp, cpr
+from utils.models import mzm, linFiberCh, iqm, ssfm, edfa, phaseNoise, coherentReceiver
 
 from numpy.fft import fft, ifft, fftshift, ifftshift, fftfreq
-from tqdm import tqdm_notebook as tqdm
+from tqdm.notebook import tqdm
 from scipy import signal
 import scipy.constants as const
 import numba
@@ -940,72 +940,70 @@ def simpleWDMTx(param):
     
     return sigTxWDM, symbTxWDM, freqGrid
 
-@numba.njit
-def edfa(Ei, G, nf, Fc, Fs):
-    '''
-    Simple EDFA model
+# @numba.njit
+# def edfa(Ei, G, nf, Fc, Fs):
+#     '''
+#     Simple EDFA model
     
-    '''
-    nf_lin   = 10**(nf/10)
-    G_lin    = 10**(G/10)
-    nsp      = (G_lin*nf_lin - 1)/(2*(G_lin - 1))
-    N_ase    = (G_lin - 1)*nsp*const.h*Fc
-    p_noise  = N_ase*Fs    
-    noise    = np.random.normal(0, np.sqrt(p_noise), Ei.shape) + 1j*np.random.normal(0, np.sqrt(p_noise), Ei.shape)
-    return Ei*np.sqrt(G_lin) + noise
+#     '''
+#     nf_lin   = 10**(nf/10)
+#     G_lin    = 10**(G/10)
+#     nsp      = (G_lin*nf_lin - 1)/(2*(G_lin - 1))
+#     N_ase    = (G_lin - 1)*nsp*const.h*Fc
+#     p_noise  = N_ase*Fs    
+#     noise    = np.random.normal(0, np.sqrt(p_noise), Ei.shape) + 1j*np.random.normal(0, np.sqrt(p_noise), Ei.shape)
+#     return Ei*np.sqrt(G_lin) + noise
 
 
-def ssfm(Ein, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12, amp='edfa', NF=4.5):      
-    '''
-    Split-step Fourier method (symmetric, single-pol.)
+# def ssfm(Ein, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12, amp='edfa', NF=4.5):      
+#     '''
+#     Split-step Fourier method (symmetric, single-pol.)
     
-    '''             
-    c = 299792458   # speed of light (vacuum)
-    c_kms = c/1e3
-    λ  = c_kms/Fc
-    α  = alpha/(10*np.log10(np.exp(1)))
-    β2 = -(D*λ**2)/(2*np.pi*c_kms)
-    γ  = gamma
+#     '''             
+#     c = 299792458   # speed of light (vacuum)
+#     c_kms = c/1e3
+#     λ  = c_kms/Fc
+#     α  = alpha/(10*np.log10(np.exp(1)))
+#     β2 = -(D*λ**2)/(2*np.pi*c_kms)
+#     γ  = gamma
             
-    Nfft = len(Ein)
+#     Nfft = len(Ein)
 
-    ω = 2*np.pi*Fs*fftfreq(Nfft)
+#     ω = 2*np.pi*Fs*fftfreq(Nfft)
     
-    Nspans = int(np.floor(Ltotal/Lspan))
-    Nsteps = int(np.floor(Lspan/hz))
+#     Nspans = int(np.floor(Ltotal/Lspan))
+#     Nsteps = int(np.floor(Lspan/hz))
     
-    Ech = Ein.reshape(len(Ein),)  
+#     Ech = Ein.reshape(len(Ein),)  
       
-    linOperator = np.exp(-(α/2)*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))
+#     linOperator = np.exp(-(α/2)*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))
     
-    for spanN in tqdm(range(1, Nspans+1)):   
-        Ech = fft(Ech) #single-polarization field
+#     for spanN in tqdm(range(1, Nspans+1)):   
+#         Ech = fft(Ech) #single-polarization field
         
-        # fiber propagation step
-        for stepN in range(1, Nsteps+1):            
-            # First linear step (frequency domain)
-            Ech = Ech*linOperator            
+#         # fiber propagation step
+#         for stepN in range(1, Nsteps+1):            
+#             # First linear step (frequency domain)
+#             Ech = Ech*linOperator            
 
-            # Nonlinear step (time domain)
-            Ech = ifft(Ech)
-            Ech = Ech*np.exp(1j*γ*(Ech*np.conj(Ech))*hz)
+#             # Nonlinear step (time domain)
+#             Ech = ifft(Ech)
+#             Ech = Ech*np.exp(1j*γ*(Ech*np.conj(Ech))*hz)
 
-            # Second linear step (frequency domain)
-            Ech = fft(Ech)       
-            Ech = Ech*linOperator           
+#             # Second linear step (frequency domain)
+#             Ech = fft(Ech)       
+#             Ech = Ech*linOperator           
 
-        # amplification step
-        Ech = ifft(Ech)
-        if amp =='edfa':
-            Ech = edfa(Ech, alpha*Lspan, NF, Fc, Fs)
-        elif amp =='ideal':
-            Ech = Ech*np.exp(α/2*Nsteps*hz)
-        elif amp == None:
-            ;         
+#         # amplification step
+#         Ech = ifft(Ech)
+#         if amp =='edfa':
+#             Ech = edfa(Ech, alpha*Lspan, NF, Fc, Fs)
+#         elif amp =='ideal':
+#             Ech = Ech*np.exp(α/2*Nsteps*hz)
+#         elif amp == None:
+#             ;         
           
-    return Ech.reshape(len(Ech),)
-
-
+#     return Ech.reshape(len(Ech),)
 # -
 
 class parameters:
@@ -1025,7 +1023,7 @@ param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
 param.Pch_dBm = -2       # potência média por canal WDM [dBm]
-param.Nch     = 9        # número de canais WDM
+param.Nch     = 1        # número de canais WDM
 param.Fc      = 193.1e12 # frequência central do espectro WDM
 param.freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
 param.Nmodes = 1         # número de modos de polarização
@@ -1049,7 +1047,7 @@ gamma = 1.3    # 1/(W.km)
 if canalLinear:
     sigWDM = linFiberCh(sigWDM_Tx, Ltotal, alpha, D, Fc, param.Rs*param.SpS)
 else:
-    powerProfile(param.Pch_dBm, alpha, Lspan, Ltotal/Lspan)
+    #powerProfile(param.Pch_dBm, alpha, Lspan, Ltotal/Lspan)
     sigWDM = ssfm(sigWDM_Tx, param.Rs*param.SpS, Ltotal, Lspan, hz, alpha, gamma, D, Fc, amp='edfa') 
 # -
 
@@ -1070,7 +1068,7 @@ plt.title('Espectro óptico dos canais WDM');
 ### Receptor
 
 # parâmetros
-chIndex = 4 # índice do canal a ser demodulado
+chIndex = 0 # índice do canal a ser demodulado
 plotPSD = True
 
 Fa = param.SpS*param.Rs
@@ -1080,7 +1078,7 @@ mod = QAMModem(m=param.M)
 print('Demodulando canal #%d , fc: %.4f THz, λ: %.4f nm'\
       %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
 
-#sigWDM = sigWDM.reshape(len(sigWDM),)
+sigWDM = sigWDM.reshape(len(sigWDM),)
 symbTx = symbTx_[:,:,chIndex].reshape(len(symbTx_),)
 
 # parâmetros do oscilador local:
@@ -1131,15 +1129,15 @@ ax1.title.set_text('Saída do front-end coerente')
 ax1.grid()
 
 # digital backpropagation
-hzDBP = 5
-Pin   = 10**(param.Pch_dBm/10)*1e-3
-sigRx = sigRx/np.sqrt(signal_power(sigRx))
-sigRx = dbp(np.sqrt(Pin)*sigRx, Fa, Ltotal, Lspan, hzDBP, alpha, -gamma, D, Fc)
-sigRx = sigRx.reshape(len(sigRx),)
-sigRx = firFilter(pulse, sigRx)
+# hzDBP = 5
+# Pin   = 10**(param.Pch_dBm/10)*1e-3
+# sigRx = sigRx/np.sqrt(signal_power(sigRx))
+# sigRx = dbp(np.sqrt(Pin)*sigRx, Fa, Ltotal, Lspan, hzDBP, alpha, -gamma, D, Fc)
+# sigRx = sigRx.reshape(len(sigRx),)
+# sigRx = firFilter(pulse, sigRx)
     
 # compensação dispersão cromática
-#sigRx = edc(sigRx, Ltotal, D, Fc-Δf_lo, Fa)
+sigRx = edc(sigRx, Ltotal, D, Fc-Δf_lo, Fa)
 
 # captura amostras no meio dos intervalos de sinalização
 varVector = np.var((sigRx.T).reshape(-1,param.SpS), axis=0) # acha o melhor instante de amostragem
@@ -1170,10 +1168,10 @@ sigRx = np.roll(sigRx, symbDelay)
 sigRx = sigRx/np.sqrt(signal_power(sigRx[ind]))
 
 # estima e compensa desvio de frequência entre sinal e LO
-fo = fourthPowerFOE(sigRx, 1/Rs)
+fo = fourthPowerFOE(sigRx, 1/param.Rs)
 print('FO estimado: %3.4f MHz'%(fo/1e6))
 
-sigRx = sigRx*np.exp(-1j*2*π*fo*np.arange(0,len(sigRx))/Rs)
+sigRx = sigRx*np.exp(-1j*2*π*fo*np.arange(0,len(sigRx))/param.Rs)
 
 # plota constelação após compensação do desvio de frequência entre sinal e LO
 ax3.plot(sigRx[ind].real, sigRx[ind].imag,'.', markersize=4)
@@ -1184,7 +1182,7 @@ ax3.grid()
 # compensa ruído de fase
 windowSize = 40
 c  = mod.constellation/np.sqrt(mod.Es)
-sigRx, ϕ, θ = CPR(sigRx, windowSize, c, symbTx)
+sigRx, ϕ, θ = cpr(sigRx, windowSize, c, symbTx)
 
 # plota saídas do estimador de fase
 phaseOffSet = np.mean(np.roll(ϕ_pn_lo[::param.SpS], symbDelay)-θ)
