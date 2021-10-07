@@ -19,8 +19,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy.random import normal
 from commpy.utilities  import signal_power, upsample
-from commpy.modulation import Modem, QAMModem
-from utils.dsp import firFilter, pulseShape, eyediagram, lowPassFIR, edc, fourthPowerFOE, dbp, cpr
+from commpy.modulation import QAMModem
+from utils.dsp import firFilter, pulseShape, lowPassFIR, edc, fourthPowerFOE, dbp, cpr
 from utils.models import mzm, linFiberCh, iqm, ssfm, edfa, phaseNoise, coherentReceiver
 
 from scipy import signal
@@ -124,9 +124,9 @@ def simpleWDMTx(param):
                   %(indCh+1, 10*np.log10(signal_power(sigTxCh)/1e-3), 
                     (param.Fc+freqGrid[indCh])/1e12))
 
-            sigTxWDM[:,indMode] = sigTxWDM[:,indMode] + sigTxCh*np.exp(1j*2*π*(freqGrid[indCh]/Fa)*t)
+            sigTxWDM[:,indMode] += sigTxCh*np.exp(1j*2*π*(freqGrid[indCh]/Fa)*t)
             
-        Psig = Psig + signal_power(sigTxWDM[:,indMode])
+        Psig += signal_power(sigTxWDM[:,indMode])
         
     print('total WDM signal power: %.2f dBm'%(10*np.log10(Psig/1e-3)))
     
@@ -144,7 +144,7 @@ help(ssfm)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 64            # ordem do formato de modulação
+param.M   = 64           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 16           # número de amostras por símbolo
 param.Nbits = 60000      # número de bits
@@ -204,21 +204,21 @@ Fa = param.SpS*param.Rs
 Ta = 1/Fa
 mod = QAMModem(m=param.M)
 
-print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm'\
+print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
       %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
 
 sigWDM = sigWDM.reshape(len(sigWDM),)
 symbTx = symbTx_[:,:,chIndex].reshape(len(symbTx_),)
 
 # local oscillator (LO) parameters:
-FO      = 128e6                 # frequency offset
+FO      = 64e6                 # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
 lw      = 100e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
 
-print('Local oscillator P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz'\
+print('Local oscillator P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz\n'\
       %(Plo_dBm, lw/1e3, FO/1e6))
 
 # generate LO field
@@ -346,7 +346,7 @@ err = np.logical_xor(bitsRx[discard:bitsRx.size-discard],
                      bitsTx[discard:bitsTx.size-discard])
 BER = np.mean(err)
 
-print('SNR[est] = %.2f dB \n'%(10*np.log10(SNR)))
+print('Estimated SNR = %.2f dB \n'%(10*np.log10(SNR)))
 print('Total counted bits = %d  '%(err.size))
 print('Total of counted errors = %d  '%(err.sum()))
 print('BER = %.2e  '%(BER))

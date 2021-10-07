@@ -863,7 +863,6 @@ plt.plot(symbTx[ind].real,symbTx[ind].imag,'k.', markersize=4, label='Tx');
 
 # ## Sistemas WDM coerentes
 
-# +
 def simpleWDMTx(param):
     
     # transmitter parameters
@@ -920,9 +919,7 @@ def simpleWDMTx(param):
                 pulse = pulseShape('rrc', param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts)
 
             pulse = pulse/np.max(np.abs(pulse))
-
-            # formatação de pulso
-            sigTx  = firFilter(pulse, symbolsUp)
+            sigTx = firFilter(pulse, symbolsUp)
 
             # optical modulation
             sigTxCh = iqm(Ai, 0.5*sigTx, Vπ, Vb, Vb)
@@ -932,79 +929,14 @@ def simpleWDMTx(param):
                   %(indCh+1, 10*np.log10(signal_power(sigTxCh)/1e-3), 
                     (param.Fc+freqGrid[indCh])/1e12))
 
-            sigTxWDM[:,indMode] = sigTxWDM[:,indMode] + sigTxCh*np.exp(1j*2*π*(freqGrid[indCh]/Fa)*t)
+            sigTxWDM[:,indMode] += sigTxCh*np.exp(1j*2*π*(freqGrid[indCh]/Fa)*t)
             
-        Psig = Psig + signal_power(sigTxWDM[:,indMode])
+        Psig += signal_power(sigTxWDM[:,indMode])
         
     print('total WDM signal power: %.2f dBm'%(10*np.log10(Psig/1e-3)))
     
     return sigTxWDM, symbTxWDM, freqGrid
 
-# @numba.njit
-# def edfa(Ei, G, nf, Fc, Fs):
-#     '''
-#     Simple EDFA model
-    
-#     '''
-#     nf_lin   = 10**(nf/10)
-#     G_lin    = 10**(G/10)
-#     nsp      = (G_lin*nf_lin - 1)/(2*(G_lin - 1))
-#     N_ase    = (G_lin - 1)*nsp*const.h*Fc
-#     p_noise  = N_ase*Fs    
-#     noise    = np.random.normal(0, np.sqrt(p_noise), Ei.shape) + 1j*np.random.normal(0, np.sqrt(p_noise), Ei.shape)
-#     return Ei*np.sqrt(G_lin) + noise
-
-
-# def ssfm(Ein, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12, amp='edfa', NF=4.5):      
-#     '''
-#     Split-step Fourier method (symmetric, single-pol.)
-    
-#     '''             
-#     c = 299792458   # speed of light (vacuum)
-#     c_kms = c/1e3
-#     λ  = c_kms/Fc
-#     α  = alpha/(10*np.log10(np.exp(1)))
-#     β2 = -(D*λ**2)/(2*np.pi*c_kms)
-#     γ  = gamma
-            
-#     Nfft = len(Ein)
-
-#     ω = 2*np.pi*Fs*fftfreq(Nfft)
-    
-#     Nspans = int(np.floor(Ltotal/Lspan))
-#     Nsteps = int(np.floor(Lspan/hz))
-    
-#     Ech = Ein.reshape(len(Ein),)  
-      
-#     linOperator = np.exp(-(α/2)*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))
-    
-#     for spanN in tqdm(range(1, Nspans+1)):   
-#         Ech = fft(Ech) #single-polarization field
-        
-#         # fiber propagation step
-#         for stepN in range(1, Nsteps+1):            
-#             # First linear step (frequency domain)
-#             Ech = Ech*linOperator            
-
-#             # Nonlinear step (time domain)
-#             Ech = ifft(Ech)
-#             Ech = Ech*np.exp(1j*γ*(Ech*np.conj(Ech))*hz)
-
-#             # Second linear step (frequency domain)
-#             Ech = fft(Ech)       
-#             Ech = Ech*linOperator           
-
-#         # amplification step
-#         Ech = ifft(Ech)
-#         if amp =='edfa':
-#             Ech = edfa(Ech, alpha*Lspan, NF, Fc, Fs)
-#         elif amp =='ideal':
-#             Ech = Ech*np.exp(α/2*Nsteps*hz)
-#         elif amp == None:
-#             ;         
-          
-#     return Ech.reshape(len(Ech),)
-# -
 
 class parameters:
     pass
