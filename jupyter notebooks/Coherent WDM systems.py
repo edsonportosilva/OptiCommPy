@@ -59,6 +59,38 @@ figsize(10, 3)
 # ### Transmitter
 
 def simpleWDMTx(param):
+    """
+    Simple WDM transmitter
+    
+    Generates a complex baseband waveform representing a WDM signal with arbitrary number of carriers
+    
+    :param.M: QAM order [default: 16]
+    :param.Rs: carrier baud rate [baud][default: 32e9]
+    :param.SpS: samples per symbol [default: 16]
+    :param.Nbits: total number of bits per carrier [default: 60000]
+    :param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc']
+    :param.Ntaps: number of coefficients of the rrc filter [default: 4096]
+    :param.alphaRRC: rolloff do rrc filter [default: 0.01]
+    :param.Pch_dBm: launched power per WDM channel [dBm][default:-3 dBm]
+    :param.Nch: number of WDM channels [default: 5]
+    :param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz]
+    :param.freqSpac: frequency spacing of the WDM grid [Hz][default: 40e9 Hz]
+    :param.Nmodes: number of polarization modes [default: 1]
+
+    """
+    # check input parameters
+    param.M     = getattr(param, 'M', 16)
+    param.Rs    = getattr(param, 'Rs', 32e9)
+    param.SpS   = getattr(param, 'SpS', 16)
+    param.Nbits = getattr(param, 'Nbits', 60000)
+    param.pulse = getattr(param, 'pulse', 'rrc')
+    param.Ntaps    = getattr(param, 'Ntaps', 4096)
+    param.alphaRRC = getattr(param, 'alphaRRC', 0.01)
+    param.Pch_dBm  = getattr(param, 'Pch_dBm', -3)
+    param.Nch      = getattr(param, 'Nch', 5)
+    param.Fc       = getattr(param, 'Fc', 193.1e12)
+    param.freqSpac = getattr(param, 'freqSpac', 50e9)
+    param.Nmodes   = getattr(param, 'Nmodes', 1)
     
     # transmitter parameters
     Ts  = 1/param.Rs        # symbol period [s]
@@ -130,8 +162,36 @@ def simpleWDMTx(param):
         
     print('total WDM signal power: %.2f dBm'%(10*np.log10(Psig/1e-3)))
     
-    return sigTxWDM, symbTxWDM, freqGrid
+    param.freqGrid = freqGrid
+    
+    return sigTxWDM, symbTxWDM, param
 
+
+# +
+#def setDefaultsParams(param, func):
+    
+ #   if func == 'SimpleWDMTx':
+        
+        # default parameters
+#        param.M   = getattr(param, 'M', 16)           # ordem do formato de modulação
+#        Rs  = 32e9         # taxa de sinalização [baud]
+#        SpS = 16           # número de amostras por símbolo
+#        Nbits = 60000      # número de bits
+#        pulse = 'rrc'      # formato de pulso
+#        Ntaps = 4096       # número de coeficientes do filtro RRC
+#        alphaRRC = 0.01    # rolloff do filtro RRC
+#        Pch_dBm = -1       # potência média por canal WDM [dBm]
+#        Nch     = 9        # número de canais WDM
+#        Fc      = 193.1e12 # frequência central do espectro WDM
+#        freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
+#        Nmodes = 1         # número de modos de polarização
+        
+#        try:
+#            param.M
+#        except AttributeError:
+#            otherStuff()
+    
+# -
 
 class parameters:
     pass
@@ -144,20 +204,22 @@ help(ssfm)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 64           # ordem do formato de modulação
-param.Rs  = 32e9         # taxa de sinalização [baud]
-param.SpS = 16           # número de amostras por símbolo
-param.Nbits = 60000      # número de bits
-param.pulse = 'rrc'      # formato de pulso
-param.Ntaps = 4096       # número de coeficientes do filtro RRC
-param.alphaRRC = 0.01    # rolloff do filtro RRC
-param.Pch_dBm = -1       # potência média por canal WDM [dBm]
-param.Nch     = 9        # número de canais WDM
-param.Fc      = 193.1e12 # frequência central do espectro WDM
-param.freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
-param.Nmodes = 1         # número de modos de polarização
+#param.M   = 64           # ordem do formato de modulação
+#param.Rs  = 32e9         # taxa de sinalização [baud]
+#param.SpS = 16           # número de amostras por símbolo
+#param.Nbits = 60000      # número de bits
+#param.pulse = 'rrc'      # formato de pulso
+#param.Ntaps = 4096       # número de coeficientes do filtro RRC
+#param.alphaRRC = 0.01    # rolloff do filtro RRC
+param.Pch_dBm = 0         # potência média por canal WDM [dBm]
+#param.Nch     = 9        # número de canais WDM
+#param.Fc      = 193.1e12 # frequência central do espectro WDM
+#param.freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
+#param.Nmodes = 1         # número de modos de polarização
 
-sigWDM_Tx, symbTx_, freqGrid = simpleWDMTx(param)
+sigWDM_Tx, symbTx_, param = simpleWDMTx(param)
+
+freqGrid = param.freqGrid
 # -
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
@@ -165,7 +227,7 @@ sigWDM_Tx, symbTx_, freqGrid = simpleWDMTx(param)
 linearChannel = False
 
 # optical channel parameters
-Ltotal = 400   # km
+Ltotal = 800   # km
 Lspan  = 80    # km
 alpha = 0.2    # dB/km
 D = 16         # ps/nm/km
@@ -177,7 +239,7 @@ if linearChannel:
     hz = Lspan  # km
     gamma = 0   # 1/(W.km)
     
-sigWDM = ssfm(sigWDM_Tx, param.Rs*param.SpS, Ltotal, Lspan, hz, alpha, gamma, D, Fc, amp='ideal') 
+sigWDM = ssfm(sigWDM_Tx, param.Rs*param.SpS, Ltotal, Lspan, hz, alpha, gamma, D, Fc, amp='edfa') 
 # -
 
 # **Optical WDM spectrum before and after transmission**
@@ -197,7 +259,7 @@ plt.title('optical WDM spectrum');
 ### Receiver
 
 # parameters
-chIndex = 4     # index of the channel to be demodulated
+chIndex = 2    # index of the channel to be demodulated
 plotPSD = True
 
 Fa = param.SpS*param.Rs

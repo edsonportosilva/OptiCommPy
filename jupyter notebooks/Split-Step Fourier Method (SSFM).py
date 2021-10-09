@@ -66,7 +66,10 @@ def CDcompensation(Ex, Ey, Ltotal, D, Fc, Fs):
     return Ex, Ey
 
 
-def manakovSSF(Ex, Ey, hz, Lspan, Ltotal, alpha, gamma, D, Fc, Fs):
+def manakovSSF(Ei, hz, Lspan, Ltotal, alpha, gamma, D, Fc, Fs):
+    
+    Ex = Ei[:,0]
+    Ey = Ei[:,1]
     
     c = 299792458   # speed of light (vacuum)
     c_kms = c/1e3
@@ -85,12 +88,14 @@ def manakovSSF(Ex, Ey, hz, Lspan, Ltotal, alpha, gamma, D, Fc, Fs):
     Ex = fft(Ex) #Pol. X 
     Ey = fft(Ey) #Pol. Y 
     
+    linOperator = np.exp(-(α/2)*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))
+    
     for spanN in tqdm(range(1, Nspans+1)):
         for stepN in range(1, Nsteps+1):
             
             # First linear step (frequency domain)
-            Ex = Ex*np.exp(-α*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))
-            Ey = Ey*np.exp(-α*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))
+            Ex = Ex*linOperator
+            Ey = Ey*linOperator
 
             # Nonlinear step (time domain)
             Ex = ifft(Ex);
@@ -102,8 +107,8 @@ def manakovSSF(Ex, Ey, hz, Lspan, Ltotal, alpha, gamma, D, Fc, Fs):
             # Second linear step (frequency domain)
             Ex = fft(Ex);
             Ey = fft(Ey);
-            Ex = Ex*np.exp(-α*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))
-            Ey = Ey*np.exp(-α*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))
+            Ex = Ex*linOperator
+            Ey = Ey*linOperator
         
         Ex = Ex*np.exp(α*Nsteps*hz)
         Ey = Ey*np.exp(α*Nsteps*hz)
