@@ -557,6 +557,17 @@ plt.figure()
 plt.plot(err,'o', label = 'errors location')
 plt.legend()
 plt.grid()
-# -
 
+# +
+from scipy.stats.kde import gaussian_kde
 
+y = (sigRx[ind]).real
+x = (sigRx[ind]).imag
+
+k = gaussian_kde(np.vstack([x, y]))
+k.set_bandwidth(bw_method=k.factor/4)
+
+xi, yi = 1.1*np.mgrid[x.min():x.max():x.size**0.5*1j,y.min():y.max():y.size**0.5*1j]
+zi = k(np.vstack([xi.flatten(), yi.flatten()]))
+plt.figure(figsize=(5,5))
+plt.pcolormesh(xi, yi, zi.reshape(xi.shape), alpha=1, shading='auto');

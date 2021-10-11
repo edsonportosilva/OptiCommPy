@@ -320,10 +320,10 @@ def manakov_ssf(Ei, Fs, paramCh):
             Ech_y = Ech_y*linOperator
 
             # Nonlinear step (time domain)
-            Ech_x = ifft(Ech_x)
-            Ech_y = ifft(Ech_y)
-            Ech_x = Ech_x*np.exp(1j*(8/9)*γ*(Ech_x*np.conj(Ech_x)+Ech_y*np.conj(Ech_y))*hz)
-            Ech_y = Ech_y*np.exp(1j*(8/9)*γ*(Ech_x*np.conj(Ech_x)+Ech_y*np.conj(Ech_y))*hz)
+            Ex = ifft(Ech_x)
+            Ey = ifft(Ech_y)
+            Ech_x = Ex*np.exp(1j*(8/9)*γ*(Ex*np.conj(Ex)+Ey*np.conj(Ey))*hz)
+            Ech_y = Ey*np.exp(1j*(8/9)*γ*(Ex*np.conj(Ex)+Ey*np.conj(Ey))*hz)
 
             # Second linear step (frequency domain)
             Ech_x = fft(Ech_x)
