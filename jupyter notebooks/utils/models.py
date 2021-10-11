@@ -161,40 +161,64 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     noise    = normal(0, np.sqrt(p_noise), Ei.shape) + 1j*normal(0, np.sqrt(p_noise), Ei.shape)
     return Ei*np.sqrt(G_lin) + noise
 
-def ssfm(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12, amp='edfa', NF=4.5):      
+def ssfm(Ei, Fs, paramCh):      
     """
     Split-step Fourier method (symmetric, single-pol.)
 
     :param Ei: input signal
-    :param Ltotal: total fiber length [km]
-    :param Lspan: span length [km]
-    :param hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-    :param alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-    :param D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-    :param gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-    :param amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-    :param NF: edfa noise figure [dB] [default: 4.5 dB]
-    :param Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-    :param Fs: sampling frequency [Hz]
-
+    :param Fs: sampling frequency of Ei [Hz]
+    :param paramCh: object with physical parameters of the optical channel
+    
+    :paramCh.Ltotal: total fiber length [km][default: 400 km]
+    :paramCh.Lspan: span length [km][default: 80 km]
+    :paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+    :paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+    :paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+    :paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+    :paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+    :paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+    :paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]    
+    
     :return Ech: propagated signal
-    """             
-    #c = 299792458   # speed of light (vacuum)
-    c_kms = const.c/1e3
+    """
+    # check input parameters
+    paramCh.Ltotal = getattr(paramCh, 'Ltotal', 400)
+    paramCh.Lspan  = getattr(paramCh, 'Lspan', 80)
+    paramCh.hz     = getattr(paramCh, 'hz', 0.5)
+    paramCh.alpha  = getattr(paramCh, 'alpha', 0.2)
+    paramCh.D      = getattr(paramCh, 'D', 16)
+    paramCh.gamma  = getattr(paramCh, 'gamma', 1.3)
+    paramCh.Fc     = getattr(paramCh, 'Fc', 193.1e12)
+    paramCh.amp    = getattr(paramCh, 'amp', 'edfa')
+    paramCh.NF     = getattr(paramCh, 'NF', 4.5)   
+
+    Ltotal = paramCh.Ltotal 
+    Lspan  = paramCh.Lspan
+    hz     = paramCh.hz
+    alpha  = paramCh.alpha  
+    D      = paramCh.D      
+    gamma  = paramCh.gamma 
+    Fc     = paramCh.Fc     
+    amp    = paramCh.amp   
+    NF     = paramCh.NF
+
+    # channel parameters  
+    c_kms = const.c/1e3 # speed of light (vacuum) in km/s
     λ  = c_kms/Fc
     α  = alpha/(10*np.log10(np.exp(1)))
     β2 = -(D*λ**2)/(2*np.pi*c_kms)
     γ  = gamma
-            
-    Nfft = len(Ei)
 
+    # generate frequency axis 
+    Nfft = len(Ei)
     ω = 2*np.pi*Fs*fftfreq(Nfft)
     
     Nspans = int(np.floor(Ltotal/Lspan))
     Nsteps = int(np.floor(Lspan/hz))
     
     Ech = Ei.reshape(len(Ei),)  
-      
+
+    # define linear operator
     linOperator = np.exp(-(α/2)*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))
     
     for spanN in tqdm(range(1, Nspans+1)):   
@@ -211,7 +235,7 @@ def ssfm(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12,
 
             # Second linear step (frequency domain)
             Ech = fft(Ech)       
-            Ech = Ech*linOperator           
+            Ech = Ech*linOperator         
 
         # amplification step
         Ech = ifft(Ech)
@@ -222,7 +246,7 @@ def ssfm(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12,
         elif amp == None:
             Ech = Ech*np.exp(0);         
           
-    return Ech.reshape(len(Ech),)
+    return Ech.reshape(len(Ech),), paramCh
 
 def phaseNoise(lw, Nsamples, Ts):
     

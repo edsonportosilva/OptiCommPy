@@ -59,32 +59,6 @@ figsize(10, 3)
 #
 # ### Transmitter
 
-# +
-#def setDefaultsParams(param, func):
-    
- #   if func == 'SimpleWDMTx':
-        
-        # default parameters
-#        param.M   = getattr(param, 'M', 16)           # ordem do formato de modulação
-#        Rs  = 32e9         # taxa de sinalização [baud]
-#        SpS = 16           # número de amostras por símbolo
-#        Nbits = 60000      # número de bits
-#        pulse = 'rrc'      # formato de pulso
-#        Ntaps = 4096       # número de coeficientes do filtro RRC
-#        alphaRRC = 0.01    # rolloff do filtro RRC
-#        Pch_dBm = -1       # potência média por canal WDM [dBm]
-#        Nch     = 9        # número de canais WDM
-#        Fc      = 193.1e12 # frequência central do espectro WDM
-#        freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
-#        Nmodes = 1         # número de modos de polarização
-        
-#        try:
-#            param.M
-#        except AttributeError:
-#            otherStuff()
-    
-# -
-
 help(simpleWDMTx)
 
 help(ssfm)
@@ -94,15 +68,15 @@ help(ssfm)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 64           # ordem do formato de modulação
+param.M   = 16           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 16           # número de amostras por símbolo
 param.Nbits = 60000      # número de bits
 param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
-param.Pch_dBm = 0         # potência média por canal WDM [dBm]
-param.Nch     = 9        # número de canais WDM
+param.Pch_dBm = 0        # potência média por canal WDM [dBm]
+param.Nch     = 5        # número de canais WDM
 param.Fc      = 193.1e12 # frequência central do espectro WDM
 param.freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
 param.Nmodes = 1         # número de modos de polarização
@@ -117,28 +91,30 @@ freqGrid = param.freqGrid
 linearChannel = False
 
 # optical channel parameters
-Ltotal = 800   # km
-Lspan  = 80    # km
-alpha = 0.2    # dB/km
-D = 16         # ps/nm/km
-Fc = 193.1e12  # Hz
-hz = 0.5       # km
-gamma = 1.3    # 1/(W.km)
+paramCh = parameters()
+paramCh.Ltotal = 800   # km
+paramCh.Lspan  = 80    # km
+paramCh.alpha = 0.2    # dB/km
+paramCh.D = 16         # ps/nm/km
+paramCh.Fc = 193.1e12  # Hz
+paramCh.hz = 0.5       # km
+paramCh.gamma = 1.3    # 1/(W.km)
 
 if linearChannel:
-    hz = Lspan  # km
-    gamma = 0   # 1/(W.km)
-    
-sigWDM = ssfm(sigWDM_Tx, param.Rs*param.SpS, Ltotal, Lspan, hz, alpha, gamma, D, Fc, amp='edfa') 
+    paramCh.hz = paramCh.Lspan  # km
+    paramCh.gamma = 0   # 1/(W.km)
+
+Fs = param.Rs*param.SpS
+sigWDM, paramCh = ssfm(sigWDM_Tx, Fs, paramCh) 
 # -
 
 # **Optical WDM spectrum before and after transmission**
 
 # plot psd
 plt.figure()
-plt.xlim(Fc-param.SpS*param.Rs/2,Fc+param.SpS*param.Rs/2);
-plt.psd(sigWDM_Tx[:,0], Fs=param.SpS*param.Rs, Fc=Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Tx')
-plt.psd(sigWDM, Fs=param.SpS*param.Rs, Fc=Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Rx')
+plt.xlim(paramCh.Fc-Fs/2,paramCh.Fc+Fs/2);
+plt.psd(sigWDM_Tx[:,0], Fs=param.SpS*param.Rs, Fc=paramCh.Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Tx')
+plt.psd(sigWDM, Fs=Fs, Fc=paramCh.Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Rx')
 plt.legend(loc='lower left')
 plt.title('optical WDM spectrum');
 
@@ -153,6 +129,7 @@ chIndex = 2    # index of the channel to be demodulated
 plotPSD = True
 
 Fa = param.SpS*param.Rs
+Fc = paramCh.Fc
 Ta = 1/Fa
 mod = QAMModem(m=param.M)
 
@@ -210,15 +187,15 @@ ax1.title.set_text('Output of coherent front-end')
 ax1.grid()
 
 # digital backpropagation
-# hzDBP = 5
-# Pin   = 10**(param.Pch_dBm/10)*1e-3
-# sigRx = sigRx/np.sqrt(signal_power(sigRx))
-# sigRx = dbp(np.sqrt(Pin)*sigRx, Fa, Ltotal, Lspan, hzDBP, alpha, gamma, D, Fc)
-# sigRx = sigRx.reshape(len(sigRx),)
-# sigRx = firFilter(pulse, sigRx)
+hzDBP = 5
+Pin   = 10**(param.Pch_dBm/10)*1e-3
+sigRx = sigRx/np.sqrt(signal_power(sigRx))
+sigRx = dbp(np.sqrt(Pin)*sigRx, Fa, paramCh.Ltotal, paramCh.Lspan, hzDBP, paramCh.alpha, paramCh.gamma, paramCh.D, paramCh.Fc)
+sigRx = sigRx.reshape(len(sigRx),)
+sigRx = firFilter(pulse, sigRx)
     
 # CD compensation
-sigRx = edc(sigRx, Ltotal, D, Fc-Δf_lo, Fa)
+# sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fa)
 
 # simple timing recovery
 varVector = np.var((sigRx.T).reshape(-1,param.SpS), axis=0) # finds best sampling instant
