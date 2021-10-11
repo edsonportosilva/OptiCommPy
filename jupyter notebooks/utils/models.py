@@ -3,6 +3,7 @@ from numpy.fft import fft, ifft, fftfreq
 from numpy.random import normal
 import scipy.constants as const
 from tqdm.notebook import tqdm
+from numba import njit
 
 def mzm(Ai, Vπ, u, Vb):
     """
@@ -138,6 +139,7 @@ def coherentReceiver(Es, Elo, Rd=1):
     
     return sI + 1j*sQ
 
+@njit
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
     Simple EDFA model
@@ -247,6 +249,7 @@ def ssfm(Ei, Fs, paramCh):
             Ech = Ech*np.exp(0);         
           
     return Ech.reshape(len(Ech),), paramCh
+
 
 def manakov_ssf(Ei, Fs, paramCh):      
     """

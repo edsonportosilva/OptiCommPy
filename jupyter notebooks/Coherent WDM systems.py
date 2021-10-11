@@ -361,7 +361,7 @@ linearChannel = False
 # optical channel parameters
 paramCh = parameters()
 paramCh.Ltotal = 800   # km
-paramCh.Lspan  = 80    # km
+paramCh.Lspan  = 50    # km
 paramCh.alpha = 0.2    # dB/km
 paramCh.D = 16         # ps/nm/km
 paramCh.Fc = 193.1e12  # Hz
@@ -397,7 +397,7 @@ plt.title('optical WDM spectrum');
 ### Receiver
 
 # parameters
-chIndex  = 4    # index of the channel to be demodulated
+chIndex  = 1    # index of the channel to be demodulated
 polIndex = 0
 plotPSD  = True
 
@@ -511,7 +511,7 @@ ax3.title.set_text('After CFR (4th-power FOE)')
 ax3.grid()
 
 # compensate phase noise (carrier phase recovery - cpr)
-windowSize = 40
+windowSize = 30
 c  = mod.constellation/np.sqrt(mod.Es)
 sigRx, ϕ, θ = cpr(sigRx, windowSize, c, symbTx)
 
@@ -571,3 +571,6 @@ xi, yi = 1.1*np.mgrid[x.min():x.max():x.size**0.5*1j,y.min():y.max():y.size**0.5
 zi = k(np.vstack([xi.flatten(), yi.flatten()]))
 plt.figure(figsize=(5,5))
 plt.pcolormesh(xi, yi, zi.reshape(xi.shape), alpha=1, shading='auto');
+# -
+
+
