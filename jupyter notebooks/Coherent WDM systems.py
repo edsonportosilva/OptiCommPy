@@ -336,7 +336,7 @@ powerProfile(10, 0.2, 80, 10)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 16           # ordem do formato de modulação
+param.M   = 4           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 16           # número de amostras por símbolo
 param.Nbits = 60000      # número de bits
@@ -344,7 +344,7 @@ param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
 param.Pch_dBm = 1        # potência média por canal WDM [dBm]
-param.Nch     = 9        # número de canais WDM
+param.Nch     = 1        # número de canais WDM
 param.Fc      = 193.1e12 # frequência central do espectro WDM
 param.freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
 param.Nmodes = 2         # número de modos de polarização
@@ -356,16 +356,16 @@ freqGrid = param.freqGrid
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
 # +
-linearChannel = False
+linearChannel = True
 
 # optical channel parameters
 paramCh = parameters()
-paramCh.Ltotal = 800   # km
-paramCh.Lspan  = 50    # km
+paramCh.Ltotal = 100   # km
+paramCh.Lspan  = 10    # km
 paramCh.alpha = 0.2    # dB/km
 paramCh.D = 16         # ps/nm/km
 paramCh.Fc = 193.1e12  # Hz
-paramCh.hz = 0.5       # km
+paramCh.hz = 0.1       # km
 paramCh.gamma = 1.3    # 1/(W.km)
 
 if linearChannel:
@@ -571,6 +571,138 @@ xi, yi = 1.1*np.mgrid[x.min():x.max():x.size**0.5*1j,y.min():y.max():y.size**0.5
 zi = k(np.vstack([xi.flatten(), yi.flatten()]))
 plt.figure(figsize=(5,5))
 plt.pcolormesh(xi, yi, zi.reshape(xi.shape), alpha=1, shading='auto');
+
+# +
+from numpy.matlib import repmat
+from tqdm.notebook import tqdm
+
+x = receivedSignal[::int(param.SpS/2)]
+d = transmSymbols[:,:,0]
+
+x = x.reshape(len(x),2)/np.sqrt(signal_power(x))
+d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
+
+θ = 0
+
+rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])
+
+x = x@rot
+
+plt.plot(x.real, x.imag,'.');
+
+
 # -
+
+def MIMO_NLMS_v1(x, dx, paramEq):              
+    
+   
+    # check input parameters
+    numIter    = getattr(paramEq, 'numIter', 1)
+    nTaps      = getattr(paramEq, 'nTaps', 15)
+    mu         = getattr(paramEq, 'mu', 1e-3)
+    SpS        = getattr(paramEq, 'SpS', 2)
+    H          = getattr(paramEq, 'H', [])
+    L          = getattr(paramEq, 'L', [])
+    Hiter      = getattr(paramEq, 'Hiter', [])
+    storeCoeff = getattr(paramEq, 'storeCoeff', False)
+    
+    # We want all the signal sequences to be disposed in columns:
+    try:
+        if x.shape[1] == len(x):
+            x = x.T
+        if dx.shape[1] == len(dx):
+            dx = dx.T
+    except IndexError:
+        x  = x.reshape(len(x),1)
+        dx = dx.reshape(len(dx),1)
+
+    nModes   = int(x.shape[1])
+    indTaps  = np.arange(0, nTaps, dtype='int') #(1:nTaps);
+    indMode  = np.arange(0, nModes, dtype='int') #(1:nModes)
+    
+    zeroPad = np.zeros((int(np.floor(nTaps/2)), nModes), dtype='complex')
+    x       = np.append(zeroPad, x, axis=0)
+    x       = np.append(x, zeroPad, axis=0)
+     
+    # Defining training parameters:
+    if not L:
+        L = int(np.fix((len(x)-nTaps)/SpS+1)) # Length of the output (1 sample/symbol) of the training section
+         
+    # Allocate memory:
+    if not H:
+        H  = np.zeros((nModes**2, nTaps), dtype='complex')
+        
+        for initIter in range(0, nModes):
+            H[initIter+initIter*nModes, int(np.floor(H.shape[1]/2))] = 1;   # Central spike initialization
+    
+    errSq    = np.empty((nModes, L), dtype ='float')
+    y_eq     = np.empty((L,nModes), dtype ='complex')
+    errSq[:] = np.nan
+    y_eq[:]  = np.nan
+    
+    Hiter = []
+    
+    # Equalizer training:
+    for indIter in range(0, numIter):
+        print('NLMS training iteration #%d'%indIter)
+        
+        for ind in tqdm(range(0, L)):
+            out_eq   = np.zeros((nModes,1), dtype='complex')            
+            indInput = indTaps + ind*SpS # simplify indexing and improve speed
+            
+            # Pass signal sequence through the equalizer:
+            for N in range(0, nModes):
+                in_eq  = x[indInput, N].reshape(len(indInput), 1) 
+                out_eq = out_eq + H[indMode+N*nModes,:]@in_eq                               
+           
+            y_eq[ind,:] = out_eq.T
+
+            err = dx[ind,:] - out_eq.T      # Calculate the output error
+            errSq[:,ind] = np.abs(err)**2   # Save the squared error
+
+            # Adjust the equalizer taps:
+            errDiag = np.diag(err[0])    # Define diagonal matrix before loop to improve speed
+                       
+            for N in range(0, nModes):
+                indUpdateTaps = indMode+N*nModes # simplify indexing and improve speed
+                
+                in_adapt = x[indInput, N].T/((x[indInput, N].conj().T)@ x[indInput, N]) 
+                
+                in_adapt = in_adapt.repeat(nModes).reshape(nTaps, -1).T
+                
+                H[indUpdateTaps,:] = H[indUpdateTaps,:] + mu*errDiag@np.conj(in_adapt)
+                        
+            if storeCoeff:
+                Hiter.append(H)
+   
+        print('NLMS MSE = %.6f.'%np.nanmean(errSq))
+
+    return  y_eq, H, errSq, Hiter
+
+# +
+paramEq = parameters()
+paramEq.nTaps = 75
+paramEq.SpS   = 2
+paramEq.mu    = 1e-2
+paramEq.numIter = 4
+paramEq.storeCoeff = False
+
+y_EQ, H, errSq, Hiter = MIMO_NLMS_v1(x, d, paramEq)
+
+# +
+plt.figure()
+plt.plot(y_EQ[:,0].real, y_EQ[:,0].imag,'*')
+plt.figure()
+plt.plot(y_EQ[:,1].real, y_EQ[:,1].imag,'*')
+
+plt.plot(d.real, d.imag,'o')
+plt.figure()
+plt.plot(10*np.log10(errSq.T))
+# -
+
+plt.plot(H.real.T,'-');
+plt.plot(H.imag.T,'-');
+
+y_EQ.shape
 
 
