@@ -369,8 +369,8 @@ paramCh.hz = 0.5       # km
 paramCh.gamma = 1.3    # 1/(W.km)
 
 if linearChannel:
-    paramCh.hz = paramCh.Lspan  # km
-    paramCh.gamma = 0   # 1/(W.km)
+    paramCh.hz = paramCh.Lspan 
+    paramCh.gamma = 0  
 
 Fs = param.Rs*param.SpS
 sigWDM, paramCh = manakov_ssf(sigWDM_Tx, Fs, paramCh) 
@@ -397,7 +397,7 @@ plt.title('optical WDM spectrum');
 ### Receiver
 
 # parameters
-chIndex  = 1    # index of the channel to be demodulated
+chIndex  = 4    # index of the channel to be demodulated
 polIndex = 0
 plotPSD  = True
 
