@@ -336,10 +336,10 @@ powerProfile(10, 0.2, 80, 10)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 4           # ordem do formato de modulação
+param.M   = 64           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
-param.SpS = 16           # número de amostras por símbolo
-param.Nbits = 60000      # número de bits
+param.SpS = 8            # número de amostras por símbolo
+param.Nbits = 600000     # número de bits
 param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
@@ -361,7 +361,7 @@ linearChannel = True
 # optical channel parameters
 paramCh = parameters()
 paramCh.Ltotal = 100   # km
-paramCh.Lspan  = 10    # km
+paramCh.Lspan  = 50    # km
 paramCh.alpha = 0.2    # dB/km
 paramCh.D = 16         # ps/nm/km
 paramCh.Fc = 193.1e12  # Hz
@@ -576,7 +576,7 @@ plt.pcolormesh(xi, yi, zi.reshape(xi.shape), alpha=1, shading='auto');
 from numpy.matlib import repmat
 from tqdm.notebook import tqdm
 
-x = receivedSignal[::int(param.SpS/4)]
+x = receivedSignal[::int(param.SpS/2)]
 d = transmSymbols[:,:,0]
 
 x = x.reshape(len(x),2)/np.sqrt(signal_power(x))
@@ -616,27 +616,26 @@ def MIMO_NLMS_v1(x, dx, paramEq):
         x  = x.reshape(len(x),1)
         dx = dx.reshape(len(dx),1)
 
-    nModes   = int(x.shape[1])
+    nModes   = int(x.shape[1]) # number of sinal modes (order of the MIMO equalizer)
     
     zeroPad = np.zeros((int(np.floor(nTaps/2)), nModes), dtype='complex')
-    x       = np.append(zeroPad, x, axis=0)
-    x       = np.append(x, zeroPad, axis=0)
-     
+    x = np.concatenate((zeroPad, x, zeroPad))
+    
     # Defining training parameters:
     if not L:
         L = int(np.fix((len(x)-nTaps)/SpS+1)) # Length of the output (1 sample/symbol) of the training section
          
     # Allocate memory:
-    if not H:
-        H  = np.zeros((nModes**2, nTaps), dtype='complex')
-        
-        for initIter in range(0, nModes):
-            H[initIter+initIter*nModes, int(np.floor(H.shape[1]/2))] = 1 # Central spike initialization
-    
     y_eq     = np.empty((L,nModes), dtype ='complex')    
     y_eq[:]  = np.nan
     out_eq   = np.zeros((nModes,1), dtype='complex')
     
+    if not H:
+        H  = np.zeros((nModes**2, nTaps), dtype='complex')
+        
+        for initH in range(0, nModes):
+            H[initH + initH*nModes, int(np.floor(H.shape[1]/2))] = 1 # Central spike initialization
+       
     if storeCoeff:
         Hiter    = np.zeros((nModes**2, nTaps, L), dtype='complex')
     else:
@@ -669,11 +668,11 @@ def coreNLMS(x, dx, out_eq, y_eq, SpS, H, Hiter, L, mu, nTaps, storeCoeff):
 
         y_eq[ind,:] = out_eq.T
 
-        err = dx[ind,:] - out_eq.T      # Calculate the output error
-        errSq[:,ind] = np.abs(err)**2   # Save the squared error
+        err = dx[ind,:] - out_eq.T    # Calculate the output error
+        errSq[:,ind] = np.abs(err)**2 # Save the squared error
 
         # Adjust the equalizer taps:
-        errDiag = np.diag(err[0])    # Define diagonal matrix from error array
+        errDiag = np.diag(err[0]) # Define diagonal matrix from error array
 
         for N in range(0, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing and improve speed
@@ -693,7 +692,7 @@ def coreNLMS(x, dx, out_eq, y_eq, SpS, H, Hiter, L, mu, nTaps, storeCoeff):
 # +
 paramEq = parameters()
 paramEq.nTaps = 75
-paramEq.SpS   = 4
+paramEq.SpS   = 2
 paramEq.mu    = 1e-2
 paramEq.numIter = 5
 paramEq.storeCoeff = False
@@ -714,7 +713,9 @@ plt.plot(10*np.log10(errSq.T))
 plt.plot(H.real.T,'-');
 plt.plot(H.imag.T,'-');
 
-# !pip install line_profiler
+# +
+# #!pip install line_profiler
+# -
 
 # %load_ext line_profiler
 
