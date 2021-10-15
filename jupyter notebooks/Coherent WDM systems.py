@@ -619,7 +619,7 @@ def MIMO_NLMS_v1(x, dx, paramEq):
     nModes   = int(x.shape[1]) # number of sinal modes (order of the MIMO equalizer)
     
     zeroPad = np.zeros((int(np.floor(nTaps/2)), nModes), dtype='complex')
-    x = np.concatenate((zeroPad, x, zeroPad))
+    x = np.concatenate((zeroPad, x, zeroPad)) # pad start and end of the signal with zeros
     
     # Defining training parameters:
     if not L:
@@ -630,7 +630,7 @@ def MIMO_NLMS_v1(x, dx, paramEq):
     y_eq[:]  = np.nan
     out_eq   = np.zeros((nModes,1), dtype='complex')
     
-    if not H:
+    if len(H) == 0:
         H  = np.zeros((nModes**2, nTaps), dtype='complex')
         
         for initH in range(0, nModes):
@@ -693,9 +693,11 @@ def coreNLMS(x, dx, out_eq, y_eq, SpS, H, Hiter, L, mu, nTaps, storeCoeff):
 paramEq = parameters()
 paramEq.nTaps = 75
 paramEq.SpS   = 2
-paramEq.mu    = 1e-2
-paramEq.numIter = 5
+paramEq.mu    = 2e-2
+paramEq.numIter = 10
 paramEq.storeCoeff = False
+paramEq.H = H
+paramEq.L = 20000
 
 y_EQ, H, errSq, Hiter = MIMO_NLMS_v1(x, d, paramEq)
 
