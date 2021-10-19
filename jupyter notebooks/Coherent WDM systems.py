@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.3
+#       jupytext_version: 1.13.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -635,37 +635,39 @@ def MIMO_NLMS_v1(x, dx, paramEq):
         
         for initH in range(0, nModes):
             H[initH + initH*nModes, int(np.floor(H.shape[1]/2))] = 1 # Central spike initialization
-       
-    if storeCoeff:
-        Hiter    = np.zeros((nModes**2, nTaps, L), dtype='complex')
-    else:
-        Hiter    = np.zeros((nModes**2, nTaps, 1), dtype='complex')
-    
+           
     # Equalizer training:
     for indIter in tqdm(range(0, numIter)):
         print('NLMS training iteration #%d'%indIter)        
-        y_eq, H, errSq, Hiter = coreNLMS(x, dx, out_eq, y_eq, SpS, H, Hiter, L, mu, nTaps, storeCoeff)               
+        y_eq, H, errSq, Hiter = coreNLMS(x, dx, SpS, H, L, mu, nTaps, storeCoeff)               
         print('NLMS MSE = %.6f.'%np.nanmean(errSq))
         
     return  y_eq, H, errSq, Hiter
 
 @jit(nopython=True)
-def coreNLMS(x, dx, out_eq, y_eq, SpS, H, Hiter, L, mu, nTaps, storeCoeff):
+def coreNLMS(x, dx, SpS, H, L, mu, nTaps, storeCoeff):
     
     nModes   = int(x.shape[1])
     indTaps  = np.arange(0, nTaps) 
     indMode  = np.arange(0, nModes)     
     errSq    = np.empty((nModes, L))
-      
-    for ind in range(0, L):
+    y_eq     = x.copy()  
+    y_eq[:]  = np.nan    
+    out_eq   = np.array([[0+1j*0]]).repeat(nModes).reshape(nModes, 1)
+    
+    if storeCoeff:
+        Hiter    = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps*L).reshape(nModes**2, nTaps, L)
+    
+    for ind in range(0, L):       
         out_eq[:] = 0
+            
         indIn = indTaps + ind*SpS # simplify indexing and improve speed
 
         # Pass signal sequence through the equalizer:
         for N in range(0, nModes):
-            in_eq   = x[indIn, N].reshape(len(indIn), 1) # slice input coming from the Nth mode
-            out_eq += H[indMode+N*nModes,:]@in_eq        # add contribution from the Nth mode to the equalizer's output                       
-
+            in_eq   = x[indIn, N].reshape(len(indIn), 1) # slice input coming from the Nth mode            
+            out_eq += H[indMode+N*nModes,:]@in_eq        # add contribution from the Nth mode to the equalizer's output                 
+                        
         y_eq[ind,:] = out_eq.T
 
         err = dx[ind,:] - out_eq.T    # Calculate the output error
@@ -696,8 +698,8 @@ paramEq.SpS   = 2
 paramEq.mu    = 2e-2
 paramEq.numIter = 10
 paramEq.storeCoeff = False
-paramEq.H = H
-paramEq.L = 20000
+#paramEq.H = H
+#paramEq.L = 20000
 
 y_EQ, H, errSq, Hiter = MIMO_NLMS_v1(x, d, paramEq)
 
@@ -724,5 +726,3 @@ plt.plot(H.imag.T,'-');
 # %lprun -f MIMO_NLMS_v1 MIMO_NLMS_v1(x, d, paramEq)
 
 Hiter.shape
-
-
