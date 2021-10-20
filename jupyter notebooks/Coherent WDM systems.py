@@ -336,10 +336,10 @@ powerProfile(10, 0.2, 80, 10)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 64           # ordem do formato de modulação
+param.M   = 4            # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 8            # número de amostras por símbolo
-param.Nbits = 600000     # número de bits
+param.Nbits = 200000     # número de bits
 param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
@@ -360,8 +360,8 @@ linearChannel = True
 
 # optical channel parameters
 paramCh = parameters()
-paramCh.Ltotal = 100   # km
-paramCh.Lspan  = 50    # km
+paramCh.Ltotal = 40   # km
+paramCh.Lspan  = 20    # km
 paramCh.alpha = 0.2    # dB/km
 paramCh.D = 16         # ps/nm/km
 paramCh.Fc = 193.1e12  # Hz
@@ -589,11 +589,14 @@ rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])
 x = x@rot
 
 plt.plot(x.real, x.imag,'.');
+plt.axis('square')
+plt.xlim(-3.5, 3.5)
+plt.ylim(-3.5, 3.5);
 
 # +
 from numba import njit, jit
 
-def MIMO_NLMS_v1(x, dx, paramEq):              
+def mimoAdaptEqualizer(x, dx, paramEq):              
     
    
     # check input parameters
@@ -605,6 +608,7 @@ def MIMO_NLMS_v1(x, dx, paramEq):
     L          = getattr(paramEq, 'L', [])
     Hiter      = getattr(paramEq, 'Hiter', [])
     storeCoeff = getattr(paramEq, 'storeCoeff', False)
+    alg        = getattr(paramEq, 'alg', 'nlms')
     
     # We want all the signal sequences to be disposed in columns:
     try:
@@ -618,7 +622,8 @@ def MIMO_NLMS_v1(x, dx, paramEq):
 
     nModes = int(x.shape[1]) # number of sinal modes (order of the MIMO equalizer)
     
-    zeroPad = np.zeros((int(np.floor(nTaps/2)), nModes), dtype='complex')
+    Lpad    = int(np.floor(nTaps/2))
+    zeroPad = np.zeros((Lpad, nModes), dtype='complex')
     x = np.concatenate((zeroPad, x, zeroPad)) # pad start and end of the signal with zeros
     
     # Defining training parameters:
@@ -633,85 +638,133 @@ def MIMO_NLMS_v1(x, dx, paramEq):
            
     # Equalizer training:
     for indIter in tqdm(range(0, numIter)):
-        print('NLMS training iteration #%d'%indIter)        
-        yEq, H, errSq, Hiter = coreNLMS(x, dx, SpS, H, L, mu, nTaps, storeCoeff)               
-        print('NLMS MSE = %.6f.'%np.nanmean(errSq))
+        print(alg,'training iteration #%d'%indIter)        
+        yEq, H, errSq, Hiter = coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg)               
+        print(alg,'MSE = %.6f.'%np.nanmean(errSq))
         
     return  yEq, H, errSq, Hiter
 
 @jit(nopython=True)
-def coreNLMS(x, dx, SpS, H, L, mu, nTaps, storeCoeff):
+def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg):
     
     # allocate variables
     nModes  = int(x.shape[1])
     indTaps = np.arange(0, nTaps) 
-    indMode = np.arange(0, nModes)     
+    indMode = np.arange(0, nModes)
+    
     errSq   = np.empty((nModes, L))
-    yEq     = x.copy()  
+    yEq     = x[0:L].copy()    
     yEq[:]  = np.nan    
     outEq   = np.array([[0+1j*0]]).repeat(nModes).reshape(nModes, 1)
     
     if storeCoeff:
-        Hiter    = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps*L).reshape(nModes**2, nTaps, L)
-    
+        Hiter = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps*L).reshape(nModes**2, nTaps, L)
+            
+    if alg == 'cma':
+        R = np.ones((1, nModes))+ 1j*np.zeros((1, nModes))
+        
     for ind in range(0, L):       
         outEq[:] = 0
             
         indIn = indTaps + ind*SpS # simplify indexing and improve speed
 
-        # Pass signal sequence through the equalizer:
+        # pass signal sequence through the equalizer:
         for N in range(0, nModes):
             inEq   = x[indIn, N].reshape(len(indIn), 1) # slice input coming from the Nth mode            
             outEq += H[indMode+N*nModes,:]@inEq         # add contribution from the Nth mode to the equalizer's output                 
                         
-        yEq[ind,:] = outEq.T
-
-        err = dx[ind,:] - outEq.T     # Calculate the output error
-        errSq[:,ind] = np.abs(err)**2 # Save the squared error
-
-        # Update the equalizer taps:
-        errDiag = np.diag(err[0]) # Define diagonal matrix from error array
-
-        for N in range(0, nModes):
-            indUpdTaps = indMode+N*nModes # simplify indexing and improve speed
-
-            inAdapt = x[indIn, N].T/np.vdot(x[indIn, N], x[indIn, N]) # NLMS normalization
-
-            inAdaptPar = inAdapt.repeat(nModes).reshape(nTaps, -1).T # expand input to parallelize tap adaptation
-
-            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(inAdaptPar) # gradient descent update       
-            
-            if storeCoeff:
-                Hiter[:,:, ind] = H                
+        yEq[ind,:] = outEq.T        
+        
+        # update equalizer taps acording to adaptive specified 
+        # training algorithm and save squared error:        
+        if alg == 'nlms':
+            H, errSq[:,ind] = nlmsUpdate(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
+        elif alg == 'cma':
+            H, errSq[:,ind] = cmaUpdate(x[indIn, :], R, outEq, mu, H, nModes)                 
+        
+        if storeCoeff:
+            Hiter[:,:, ind] = H                
         
     return yEq, H, errSq, Hiter
+
+@jit(nopython=True)
+def nlmsUpdate(x, dx, outEq, mu, H, nModes):
+          
+    nTaps = len(x)
+    indMode = np.arange(0, nModes)
+    
+    err = dx - outEq.T # calculate error w.r.t reference signal
+
+    errDiag = np.diag(err[0]) # define diagonal matrix from error array
+    
+    # update equalizer taps according to nlms algorithm
+    for N in range(0, nModes):
+            indUpdTaps = indMode+N*nModes # simplify indexing and improve speed
+            inAdapt = x[:, N].T/np.linalg.norm(x[:,N])**2 # NLMS normalization
+            inAdaptPar = inAdapt.repeat(nModes).reshape(nTaps, -1).T # expand input to parallelize tap adaptation
+            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(inAdaptPar) # gradient descent update   
+
+    return H, np.abs(err)**2
+
+@jit(nopython=True)
+def cmaUpdate(x, R, outEq, mu, H, nModes):
+          
+    nTaps   = len(x)
+    indMode = np.arange(0, nModes)
+    outEq = outEq.T
+    err   = R - np.abs(outEq)**2 # calculate error w.r.t cma rule  
+
+    prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
+
+    for N in range(0, nModes):
+            indUpdTaps = indMode+N*nModes # simplify indexing
+            inAdapt = x[:, N].T
+            inAdaptPar = inAdapt.repeat(nModes).reshape(nTaps, -1).T # expand input to parallelize tap adaptation
+            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
+
+    return H, np.abs(err)**2
 
 
 # +
 paramEq = parameters()
-paramEq.nTaps = 75
+paramEq.nTaps = 45
 paramEq.SpS   = 2
-paramEq.mu    = 2e-2
+paramEq.mu    = 1e-3
 paramEq.numIter = 10
 paramEq.storeCoeff = False
+paramEq.alg   = 'cma'
 #paramEq.H = H
 #paramEq.L = 20000
 
-y_EQ, H, errSq, Hiter = MIMO_NLMS_v1(x, d, paramEq)
+y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, d, paramEq)
 
 # +
-plt.figure()
-plt.plot(y_EQ[:,0].real, y_EQ[:,0].imag,'*')
-plt.figure()
-plt.plot(y_EQ[:,1].real, y_EQ[:,1].imag,'*')
+fig, (ax1, ax2) = plt.subplots(1, 2)
 
-plt.plot(d.real, d.imag,'o')
-plt.figure()
-plt.plot(10*np.log10(errSq.T))
-# -
+ax1.plot(y_EQ[:,0].real, y_EQ[:,0].imag,'.')
+ax1.plot(d[:,0].real, d[:,0].imag,'.')
+ax1.axis('square')
+ax1.set_xlim(-1.5, 1.5)
+ax1.set_ylim(-1.5, 1.5)
 
+ax2.plot(y_EQ[:,1].real, y_EQ[:,1].imag,'.')
+ax2.plot(d[:,1].real, d[:,1].imag,'.')
+ax2.axis('square')
+ax2.set_xlim(-1.5, 1.5)
+ax2.set_ylim(-1.5, 1.5)
+
+plt.figure()
+plt.plot(10*np.log10(errSq.T));
+
+# +
 plt.plot(H.real.T,'-');
 plt.plot(H.imag.T,'-');
+
+# plt.stem(H[0,:].real.T,linefmt='r');
+# plt.stem(H[3,:].imag.T,linefmt='b');
+# -
+
+H.shape
 
 # +
 # #!pip install line_profiler
