@@ -616,19 +616,14 @@ def MIMO_NLMS_v1(x, dx, paramEq):
         x  = x.reshape(len(x),1)
         dx = dx.reshape(len(dx),1)
 
-    nModes   = int(x.shape[1]) # number of sinal modes (order of the MIMO equalizer)
+    nModes = int(x.shape[1]) # number of sinal modes (order of the MIMO equalizer)
     
     zeroPad = np.zeros((int(np.floor(nTaps/2)), nModes), dtype='complex')
     x = np.concatenate((zeroPad, x, zeroPad)) # pad start and end of the signal with zeros
     
     # Defining training parameters:
     if not L:
-        L = int(np.fix((len(x)-nTaps)/SpS+1)) # Length of the output (1 sample/symbol) of the training section
-         
-    # Allocate memory:
-    y_eq     = np.empty((L,nModes), dtype ='complex')    
-    y_eq[:]  = np.nan
-    out_eq   = np.zeros((nModes,1), dtype='complex')
+        L = int(np.fix((len(x)-nTaps)/SpS+1)) # Length of the output (1 sample/symbol) of the training section       
     
     if len(H) == 0:
         H  = np.zeros((nModes**2, nTaps), dtype='complex')
@@ -639,56 +634,57 @@ def MIMO_NLMS_v1(x, dx, paramEq):
     # Equalizer training:
     for indIter in tqdm(range(0, numIter)):
         print('NLMS training iteration #%d'%indIter)        
-        y_eq, H, errSq, Hiter = coreNLMS(x, dx, SpS, H, L, mu, nTaps, storeCoeff)               
+        yEq, H, errSq, Hiter = coreNLMS(x, dx, SpS, H, L, mu, nTaps, storeCoeff)               
         print('NLMS MSE = %.6f.'%np.nanmean(errSq))
         
-    return  y_eq, H, errSq, Hiter
+    return  yEq, H, errSq, Hiter
 
 @jit(nopython=True)
 def coreNLMS(x, dx, SpS, H, L, mu, nTaps, storeCoeff):
     
-    nModes   = int(x.shape[1])
-    indTaps  = np.arange(0, nTaps) 
-    indMode  = np.arange(0, nModes)     
-    errSq    = np.empty((nModes, L))
-    y_eq     = x.copy()  
-    y_eq[:]  = np.nan    
-    out_eq   = np.array([[0+1j*0]]).repeat(nModes).reshape(nModes, 1)
+    # allocate variables
+    nModes  = int(x.shape[1])
+    indTaps = np.arange(0, nTaps) 
+    indMode = np.arange(0, nModes)     
+    errSq   = np.empty((nModes, L))
+    yEq     = x.copy()  
+    yEq[:]  = np.nan    
+    outEq   = np.array([[0+1j*0]]).repeat(nModes).reshape(nModes, 1)
     
     if storeCoeff:
         Hiter    = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps*L).reshape(nModes**2, nTaps, L)
     
     for ind in range(0, L):       
-        out_eq[:] = 0
+        outEq[:] = 0
             
         indIn = indTaps + ind*SpS # simplify indexing and improve speed
 
         # Pass signal sequence through the equalizer:
         for N in range(0, nModes):
-            in_eq   = x[indIn, N].reshape(len(indIn), 1) # slice input coming from the Nth mode            
-            out_eq += H[indMode+N*nModes,:]@in_eq        # add contribution from the Nth mode to the equalizer's output                 
+            inEq   = x[indIn, N].reshape(len(indIn), 1) # slice input coming from the Nth mode            
+            outEq += H[indMode+N*nModes,:]@inEq         # add contribution from the Nth mode to the equalizer's output                 
                         
-        y_eq[ind,:] = out_eq.T
+        yEq[ind,:] = outEq.T
 
-        err = dx[ind,:] - out_eq.T    # Calculate the output error
+        err = dx[ind,:] - outEq.T     # Calculate the output error
         errSq[:,ind] = np.abs(err)**2 # Save the squared error
 
-        # Adjust the equalizer taps:
+        # Update the equalizer taps:
         errDiag = np.diag(err[0]) # Define diagonal matrix from error array
 
         for N in range(0, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing and improve speed
 
-            in_adapt = x[indIn, N].T/np.vdot(x[indIn, N], x[indIn, N]) # NLMS normalization
+            inAdapt = x[indIn, N].T/np.vdot(x[indIn, N], x[indIn, N]) # NLMS normalization
 
-            in_adapt_par = in_adapt.repeat(nModes).reshape(nTaps, -1).T # expand input to parallelize tap adaptation
+            inAdaptPar = inAdapt.repeat(nModes).reshape(nTaps, -1).T # expand input to parallelize tap adaptation
 
-            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(in_adapt_par) # gradient descent update       
+            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(inAdaptPar) # gradient descent update       
             
             if storeCoeff:
                 Hiter[:,:, ind] = H                
         
-    return y_eq, H, errSq, Hiter
+    return yEq, H, errSq, Hiter
 
 
 # +
