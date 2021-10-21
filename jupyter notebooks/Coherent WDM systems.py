@@ -336,10 +336,10 @@ powerProfile(10, 0.2, 80, 10)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 4            # ordem do formato de modulação
+param.M   = 16            # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 8            # número de amostras por símbolo
-param.Nbits = 200000     # número de bits
+param.Nbits = 400000     # número de bits
 param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
@@ -360,7 +360,7 @@ linearChannel = True
 
 # optical channel parameters
 paramCh = parameters()
-paramCh.Ltotal = 40   # km
+paramCh.Ltotal = 80   # km
 paramCh.Lspan  = 20    # km
 paramCh.alpha = 0.2    # dB/km
 paramCh.D = 16         # ps/nm/km
@@ -589,6 +589,7 @@ rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])
 x = x@rot
 
 plt.plot(x.real, x.imag,'.');
+plt.plot(d.real, d.imag,'.');
 plt.axis('square')
 plt.xlim(-3.5, 3.5)
 plt.ylim(-3.5, 3.5);
@@ -596,7 +597,7 @@ plt.ylim(-3.5, 3.5);
 # +
 from numba import njit, jit
 
-def mimoAdaptEqualizer(x, dx, paramEq):              
+def mimoAdaptEqualizer(x, dx=[], paramEq=[]):              
     
    
     # check input parameters
@@ -609,15 +610,22 @@ def mimoAdaptEqualizer(x, dx, paramEq):
     Hiter      = getattr(paramEq, 'Hiter', [])
     storeCoeff = getattr(paramEq, 'storeCoeff', False)
     alg        = getattr(paramEq, 'alg', 'nlms')
+    M          = getattr(paramEq, 'M', 4)    
     
     # We want all the signal sequences to be disposed in columns:
+    if not len(dx):
+        dx = x.copy()
+        
     try:
         if x.shape[1] == len(x):
-            x = x.T
+            x = x.T       
+    except IndexError:
+        x  = x.reshape(len(x),1)       
+        
+    try:        
         if dx.shape[1] == len(dx):
             dx = dx.T
-    except IndexError:
-        x  = x.reshape(len(x),1)
+    except IndexError:        
         dx = dx.reshape(len(dx),1)
 
     nModes = int(x.shape[1]) # number of sinal modes (order of the MIMO equalizer)
@@ -627,6 +635,9 @@ def mimoAdaptEqualizer(x, dx, paramEq):
     x = np.concatenate((zeroPad, x, zeroPad)) # pad start and end of the signal with zeros
     
     # Defining training parameters:
+    mod = QAMModem(m=M) # commpy QAM constellation modem object
+    constSymb = mod.constellation/np.sqrt(mod.Es) # complex-valued constellation symbols
+
     if not L:
         L = int(np.fix((len(x)-nTaps)/SpS+1)) # Length of the output (1 sample/symbol) of the training section       
     
@@ -639,13 +650,13 @@ def mimoAdaptEqualizer(x, dx, paramEq):
     # Equalizer training:
     for indIter in tqdm(range(0, numIter)):
         print(alg,'training iteration #%d'%indIter)        
-        yEq, H, errSq, Hiter = coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg)               
+        yEq, H, errSq, Hiter = coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb)               
         print(alg,'MSE = %.6f.'%np.nanmean(errSq))
         
     return  yEq, H, errSq, Hiter
 
 @jit(nopython=True)
-def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg):
+def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
     
     # allocate variables
     nModes  = int(x.shape[1])
@@ -659,9 +670,12 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg):
     
     if storeCoeff:
         Hiter = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps*L).reshape(nModes**2, nTaps, L)
-            
-    if alg == 'cma':
-        R = np.ones((1, nModes))+ 1j*np.zeros((1, nModes))
+    else:
+        Hiter = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps).reshape(nModes**2, nTaps, 1)
+        
+    # Radii cma, rde
+    Rcma = (np.mean(np.abs(constSymb)**4)/np.mean(np.abs(constSymb)**2))*np.ones((1, nModes))+1j*0          
+    Rrde = np.unique(np.abs(constSymb))
         
     for ind in range(0, L):       
         outEq[:] = 0
@@ -674,52 +688,116 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg):
             outEq += H[indMode+N*nModes,:]@inEq         # add contribution from the Nth mode to the equalizer's output                 
                         
         yEq[ind,:] = outEq.T        
-        
+                    
         # update equalizer taps acording to adaptive specified 
         # training algorithm and save squared error:        
         if alg == 'nlms':
-            H, errSq[:,ind] = nlmsUpdate(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
+            H, errSq[:,ind] = nlmsUp(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
         elif alg == 'cma':
-            H, errSq[:,ind] = cmaUpdate(x[indIn, :], R, outEq, mu, H, nModes)                 
+            H, errSq[:,ind] = cmaUp(x[indIn, :], Rcma, outEq, mu, H, nModes) 
+        elif alg == 'ddlms':
+            H, errSq[:,ind] = ddlmsUp(x[indIn, :], constSymb, outEq, mu, H, nModes)
+        elif alg == 'rde':
+            H, errSq[:,ind] = rdeUp(x[indIn, :], Rrde, outEq, mu, H, nModes)
         
         if storeCoeff:
-            Hiter[:,:, ind] = H                
-        
+            Hiter[:,:, ind] = H  
+        else:
+            Hiter[:,:, 1] = H
+            
     return yEq, H, errSq, Hiter
 
 @jit(nopython=True)
-def nlmsUpdate(x, dx, outEq, mu, H, nModes):
-          
-    nTaps = len(x)
-    indMode = np.arange(0, nModes)
-    
+def nlmsUp(x, dx, outEq, mu, H, nModes):
+    """
+    coefficient update with the nlms algorithm    
+    """          
+    indMode = np.arange(0, nModes)    
     err = dx - outEq.T # calculate error w.r.t reference signal
-
+    
     errDiag = np.diag(err[0]) # define diagonal matrix from error array
     
     # update equalizer taps according to nlms algorithm
     for N in range(0, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing and improve speed
             inAdapt = x[:, N].T/np.linalg.norm(x[:,N])**2 # NLMS normalization
-            inAdaptPar = inAdapt.repeat(nModes).reshape(nTaps, -1).T # expand input to parallelize tap adaptation
+            inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
             H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(inAdaptPar) # gradient descent update   
 
     return H, np.abs(err)**2
 
 @jit(nopython=True)
-def cmaUpdate(x, R, outEq, mu, H, nModes):
-          
-    nTaps   = len(x)
+def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
+    """
+    coefficient update with the ddlms algorithm    
+    """      
+    indMode    = np.arange(0, nModes)
+    outEq      = outEq.T
+    decided    = outEq.copy()
+    decided[:] = np.nan
+       
+    for k in range(0, outEq.shape[1]):
+        indSymb = np.argmin(np.abs(outEq[0,k] - constSymb))
+        decided[0,k] = constSymb[indSymb]
+                
+    err = decided - outEq # calculate error w.r.t ddlms rule  
+
+    errDiag = np.diag(err[0]) # define diagonal matrix from error array
+   
+    # update equalizer taps according to ddlms algorithm
+    for N in range(0, nModes):
+            indUpdTaps = indMode+N*nModes # simplify indexing
+            inAdapt = x[:, N].T
+            inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
+            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(inAdaptPar) # gradient descent update   
+
+    return H, np.abs(err)**2
+
+
+@jit(nopython=True)
+def cmaUp(x, R, outEq, mu, H, nModes):
+    """
+    coefficient update with the cma algorithm    
+    """      
     indMode = np.arange(0, nModes)
     outEq = outEq.T
     err   = R - np.abs(outEq)**2 # calculate error w.r.t cma rule  
 
     prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
-
+    
+    # update equalizer taps according to cma algorithm
     for N in range(0, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing
             inAdapt = x[:, N].T
-            inAdaptPar = inAdapt.repeat(nModes).reshape(nTaps, -1).T # expand input to parallelize tap adaptation
+            inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
+            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
+
+    return H, np.abs(err)**2
+
+@jit(nopython=True)
+def rdeUp(x, R, outEq, mu, H, nModes):
+    """
+    coefficient update with the rde algorithm    
+    """      
+    indMode    = np.arange(0, nModes)
+    outEq      = outEq.T    
+    decidedR    = outEq.copy()
+    decidedR[:] = np.nan
+    
+    # find closest constellation radius
+    for k in range(0, outEq.shape[1]):
+        indR = np.argmin(np.abs(R - np.abs(outEq[0,k])))
+        decidedR[0,k] = R[indR]
+        
+    err  = decidedR**2 - np.abs(outEq)**2 # calculate error w.r.t rde rule
+    
+    prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
+    
+    # update equalizer taps according to rde algorithm
+    for N in range(0, nModes):
+            indUpdTaps = indMode+N*nModes # simplify indexing
+            inAdapt = x[:, N].T
+            inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
             H[indUpdTaps,:] = H[indUpdTaps,:] + mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
 
     return H, np.abs(err)**2
@@ -727,27 +805,33 @@ def cmaUpdate(x, R, outEq, mu, H, nModes):
 
 # +
 paramEq = parameters()
-paramEq.nTaps = 45
+paramEq.nTaps = 25
 paramEq.SpS   = 2
-paramEq.mu    = 1e-3
-paramEq.numIter = 10
+paramEq.mu    = 2e-3
+paramEq.numIter = 5
 paramEq.storeCoeff = False
-paramEq.alg   = 'cma'
+paramEq.alg   = 'nlms'
+paramEq.M     = 16
 #paramEq.H = H
 #paramEq.L = 20000
 
-y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, d, paramEq)
+#y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
+
+y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(np.matlib.repmat(x,1,3),\
+                                           dx=np.matlib.repmat(d,1,3),\
+                                           paramEq=paramEq)
 
 # +
 fig, (ax1, ax2) = plt.subplots(1, 2)
+discard = 1000
 
-ax1.plot(y_EQ[:,0].real, y_EQ[:,0].imag,'.')
+ax1.plot(y_EQ[discard:-discard,0].real, y_EQ[discard:-discard,0].imag,'.')
 ax1.plot(d[:,0].real, d[:,0].imag,'.')
 ax1.axis('square')
 ax1.set_xlim(-1.5, 1.5)
 ax1.set_ylim(-1.5, 1.5)
 
-ax2.plot(y_EQ[:,1].real, y_EQ[:,1].imag,'.')
+ax2.plot(y_EQ[discard:-discard,1].real, y_EQ[discard:-discard,1].imag,'.')
 ax2.plot(d[:,1].real, d[:,1].imag,'.')
 ax2.axis('square')
 ax2.set_xlim(-1.5, 1.5)
@@ -764,7 +848,9 @@ plt.plot(H.imag.T,'-');
 # plt.stem(H[3,:].imag.T,linefmt='b');
 # -
 
-H.shape
+mod = QAMModem(m=4)
+mod.constellation
+mod.Es
 
 # +
 # #!pip install line_profiler
@@ -775,3 +861,5 @@ H.shape
 # %lprun -f MIMO_NLMS_v1 MIMO_NLMS_v1(x, d, paramEq)
 
 Hiter.shape
+
+
