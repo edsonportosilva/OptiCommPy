@@ -3,7 +3,7 @@ from numpy.fft import fft, ifft, fftfreq
 from numpy.random import normal
 import scipy.constants as const
 from tqdm.notebook import tqdm
-from numba import njit
+from numba import njit, jit
 
 def mzm(Ai, Vπ, u, Vb):
     """
@@ -354,6 +354,7 @@ def manakov_ssf(Ei, Fs, paramCh):
     
     return Ech, paramCh
 
+@jit(nopython=True)
 def phaseNoise(lw, Nsamples, Ts):
     
     σ2 = 2*np.pi*lw*Ts    
