@@ -156,7 +156,7 @@ t       = np.arange(0, len(sigWDM))*Ta
 ϕ_pn_lo = phaseNoise(lw, len(sigWDM), Ta)
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
-# single-polarization coherent optical receiver
+# polarization multiplexed coherent optical receiver
 sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig=0, Rdx=1, Rdy=1)
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
