@@ -60,7 +60,7 @@ help(ssfm)
 
 # ## Polarization multiplexed WDM signal
 
-# **WDM signal generation**
+# **signal generation**
 
 # +
 # Parâmetros do transmissor:
@@ -69,7 +69,7 @@ param.M   = 16            # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 8            # número de amostras por símbolo
 param.Nbits = 400000     # número de bits
-param.pulse = 'rrc'      # formato de pulso
+param.pulse = 'nrz'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
 param.Pch_dBm = 1        # potência média por canal WDM [dBm]
@@ -92,7 +92,7 @@ paramCh = parameters()
 paramCh.Ltotal = 80   # km
 paramCh.Lspan  = 20    # km
 paramCh.alpha = 0.2    # dB/km
-paramCh.D = 16         # ps/nm/km
+paramCh.D = 0          # ps/nm/km
 paramCh.Fc = 193.1e12  # Hz
 paramCh.hz = 0.1       # km
 paramCh.gamma = 1.3    # 1/(W.km)
@@ -126,8 +126,7 @@ plt.title('optical WDM spectrum');
 ### Receiver
 
 # parameters
-chIndex  = 4    # index of the channel to be demodulated
-polIndex = 0
+chIndex  = 0    # index of the channel to be demodulated
 plotPSD  = True
 
 Fa = param.SpS*param.Rs
@@ -138,13 +137,12 @@ mod = QAMModem(m=param.M)
 print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
       %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
 
-sigWDM = receivedSignal[:,polIndex].reshape(len(sigWDM),)
-symbTx = transmSymbols[:,polIndex,chIndex].reshape(len(symbTx_),)
+symbTx = transmSymbols[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 64e6                 # frequency offset
+FO      = 64e6                  # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 0*100e3                 # linewidth
+lw      = 0*100e3               # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
@@ -159,8 +157,16 @@ t       = np.arange(0, len(sigWDM))*Ta
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
 # single-polarization coherent optical receiver
-sigRx = coherentReceiver(sigWDM, sigLO)
+sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig=0, Rdx=1, Rdy=1)
 
+fig, (ax1, ax2) = plt.subplots(1, 2)
+
+ax1.plot(sigRx[0::param.SpS,0].real, sigRx[0::param.SpS,0].imag,'.')
+ax1.axis('square');
+ax2.plot(sigRx[0::param.SpS,1].real, sigRx[0::param.SpS,1].imag,'.')
+ax2.axis('square');
+
+# +
 # Rx filtering
 
 # Matched filter
@@ -386,6 +392,10 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
 
 @jit(nopython=True)
 def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
+    """
+    Adaptive equalizer core processing function
+    
+    """
     
     # allocate variables
     nModes  = int(x.shape[1])
@@ -439,7 +449,7 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
 @jit(nopython=True)
 def nlmsUp(x, dx, outEq, mu, H, nModes):
     """
-    coefficient update with the nlms algorithm    
+    coefficient update with the NLMS algorithm    
     """          
     indMode = np.arange(0, nModes)    
     err = dx - outEq.T # calculate error w.r.t reference signal
@@ -458,7 +468,7 @@ def nlmsUp(x, dx, outEq, mu, H, nModes):
 @jit(nopython=True)
 def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
     """
-    coefficient update with the ddlms algorithm    
+    coefficient update with the DDLMS algorithm    
     """      
     indMode    = np.arange(0, nModes)
     outEq      = outEq.T
@@ -486,7 +496,7 @@ def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
 @jit(nopython=True)
 def cmaUp(x, R, outEq, mu, H, nModes):
     """
-    coefficient update with the cma algorithm    
+    coefficient update with the CMA algorithm    
     """      
     indMode = np.arange(0, nModes)
     outEq = outEq.T
@@ -506,7 +516,7 @@ def cmaUp(x, R, outEq, mu, H, nModes):
 @jit(nopython=True)
 def rdeUp(x, R, outEq, mu, H, nModes):
     """
-    coefficient update with the rde algorithm    
+    coefficient update with the RDE algorithm    
     """      
     indMode    = np.arange(0, nModes)
     outEq      = outEq.T    
@@ -534,15 +544,15 @@ def rdeUp(x, R, outEq, mu, H, nModes):
 
 # +
 paramEq = parameters()
-paramEq.nTaps = 25
+paramEq.nTaps = 75
 paramEq.SpS   = 2
-paramEq.mu    = 2e-3
-paramEq.numIter = 5
+paramEq.mu    = 1e-3
+paramEq.numIter = 10
 paramEq.storeCoeff = False
 paramEq.alg   = ['nlms']
 paramEq.M     = 16
 #paramEq.H = H
-paramEq.L = [20000]
+#paramEq.L = [20000]
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
@@ -564,10 +574,37 @@ ax2.plot(y_EQ[discard:-discard,1].real, y_EQ[discard:-discard,1].imag,'.')
 ax2.plot(d[:,1].real, d[:,1].imag,'.')
 ax2.axis('square')
 ax2.set_xlim(-1.5, 1.5)
-ax2.set_ylim(-1.5, 1.5)
+ax2.set_ylim(-1.5, 1.5);
+
+# +
+fig, (ax1, ax2) = plt.subplots(1, 2)
+discard = 1
+
+ax1.plot(np.abs(y_EQ[discard:-discard,0]),'.')
+ax1.plot(np.abs(d[:,0]),'.');
+#ax1.axis('square')
+#ax1.set_xlim(-1.5, 1.5)
+#ax1.set_ylim(-1.5, 1.5)
+
+ax2.plot(np.abs(y_EQ[discard:-discard,1]),'.')
+ax2.plot(np.abs(d[:,1]),'.');
+#ax2.axis('square')
+#ax2.set_xlim(-1.5, 1.5)
+#ax2.set_ylim(-1.5, 1.5);
+
+# +
+Nav = 2000
+h = np.ones(Nav)/Nav
 
 plt.figure()
-plt.plot(10*np.log10(errSq.T));
+for ind in range(0, errSq.shape[0]):
+    err_ = errSq[ind,:]
+    plt.plot(10*np.log10(firFilter(h, err_)));
+
+plt.grid()
+plt.xlim(0,errSq.shape[1])
+plt.xlabel('symbol')
+plt.ylabel('MSE (dB)');
 
 # +
 plt.plot(H.real.T,'-');
@@ -588,6 +625,94 @@ Hiter.shape
 
 len(x.T)
 
-x.shape[0]
+h.size
 
-y_EQ.shape
+errSq.shape
+x.shape
+
+help(firFilter)
+
+
+#@jit(nopython=True)
+def pbs(E, θ=0):
+    """
+    Polarization beam splitter (pbs)
+    
+    :param E: input pol. multiplexed field [2d nparray]
+    :param θ: rotation angle of input field [rad][default: 0 rad]
+    
+    :return: Ex output single pol. field [1d nparray]
+    :return: Ey output single pol. field [1d nparray]
+    
+    """  
+    try:
+        assert E.shape[1] == 2, 'E need to be a N-by-2 2d nparray or a 1d nparray'
+    except IndexError:
+        E = np.repeat(E, 2).reshape(-1,2)
+        E[:,1] = 0
+        
+    rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])+1j*0
+
+    E = E@rot
+    
+    Ex = E[:,0]
+    Ey = E[:,1]    
+
+    return Ex, Ey
+
+
+# +
+Ex, Ey = pbs(y_EQ[:,0], θ=np.pi/2)
+
+fig, (ax1, ax2) = plt.subplots(1, 2)
+discard = 1000
+
+ax1.plot(Ex[discard:-discard].real, Ex[discard:-discard].imag,'.')
+ax1.plot(d[:,0].real, d[:,0].imag,'.')
+ax1.axis('square')
+ax1.set_xlim(-1.5, 1.5)
+ax1.set_ylim(-1.5, 1.5)
+
+ax2.plot(Ey[discard:-discard].real, Ey[discard:-discard].imag,'.')
+ax2.plot(d[:,1].real, d[:,1].imag,'.')
+ax2.axis('square')
+ax2.set_xlim(-1.5, 1.5)
+ax2.set_ylim(-1.5, 1.5);
+
+
+# -
+
+def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
+    """
+    Polarization multiplexed coherent optical front-end
+    
+    :param Es: input signal field [2d nparray]
+    :param Elo: input LO field [nparray]
+    :param Rd: photodiode resposivity [scalar]
+    
+    :return: downconverted signal after balanced detection    
+    """
+    assert Rdx > 0 and Rdy >0, 'PD responsivity should be a positive scalar'
+    assert len(Es) == len(Elo), 'Es and Elo need to have the same number of samples'
+            
+    Elox, Eloy = pbs(Elo, θ = np.pi/4) # split LO into two orthogonal polarizations
+    Esx,  Esy  = pbs(Es, θ = θsig)     # split signal into two orthogonal polarizations
+    
+    Sx = coherentReceiver(Esx, Elox, Rd=Rdx) # coherent detection of pol.X
+    Sy = coherentReceiver(Esy, Eloy, Rd=Rdy) # coherent detection of pol.Y
+    
+    Sx = Sx.reshape(len(Sx),1)
+    Sy = Sy.reshape(len(Sy),1)
+    
+    return np.concatenate((Sx, Sy), axis=1)
+
+
+
+err_.shape[1]
+
+a = np.array([[1,2,3,4]]).T
+a
+
+np.concatenate((a,a),axis=1)
+
+
