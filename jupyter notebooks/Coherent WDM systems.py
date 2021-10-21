@@ -617,13 +617,13 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
         dx = x.copy()
         
     try:
-        if x.shape[1] == len(x):
+        if x.shape[1] > x.shape[0]:
             x = x.T       
     except IndexError:
         x  = x.reshape(len(x),1)       
         
     try:        
-        if dx.shape[1] == len(dx):
+        if dx.shape[1] > dx.shape[0]:
             dx = dx.T
     except IndexError:        
         dx = dx.reshape(len(dx),1)
@@ -815,11 +815,11 @@ paramEq.M     = 16
 #paramEq.H = H
 #paramEq.L = 20000
 
-#y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
+y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
-y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(np.matlib.repmat(x,1,3),\
-                                           dx=np.matlib.repmat(d,1,3),\
-                                           paramEq=paramEq)
+# y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(np.matlib.repmat(x,1,3),\
+#                                            dx=np.matlib.repmat(d,1,3),\
+#                                            paramEq=paramEq)
 
 # +
 fig, (ax1, ax2) = plt.subplots(1, 2)
@@ -846,11 +846,6 @@ plt.plot(H.imag.T,'-');
 
 # plt.stem(H[0,:].real.T,linefmt='r');
 # plt.stem(H[3,:].imag.T,linefmt='b');
-# -
-
-mod = QAMModem(m=4)
-mod.constellation
-mod.Es
 
 # +
 # #!pip install line_profiler
@@ -861,5 +856,9 @@ mod.Es
 # %lprun -f MIMO_NLMS_v1 MIMO_NLMS_v1(x, d, paramEq)
 
 Hiter.shape
+
+len(x.T)
+
+x.shape[0]
 
 
