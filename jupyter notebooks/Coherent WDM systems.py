@@ -413,9 +413,9 @@ sigWDM = receivedSignal[:,polIndex].reshape(len(sigWDM),)
 symbTx = transmSymbols[:,polIndex,chIndex].reshape(len(symbTx_),)
 
 # local oscillator (LO) parameters:
-FO      = 64e6                 # frequency offset
+FO      = 64e6                  # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 0*100e3                 # linewidth
+lw      = 0*100e3               # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
@@ -805,15 +805,15 @@ def rdeUp(x, R, outEq, mu, H, nModes):
 
 # +
 paramEq = parameters()
-paramEq.nTaps = 25
+paramEq.nTaps = 75
 paramEq.SpS   = 2
 paramEq.mu    = 2e-3
-paramEq.numIter = 5
+paramEq.numIter = 1
 paramEq.storeCoeff = False
-paramEq.alg   = ['nlms']
+paramEq.alg   = ['ddlms']
 paramEq.M     = 16
-#paramEq.H = H
-paramEq.L = [20000]
+paramEq.H = H
+#paramEq.L = [20000]
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
