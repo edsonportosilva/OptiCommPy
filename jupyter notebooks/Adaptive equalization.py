@@ -759,6 +759,6 @@ plt.plot(np.abs(y_EQ[0:20,1]),'x')
 # -
 
 plt.plot(np.abs(d[0:20,1]),'.')
-plt.plot(np.abs(sigRx[0:40:2,1]),'x')
+plt.plot(np.abs(x[0:40:2,1]),'x')
 
 
