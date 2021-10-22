@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from numpy.fft import fft, ifft, fftfreq, fftshift
 from tqdm.notebook import tqdm
 
+
 def firFilter(h, x):
     """
     Implements FIR filtering and compensates filter delay
@@ -17,12 +18,27 @@ def firFilter(h, x):
     :param h: impulse response (symmetric)
     :param x: input signal 
     :return y: output filtered signal    
-    """   
-    N = h.size
-    x = np.pad(x, (0, int(N/2)),'constant')
-    y = lfilter(h,1,x)
+    """        
     
-    return y[int(N/2):y.size]
+    try:
+        x.shape[1]
+    except IndexError:
+        x = x.reshape(len(x),1)
+            
+    y = x.copy()
+    nModes = x.shape[1]
+    N = h.size
+    
+    for n in range(0,nModes):
+        x_ = x[:,n]
+        x_ = np.pad(x_, (0, int(N/2)),'constant')
+        y_ = lfilter(h,1,x_)
+        y[:,n] = y_[int(N/2):y_.size]
+
+    if y.shape[1] == 1:
+        y = y[:,0]
+        
+    return y
 
 def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     """
