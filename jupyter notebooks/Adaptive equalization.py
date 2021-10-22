@@ -157,7 +157,7 @@ t       = np.arange(0, len(sigWDM))*Ta
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
 # polarization multiplexed coherent optical receiver
-sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig=0, Rdx=1, Rdy=1)
+sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig=π/3, Rdx=1, Rdy=1)
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
@@ -311,17 +311,17 @@ plt.pcolormesh(xi, yi, zi.reshape(xi.shape), alpha=1, shading='auto');
 from numpy.matlib import repmat
 from tqdm.notebook import tqdm
 
-x = receivedSignal[::int(param.SpS/2)]
+x = sigRx[::int(param.SpS/2)]
 d = transmSymbols[:,:,0]
 
 x = x.reshape(len(x),2)/np.sqrt(signal_power(x))
 d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
 
-θ = np.pi/3
+#θ = np.pi/3
 
-rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])
+#rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])
 
-x = x@rot
+#x = x@rot
 
 plt.plot(x.real, x.imag,'.');
 plt.plot(d.real, d.imag,'.');
@@ -333,7 +333,10 @@ plt.ylim(-3.5, 3.5);
 from numba import njit, jit
 
 def mimoAdaptEqualizer(x, dx=[], paramEq=[]):              
+    """
+    N-by-N MIMO adaptive equalizer
     
+    """
    
     # check input parameters
     numIter    = getattr(paramEq, 'numIter', 1)
@@ -452,11 +455,11 @@ def nlmsUp(x, dx, outEq, mu, H, nModes):
     coefficient update with the NLMS algorithm    
     """          
     indMode = np.arange(0, nModes)    
-    err = dx - outEq.T # calculate error w.r.t reference signal
+    err = dx - outEq.T # calculate output error for the NLMS algorithm 
     
     errDiag = np.diag(err[0]) # define diagonal matrix from error array
     
-    # update equalizer taps according to nlms algorithm
+    # update equalizer taps 
     for N in range(0, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing and improve speed
             inAdapt = x[:, N].T/np.linalg.norm(x[:,N])**2 # NLMS normalization
@@ -479,11 +482,11 @@ def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
         indSymb = np.argmin(np.abs(outEq[0,k] - constSymb))
         decided[0,k] = constSymb[indSymb]
                 
-    err = decided - outEq # calculate error w.r.t ddlms rule  
+    err = decided - outEq # calculate output error for the DDLMS algorithm   
 
     errDiag = np.diag(err[0]) # define diagonal matrix from error array
    
-    # update equalizer taps according to ddlms algorithm
+    # update equalizer taps 
     for N in range(0, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing
             inAdapt = x[:, N].T
@@ -500,11 +503,11 @@ def cmaUp(x, R, outEq, mu, H, nModes):
     """      
     indMode = np.arange(0, nModes)
     outEq = outEq.T
-    err   = R - np.abs(outEq)**2 # calculate error w.r.t cma rule  
+    err   = R - np.abs(outEq)**2 # calculate output error for the CMA algorithm 
 
     prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
     
-    # update equalizer taps according to cma algorithm
+    # update equalizer taps  
     for N in range(0, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing
             inAdapt = x[:, N].T
@@ -528,11 +531,11 @@ def rdeUp(x, R, outEq, mu, H, nModes):
         indR = np.argmin(np.abs(R - np.abs(outEq[0,k])))
         decidedR[0,k] = R[indR]
         
-    err  = decidedR**2 - np.abs(outEq)**2 # calculate error w.r.t rde rule
+    err  = decidedR**2 - np.abs(outEq)**2 # calculate output error for the RDE algorithm 
     
     prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
     
-    # update equalizer taps according to rde algorithm
+    # update equalizer taps 
     for N in range(0, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing
             inAdapt = x[:, N].T
@@ -547,9 +550,9 @@ paramEq = parameters()
 paramEq.nTaps = 75
 paramEq.SpS   = 2
 paramEq.mu    = 1e-3
-paramEq.numIter = 10
+paramEq.numIter = 5
 paramEq.storeCoeff = False
-paramEq.alg   = ['nlms']
+paramEq.alg   = ['rde']
 paramEq.M     = 16
 #paramEq.H = H
 #paramEq.L = [20000]
