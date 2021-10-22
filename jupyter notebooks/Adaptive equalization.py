@@ -20,7 +20,7 @@ import numpy as np
 from numpy.random import normal
 from commpy.utilities  import signal_power, upsample
 from commpy.modulation import QAMModem
-from utils.dsp import firFilter, pulseShape, lowPassFIR, edc, fourthPowerFOE, dbp, cpr
+from utils.dsp import firFilter, pulseShape, lowPassFIR, edc, fourthPowerFOE, dbp, cpr, fastFIRfilter
 from utils.models import mzm, linFiberCh, iqm, ssfm, edfa, phaseNoise, coherentReceiver, manakov_ssf
 from utils.tx import simpleWDMTx
 from utils.core import parameters
@@ -58,6 +58,61 @@ help(simpleWDMTx)
 
 help(ssfm)
 
+
+#@jit(nopython=True)
+def pbs(E, θ=0):
+    """
+    Polarization beam splitter (pbs)
+    
+    :param E: input pol. multiplexed field [2d nparray]
+    :param θ: rotation angle of input field [rad][default: 0 rad]
+    
+    :return: Ex output single pol. field [1d nparray]
+    :return: Ey output single pol. field [1d nparray]
+    
+    """  
+    try:
+        assert E.shape[1] == 2, 'E need to be a N-by-2 2d nparray or a 1d nparray'
+    except IndexError:
+        E = np.repeat(E, 2).reshape(-1,2)
+        E[:,1] = 0
+        
+    rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])+1j*0
+
+    E = E@rot
+    
+    Ex = E[:,0]
+    Ey = E[:,1]    
+
+    return Ex, Ey
+
+
+def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
+    """
+    Polarization multiplexed coherent optical front-end
+    
+    :param Es: input signal field [2d nparray]
+    :param Elo: input LO field [nparray]
+    :param Rd: photodiode resposivity [scalar]
+    
+    :return: downconverted signal after balanced detection    
+    """
+    assert Rdx > 0 and Rdy >0, 'PD responsivity should be a positive scalar'
+    assert len(Es) == len(Elo), 'Es and Elo need to have the same number of samples'
+            
+    Elox, Eloy = pbs(Elo, θ = np.pi/4) # split LO into two orthogonal polarizations
+    Esx,  Esy  = pbs(Es, θ = θsig)     # split signal into two orthogonal polarizations
+    
+    Sx = coherentReceiver(Esx, Elox, Rd=Rdx) # coherent detection of pol.X
+    Sy = coherentReceiver(Esy, Eloy, Rd=Rdy) # coherent detection of pol.Y
+    
+    Sx = Sx.reshape(len(Sx),1)
+    Sy = Sy.reshape(len(Sy),1)
+    
+    return np.concatenate((Sx, Sy), axis=1)
+
+
+
 # ## Polarization multiplexed WDM signal
 
 # **signal generation**
@@ -65,11 +120,11 @@ help(ssfm)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 16            # ordem do formato de modulação
+param.M   = 16           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 8            # número de amostras por símbolo
 param.Nbits = 400000     # número de bits
-param.pulse = 'nrz'      # formato de pulso
+param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
 param.Pch_dBm = 1        # potência média por canal WDM [dBm]
@@ -92,7 +147,7 @@ paramCh = parameters()
 paramCh.Ltotal = 80   # km
 paramCh.Lspan  = 20    # km
 paramCh.alpha = 0.2    # dB/km
-paramCh.D = 0          # ps/nm/km
+paramCh.D = 16         # ps/nm/km
 paramCh.Fc = 193.1e12  # Hz
 paramCh.hz = 0.1       # km
 paramCh.gamma = 1.3    # 1/(W.km)
@@ -140,7 +195,7 @@ print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 symbTx = transmSymbols[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 64e6                  # frequency offset
+FO      = 0*64e6                  # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
 lw      = 0*100e3               # linewidth
 Plo_dBm = 10                    # power in dBm
@@ -157,7 +212,7 @@ t       = np.arange(0, len(sigWDM))*Ta
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
 # polarization multiplexed coherent optical receiver
-sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig=π/3, Rdx=1, Rdy=1)
+sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig=0, Rdx=1, Rdy=1)
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
@@ -174,10 +229,20 @@ if param.pulse == 'nrz':
     pulse = pulseShape('nrz', param.SpS)
 elif param.pulse == 'rrc':
     pulse = pulseShape('rrc', param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=1/param.Rs)
+    
+print(pulse.shape)
+# -
 
 pulse = pulse/np.max(np.abs(pulse))            
 sigRx = firFilter(pulse, sigRx)
 
+fig, (ax1, ax2) = plt.subplots(1, 2)
+ax1.plot(sigRx[0::param.SpS,0].real, sigRx[0::param.SpS,0].imag,'.')
+ax1.axis('square');
+ax2.plot(sigRx[0::param.SpS,1].real, sigRx[0::param.SpS,1].imag,'.')
+ax2.axis('square');
+
+# +
 # plot psd
 if plotPSD:
     plt.figure();
@@ -549,10 +614,10 @@ def rdeUp(x, R, outEq, mu, H, nModes):
 paramEq = parameters()
 paramEq.nTaps = 75
 paramEq.SpS   = 2
-paramEq.mu    = 1e-3
-paramEq.numIter = 5
+paramEq.mu    = 1e-2
+paramEq.numIter = 10
 paramEq.storeCoeff = False
-paramEq.alg   = ['rde']
+paramEq.alg   = ['nlms']
 paramEq.M     = 16
 #paramEq.H = H
 #paramEq.L = [20000]
@@ -600,9 +665,13 @@ Nav = 2000
 h = np.ones(Nav)/Nav
 
 plt.figure()
+# for ind in range(0, errSq.shape[0]):
+#     err_ = errSq[ind,:]
+#     plt.plot(10*np.log10(firFilter(h, err_)));
+    
 for ind in range(0, errSq.shape[0]):
     err_ = errSq[ind,:]
-    plt.plot(10*np.log10(firFilter(h, err_)));
+    plt.plot(10*np.log10(np.convolve(h, err_)));
 
 plt.grid()
 plt.xlim(0,errSq.shape[1])
@@ -624,45 +693,17 @@ plt.plot(H.imag.T,'-');
 
 # %lprun -f MIMO_NLMS_v1 MIMO_NLMS_v1(x, d, paramEq)
 
-Hiter.shape
+a = np.convolve(h, err_)
+a.shape
 
-len(x.T)
+h.shape
 
-h.size
+err_.shape
 
 errSq.shape
 x.shape
 
 help(firFilter)
-
-
-#@jit(nopython=True)
-def pbs(E, θ=0):
-    """
-    Polarization beam splitter (pbs)
-    
-    :param E: input pol. multiplexed field [2d nparray]
-    :param θ: rotation angle of input field [rad][default: 0 rad]
-    
-    :return: Ex output single pol. field [1d nparray]
-    :return: Ey output single pol. field [1d nparray]
-    
-    """  
-    try:
-        assert E.shape[1] == 2, 'E need to be a N-by-2 2d nparray or a 1d nparray'
-    except IndexError:
-        E = np.repeat(E, 2).reshape(-1,2)
-        E[:,1] = 0
-        
-    rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])+1j*0
-
-    E = E@rot
-    
-    Ex = E[:,0]
-    Ey = E[:,1]    
-
-    return Ex, Ey
-
 
 # +
 Ex, Ey = pbs(y_EQ[:,0], θ=np.pi/2)
@@ -681,41 +722,56 @@ ax2.plot(d[:,1].real, d[:,1].imag,'.')
 ax2.axis('square')
 ax2.set_xlim(-1.5, 1.5)
 ax2.set_ylim(-1.5, 1.5);
-
-
 # -
-
-def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
-    """
-    Polarization multiplexed coherent optical front-end
-    
-    :param Es: input signal field [2d nparray]
-    :param Elo: input LO field [nparray]
-    :param Rd: photodiode resposivity [scalar]
-    
-    :return: downconverted signal after balanced detection    
-    """
-    assert Rdx > 0 and Rdy >0, 'PD responsivity should be a positive scalar'
-    assert len(Es) == len(Elo), 'Es and Elo need to have the same number of samples'
-            
-    Elox, Eloy = pbs(Elo, θ = np.pi/4) # split LO into two orthogonal polarizations
-    Esx,  Esy  = pbs(Es, θ = θsig)     # split signal into two orthogonal polarizations
-    
-    Sx = coherentReceiver(Esx, Elox, Rd=Rdx) # coherent detection of pol.X
-    Sy = coherentReceiver(Esy, Eloy, Rd=Rdy) # coherent detection of pol.Y
-    
-    Sx = Sx.reshape(len(Sx),1)
-    Sy = Sy.reshape(len(Sy),1)
-    
-    return np.concatenate((Sx, Sy), axis=1)
-
-
 
 err_.shape[1]
 
-a = np.array([[1,2,3,4]]).T
-a
+a = np.array([[1,2,3,4]])
+a.size
 
-np.concatenate((a,a),axis=1)
+np.vdot(a,a)
+
+
+@njit
+def fastFIRfilter(h, x):   
+    """
+    Fast FIR filtering with numba
+    
+    """
+    h = h+1j*0
+    x = x+1j*0
+    
+    y    = x.copy()
+    y[:] = np.nan
+    ind  = np.arange(0, h.size)
+    
+    Lpad    = int(np.floor(h.size/2))
+    zeroPad = np.zeros((Lpad, x.shape[1]))
+    x = np.concatenate((zeroPad, x, zeroPad)) # pad start and end of the signal with zeros
+    
+    for m in range(0, x.shape[1]):
+        for k in range(0, x.shape[0]):
+            y[k, m] = np.vdot(h, x[ind+k,m])
+            
+    return y        
+
+
+# +
+h = np.array([0.001, 0.01, 0.9, 0.01, 0.001])
+a = fastFIRfilter(h, y_EQ)
+
+plt.plot(np.abs(a[0:20,0]),'.')
+plt.plot(np.abs(y_EQ[0:20,0]),'x')
+# -
+
+a.shape
+
+h = np.array([[0.001, 0.01, 0.9, 0.01, 0.001]]).T
+h
+
+h.shape
+
+a = h[:,0]
+a.shape
 
 
