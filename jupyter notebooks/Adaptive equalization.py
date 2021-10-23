@@ -114,6 +114,48 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
     return np.concatenate((Sx, Sy), axis=1)
 
 
+def fastBERcalc(rx, tx, mod):
+    
+    # We want all the signal sequences to be disposed in columns:        
+    try:
+        if rx.shape[1] > rx.shape[0]:
+            rx = rx.T       
+    except IndexError:
+        rx  = rx.reshape(len(rx),1)       
+        
+    try:        
+        if tx.shape[1] > tx.shape[0]:
+            tx = tx.T
+    except IndexError:        
+        tx = tx.reshape(len(tx),1)
+
+    nModes = int(tx.shape[1]) # number of sinal modes
+    SNR    = np.zeros(nModes)
+    BER    = np.zeros(nModes)
+    
+    # symbol normalization
+    for k in range(0, nModes):       
+        rx[:,k] = rx[:,k]/np.sqrt(signal_power(rx[:,k]))
+        tx[:,k] = tx[:,k]/np.sqrt(signal_power(tx[:,k]))
+        
+    for k in range(0, nModes):
+        # correct (possible) phase ambiguity
+        rot = np.mean(tx[:,k]/rx[:,k])
+        rx[:,k]  = rot*rx[:,k]
+        
+        # estimate SNR of the received constellation
+        SNR[k] = signal_power(tx[:,k])/signal_power(rx[:,k]-tx[:,k])
+
+        # hard decision demodulation of the received symbols    
+        brx = mod.demodulate(np.sqrt(mod.Es)*rx[:,k], demod_type = 'hard') 
+        btx = mod.demodulate(np.sqrt(mod.Es)*tx[:,k], demod_type = 'hard') 
+
+        err = np.logical_xor(brx, btx)
+        BER[k] = np.mean(err)
+        
+    return BER, 10*np.log10(SNR)
+
+
 # ## Polarization multiplexed WDM signal
 
 # **signal generation**
@@ -617,7 +659,7 @@ paramEq.SpS   = 2
 paramEq.mu    = 5e-3
 paramEq.numIter = 10
 paramEq.storeCoeff = False
-paramEq.alg   = ['ddlms']
+paramEq.alg   = ['nlms']
 paramEq.M     = 16
 paramEq.H = H
 #paramEq.L = [20000]
@@ -627,6 +669,15 @@ y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 # y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(np.matlib.repmat(x,1,3),\
 #                                            dx=np.matlib.repmat(d,1,3),\
 #                                            paramEq=paramEq)
+
+# +
+discard = 1000
+ind = np.arange(discard, d.shape[0]-discard)
+mod = QAMModem(m=paramEq.M)
+BER, SNR = fastBERcalc(y_EQ[ind,:], d[ind,:], mod)
+
+print('BER = ', BER)
+print('SNR = ', SNR, ' dB')
 
 # +
 fig, (ax1, ax2) = plt.subplots(1, 2)
