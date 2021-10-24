@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.3
+#       jupytext_version: 1.13.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -116,31 +116,21 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
 
 
 @njit
-def LLRcalc(rxSymb, M, σ2, constSymb):
+def calcLLR(rxSymb, M, σ2, constSymb, bitMapping):
     
     b = int(np.log2(M))
     
     LLRs = np.zeros(len(rxSymb)*b)
     
-    for i in np.arange(len(rxSymb)):
-        symb = rxSymb[i]
-        for bit_index in np.arange(b):
-            llr_num = 0
-            llr_den = 0
-            for bit_value, symbol in enumerate(constSymb):
-                if (bit_value >> bit_index) & 1:
-                    llr_num += np.exp((-abs(symb - symbol)**2)/σ2)                    
-                else:
-                    llr_den += np.exp((-abs(symb - symbol)**2)/σ2)
+    for i in range(0, len(rxSymb)):       
+        prob = np.exp((-np.abs(rxSymb[i] - constSymb)**2)/σ2)               
+        
+        for indBit in range(0, b):
+            p0  = np.sum(prob[bitMapping[:,indBit]==0])
+            p1  = np.sum(prob[bitMapping[:,indBit]==1])
             
-            if llr_num == 0:
-                llr_num = 10**-200
-                
-            if llr_den == 0:
-                llr_den = 10**-200
-                    
-            LLRs[i * b + b - 1 - bit_index] = np.log(llr_num)-np.log(llr_den)
-    
+            LLRs[i*b + indBit] = np.log(p0)-np.log(p1)          
+                                 
     return LLRs
 
 
@@ -209,47 +199,52 @@ def monteCarloGMI(rx, tx, mod):
 
     nModes = int(tx.shape[1]) # number of sinal modes
     GMI    = np.zeros(nModes)
+    
+    noiseVar = np.var(rx-tx, axis=0)
+    
+    bitMapping = mod.demodulate(mod.constellation, demod_type = 'hard')
+    bitMapping = bitMapping.reshape(-1, int(np.log2(mod.m)))
         
     # symbol normalization
     for k in range(0, nModes):       
         rx[:,k] = rx[:,k]/np.sqrt(signal_power(rx[:,k]))
         tx[:,k] = tx[:,k]/np.sqrt(signal_power(tx[:,k]))
         
-    for k in range(0, nModes):
-        # correct (possible) phase ambiguity
-        rot = np.mean(tx[:,k]/rx[:,k])
-        rx[:,k]  = rot*rx[:,k]
+    for k in range(0, nModes):        
+        # set the noise variance 
+        σ2 = noiseVar[k]
         
-        # estimate SNR of the received constellation
-        σ2 = signal_power(rx[:,k]-tx[:,k])
-              
         # hard decision demodulation of the transmitted symbols
         btx = mod.demodulate(np.sqrt(mod.Es)*tx[:,k], demod_type = 'hard')
                         
-        # soft demodulation of the received symbols    
-      #  LLRs = mod.demodulate(np.sqrt(mod.Es)*rx[:,k], demod_type = 'soft', noise_var = σ2) 
-        LLRs = LLRcalc(np.sqrt(mod.Es)*rx[:,k], mod.m, σ2, mod._constellation) 
-        LLRs[LLRs >= 300] = 300
-        LLRs[LLRs < -300] = -300
-           
+        # soft demodulation of the received symbols                       
+        LLRs = calcLLR(rx[:,k], mod.m, σ2, mod.constellation/np.sqrt(mod.Es), bitMapping) 
+                
+        LLRs[LLRs == np.inf] = 500
+        LLRs[LLRs == -np.inf] = -500
+    
         # Compute bitwise MIs and their sum
-        m = int(np.log2(mod.m))
+        b = int(np.log2(mod.m))
         
-        MIperBitPosition = np.zeros(m)
-        LLRs *= -1
-        
-        for n in range(0, m):
-            MIperBitPosition[n] = 1 - np.mean(np.log2(1 + np.exp( (2*btx[n::m]-1)*LLRs[n::m]) ) )
+        MIperBitPosition = np.zeros(b)
+               
+        for n in range(0, b):
+            MIperBitPosition[n] = 1 - np.mean(np.log2(1 + np.exp( (2*btx[n::b]-1)*LLRs[n::b]) ) )
                         
         GMI[k] = np.sum(MIperBitPosition)
                 
-    return GMI
+    return GMI, MIperBitPosition
 
 
 # +
-#GMI = monteCarloGMI(y_EQ[1:10000,:], d[1:10000,:], mod)
+GMI, MIperBitPosition = monteCarloGMI(y_EQ[10000:20000,:], d[10000:20000,:], mod)
 
-#print(GMI)
+print(GMI)
+print(MIperBitPosition)
+
+# bitMapping = mod.demodulate(mod.constellation, demod_type = 'hard')
+# bitMapping = bitMapping.reshape(-1,6)
+# print(bitMapping)
 # -
 
 # ## Polarization multiplexed WDM signal
@@ -259,10 +254,10 @@ def monteCarloGMI(rx, tx, mod):
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 16           # ordem do formato de modulação
+param.M   = 64           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 8            # número de amostras por símbolo
-param.Nbits = 400000     # número de bits
+param.Nbits = 600000     # número de bits
 param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
@@ -749,15 +744,17 @@ def rdeUp(x, R, outEq, mu, H, nModes):
 
 
 # +
+M = 64
+
 paramEq = parameters()
 paramEq.nTaps = 35
 paramEq.SpS   = 2
 paramEq.mu    = 5e-3
-paramEq.numIter = 3
+paramEq.numIter = 5
 paramEq.storeCoeff = False
 paramEq.alg   = ['nlms']
-paramEq.M     = 16
-paramEq.L = [10000]
+paramEq.M     = M
+paramEq.L = [20000]
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
@@ -768,7 +765,7 @@ paramEq.mu    = 1e-3
 paramEq.numIter = 1
 paramEq.storeCoeff = False
 paramEq.alg   = ['ddlms']
-paramEq.M     = 16
+paramEq.M     = M
 paramEq.H = H
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
@@ -779,17 +776,14 @@ y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
 discard = 1000
 ind = np.arange(discard, d.shape[0]-discard)
-mod = QAMModem(m=paramEq.M)
+mod = QAMModem(m=M)
 BER, SNR = fastBERcalc(y_EQ[ind,:], d[ind,:], mod)
-GMI      = monteCarloGMI(y_EQ[ind,:], d[ind,:], mod)
+GMI,_    = monteCarloGMI(y_EQ[ind,:], d[ind,:], mod)
 
 print('     pol.X     pol.Y      ')
 print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
-# -
-
-d.shape
 
 # +
 fig, (ax1, ax2) = plt.subplots(1, 2)
@@ -850,11 +844,13 @@ plt.plot(H.imag.T,'-');
 
 # +
 # #!pip install line_profiler
+
+# +
+# #%load_ext line_profiler
+
+# +
+# #%lprun -f MIMO_NLMS_v1 MIMO_NLMS_v1(x, d, paramEq)
 # -
-
-# %load_ext line_profiler
-
-# %lprun -f MIMO_NLMS_v1 MIMO_NLMS_v1(x, d, paramEq)
 
 a = np.convolve(h, err_)
 a.shape
