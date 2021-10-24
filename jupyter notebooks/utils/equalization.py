@@ -4,7 +4,7 @@ from commpy.modulation import QAMModem
 from tqdm.notebook import tqdm
 from utils.core import parameters
 
-from numba import njit, jit
+from numba import njit
 
 def mimoAdaptEqualizer(x, dx=[], paramEq=[]):              
     """
@@ -67,7 +67,7 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
         
     return  yEq, H, errSq, Hiter
 
-@jit(nopython=True)
+@njit
 def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
     """
     Adaptive equalizer core processing function
@@ -123,7 +123,7 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
             
     return yEq, H, errSq, Hiter
 
-@jit(nopython=True)
+@njit
 def nlmsUp(x, dx, outEq, mu, H, nModes):
     """
     coefficient update with the NLMS algorithm    
@@ -142,7 +142,7 @@ def nlmsUp(x, dx, outEq, mu, H, nModes):
 
     return H, np.abs(err)**2
 
-@jit(nopython=True)
+@njit
 def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
     """
     coefficient update with the DDLMS algorithm    
@@ -170,7 +170,7 @@ def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
     return H, np.abs(err)**2
 
 
-@jit(nopython=True)
+@njit
 def cmaUp(x, R, outEq, mu, H, nModes):
     """
     coefficient update with the CMA algorithm    
@@ -190,7 +190,7 @@ def cmaUp(x, R, outEq, mu, H, nModes):
 
     return H, np.abs(err)**2
 
-@jit(nopython=True)
+@njit
 def rdeUp(x, R, outEq, mu, H, nModes):
     """
     coefficient update with the RDE algorithm    
