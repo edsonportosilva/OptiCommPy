@@ -18,12 +18,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.random import normal
-from commpy.utilities  import signal_power, upsample
+from commpy.utilities  import signal_power
 from commpy.modulation import QAMModem
-from utils.dsp import firFilter, pulseShape, lowPassFIR, edc, fourthPowerFOE, dbp, cpr
-from utils.models import mzm, linFiberCh, iqm, ssfm, edfa, phaseNoise, coherentReceiver, manakov_ssf
+from utils.dsp import edc #, fourthPowerFOE, dbp, cpr
+from utils.models import phaseNoise, pdmCoherentReceiver, manakov_ssf
 from utils.tx import simpleWDMTx
 from utils.core import parameters
+from utils.equalization import mimoAdaptEqualizer
+from utils.metrics import fastBERcalc, monteCarloGMI
 
 from scipy import signal
 import scipy.constants as const
@@ -57,190 +59,188 @@ figsize(10, 3)
 
 help(simpleWDMTx)
 
-help(ssfm)
+help(manakov_ssf)
 
-
-#@jit(nopython=True)
-def pbs(E, θ=0):
-    """
-    Polarization beam splitter (pbs)
+# +
+# #@jit(nopython=True)
+# def pbs(E, θ=0):
+#     """
+#     Polarization beam splitter (pbs)
     
-    :param E: input pol. multiplexed field [2d nparray]
-    :param θ: rotation angle of input field [rad][default: 0 rad]
+#     :param E: input pol. multiplexed field [2d nparray]
+#     :param θ: rotation angle of input field [rad][default: 0 rad]
     
-    :return: Ex output single pol. field [1d nparray]
-    :return: Ey output single pol. field [1d nparray]
+#     :return: Ex output single pol. field [1d nparray]
+#     :return: Ey output single pol. field [1d nparray]
     
-    """  
-    try:
-        assert E.shape[1] == 2, 'E need to be a N-by-2 2d nparray or a 1d nparray'
-    except IndexError:
-        E = np.repeat(E, 2).reshape(-1,2)
-        E[:,1] = 0
+#     """  
+#     try:
+#         assert E.shape[1] == 2, 'E need to be a N-by-2 2d nparray or a 1d nparray'
+#     except IndexError:
+#         E = np.repeat(E, 2).reshape(-1,2)
+#         E[:,1] = 0
         
-    rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])+1j*0
+#     rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])+1j*0
 
-    E = E@rot
+#     E = E@rot
     
-    Ex = E[:,0]
-    Ey = E[:,1]    
+#     Ex = E[:,0]
+#     Ey = E[:,1]    
 
-    return Ex, Ey
+#     return Ex, Ey
 
-
-def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
-    """
-    Polarization multiplexed coherent optical front-end
+# +
+# def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
+#     """
+#     Polarization multiplexed coherent optical front-end
     
-    :param Es: input signal field [2d nparray]
-    :param Elo: input LO field [nparray]
-    :param θsig: polarization rotation angle [rad][default: 0]
-    :param Rdx: photodiode resposivity pol.X [scalar]
-    :param Rdy: photodiode resposivity pol.Y [scalar]
+#     :param Es: input signal field [2d nparray]
+#     :param Elo: input LO field [nparray]
+#     :param θsig: polarization rotation angle [rad][default: 0]
+#     :param Rdx: photodiode resposivity pol.X [scalar]
+#     :param Rdy: photodiode resposivity pol.Y [scalar]
     
-    :return: downconverted signal after balanced detection    
-    """
-    assert Rdx > 0 and Rdy >0, 'PD responsivity should be a positive scalar'
-    assert len(Es) == len(Elo), 'Es and Elo need to have the same number of samples'
+#     :return: downconverted signal after balanced detection    
+#     """
+#     assert Rdx > 0 and Rdy >0, 'PD responsivity should be a positive scalar'
+#     assert len(Es) == len(Elo), 'Es and Elo need to have the same number of samples'
             
-    Elox, Eloy = pbs(Elo, θ = np.pi/4) # split LO into two orthogonal polarizations
-    Esx,  Esy  = pbs(Es, θ = θsig)     # split signal into two orthogonal polarizations
+#     Elox, Eloy = pbs(Elo, θ = np.pi/4) # split LO into two orthogonal polarizations
+#     Esx,  Esy  = pbs(Es, θ = θsig)     # split signal into two orthogonal polarizations
     
-    Sx = coherentReceiver(Esx, Elox, Rd=Rdx) # coherent detection of pol.X
-    Sy = coherentReceiver(Esy, Eloy, Rd=Rdy) # coherent detection of pol.Y
+#     Sx = coherentReceiver(Esx, Elox, Rd=Rdx) # coherent detection of pol.X
+#     Sy = coherentReceiver(Esy, Eloy, Rd=Rdy) # coherent detection of pol.Y
     
-    Sx = Sx.reshape(len(Sx),1)
-    Sy = Sy.reshape(len(Sy),1)
+#     Sx = Sx.reshape(len(Sx),1)
+#     Sy = Sy.reshape(len(Sy),1)
     
-    return np.concatenate((Sx, Sy), axis=1)
+#     return np.concatenate((Sx, Sy), axis=1)
 
-
-@njit
-def calcLLR(rxSymb, M, σ2, constSymb, bitMapping):
+# +
+# @njit
+# def calcLLR(rxSymb, M, σ2, constSymb, bitMapping):
     
-    b = int(np.log2(M))
+#     b = int(np.log2(M))
     
-    LLRs = np.zeros(len(rxSymb)*b)
+#     LLRs = np.zeros(len(rxSymb)*b)
     
-    for i in range(0, len(rxSymb)):       
-        prob = np.exp((-np.abs(rxSymb[i] - constSymb)**2)/σ2)               
+#     for i in range(0, len(rxSymb)):       
+#         prob = np.exp((-np.abs(rxSymb[i] - constSymb)**2)/σ2)               
         
-        for indBit in range(0, b):
-            p0  = np.sum(prob[bitMapping[:,indBit]==0])
-            p1  = np.sum(prob[bitMapping[:,indBit]==1])
+#         for indBit in range(0, b):
+#             p0  = np.sum(prob[bitMapping[:,indBit]==0])
+#             p1  = np.sum(prob[bitMapping[:,indBit]==1])
             
-            LLRs[i*b + indBit] = np.log(p0)-np.log(p1)          
+#             LLRs[i*b + indBit] = np.log(p0)-np.log(p1)          
                                  
-    return LLRs
-
+#     return LLRs
 
 # +
-def fastBERcalc(rx, tx, mod):
-    """
-    BER calculation
-    """
+# def fastBERcalc(rx, tx, mod):
+#     """
+#     BER calculation
+#     """
     
-    # We want all the signal sequences to be disposed in columns:        
-    try:
-        if rx.shape[1] > rx.shape[0]:
-            rx = rx.T       
-    except IndexError:
-        rx  = rx.reshape(len(rx),1)       
+#     # We want all the signal sequences to be disposed in columns:        
+#     try:
+#         if rx.shape[1] > rx.shape[0]:
+#             rx = rx.T       
+#     except IndexError:
+#         rx  = rx.reshape(len(rx),1)       
         
-    try:        
-        if tx.shape[1] > tx.shape[0]:
-            tx = tx.T
-    except IndexError:        
-        tx = tx.reshape(len(tx),1)
+#     try:        
+#         if tx.shape[1] > tx.shape[0]:
+#             tx = tx.T
+#     except IndexError:        
+#         tx = tx.reshape(len(tx),1)
 
-    nModes = int(tx.shape[1]) # number of sinal modes
-    SNR    = np.zeros(nModes)
-    BER    = np.zeros(nModes)
+#     nModes = int(tx.shape[1]) # number of sinal modes
+#     SNR    = np.zeros(nModes)
+#     BER    = np.zeros(nModes)
     
-    # symbol normalization
-    for k in range(0, nModes):       
-        rx[:,k] = rx[:,k]/np.sqrt(signal_power(rx[:,k]))
-        tx[:,k] = tx[:,k]/np.sqrt(signal_power(tx[:,k]))
+#     # symbol normalization
+#     for k in range(0, nModes):       
+#         rx[:,k] = rx[:,k]/np.sqrt(signal_power(rx[:,k]))
+#         tx[:,k] = tx[:,k]/np.sqrt(signal_power(tx[:,k]))
         
-    for k in range(0, nModes):
-        # correct (possible) phase ambiguity
-        rot = np.mean(tx[:,k]/rx[:,k])
-        rx[:,k]  = rot*rx[:,k]
+#     for k in range(0, nModes):
+#         # correct (possible) phase ambiguity
+#         rot = np.mean(tx[:,k]/rx[:,k])
+#         rx[:,k]  = rot*rx[:,k]
         
-        # estimate SNR of the received constellation
-        SNR[k] = signal_power(tx[:,k])/signal_power(rx[:,k]-tx[:,k])
+#         # estimate SNR of the received constellation
+#         SNR[k] = signal_power(tx[:,k])/signal_power(rx[:,k]-tx[:,k])
 
-        # hard decision demodulation of the received symbols    
-        brx = mod.demodulate(np.sqrt(mod.Es)*rx[:,k], demod_type = 'hard') 
-        btx = mod.demodulate(np.sqrt(mod.Es)*tx[:,k], demod_type = 'hard') 
+#         # hard decision demodulation of the received symbols    
+#         brx = mod.demodulate(np.sqrt(mod.Es)*rx[:,k], demod_type = 'hard') 
+#         btx = mod.demodulate(np.sqrt(mod.Es)*tx[:,k], demod_type = 'hard') 
 
-        err = np.logical_xor(brx, btx)
-        BER[k] = np.mean(err)
+#         err = np.logical_xor(brx, btx)
+#         BER[k] = np.mean(err)
         
-    return BER, 10*np.log10(SNR)
+#     return BER, 10*np.log10(SNR)
 
-def monteCarloGMI(rx, tx, mod):
-    """
-    GMI calculation
-    """
+# def monteCarloGMI(rx, tx, mod):
+#     """
+#     GMI calculation
+#     """
     
-    # We want all the signal sequences to be disposed in columns:        
-    try:
-        if rx.shape[1] > rx.shape[0]:
-            rx = rx.T       
-    except IndexError:
-        rx  = rx.reshape(len(rx),1)       
+#     # We want all the signal sequences to be disposed in columns:        
+#     try:
+#         if rx.shape[1] > rx.shape[0]:
+#             rx = rx.T       
+#     except IndexError:
+#         rx  = rx.reshape(len(rx),1)       
         
-    try:        
-        if tx.shape[1] > tx.shape[0]:
-            tx = tx.T
-    except IndexError:        
-        tx = tx.reshape(len(tx),1)
+#     try:        
+#         if tx.shape[1] > tx.shape[0]:
+#             tx = tx.T
+#     except IndexError:        
+#         tx = tx.reshape(len(tx),1)
 
-    nModes = int(tx.shape[1]) # number of sinal modes
-    GMI    = np.zeros(nModes)
+#     nModes = int(tx.shape[1]) # number of sinal modes
+#     GMI    = np.zeros(nModes)
     
-    noiseVar = np.var(rx-tx, axis=0)
+#     noiseVar = np.var(rx-tx, axis=0)
     
-    bitMapping = mod.demodulate(mod.constellation, demod_type = 'hard')
-    bitMapping = bitMapping.reshape(-1, int(np.log2(mod.m)))
+#     bitMapping = mod.demodulate(mod.constellation, demod_type = 'hard')
+#     bitMapping = bitMapping.reshape(-1, int(np.log2(mod.m)))
         
-    # symbol normalization
-    for k in range(0, nModes):       
-        rx[:,k] = rx[:,k]/np.sqrt(signal_power(rx[:,k]))
-        tx[:,k] = tx[:,k]/np.sqrt(signal_power(tx[:,k]))
+#     # symbol normalization
+#     for k in range(0, nModes):       
+#         rx[:,k] = rx[:,k]/np.sqrt(signal_power(rx[:,k]))
+#         tx[:,k] = tx[:,k]/np.sqrt(signal_power(tx[:,k]))
         
-    for k in range(0, nModes):        
-        # set the noise variance 
-        σ2 = noiseVar[k]
+#     for k in range(0, nModes):        
+#         # set the noise variance 
+#         σ2 = noiseVar[k]
         
-        # hard decision demodulation of the transmitted symbols
-        btx = mod.demodulate(np.sqrt(mod.Es)*tx[:,k], demod_type = 'hard')
+#         # hard decision demodulation of the transmitted symbols
+#         btx = mod.demodulate(np.sqrt(mod.Es)*tx[:,k], demod_type = 'hard')
                         
-        # soft demodulation of the received symbols                       
-        LLRs = calcLLR(rx[:,k], mod.m, σ2, mod.constellation/np.sqrt(mod.Es), bitMapping) 
+#         # soft demodulation of the received symbols                       
+#         LLRs = calcLLR(rx[:,k], mod.m, σ2, mod.constellation/np.sqrt(mod.Es), bitMapping) 
                 
-        LLRs[LLRs == np.inf] = 500
-        LLRs[LLRs == -np.inf] = -500
+#         LLRs[LLRs == np.inf] = 500
+#         LLRs[LLRs == -np.inf] = -500
     
-        # Compute bitwise MIs and their sum
-        b = int(np.log2(mod.m))
+#         # Compute bitwise MIs and their sum
+#         b = int(np.log2(mod.m))
         
-        MIperBitPosition = np.zeros(b)
+#         MIperBitPosition = np.zeros(b)
                
-        for n in range(0, b):
-            MIperBitPosition[n] = 1 - np.mean(np.log2(1 + np.exp( (2*btx[n::b]-1)*LLRs[n::b]) ) )
+#         for n in range(0, b):
+#             MIperBitPosition[n] = 1 - np.mean(np.log2(1 + np.exp( (2*btx[n::b]-1)*LLRs[n::b]) ) )
                         
-        GMI[k] = np.sum(MIperBitPosition)
+#         GMI[k] = np.sum(MIperBitPosition)
                 
-    return GMI, MIperBitPosition
-
+#     return GMI, MIperBitPosition
 
 # +
-GMI, MIperBitPosition = monteCarloGMI(y_EQ[10000:20000,:], d[10000:20000,:], mod)
+# GMI, MIperBitPosition = monteCarloGMI(y_EQ[10000:20000,:], d[10000:20000,:], mod)
 
-print(GMI)
-print(MIperBitPosition)
+# print(GMI)
+# print(MIperBitPosition)
 
 # bitMapping = mod.demodulate(mod.constellation, demod_type = 'hard')
 # bitMapping = bitMapping.reshape(-1,6)
@@ -315,7 +315,7 @@ plt.title('optical WDM spectrum');
 ### Receiver
 
 # parameters
-chIndex  = 2    # index of the channel to be demodulated
+chIndex  = 1    # index of the channel to be demodulated
 plotPSD  = True
 
 Fa = param.SpS*param.Rs
@@ -528,220 +528,219 @@ plt.xlim(-3.5, 3.5)
 plt.ylim(-3.5, 3.5);
 
 # +
-from numba import njit, jit
+# from numba import njit, jit
 
-def mimoAdaptEqualizer(x, dx=[], paramEq=[]):              
-    """
-    N-by-N MIMO adaptive equalizer
+# def mimoAdaptEqualizer(x, dx=[], paramEq=[]):              
+#     """
+#     N-by-N MIMO adaptive equalizer
     
-    """
+#     """
    
-    # check input parameters
-    numIter    = getattr(paramEq, 'numIter', 1)
-    nTaps      = getattr(paramEq, 'nTaps', 15)
-    mu         = getattr(paramEq, 'mu', 1e-3)
-    SpS        = getattr(paramEq, 'SpS', 2)
-    H          = getattr(paramEq, 'H', [])
-    L          = getattr(paramEq, 'L', [])
-    Hiter      = getattr(paramEq, 'Hiter', [])
-    storeCoeff = getattr(paramEq, 'storeCoeff', False)
-    alg        = getattr(paramEq, 'alg', ['nlms'])
-    M          = getattr(paramEq, 'M', 4)    
+#     # check input parameters
+#     numIter    = getattr(paramEq, 'numIter', 1)
+#     nTaps      = getattr(paramEq, 'nTaps', 15)
+#     mu         = getattr(paramEq, 'mu', 1e-3)
+#     SpS        = getattr(paramEq, 'SpS', 2)
+#     H          = getattr(paramEq, 'H', [])
+#     L          = getattr(paramEq, 'L', [])
+#     Hiter      = getattr(paramEq, 'Hiter', [])
+#     storeCoeff = getattr(paramEq, 'storeCoeff', False)
+#     alg        = getattr(paramEq, 'alg', ['nlms'])
+#     M          = getattr(paramEq, 'M', 4)    
     
-    # We want all the signal sequences to be disposed in columns:
-    if not len(dx):
-        dx = x.copy()
+#     # We want all the signal sequences to be disposed in columns:
+#     if not len(dx):
+#         dx = x.copy()
         
-    try:
-        if x.shape[1] > x.shape[0]:
-            x = x.T       
-    except IndexError:
-        x  = x.reshape(len(x),1)       
+#     try:
+#         if x.shape[1] > x.shape[0]:
+#             x = x.T       
+#     except IndexError:
+#         x  = x.reshape(len(x),1)       
         
-    try:        
-        if dx.shape[1] > dx.shape[0]:
-            dx = dx.T
-    except IndexError:        
-        dx = dx.reshape(len(dx),1)
+#     try:        
+#         if dx.shape[1] > dx.shape[0]:
+#             dx = dx.T
+#     except IndexError:        
+#         dx = dx.reshape(len(dx),1)
 
-    nModes = int(x.shape[1]) # number of sinal modes (order of the MIMO equalizer)
+#     nModes = int(x.shape[1]) # number of sinal modes (order of the MIMO equalizer)
     
-    Lpad    = int(np.floor(nTaps/2))
-    zeroPad = np.zeros((Lpad, nModes), dtype='complex')
-    x = np.concatenate((zeroPad, x, zeroPad)) # pad start and end of the signal with zeros
+#     Lpad    = int(np.floor(nTaps/2))
+#     zeroPad = np.zeros((Lpad, nModes), dtype='complex')
+#     x = np.concatenate((zeroPad, x, zeroPad)) # pad start and end of the signal with zeros
     
-    # Defining training parameters:
-    mod = QAMModem(m=M) # commpy QAM constellation modem object
-    constSymb = mod.constellation/np.sqrt(mod.Es) # complex-valued constellation symbols
+#     # Defining training parameters:
+#     mod = QAMModem(m=M) # commpy QAM constellation modem object
+#     constSymb = mod.constellation/np.sqrt(mod.Es) # complex-valued constellation symbols
 
-    if not L: # if L is not defined
-        L = [int(np.fix((len(x)-nTaps)/SpS+1))] # Length of the output (1 sample/symbol) of the training section       
+#     if not L: # if L is not defined
+#         L = [int(np.fix((len(x)-nTaps)/SpS+1))] # Length of the output (1 sample/symbol) of the training section       
     
-    if len(H) == 0: # if H is not defined
-        H  = np.zeros((nModes**2, nTaps), dtype='complex')
+#     if len(H) == 0: # if H is not defined
+#         H  = np.zeros((nModes**2, nTaps), dtype='complex')
         
-        for initH in range(0, nModes): # initialize filters' taps
-            H[initH + initH*nModes, int(np.floor(H.shape[1]/2))] = 1 # Central spike initialization
+#         for initH in range(0, nModes): # initialize filters' taps
+#             H[initH + initH*nModes, int(np.floor(H.shape[1]/2))] = 1 # Central spike initialization
            
-    # Equalizer training:
-    for indIter in tqdm(range(0, numIter)):
-        print(alg[0],'training iteration #%d'%indIter)        
-        yEq, H, errSq, Hiter = coreAdaptEq(x, dx, SpS, H, L[0], mu, nTaps, storeCoeff, alg[0], constSymb)               
-        print(alg[0],'MSE = %.6f.'%np.nanmean(errSq))
+#     # Equalizer training:
+#     for indIter in tqdm(range(0, numIter)):
+#         print(alg[0],'training iteration #%d'%indIter)        
+#         yEq, H, errSq, Hiter = coreAdaptEq(x, dx, SpS, H, L[0], mu, nTaps, storeCoeff, alg[0], constSymb)               
+#         print(alg[0],'MSE = %.6f.'%np.nanmean(errSq))
         
-    return  yEq, H, errSq, Hiter
+#     return  yEq, H, errSq, Hiter
 
-@jit(nopython=True)
-def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
-    """
-    Adaptive equalizer core processing function
+# @jit(nopython=True)
+# def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
+#     """
+#     Adaptive equalizer core processing function
     
-    """
+#     """
     
-    # allocate variables
-    nModes  = int(x.shape[1])
-    indTaps = np.arange(0, nTaps) 
-    indMode = np.arange(0, nModes)
+#     # allocate variables
+#     nModes  = int(x.shape[1])
+#     indTaps = np.arange(0, nTaps) 
+#     indMode = np.arange(0, nModes)
     
-    errSq   = np.empty((nModes, L))
-    yEq     = x[0:L].copy()    
-    yEq[:]  = np.nan    
-    outEq   = np.array([[0+1j*0]]).repeat(nModes).reshape(nModes, 1)
+#     errSq   = np.empty((nModes, L))
+#     yEq     = x[0:L].copy()    
+#     yEq[:]  = np.nan    
+#     outEq   = np.array([[0+1j*0]]).repeat(nModes).reshape(nModes, 1)
     
-    if storeCoeff:
-        Hiter = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps*L).reshape(nModes**2, nTaps, L)
-    else:
-        Hiter = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps).reshape(nModes**2, nTaps, 1)
+#     if storeCoeff:
+#         Hiter = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps*L).reshape(nModes**2, nTaps, L)
+#     else:
+#         Hiter = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps).reshape(nModes**2, nTaps, 1)
         
-    # Radii cma, rde
-    Rcma = (np.mean(np.abs(constSymb)**4)/np.mean(np.abs(constSymb)**2))*np.ones((1, nModes))+1j*0          
-    Rrde = np.unique(np.abs(constSymb))
+#     # Radii cma, rde
+#     Rcma = (np.mean(np.abs(constSymb)**4)/np.mean(np.abs(constSymb)**2))*np.ones((1, nModes))+1j*0          
+#     Rrde = np.unique(np.abs(constSymb))
         
-    for ind in range(0, L):       
-        outEq[:] = 0
+#     for ind in range(0, L):       
+#         outEq[:] = 0
             
-        indIn = indTaps + ind*SpS # simplify indexing and improve speed
+#         indIn = indTaps + ind*SpS # simplify indexing and improve speed
 
-        # pass signal sequence through the equalizer:
-        for N in range(0, nModes):
-            inEq   = x[indIn, N].reshape(len(indIn), 1) # slice input coming from the Nth mode            
-            outEq += H[indMode+N*nModes,:]@inEq         # add contribution from the Nth mode to the equalizer's output                 
+#         # pass signal sequence through the equalizer:
+#         for N in range(0, nModes):
+#             inEq   = x[indIn, N].reshape(len(indIn), 1) # slice input coming from the Nth mode            
+#             outEq += H[indMode+N*nModes,:]@inEq         # add contribution from the Nth mode to the equalizer's output                 
                         
-        yEq[ind,:] = outEq.T        
+#         yEq[ind,:] = outEq.T        
                     
-        # update equalizer taps acording to adaptive specified 
-        # training algorithm and save squared error:        
-        if alg == 'nlms':
-            H, errSq[:,ind] = nlmsUp(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
-        elif alg == 'cma':
-            H, errSq[:,ind] = cmaUp(x[indIn, :], Rcma, outEq, mu, H, nModes) 
-        elif alg == 'ddlms':
-            H, errSq[:,ind] = ddlmsUp(x[indIn, :], constSymb, outEq, mu, H, nModes)
-        elif alg == 'rde':
-            H, errSq[:,ind] = rdeUp(x[indIn, :], Rrde, outEq, mu, H, nModes)
+#         # update equalizer taps acording to adaptive specified 
+#         # training algorithm and save squared error:        
+#         if alg == 'nlms':
+#             H, errSq[:,ind] = nlmsUp(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
+#         elif alg == 'cma':
+#             H, errSq[:,ind] = cmaUp(x[indIn, :], Rcma, outEq, mu, H, nModes) 
+#         elif alg == 'ddlms':
+#             H, errSq[:,ind] = ddlmsUp(x[indIn, :], constSymb, outEq, mu, H, nModes)
+#         elif alg == 'rde':
+#             H, errSq[:,ind] = rdeUp(x[indIn, :], Rrde, outEq, mu, H, nModes)
         
-        if storeCoeff:
-            Hiter[:,:, ind] = H  
-        else:
-            Hiter[:,:, 1] = H
+#         if storeCoeff:
+#             Hiter[:,:, ind] = H  
+#         else:
+#             Hiter[:,:, 1] = H
             
-    return yEq, H, errSq, Hiter
+#     return yEq, H, errSq, Hiter
 
-@jit(nopython=True)
-def nlmsUp(x, dx, outEq, mu, H, nModes):
-    """
-    coefficient update with the NLMS algorithm    
-    """          
-    indMode = np.arange(0, nModes)    
-    err = dx - outEq.T # calculate output error for the NLMS algorithm 
+# @jit(nopython=True)
+# def nlmsUp(x, dx, outEq, mu, H, nModes):
+#     """
+#     coefficient update with the NLMS algorithm    
+#     """          
+#     indMode = np.arange(0, nModes)    
+#     err = dx - outEq.T # calculate output error for the NLMS algorithm 
     
-    errDiag = np.diag(err[0]) # define diagonal matrix from error array
+#     errDiag = np.diag(err[0]) # define diagonal matrix from error array
     
-    # update equalizer taps 
-    for N in range(0, nModes):
-            indUpdTaps = indMode+N*nModes # simplify indexing and improve speed
-            inAdapt = x[:, N].T/np.linalg.norm(x[:,N])**2 # NLMS normalization
-            inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
-            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(inAdaptPar) # gradient descent update   
+#     # update equalizer taps 
+#     for N in range(0, nModes):
+#             indUpdTaps = indMode+N*nModes # simplify indexing and improve speed
+#             inAdapt = x[:, N].T/np.linalg.norm(x[:,N])**2 # NLMS normalization
+#             inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
+#             H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(inAdaptPar) # gradient descent update   
 
-    return H, np.abs(err)**2
+#     return H, np.abs(err)**2
 
-@jit(nopython=True)
-def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
-    """
-    coefficient update with the DDLMS algorithm    
-    """      
-    indMode    = np.arange(0, nModes)
-    outEq      = outEq.T
-    decided    = outEq.copy()
-    decided[:] = np.nan
+# @jit(nopython=True)
+# def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
+#     """
+#     coefficient update with the DDLMS algorithm    
+#     """      
+#     indMode    = np.arange(0, nModes)
+#     outEq      = outEq.T
+#     decided    = outEq.copy()
+#     decided[:] = np.nan
        
-    for k in range(0, outEq.shape[1]):
-        indSymb = np.argmin(np.abs(outEq[0,k] - constSymb))
-        decided[0,k] = constSymb[indSymb]
+#     for k in range(0, outEq.shape[1]):
+#         indSymb = np.argmin(np.abs(outEq[0,k] - constSymb))
+#         decided[0,k] = constSymb[indSymb]
                 
-    err = decided - outEq # calculate output error for the DDLMS algorithm   
+#     err = decided - outEq # calculate output error for the DDLMS algorithm   
 
-    errDiag = np.diag(err[0]) # define diagonal matrix from error array
+#     errDiag = np.diag(err[0]) # define diagonal matrix from error array
    
-    # update equalizer taps 
-    for N in range(0, nModes):
-            indUpdTaps = indMode+N*nModes # simplify indexing
-            inAdapt = x[:, N].T
-            inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
-            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(inAdaptPar) # gradient descent update   
+#     # update equalizer taps 
+#     for N in range(0, nModes):
+#             indUpdTaps = indMode+N*nModes # simplify indexing
+#             inAdapt = x[:, N].T
+#             inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
+#             H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(inAdaptPar) # gradient descent update   
 
-    return H, np.abs(err)**2
+#     return H, np.abs(err)**2
 
 
-@jit(nopython=True)
-def cmaUp(x, R, outEq, mu, H, nModes):
-    """
-    coefficient update with the CMA algorithm    
-    """      
-    indMode = np.arange(0, nModes)
-    outEq = outEq.T
-    err   = R - np.abs(outEq)**2 # calculate output error for the CMA algorithm 
+# @jit(nopython=True)
+# def cmaUp(x, R, outEq, mu, H, nModes):
+#     """
+#     coefficient update with the CMA algorithm    
+#     """      
+#     indMode = np.arange(0, nModes)
+#     outEq = outEq.T
+#     err   = R - np.abs(outEq)**2 # calculate output error for the CMA algorithm 
 
-    prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
+#     prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
     
-    # update equalizer taps  
-    for N in range(0, nModes):
-            indUpdTaps = indMode+N*nModes # simplify indexing
-            inAdapt = x[:, N].T
-            inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
-            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
+#     # update equalizer taps  
+#     for N in range(0, nModes):
+#             indUpdTaps = indMode+N*nModes # simplify indexing
+#             inAdapt = x[:, N].T
+#             inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
+#             H[indUpdTaps,:] = H[indUpdTaps,:] + mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
 
-    return H, np.abs(err)**2
+#     return H, np.abs(err)**2
 
-@jit(nopython=True)
-def rdeUp(x, R, outEq, mu, H, nModes):
-    """
-    coefficient update with the RDE algorithm    
-    """      
-    indMode    = np.arange(0, nModes)
-    outEq      = outEq.T    
-    decidedR    = outEq.copy()
-    decidedR[:] = np.nan
+# @jit(nopython=True)
+# def rdeUp(x, R, outEq, mu, H, nModes):
+#     """
+#     coefficient update with the RDE algorithm    
+#     """      
+#     indMode    = np.arange(0, nModes)
+#     outEq      = outEq.T    
+#     decidedR    = outEq.copy()
+#     decidedR[:] = np.nan
     
-    # find closest constellation radius
-    for k in range(0, outEq.shape[1]):
-        indR = np.argmin(np.abs(R - np.abs(outEq[0,k])))
-        decidedR[0,k] = R[indR]
+#     # find closest constellation radius
+#     for k in range(0, outEq.shape[1]):
+#         indR = np.argmin(np.abs(R - np.abs(outEq[0,k])))
+#         decidedR[0,k] = R[indR]
         
-    err  = decidedR**2 - np.abs(outEq)**2 # calculate output error for the RDE algorithm 
+#     err  = decidedR**2 - np.abs(outEq)**2 # calculate output error for the RDE algorithm 
     
-    prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
+#     prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
     
-    # update equalizer taps 
-    for N in range(0, nModes):
-            indUpdTaps = indMode+N*nModes # simplify indexing
-            inAdapt = x[:, N].T
-            inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
-            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
+#     # update equalizer taps 
+#     for N in range(0, nModes):
+#             indUpdTaps = indMode+N*nModes # simplify indexing
+#             inAdapt = x[:, N].T
+#             inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
+#             H[indUpdTaps,:] = H[indUpdTaps,:] + mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
 
-    return H, np.abs(err)**2
-
+#     return H, np.abs(err)**2
 
 # +
 M = 64
@@ -857,7 +856,7 @@ a.shape
 
 BER.round(3)
 
-err_.shape
+x()
 
 errSq.shape
 x.shape
