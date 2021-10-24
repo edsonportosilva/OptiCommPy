@@ -40,9 +40,11 @@ def fastBERcalc(rx, tx, mod):
     nModes = int(tx.shape[1]) # number of sinal modes
     SNR    = np.zeros(nModes)
     BER    = np.zeros(nModes)
-
+    SER    = np.zeros(nModes)
+    b = int(np.log2(mod.m))
+    
     bitMapping = mod.demodulate(mod.constellation, demod_type = 'hard')
-    bitMapping = bitMapping.reshape(-1, int(np.log2(mod.m)))
+    bitMapping = bitMapping.reshape(-1, b)
     
     # pre-processing
     for k in range(0, nModes):
@@ -64,8 +66,9 @@ def fastBERcalc(rx, tx, mod):
         
         err = np.logical_xor(brx, btx)
         BER[k] = np.mean(err)
+        SER[k] = np.mean(np.sum(err.reshape(-1,b),axis=1)>0)
         
-    return BER, SNR
+    return BER, SER, SNR
 
 @njit
 def calcLLR(rxSymb, M, σ2, constSymb, bitMapping):
