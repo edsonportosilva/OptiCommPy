@@ -88,7 +88,7 @@ freqGrid = param.freqGrid
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
 # +
-linearChannel = True
+linearChannel = Fa
 
 # optical channel parameters
 paramCh = parameters()
@@ -129,7 +129,7 @@ plt.title('optical WDM spectrum');
 ### Receiver
 
 # parameters
-chIndex  = 1    # index of the channel to be demodulated
+chIndex  = 2    # index of the channel to be demodulated
 plotPSD  = True
 
 Fa = param.SpS*param.Rs
@@ -254,15 +254,11 @@ paramEq.L = [20000]
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
-paramEq = parameters()
-paramEq.nTaps = 35
-paramEq.SpS   = 2
-paramEq.mu    = 2e-3
+paramEq.mu    = 1e-3
 paramEq.numIter = 1
-paramEq.storeCoeff = False
 paramEq.alg   = ['ddlms']
-paramEq.M     = M
 paramEq.H = H
+paramEq.L = [int(x.shape[0]/paramEq.SpS)]
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
@@ -273,13 +269,19 @@ y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 discard = 1000
 ind = np.arange(discard, d.shape[0]-discard)
 mod = QAMModem(m=M)
-BER, SNR = fastBERcalc(y_EQ[ind,:], d[ind,:], mod)
+BER, SER, SNR = fastBERcalc(y_EQ[ind,:], d[ind,:], mod)
 GMI,_    = monteCarloGMI(y_EQ[ind,:], d[ind,:], mod)
 
 print('     pol.X     pol.Y      ')
+print('SER: %.2e, %.2e'%(SER[0], SER[1]))
 print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+# -
+
+np.mean(np.sum(np.logical_xor([0,0,1,0,1,0,1,1], [1,0,0,0,1,1,1,1]).reshape(-1,4), axis=1)>0)
+
+np.logical_xor([0,0,1,0,1,0,1,1], [1,0,0,0,1,1,1,1]).reshape(-1,4)
 
 # +
 fig, (ax1, ax2) = plt.subplots(1, 2)
