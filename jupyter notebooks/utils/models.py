@@ -303,7 +303,7 @@ def ssfm(Ei, Fs, paramCh):
     return Ech.reshape(len(Ech),), paramCh
 
 
-def manakov_ssf(Ei, Fs, paramCh):      
+def manakovSSF(Ei, Fs, paramCh):      
     """
     Manakov model split-step Fourier (symmetric, dual-pol.)
 
