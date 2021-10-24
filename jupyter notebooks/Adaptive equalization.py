@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.3
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -27,6 +27,7 @@ from utils.core import parameters
 
 from scipy import signal
 import scipy.constants as const
+from numba import njit
 
 # +
 from IPython.core.display import HTML
@@ -114,6 +115,35 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
     return np.concatenate((Sx, Sy), axis=1)
 
 
+@njit
+def LLRcalc(rxSymb, M, σ2, constSymb):
+    
+    b = int(np.log2(M))
+    
+    LLRs = np.zeros(len(rxSymb)*b)
+    
+    for i in np.arange(len(rxSymb)):
+        symb = rxSymb[i]
+        for bit_index in np.arange(b):
+            llr_num = 0
+            llr_den = 0
+            for bit_value, symbol in enumerate(constSymb):
+                if (bit_value >> bit_index) & 1:
+                    llr_num += np.exp((-abs(symb - symbol)**2)/σ2)                    
+                else:
+                    llr_den += np.exp((-abs(symb - symbol)**2)/σ2)
+            
+            if llr_num == 0:
+                llr_num = 10**-200
+                
+            if llr_den == 0:
+                llr_den = 10**-200
+                    
+            LLRs[i * b + b - 1 - bit_index] = np.log(llr_num)-np.log(llr_den)
+    
+    return LLRs
+
+
 # +
 def fastBERcalc(rx, tx, mod):
     """
@@ -197,7 +227,8 @@ def monteCarloGMI(rx, tx, mod):
         btx = mod.demodulate(np.sqrt(mod.Es)*tx[:,k], demod_type = 'hard')
                         
         # soft demodulation of the received symbols    
-        LLRs = mod.demodulate(np.sqrt(mod.Es)*rx[:,k], demod_type = 'soft', noise_var = σ2) 
+      #  LLRs = mod.demodulate(np.sqrt(mod.Es)*rx[:,k], demod_type = 'soft', noise_var = σ2) 
+        LLRs = LLRcalc(np.sqrt(mod.Es)*rx[:,k], mod.m, σ2, mod._constellation) 
         LLRs[LLRs >= 300] = 300
         LLRs[LLRs < -300] = -300
            
@@ -216,9 +247,9 @@ def monteCarloGMI(rx, tx, mod):
 
 
 # +
-GMI = monteCarloGMI(y_EQ[1:100000,:], d[1:100000,:], mod)
+#GMI = monteCarloGMI(y_EQ[1:10000,:], d[1:10000,:], mod)
 
-print(GMI)
+#print(GMI)
 # -
 
 # ## Polarization multiplexed WDM signal
@@ -248,7 +279,7 @@ freqGrid = param.freqGrid
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
 # +
-linearChannel = True
+linearChannel = False
 
 # optical channel parameters
 paramCh = parameters()
@@ -726,7 +757,7 @@ paramEq.numIter = 3
 paramEq.storeCoeff = False
 paramEq.alg   = ['nlms']
 paramEq.M     = 16
-paramEq.L = [20000]
+paramEq.L = [10000]
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
@@ -756,6 +787,9 @@ print('     pol.X     pol.Y      ')
 print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+# -
+
+d.shape
 
 # +
 fig, (ax1, ax2) = plt.subplots(1, 2)
