@@ -37,6 +37,32 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
     
     return Ao
 
+def pbs(E, θ=0):
+    """
+    Polarization beam splitter (pbs)
+    
+    :param E: input pol. multiplexed field [2d nparray]
+    :param θ: rotation angle of input field [rad][default: 0 rad]
+    
+    :return: Ex output single pol. field [1d nparray]
+    :return: Ey output single pol. field [1d nparray]
+    
+    """  
+    try:
+        assert E.shape[1] == 2, 'E need to be a N-by-2 2d nparray or a 1d nparray'
+    except IndexError:
+        E = np.repeat(E, 2).reshape(-1,2)
+        E[:,1] = 0
+        
+    rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])+1j*0
+
+    E = E@rot
+    
+    Ex = E[:,0]
+    Ey = E[:,1]    
+
+    return Ex, Ey
+
 def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     """
     Linear fiber channel w/ loss and chromatic dispersion
@@ -138,6 +164,32 @@ def coherentReceiver(Es, Elo, Rd=1):
     sQ = balancedPD(Eo[2,:], Eo[3,:], Rd)
     
     return sI + 1j*sQ
+
+def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
+    """
+    Polarization multiplexed coherent optical front-end
+    
+    :param Es: input signal field [2d nparray]
+    :param Elo: input LO field [nparray]
+    :param θsig: polarization rotation angle [rad][default: 0]
+    :param Rdx: photodiode resposivity pol.X [scalar]
+    :param Rdy: photodiode resposivity pol.Y [scalar]
+    
+    :return: downconverted signal after balanced detection    
+    """
+    assert Rdx > 0 and Rdy >0, 'PD responsivity should be a positive scalar'
+    assert len(Es) == len(Elo), 'Es and Elo need to have the same number of samples'
+            
+    Elox, Eloy = pbs(Elo, θ = np.pi/4) # split LO into two orthogonal polarizations
+    Esx,  Esy  = pbs(Es, θ = θsig)     # split signal into two orthogonal polarizations
+    
+    Sx = coherentReceiver(Esx, Elox, Rd=Rdx) # coherent detection of pol.X
+    Sy = coherentReceiver(Esy, Eloy, Rd=Rdy) # coherent detection of pol.Y
+    
+    Sx = Sx.reshape(len(Sx),1)
+    Sy = Sy.reshape(len(Sy),1)
+    
+    return np.concatenate((Sx, Sy), axis=1)
 
 @njit
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
@@ -354,7 +406,7 @@ def manakov_ssf(Ei, Fs, paramCh):
     
     return Ech, paramCh
 
-@jit(nopython=True)
+@njit
 def phaseNoise(lw, Nsamples, Ts):
     
     σ2 = 2*np.pi*lw*Ts    
