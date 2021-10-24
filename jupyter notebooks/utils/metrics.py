@@ -4,9 +4,24 @@ from commpy.modulation import QAMModem
 from numba import njit
 
 
+@njit
+def hardDecision(rxSymb, constSymb, bitMapping):
+    
+    M = len(constSymb)
+    b = int(np.log2(M))
+    
+    decBits = np.zeros(len(rxSymb)*b)
+    
+    for i in range(0, len(rxSymb)):       
+        indSymb = np.argmin(np.abs(rxSymb[i] - constSymb))        
+        decBits[i*b:i*b + b] = bitMapping[indSymb, :]       
+                                     
+    return decBits
+
 def fastBERcalc(rx, tx, mod):
     """
     BER calculation
+
     """
     
     # We want all the signal sequences to be disposed in columns:        
@@ -25,24 +40,28 @@ def fastBERcalc(rx, tx, mod):
     nModes = int(tx.shape[1]) # number of sinal modes
     SNR    = np.zeros(nModes)
     BER    = np.zeros(nModes)
+
+    bitMapping = mod.demodulate(mod.constellation, demod_type = 'hard')
+    bitMapping = bitMapping.reshape(-1, int(np.log2(mod.m)))
     
-    # symbol normalization
-    for k in range(0, nModes):       
+    # pre-processing
+    for k in range(0, nModes):
+        # symbol normalization
         rx[:,k] = rx[:,k]/np.sqrt(signal_power(rx[:,k]))
         tx[:,k] = tx[:,k]/np.sqrt(signal_power(tx[:,k]))
-        
-    for k in range(0, nModes):
+
         # correct (possible) phase ambiguity
         rot = np.mean(tx[:,k]/rx[:,k])
         rx[:,k]  = rot*rx[:,k]
         
         # estimate SNR of the received constellation
         SNR[k] = 10*np.log10(signal_power(tx[:,k])/signal_power(rx[:,k]-tx[:,k]))
-
-        # hard decision demodulation of the received symbols    
-        brx = mod.demodulate(np.sqrt(mod.Es)*rx[:,k], demod_type = 'hard') 
-        btx = mod.demodulate(np.sqrt(mod.Es)*tx[:,k], demod_type = 'hard') 
-
+        
+    for k in range(0, nModes):     
+        # hard decision demodulation of the received symbols   
+        brx = hardDecision(np.sqrt(mod.Es)*rx[:,k], mod.constellation, bitMapping)
+        btx = hardDecision(np.sqrt(mod.Es)*tx[:,k], mod.constellation, bitMapping)
+        
         err = np.logical_xor(brx, btx)
         BER[k] = np.mean(err)
         
