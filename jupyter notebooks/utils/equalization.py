@@ -4,7 +4,7 @@ from commpy.modulation import QAMModem
 from tqdm.notebook import tqdm
 from utils.core import parameters
 
-from numba import njit
+from numba import njit, prange
 
 def mimoAdaptEqualizer(x, dx=[], paramEq=[]):              
     """
@@ -115,6 +115,8 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
             H, errSq[:,ind] = ddlmsUp(x[indIn, :], constSymb, outEq, mu, H, nModes)
         elif alg == 'rde':
             H, errSq[:,ind] = rdeUp(x[indIn, :], Rrde, outEq, mu, H, nModes)
+        elif alg == 'da-rde':
+            H, errSq[:,ind] = dardeUp(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
         
         if storeCoeff:
             Hiter[:,:, ind] = H  
@@ -206,6 +208,27 @@ def rdeUp(x, R, outEq, mu, H, nModes):
         decidedR[0,k] = R[indR]
         
     err  = decidedR**2 - np.abs(outEq)**2 # calculate output error for the RDE algorithm 
+    
+    prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
+    
+    # update equalizer taps 
+    for N in range(0, nModes):
+            indUpdTaps = indMode+N*nModes # simplify indexing
+            inAdapt = x[:, N].T
+            inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
+            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
+
+    return H, np.abs(err)**2
+
+@njit
+def dardeUp(x, dx, outEq, mu, H, nModes):
+    """
+    coefficient update with the data-aided RDE algorithm    
+    """      
+    indMode    = np.arange(0, nModes)
+    outEq      = outEq.T    
+     
+    err  = np.abs(dx)**2 - np.abs(outEq)**2 + 0*1j # calculate output error for the RDE algorithm 
     
     prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
     
