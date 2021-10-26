@@ -21,7 +21,7 @@ import numpy as np
 from commpy.utilities  import signal_power
 from commpy.modulation import QAMModem
 
-from utils.dsp import pulseShape, firFilter, edc #, fourthPowerFOE, dbp, cpr
+from utils.dsp import pulseShape, firFilter, edc, cpr #, fourthPowerFOE, dbp, cpr
 from utils.models import phaseNoise, pdmCoherentReceiver, manakovSSF
 from utils.tx import simpleWDMTx
 from utils.core import parameters
@@ -68,10 +68,10 @@ help(manakovSSF)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 64           # ordem do formato de modulação
+param.M   = 16           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 8            # número de amostras por símbolo
-param.Nbits = 600000     # número de bits
+param.Nbits = 400000     # número de bits
 param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
@@ -88,7 +88,7 @@ freqGrid = param.freqGrid
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
 # +
-linearChannel = Fa
+linearChannel = True
 
 # optical channel parameters
 paramCh = parameters()
@@ -143,9 +143,9 @@ print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 symbTx = transmSymbols[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 0*64e6                  # frequency offset
+FO      = 0*64e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 0*100e3               # linewidth
+lw      = 100e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
@@ -240,21 +240,27 @@ d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
 #x = x@rot
 
 # +
-M = 64
+M = 16
+mod = QAMModem(m=M)
 
 paramEq = parameters()
 paramEq.nTaps = 35
 paramEq.SpS   = 2
-paramEq.mu    = 5e-3
+paramEq.mu    = 2e-3
 paramEq.numIter = 5
 paramEq.storeCoeff = False
 paramEq.alg   = ['nlms']
 paramEq.M     = M
 paramEq.L = [20000]
 
+# from numpy.matlib import repmat
+# y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(np.matlib.repmat(x,1,3),\
+#                                            dx=np.matlib.repmat(d,1,3),\
+#                                            paramEq=paramEq)
+
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
-paramEq.mu    = 1e-3
+paramEq.mu    = 2e-3
 paramEq.numIter = 1
 paramEq.alg   = ['ddlms']
 paramEq.H = H
@@ -262,28 +268,7 @@ paramEq.L = [int(x.shape[0]/paramEq.SpS)]
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
-# y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(np.matlib.repmat(x,1,3),\
-#                                            dx=np.matlib.repmat(d,1,3),\
-#                                            paramEq=paramEq)
 
-discard = 1000
-ind = np.arange(discard, d.shape[0]-discard)
-mod = QAMModem(m=M)
-BER, SER, SNR = fastBERcalc(y_EQ[ind,:], d[ind,:], mod)
-GMI,_    = monteCarloGMI(y_EQ[ind,:], d[ind,:], mod)
-
-print('     pol.X     pol.Y      ')
-print('SER: %.2e, %.2e'%(SER[0], SER[1]))
-print('BER: %.2e, %.2e'%(BER[0], BER[1]))
-print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
-print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
-# -
-
-np.mean(np.sum(np.logical_xor([0,0,1,0,1,0,1,1], [1,0,0,0,1,1,1,1]).reshape(-1,4), axis=1)>0)
-
-np.logical_xor([0,0,1,0,1,0,1,1], [1,0,0,0,1,1,1,1]).reshape(-1,4)
-
-# +
 fig, (ax1, ax2) = plt.subplots(1, 2)
 discard = 1000
 
@@ -294,6 +279,40 @@ ax1.set_xlim(-1.5, 1.5)
 ax1.set_ylim(-1.5, 1.5)
 
 ax2.plot(y_EQ[discard:-discard,1].real, y_EQ[discard:-discard,1].imag,'.')
+ax2.plot(d[:,1].real, d[:,1].imag,'.')
+ax2.axis('square')
+ax2.set_xlim(-1.5, 1.5)
+ax2.set_ylim(-1.5, 1.5);
+
+# +
+constSymb  = mod.constellation/np.sqrt(mod.Es)
+y_CPR, ϕ, θ = cpr(y_EQ, 80, constSymb, d, pilotInd=np.arange(0,len(y_EQ), 50))
+
+plt.plot(ϕ[:,1],'-.', θ[:,1],'-')
+
+discard = 2000
+ind = np.arange(discard, d.shape[0]-discard)
+
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], mod)
+GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], mod)
+
+print('     pol.X     pol.Y      ')
+print('SER: %.2e, %.2e'%(SER[0], SER[1]))
+print('BER: %.2e, %.2e'%(BER[0], BER[1]))
+print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
+print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+
+# +
+fig, (ax1, ax2) = plt.subplots(1, 2)
+discard = 1000
+
+ax1.plot(y_CPR[discard:-discard,0].real, y_CPR[discard:-discard,0].imag,'.')
+ax1.plot(d[:,0].real, d[:,0].imag,'.')
+ax1.axis('square')
+ax1.set_xlim(-1.5, 1.5)
+ax1.set_ylim(-1.5, 1.5)
+
+ax2.plot(y_CPR[discard:-discard,1].real, y_CPR[discard:-discard,1].imag,'.')
 ax2.plot(d[:,1].real, d[:,1].imag,'.')
 ax2.axis('square')
 ax2.set_xlim(-1.5, 1.5)
@@ -339,12 +358,29 @@ plt.plot(H.imag.T,'-');
 
 # plt.stem(H[0,:].real.T,linefmt='r');
 # plt.stem(H[3,:].imag.T,linefmt='b');
+# -
+
+# %load_ext autoreload
+# %autoreload 2
+
+# %load_ext line_profiler
+
+# %lprun -f monteCarloGMI monteCarloGMI(y_EQ[ind,:], d[ind,:], mod)
+
+# %lprun -f fastBERcalc fastBERcalc(y_EQ[ind,:], d[ind,:], mod)
 
 # +
-# #!pip install line_profiler
+a = []
 
-# +
-# #%load_ext line_profiler
+10 in a
+# -
 
-# +
-# #%lprun -f fastBERcalc BER, SNR = fastBERcalc(y_EQ[ind,:], d[ind,:], mod)
+# %lprun -f cpr cpr(y_EQ, 25, constSymb, d, pilotInd=np.arange(0,len(y_EQ), 50))
+
+a = 1+2*1j
+a.conjugate()
+
+plt.plot(y_CPR[10000:10050,0].real,'o')
+plt.plot(d[10000:10050,0].real,'x')
+
+
