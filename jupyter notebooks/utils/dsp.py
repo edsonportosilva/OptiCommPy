@@ -8,7 +8,7 @@ from utils.models import linFiberCh
 import matplotlib.pyplot as plt
 from numpy.fft import fft, ifft, fftfreq, fftshift
 from tqdm.notebook import tqdm
-
+from numba import njit
 
 def firFilter(h, x):
     """
@@ -184,31 +184,56 @@ def edc(Ei, L, D, Fc, Fs):
     
     return Eo
 
-def cpr(Ei, N, constSymb, symbTx):    
+@njit
+def ddpll(Ei, N, constSymb, symbTx, pilotInd):
+    """
+    DDPLL
+    
+    """
+    nModes = Ei.shape[1]
+    
+    ϕ  = np.zeros(Ei.shape)    
+    θ  = np.zeros(Ei.shape)
+
+    for n in range(0,nModes):
+        for k in range(0,len(Ei)):
+            
+            decided = np.argmin(np.abs(Ei[k,n]*np.exp(1j*θ[k-1,n]) - constSymb)) # find closest constellation symbol
+            
+            if k in pilotInd:
+                ϕ[k,n] = np.angle(symbTx[k,n]/(Ei[k,n])) # phase estimation with pilot symbol
+            else:
+                ϕ[k,n] = np.angle(constSymb[decided]/(Ei[k,n])) # phase estimation after symbol decision
+                    
+            if k > N:
+                θ[k,n]  = np.mean(ϕ[k-N:k,n]) # moving average filter
+            else:           
+                θ[k,n] = np.angle(symbTx[k,n]/(Ei[k,n]))
+            
+    Eo = Ei*np.exp(1j*θ) # compensate phase rotation
+
+    return Eo, ϕ, θ
+
+
+def cpr(Ei, N, constSymb, symbTx, pilotInd=[]):    
     """
     Carrier phase recovery (CPR)
     
-    """    
-    ϕ  = np.zeros(Ei.shape)    
-    θ  = np.zeros(Ei.shape)
-    
-    for k in range(0,len(Ei)):
-        
-        decided = np.argmin(np.abs(Ei[k]*np.exp(1j*θ[k-1]) - constSymb)) # find closest constellation symbol
-        
-        if k % 50 == 0:
-            ϕ[k] = np.angle(symbTx[k]/(Ei[k])) # phase estimation with pilot symbol
-        else:
-            ϕ[k] = np.angle(constSymb[decided]/(Ei[k])) # phase estimation after symbol decision
-                
-        if k > N:
-            θ[k]  = np.mean(ϕ[k-N:k]) # moving average filter
-        else:           
-            θ[k] = np.angle(symbTx[k]/(Ei[k]))
-            
-    Eo = Ei*np.exp(1j*θ) # compensate phase rotation
+    """
+    try:
+        Ei.shape[1]
+    except IndexError:
+        Ei = Ei.reshape(len(Ei),1)            
+
+    Eo, ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
+
+    if Eo.shape[1]==1:
+        Eo = Eo[:]
+        ϕ  = ϕ[:]
+        θ  = θ[:]
         
     return Eo, ϕ, θ
+
 
 def fourthPowerFOE(Ei, Ts, plotSpec=False):
     """
