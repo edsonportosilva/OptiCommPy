@@ -4,7 +4,7 @@ from commpy.modulation import QAMModem
 from tqdm.notebook import tqdm
 from utils.core import parameters
 
-from numba import njit, prange
+from numba import njit
 
 def mimoAdaptEqualizer(x, dx=[], paramEq=[]):              
     """
@@ -50,8 +50,10 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
     mod = QAMModem(m=M) # commpy QAM constellation modem object
     constSymb = mod.constellation/np.sqrt(mod.Es) # complex-valued constellation symbols
 
+    totalNumSymb = int(np.fix((len(x)-nTaps)/SpS+1))
+    
     if not L: # if L is not defined
-        L = [int(np.fix((len(x)-nTaps)/SpS+1))] # Length of the output (1 sample/symbol) of the training section       
+        L = totalNumSymb # Length of the output (1 sample/symbol) of the training section       
     
     if len(H) == 0: # if H is not defined
         H  = np.zeros((nModes**2, nTaps), dtype='complex')
@@ -60,10 +62,37 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
             H[initH + initH*nModes, int(np.floor(H.shape[1]/2))] = 1 # Central spike initialization
            
     # Equalizer training:
-    for indIter in tqdm(range(0, numIter)):
-        print(alg[0],'training iteration #%d'%indIter)        
-        yEq, H, errSq, Hiter = coreAdaptEq(x, dx, SpS, H, L[0], mu, nTaps, storeCoeff, alg[0], constSymb)               
-        print(alg[0],'MSE = %.6f.'%np.nanmean(errSq))
+    if type(alg) == list:     
+
+        yEq   = np.zeros((totalNumSymb,x.shape[1]), dtype='complex')
+        errSq = np.zeros((totalNumSymb,x.shape[1])).T        
+       
+        nStart = 0        
+        for indstage, runAlg in enumerate(alg):
+            print('\n')
+            print(runAlg,'- training stage #%d'%indstage)
+
+            nEnd = nStart+L[indstage]
+
+            if indstage == 0:
+                for indIter in tqdm(range(0, numIter)):
+                    print(runAlg,'pre-convergence training iteration #%d'%indIter)
+                    yEq[nStart:nEnd,:], H, errSq[:,nStart:nEnd], Hiter = coreAdaptEq(x[nStart*SpS:nEnd*SpS,:], dx[nStart:nEnd,:],
+                                                                                     SpS, H, L[indstage], mu[indstage], nTaps,
+                                                                                     storeCoeff, runAlg, constSymb)
+                    print(runAlg,'MSE = %.6f.'%np.nanmean(errSq[:,nStart:nEnd]))
+            else:
+                yEq[nStart:nEnd,:], H, errSq[:,nStart:nEnd], Hiter = coreAdaptEq(x[nStart*SpS:nEnd*SpS,:], dx[nStart:nEnd,:],
+                                                                             SpS, H, L[indstage], mu[indstage], nTaps,
+                                                                             storeCoeff, runAlg, constSymb)               
+                print(runAlg,'MSE = %.6f.'%np.nanmean(errSq[:,nStart:nEnd]))
+                
+            nStart = nEnd
+    else:        
+        for indIter in tqdm(range(0, numIter)):
+            print(alg,'training iteration #%d'%indIter)        
+            yEq, H, errSq, Hiter = coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb)               
+            print(alg,'MSE = %.6f.'%np.nanmean(errSq))
         
     return  yEq, H, errSq, Hiter
 
@@ -105,8 +134,8 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
                         
         yEq[ind,:] = outEq.T        
                     
-        # update equalizer taps acording to adaptive specified 
-        # training algorithm and save squared error:        
+        # update equalizer taps acording to the specified 
+        # algorithm and save squared error:        
         if alg == 'nlms':
             H, errSq[:,ind] = nlmsUp(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
         elif alg == 'cma':
@@ -117,6 +146,8 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
             H, errSq[:,ind] = rdeUp(x[indIn, :], Rrde, outEq, mu, H, nModes)
         elif alg == 'da-rde':
             H, errSq[:,ind] = dardeUp(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
+        else:
+            raise ValueError('Equalization algorithm not specified (or incorrectly specified).')
         
         if storeCoeff:
             Hiter[:,:, ind] = H  
