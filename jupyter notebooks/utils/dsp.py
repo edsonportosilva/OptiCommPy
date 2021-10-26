@@ -1,7 +1,10 @@
 from scipy.signal import lfilter
 import numpy as np
+
 from commpy.filters import rrcosfilter, rcosfilter
 from commpy.utilities  import upsample
+from commpy.modulation import QAMModem
+
 from scipy.stats.kde import gaussian_kde
 import scipy.constants as const
 from utils.models import linFiberCh
@@ -195,7 +198,11 @@ def ddpll(Ei, N, constSymb, symbTx, pilotInd):
     ϕ  = np.zeros(Ei.shape)    
     θ  = np.zeros(Ei.shape)
 
-    for n in range(0,nModes):
+    for n in range(0, nModes):
+        # correct (possible) initial phase rotation
+        rot = np.mean(symbTx[:,n]/Ei[:,n])
+        Ei[:,n]  = rot*Ei[:,n]
+        
         for k in range(0,len(Ei)):
             
             decided = np.argmin(np.abs(Ei[k,n]*np.exp(1j*θ[k-1,n]) - constSymb)) # find closest constellation symbol
@@ -215,7 +222,7 @@ def ddpll(Ei, N, constSymb, symbTx, pilotInd):
     return Eo, ϕ, θ
 
 
-def cpr(Ei, N, constSymb, symbTx, pilotInd=[]):    
+def cpr(Ei, N, M, symbTx, pilotInd=[]):    
     """
     Carrier phase recovery (CPR)
     
@@ -225,6 +232,9 @@ def cpr(Ei, N, constSymb, symbTx, pilotInd=[]):
     except IndexError:
         Ei = Ei.reshape(len(Ei),1)            
 
+    mod = QAMModem(m=M)
+    constSymb  = mod.constellation/np.sqrt(mod.Es)
+    
     Eo, ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
 
     if Eo.shape[1]==1:
