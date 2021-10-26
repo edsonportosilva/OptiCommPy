@@ -1,7 +1,7 @@
 import numpy as np
 from commpy.utilities  import signal_power
 from commpy.modulation import QAMModem
-from numba import njit
+from numba import njit, prange
 
 
 @njit
@@ -118,14 +118,17 @@ def monteCarloGMI(rx, tx, mod):
     for k in range(0, nModes):       
         rx[:,k] = rx[:,k]/np.sqrt(signal_power(rx[:,k]))
         tx[:,k] = tx[:,k]/np.sqrt(signal_power(tx[:,k]))
+
+        # correct (possible) phase ambiguity
+        rot = np.mean(tx[:,k]/rx[:,k])
+        rx[:,k]  = rot*rx[:,k]
         
     for k in range(0, nModes):        
         # set the noise variance 
         σ2 = noiseVar[k]
         
-        # hard decision demodulation of the transmitted symbols
-        btx = mod.demodulate(np.sqrt(mod.Es)*tx[:,k], demod_type = 'hard')
-                        
+        # hard decision demodulation of the transmitted symbols        
+        btx = hardDecision(np.sqrt(mod.Es)*tx[:,k], mod.constellation, bitMapping)                
         # soft demodulation of the received symbols                       
         LLRs = calcLLR(rx[:,k], mod.m, σ2, mod.constellation/np.sqrt(mod.Es), bitMapping) 
                 
