@@ -51,6 +51,9 @@ HTML("""
 #figsize(7, 2.5)
 figsize(10, 3)
 
+# %load_ext autoreload
+# %autoreload 2
+
 # # Simulation of coherent WDM systems
 
 # ## Coherent WDM system
@@ -68,10 +71,10 @@ help(manakovSSF)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 16           # ordem do formato de modulação
+param.M   = 64           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 8            # número de amostras por símbolo
-param.Nbits = 400000     # número de bits
+param.Nbits = 600000     # número de bits
 param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 4096       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
@@ -88,7 +91,7 @@ freqGrid = param.freqGrid
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
 # +
-linearChannel = True
+linearChannel = False
 
 # optical channel parameters
 paramCh = parameters()
@@ -145,7 +148,7 @@ symbTx = transmSymbols[:,:,chIndex]
 # local oscillator (LO) parameters:
 FO      = 0*64e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 100e3                 # linewidth
+lw      = 10e3                  # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
@@ -160,7 +163,7 @@ t       = np.arange(0, len(sigWDM))*Ta
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
 # polarization multiplexed coherent optical receiver
-sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig = 0, Rdx=1, Rdy=1)
+sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig = π/3, Rdx=1, Rdy=1)
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
@@ -240,34 +243,25 @@ d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
 #x = x@rot
 
 # +
-M = 16
+M = 64
 mod = QAMModem(m=M)
 
 paramEq = parameters()
-paramEq.nTaps = 35
+paramEq.nTaps = 15
 paramEq.SpS   = 2
-paramEq.mu    = 2e-3
+paramEq.mu    = [5e-3, 1e-3]
 paramEq.numIter = 5
 paramEq.storeCoeff = False
-paramEq.alg   = ['nlms']
+paramEq.alg   = ['nlms','nlms']
 paramEq.M     = M
-paramEq.L = [20000]
+paramEq.L = [40000, 60000]
 
 # from numpy.matlib import repmat
 # y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(np.matlib.repmat(x,1,3),\
 #                                            dx=np.matlib.repmat(d,1,3),\
-#                                            paramEq=paramEq)
+#                                             paramEq=paramEq)
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
-
-paramEq.mu    = 2e-3
-paramEq.numIter = 1
-paramEq.alg   = ['ddlms']
-paramEq.H = H
-paramEq.L = [int(x.shape[0]/paramEq.SpS)]
-
-y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
-
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
 discard = 1000
@@ -285,13 +279,17 @@ ax2.set_xlim(-1.5, 1.5)
 ax2.set_ylim(-1.5, 1.5);
 
 # +
-constSymb  = mod.constellation/np.sqrt(mod.Es)
-y_CPR, ϕ, θ = cpr(y_EQ, 80, constSymb, d, pilotInd=np.arange(0,len(y_EQ), 50))
+#constSymb  = mod.constellation/np.sqrt(mod.Es)
+#y_CPR, ϕ, θ = cpr(y_EQ, 80, M, np.matlib.repmat(d,1,3), pilotInd=np.arange(0,len(y_EQ), 50))
+y_CPR, ϕ, θ = cpr(y_EQ, 80, M, d, pilotInd=np.arange(0,len(y_EQ), 20))
 
-plt.plot(ϕ[:,1],'-.', θ[:,1],'-')
+plt.plot(ϕ,'-.', θ,'-')
 
 discard = 2000
 ind = np.arange(discard, d.shape[0]-discard)
+
+# BER, SER, SNR = fastBERcalc(y_CPR[ind,:], np.matlib.repmat(d[ind,:],1,3), mod)
+# GMI,_    = monteCarloGMI(y_CPR[ind,:], np.matlib.repmat(d[ind,:],1,3), mod)
 
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], mod)
 GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], mod)
@@ -358,29 +356,19 @@ plt.plot(H.imag.T,'-');
 
 # plt.stem(H[0,:].real.T,linefmt='r');
 # plt.stem(H[3,:].imag.T,linefmt='b');
-# -
-
-# %load_ext autoreload
-# %autoreload 2
-
-# %load_ext line_profiler
-
-# %lprun -f monteCarloGMI monteCarloGMI(y_EQ[ind,:], d[ind,:], mod)
-
-# %lprun -f fastBERcalc fastBERcalc(y_EQ[ind,:], d[ind,:], mod)
 
 # +
-a = []
+# #%load_ext autoreload
+# #%autoreload 2
 
-10 in a
-# -
+# +
+# #%load_ext line_profiler
 
-# %lprun -f cpr cpr(y_EQ, 25, constSymb, d, pilotInd=np.arange(0,len(y_EQ), 50))
+# +
+# #%lprun -f monteCarloGMI monteCarloGMI(y_EQ[ind,:], d[ind,:], mod)
 
-a = 1+2*1j
-a.conjugate()
+# +
+# #%lprun -f fastBERcalc fastBERcalc(y_EQ[ind,:], d[ind,:], mod)
 
-plt.plot(y_CPR[10000:10050,0].real,'o')
-plt.plot(d[10000:10050,0].real,'x')
-
-
+# +
+# #%lprun -f cpr cpr(y_EQ, 25, constSymb, d, pilotInd=np.arange(0,len(y_EQ), 50))
