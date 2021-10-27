@@ -92,13 +92,18 @@ def manakovSSF(Ei, Fs, paramCh):
     Nspans = int(np.floor(Ltotal/Lspan))
     Nsteps = int(np.floor(Lspan/hz))
 
-    Ei = cp.asarray(Ei)
+    Ei_ = cp.asarray(Ei)
     
-    Ech_x = Ei[:,0].reshape(len(Ei),)
-    Ech_y = Ei[:,1].reshape(len(Ei),)
-
+    Ech_x = Ei_[:,0::2].T
+    Ech_y = Ei_[:,1::2].T
+    
     # define linear operator
     linOperator = cp.array(cp.exp(-(α/2)*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2)))
+        
+    if Ech_x.shape[0] > 1:
+        linOperator = cp.tile(linOperator, (Ech_x.shape[0], 1))
+    else:
+        linOperator = linOperator.reshape(1,-1)
     
     for spanN in tqdm(range(1, Nspans+1)):   
         Ech_x = fft(Ech_x) #polarization x field
@@ -139,8 +144,15 @@ def manakovSSF(Ei, Fs, paramCh):
 
     Ech_x = cp.asnumpy(Ech_x)
     Ech_y = cp.asnumpy(Ech_y)
+
+    Ech = Ei.copy()
+    Ech[:,0::2] = Ech_x.T
+    Ech[:,1::2] = Ech_y.T
     
-    Ech = np.array([Ech_x.reshape(len(Ei),),
-                    Ech_y.reshape(len(Ei),)]).T
+   # np.array([Ech_x.reshape(len(Ei),),
+   #                 Ech_y.reshape(len(Ei),)]).T
+        
+   # Ech = np.array([Ech_x.reshape(len(Ei),),
+   #                 Ech_y.reshape(len(Ei),)]).T
     
     return Ech, paramCh
