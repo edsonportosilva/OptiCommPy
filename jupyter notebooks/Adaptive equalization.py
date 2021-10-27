@@ -22,7 +22,8 @@ from commpy.utilities  import signal_power
 from commpy.modulation import QAMModem
 
 from utils.dsp import pulseShape, firFilter, edc, cpr #, fourthPowerFOE, dbp, cpr
-from utils.models import phaseNoise, pdmCoherentReceiver, manakovSSF
+from utils.models import phaseNoise, pdmCoherentReceiver#, manakovSSF
+from utils.modelsGPU import manakovSSF
 from utils.tx import simpleWDMTx
 from utils.core import parameters
 from utils.equalization import mimoAdaptEqualizer
@@ -113,6 +114,9 @@ sigWDM, paramCh = manakovSSF(sigWDM_Tx, Fs, paramCh)
 
 receivedSignal = sigWDM.copy()
 transmSymbols  = symbTx_.copy()
+
+# +
+# #%lprun -f manakovSSF manakovSSF(sigWDM_Tx, Fs, paramCh)
 # -
 
 # **Optical WDM spectrum before and after transmission**
@@ -360,9 +364,9 @@ plt.plot(H.imag.T,'-');
 # +
 # #%load_ext autoreload
 # #%autoreload 2
+# -
 
-# +
-# #%load_ext line_profiler
+# %load_ext line_profiler
 
 # +
 # #%lprun -f monteCarloGMI monteCarloGMI(y_EQ[ind,:], d[ind,:], mod)
@@ -372,8 +376,12 @@ plt.plot(H.imag.T,'-');
 
 # +
 # #%lprun -f cpr cpr(y_EQ, 25, constSymb, d, pilotInd=np.arange(0,len(y_EQ), 50))
-# -
 
-# !pip install --upgrade numba --user
+# +
+# #!pip install --upgrade numba --user
+
+# +
+# #!pip install line_profiler
+# -
 
 
