@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.3
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -249,7 +249,7 @@ mod = QAMModem(m=M)
 paramEq = parameters()
 paramEq.nTaps = 15
 paramEq.SpS   = 2
-paramEq.mu    = [5e-3, 1e-3]
+paramEq.mu    = [5e-3, 5e-3]
 paramEq.numIter = 5
 paramEq.storeCoeff = False
 paramEq.alg   = ['nlms','nlms']
@@ -372,3 +372,8 @@ plt.plot(H.imag.T,'-');
 
 # +
 # #%lprun -f cpr cpr(y_EQ, 25, constSymb, d, pilotInd=np.arange(0,len(y_EQ), 50))
+# -
+
+# !pip install --upgrade numba --user
+
+
