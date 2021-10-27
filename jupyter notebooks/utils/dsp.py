@@ -233,7 +233,7 @@ def cpr(Ei, N, M, symbTx, pilotInd=[]):
         Ei = Ei.reshape(len(Ei),1)            
 
     mod = QAMModem(m=M)
-    constSymb  = mod.constellation/np.sqrt(mod.Es)
+    constSymb = mod.constellation/np.sqrt(mod.Es)
     
     Eo, ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
 
