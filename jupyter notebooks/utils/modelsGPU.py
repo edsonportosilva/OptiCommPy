@@ -156,3 +156,21 @@ def manakovSSF(Ei, Fs, paramCh):
    #                 Ech_y.reshape(len(Ei),)]).T
     
     return Ech, paramCh
+
+def setPowerforParSSFM(sig, powers):
+
+    powers_lin = 10**(powers/10)*1e-3
+    powers_lin = powers_lin.repeat(2)/2
+    
+    for i in np.arange(0, sig.shape[1], 2):
+        for k in range(0,2):
+            sig[:,i+k] = np.sqrt(powers_lin[i]/signal_power(sig[:,i+k]))*sig[:,i+k]
+            print('power mode %d: %.2f dBm'%(i+k,10*np.log10(signal_power(sig[:,i+k])/1e-3)))
+
+    return sig
+            
+
+
+
+
+                            
