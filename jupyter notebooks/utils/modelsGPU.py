@@ -6,7 +6,6 @@ from tqdm.notebook import tqdm
 from numba import njit, jit
 import cupy as cp
 
-
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
     Simple EDFA model
@@ -21,13 +20,14 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
     assert G > 0, 'EDFA gain should be a positive scalar'
     assert NF >= 3, 'The minimal EDFA noise figure is 3 dB'
-    
+       
     NF_lin   = 10**(NF/10)
     G_lin    = 10**(G/10)
     nsp      = (G_lin*NF_lin - 1)/(2*(G_lin - 1))
     N_ase    = (G_lin - 1)*nsp*const.h*Fc
-    p_noise  = N_ase*Fs    
-    noise    = normal(0, cp.sqrt(p_noise/2), Ei.shape) + 1j*normal(0, cp.sqrt(p_noise/2), Ei.shape)
+    p_noise  = N_ase*Fs
+    noise    = normal(0, np.sqrt(p_noise/2), Ei.shape) + 1j*normal(0, np.sqrt(p_noise/2), Ei.shape)
+    noise    = cp.array(noise).astype(cp.complex64)
     return Ei*cp.sqrt(G_lin) + noise
 
 def manakovSSF(Ei, Fs, paramCh):      
@@ -60,8 +60,7 @@ def manakovSSF(Ei, Fs, paramCh):
     paramCh.Fc     = getattr(paramCh, 'Fc', 193.1e12)
     paramCh.amp    = getattr(paramCh, 'amp', 'edfa')
     paramCh.NF     = getattr(paramCh, 'NF', 4.5)   
-    paramCh.numPre = getattr(paramCh, 'numPre', 'single')
-    
+        
     Ltotal = paramCh.Ltotal 
     Lspan  = paramCh.Lspan
     hz     = paramCh.hz
@@ -72,10 +71,8 @@ def manakovSSF(Ei, Fs, paramCh):
     amp    = paramCh.amp   
     NF     = paramCh.NF
 
-    if paramCh.numPre == 'single':
-        prec = cp.complex64
-    elif paramCh.numPre == 'double':
-        prec = cp.complex128
+    # fft in CuPy uses only complex64 
+    prec = cp.complex64
 
     Nspans = int(np.floor(Ltotal/Lspan))
     Nsteps = int(np.floor(Lspan/hz))
@@ -93,20 +90,19 @@ def manakovSSF(Ei, Fs, paramCh):
     β2 = cp.asarray(β2, dtype=prec)
     γ  = cp.asarray(γ, dtype=prec)
     hz = cp.asarray(hz, dtype=prec)
-   # Ltotal = cp.asarray(Ltotal, dtype=prec)
-   # Lspan = cp.asarray(Lspan, dtype=prec)
-    
+    Ltotal = cp.asarray(Ltotal, dtype=prec)
+        
     # generate frequency axis 
     Nfft = len(Ei)
-    ω = 2*np.pi*Fs*fftfreq(Nfft)
+    ω = 2*np.pi*Fs*fftfreq(Nfft).astype(prec)
     
-    Ei_ = cp.asarray(Ei, dtype=prec)
+    Ei_ = cp.asarray(Ei).astype(prec)
     
     Ech_x = Ei_[:,0::2].T
     Ech_y = Ei_[:,1::2].T
     
     # define linear operator
-    linOperator = cp.array(cp.exp(-(α/2)*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2)), dtype=prec)
+    linOperator = cp.array(cp.exp(-(α/2)*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2))).astype(prec)
         
     if Ech_x.shape[0] > 1:
         linOperator = cp.tile(linOperator, (Ech_x.shape[0], 1))
@@ -176,9 +172,3 @@ def setPowerforParSSFM(sig, powers):
             print('power mode %d: %.2f dBm'%(i+k,10*np.log10(signal_power(sig[:,i+k])/1e-3)))
 
     return sig
-            
-
-
-
-
-                            
