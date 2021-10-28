@@ -82,11 +82,17 @@ def simpleWDMTx(param):
         pulse = pulseShape('rrc', param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts)
 
     pulse = pulse/np.max(np.abs(pulse))
-            
-    for indMode in range(0, param.Nmodes):        
-        print('Mode #%d'%(indMode))
+
+    for indCh in range(0, param.Nch):
         
-        for indCh in range(0, param.Nch):
+        print('channel %d power : %.2f dBm, fc : %3.4f THz' 
+              %(indCh, 10*np.log10((Pch/param.Nmodes)/1e-3), 
+                (param.Fc+freqGrid[indCh])/1e12))
+        
+        Pmode = 0        
+        for indMode in range(0, param.Nmodes):        
+            print('Mode #%d'%(indMode))   
+
             # generate random bits
             bitsTx   = np.random.randint(2, size=param.Nbits)    
 
@@ -108,13 +114,14 @@ def simpleWDMTx(param):
             sigTxCh = iqm(Ai, 0.5*sigTx, Vπ, Vb, Vb)
             sigTxCh = np.sqrt(Pch/param.Nmodes)*sigTxCh/np.sqrt(signal_power(sigTxCh))
             
-            print('channel %d power : %.2f dBm, fc : %3.4f THz' 
-                  %(indCh+1, 10*np.log10((Pch/param.Nmodes)/1e-3), 
-                    (param.Fc+freqGrid[indCh])/1e12))
-
             sigTxWDM[:,indMode] += sigTxCh*np.exp(1j*2*π*(freqGrid[indCh]/Fa)*t)
-            
-        Psig += signal_power(sigTxWDM[:,indMode])
+
+            Pmode += signal_power(sigTxWDM[:,indMode])
+
+        Psig += Pmode
+
+        print('channel %d power : %.2f dBm' %(indCh, 10*np.log10(Pmode/1e-3), 
+                (param.Fc+freqGrid[indCh])/1e12))
         
     print('total WDM signal power: %.2f dBm'%(10*np.log10(Psig/1e-3)))
     
