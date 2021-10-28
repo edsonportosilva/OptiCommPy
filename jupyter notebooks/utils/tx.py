@@ -56,7 +56,7 @@ def simpleWDMTx(param):
     Pch = 10**(param.Pch_dBm/10)*1e-3   # optical signal power per WDM channel
         
     π = np.pi
-    
+    # time array
     t = np.arange(0, int(((param.Nbits)/np.log2(param.M))*param.SpS))
     
     # allocate array 
@@ -64,7 +64,19 @@ def simpleWDMTx(param):
     symbTxWDM = np.zeros((int(len(t)/param.SpS), param.Nmodes, param.Nch), dtype='complex')
     
     Psig = 0
-    
+
+    # map bits to constellation symbols
+    mod = QAMModem(m=param.M)    
+    Es = mod.Es
+
+    # pulse shaping filter
+    if param.pulse == 'nrz':
+        pulse = pulseShape('nrz', param.SpS)
+    elif param.pulse == 'rrc':
+        pulse = pulseShape('rrc', param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts)
+
+    pulse = pulse/np.max(np.abs(pulse))
+            
     for indMode in range(0, param.Nmodes):        
         print('Mode #%d'%(indMode))
         
@@ -73,10 +85,8 @@ def simpleWDMTx(param):
             bitsTx   = np.random.randint(2, size=param.Nbits)    
 
             # map bits to constellation symbols
-            mod = QAMModem(m=param.M)
             symbTx = mod.modulate(bitsTx)
-            Es = mod.Es
-
+           
             # normalize symbols energy to 1
             symbTx = symbTx/np.sqrt(Es)
             
@@ -86,12 +96,6 @@ def simpleWDMTx(param):
             symbolsUp = upsample(symbTx, param.SpS)
 
             # pulse shaping
-            if param.pulse == 'nrz':
-                pulse = pulseShape('nrz', param.SpS)
-            elif param.pulse == 'rrc':
-                pulse = pulseShape('rrc', param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts)
-
-            pulse = pulse/np.max(np.abs(pulse))
             sigTx = firFilter(pulse, symbolsUp)
 
             # optical modulation
@@ -99,12 +103,12 @@ def simpleWDMTx(param):
             sigTxCh = np.sqrt(Pch/param.Nmodes)*sigTxCh/np.sqrt(signal_power(sigTxCh))
             
             print('channel %d power : %.2f dBm, fc : %3.4f THz' 
-                  %(indCh+1, 10*np.log10(signal_power(sigTxCh)/1e-3), 
+                  %(indCh+1, 10*np.log10((Pch/param.Nmodes)/1e-3), 
                     (param.Fc+freqGrid[indCh])/1e12))
 
             sigTxWDM[:,indMode] += sigTxCh*np.exp(1j*2*π*(freqGrid[indCh]/Fa)*t)
             
-        Psig += signal_power(sigTxWDM[:,indMode])
+        Psig += Pch/param.Nmodes #signal_power(sigTxWDM[:,indMode])
         
     print('total WDM signal power: %.2f dBm'%(10*np.log10(Psig/1e-3)))
     
