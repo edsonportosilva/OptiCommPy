@@ -47,7 +47,7 @@ def firFilter(h, x):
 
 @njit
 def fastlfilter(h, x):
-    
+    h += 0*1j
     y = np.convolve(h, x)
     shift = len(y)-len(x)
     y = np.roll(y,-int(shift/2))
