@@ -60,7 +60,8 @@ def manakovSSF(Ei, Fs, paramCh):
     paramCh.Fc     = getattr(paramCh, 'Fc', 193.1e12)
     paramCh.amp    = getattr(paramCh, 'amp', 'edfa')
     paramCh.NF     = getattr(paramCh, 'NF', 4.5)   
-
+    paramCh.numPre = getattr(paramCh, 'numPre', 'single')
+    
     Ltotal = paramCh.Ltotal 
     Lspan  = paramCh.Lspan
     hz     = paramCh.hz
@@ -71,6 +72,11 @@ def manakovSSF(Ei, Fs, paramCh):
     amp    = paramCh.amp   
     NF     = paramCh.NF
 
+    if paramCh.numPre == 'single':
+        prec = cp.complex64
+    elif paramCh.numPre == 'double':
+        prec = cp.complex128
+        
     # channel parameters  
     c_kms = const.c/1e3 # speed of light (vacuum) in km/s
     λ  = c_kms/Fc
@@ -78,12 +84,12 @@ def manakovSSF(Ei, Fs, paramCh):
     β2 = -(D*λ**2)/(2*np.pi*c_kms)
     γ  = gamma
 
-    c_kms = cp.asarray(c_kms) # speed of light (vacuum) in km/s
-    λ  = cp.asarray(λ)
-    α  = cp.asarray(α)
-    β2 = cp.asarray(β2)
-    γ  = cp.asarray(γ)
-    hz = cp.asarray(hz)
+    c_kms = cp.asarray(c_kms, dtype=prec) # speed of light (vacuum) in km/s
+    λ  = cp.asarray(λ, dtype=prec)
+    α  = cp.asarray(α, dtype=prec)
+    β2 = cp.asarray(β2, dtype=prec)
+    γ  = cp.asarray(γ, dtype=prec)
+    hz = cp.asarray(hz, dtype=prec)
     
     # generate frequency axis 
     Nfft = len(Ei)
@@ -92,13 +98,13 @@ def manakovSSF(Ei, Fs, paramCh):
     Nspans = int(np.floor(Ltotal/Lspan))
     Nsteps = int(np.floor(Lspan/hz))
 
-    Ei_ = cp.asarray(Ei)
+    Ei_ = cp.asarray(Ei, dtype=prec)
     
     Ech_x = Ei_[:,0::2].T
     Ech_y = Ei_[:,1::2].T
     
     # define linear operator
-    linOperator = cp.array(cp.exp(-(α/2)*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2)))
+    linOperator = cp.array(cp.exp(-(α/2)*(hz/2) + 1j*(β2/2)*(ω**2)*(hz/2)), dtype=prec)
         
     if Ech_x.shape[0] > 1:
         linOperator = cp.tile(linOperator, (Ech_x.shape[0], 1))
