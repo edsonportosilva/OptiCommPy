@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.3
+#       jupytext_version: 1.13.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -18,13 +18,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from commpy.utilities  import signal_power
 from commpy.modulation import QAMModem
 
 from utils.dsp import pulseShape, firFilter, edc, cpr #, fourthPowerFOE, dbp, cpr
 from utils.models import phaseNoise, pdmCoherentReceiver#, manakovSSF
 from utils.modelsGPU import manakovSSF
-from utils.tx import simpleWDMTx
+from utils.tx import simpleWDMTx, signal_power
 from utils.core import parameters
 from utils.equalization import mimoAdaptEqualizer
 from utils.metrics import fastBERcalc, monteCarloGMI
@@ -72,23 +71,26 @@ help(manakovSSF)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 64           # ordem do formato de modulação
+param.M   = 16           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
-param.SpS = 8            # número de amostras por símbolo
-param.Nbits = 600000     # número de bits
+param.SpS = 16           # número de amostras por símbolo
+param.Nbits = 400000     # número de bits
 param.pulse = 'rrc'      # formato de pulso
-param.Ntaps = 4096       # número de coeficientes do filtro RRC
+param.Ntaps = 1024       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
-param.Pch_dBm = 1        # potência média por canal WDM [dBm]
-param.Nch     = 5        # número de canais WDM
+param.Pch_dBm = -5       # potência média por canal WDM [dBm]
+param.Nch     = 11       # número de canais WDM
 param.Fc      = 193.1e12 # frequência central do espectro WDM
-param.freqSpac = 40e9    # espaçamento em frequência da grade de canais WDM
+param.freqSpac = 37.5e9    # espaçamento em frequência da grade de canais WDM
 param.Nmodes = 2         # número de modos de polarização
 
 sigWDM_Tx, symbTx_, param = simpleWDMTx(param)
 
 freqGrid = param.freqGrid
+# +
+# #%lprun -f simpleWDMTx simpleWDMTx(param)
 # -
+
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
 # +
@@ -96,13 +98,14 @@ linearChannel = False
 
 # optical channel parameters
 paramCh = parameters()
-paramCh.Ltotal = 800   # km
-paramCh.Lspan  = 80    # km
+paramCh.Ltotal = 1200  # km
+paramCh.Lspan  = 50    # km
 paramCh.alpha = 0.2    # dB/km
 paramCh.D = 16         # ps/nm/km
 paramCh.Fc = 193.1e12  # Hz
-paramCh.hz = 0.5       # km
+paramCh.hz = 0.1       # km
 paramCh.gamma = 1.3    # 1/(W.km)
+paramCh.numPre = 'double'
 
 if linearChannel:
     paramCh.hz = paramCh.Lspan 
@@ -136,7 +139,7 @@ plt.title('optical WDM spectrum');
 ### Receiver
 
 # parameters
-chIndex  = 2    # index of the channel to be demodulated
+chIndex  = 5    # index of the channel to be demodulated
 plotPSD  = True
 
 Fa = param.SpS*param.Rs
@@ -152,7 +155,7 @@ symbTx = transmSymbols[:,:,chIndex]
 # local oscillator (LO) parameters:
 FO      = 0*64e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 10e3                  # linewidth
+lw      = 0*10e3                  # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
@@ -178,7 +181,7 @@ ax2.axis('square');
 
 # Rx filtering
 
-# Matched filter
+# Matched filtering
 if param.pulse == 'nrz':
     pulse = pulseShape('nrz', param.SpS)
 elif param.pulse == 'rrc':
@@ -214,7 +217,8 @@ for k in range(0, sigRx.shape[1]):
 # downsampling
 sigRx_ = sigRx[::int(param.SpS/2),:]
 for k in range(0, sigRx.shape[1]):
-    sigRx_[:,k] = sigRx[int(sampDelay[k])::int(param.SpS/2),k]
+    sigRx[:,k]  = np.roll(sigRx[:,k], int(sampDelay[k]))
+    sigRx_[:,k] = sigRx[0::int(param.SpS/2),k]
 
 sigRx = sigRx_
 
@@ -247,16 +251,16 @@ d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
 #x = x@rot
 
 # +
-M = 64
+M = 16
 mod = QAMModem(m=M)
 
 paramEq = parameters()
-paramEq.nTaps = 15
+paramEq.nTaps = 25
 paramEq.SpS   = 2
-paramEq.mu    = [5e-3, 5e-3]
+paramEq.mu    = [2e-3, 1e-3]
 paramEq.numIter = 5
 paramEq.storeCoeff = False
-paramEq.alg   = ['nlms','nlms']
+paramEq.alg   = ['da-rde','rde']
 paramEq.M     = M
 paramEq.L = [40000, 60000]
 
@@ -364,9 +368,9 @@ plt.plot(H.imag.T,'-');
 # +
 # #%load_ext autoreload
 # #%autoreload 2
-# -
 
-# %load_ext line_profiler
+# +
+# #%load_ext line_profiler
 
 # +
 # #%lprun -f monteCarloGMI monteCarloGMI(y_EQ[ind,:], d[ind,:], mod)
@@ -381,7 +385,4 @@ plt.plot(H.imag.T,'-');
 # #!pip install --upgrade numba --user
 
 # +
-# #!pip install line_profiler
-# -
-
-
+# #!pip install line_profiler --user
