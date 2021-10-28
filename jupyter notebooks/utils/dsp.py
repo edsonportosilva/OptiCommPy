@@ -38,7 +38,7 @@ def firFilter(h, x):
        # y_ = lfilter(h,1,x_)
        # y[:,n] = y_[int(N/2):y_.size]
 
-        y = fastlfilter(h, x):
+        y = fastlfilter(h, x)
 
     if y.shape[1] == 1:
         y = y[:,0]
