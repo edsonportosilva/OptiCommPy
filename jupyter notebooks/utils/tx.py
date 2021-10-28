@@ -59,7 +59,13 @@ def simpleWDMTx(param):
     Ai = 1
     Vπ = 2
     Vb = -Vπ
-    Pch = 10**(param.Pch_dBm/10)*1e-3   # optical signal power per WDM channel
+    
+    if type(param.Pch_dBm) == list:
+        assert len(param.Pch_dBm) == param.Nch, 'list length of power per channel does not match number of channels.'
+        Pch = 10**(np.array(param.Pch_dBm)/10)*1e-3   # optical signal power per WDM channel
+    else:
+        Pch = 10**(param.Pch_dBm/10)*1e-3
+        Pch = Pch*np.ones(param.Nch)
         
     π = np.pi
     # time array
@@ -85,13 +91,12 @@ def simpleWDMTx(param):
 
     for indCh in range(0, param.Nch):
         
-        print('channel %d power : %.2f dBm, fc : %3.4f THz' 
-              %(indCh, 10*np.log10((Pch/param.Nmodes)/1e-3), 
-                (param.Fc+freqGrid[indCh])/1e12))
+        print('channel %d\t fc : %3.4f THz'%(indCh, (param.Fc+freqGrid[indCh])/1e12))
         
         Pmode = 0        
         for indMode in range(0, param.Nmodes):        
-            print('Mode #%d'%(indMode))   
+            print('  mode #%d\t power: %.2f dBm'%(indMode,
+                                                  10*np.log10((Pch[indCh]/param.Nmodes)/1e-3)))   
 
             # generate random bits
             bitsTx   = np.random.randint(2, size=param.Nbits)    
@@ -112,16 +117,15 @@ def simpleWDMTx(param):
 
             # optical modulation
             sigTxCh = iqm(Ai, 0.5*sigTx, Vπ, Vb, Vb)
-            sigTxCh = np.sqrt(Pch/param.Nmodes)*sigTxCh/np.sqrt(signal_power(sigTxCh))
+            sigTxCh = np.sqrt(Pch[indCh]/param.Nmodes)*sigTxCh/np.sqrt(signal_power(sigTxCh))
             
             sigTxWDM[:,indMode] += sigTxCh*np.exp(1j*2*π*(freqGrid[indCh]/Fa)*t)
 
-            Pmode += signal_power(sigTxWDM[:,indMode])
+            Pmode += signal_power(sigTxCh)
 
         Psig += Pmode
 
-        print('channel %d power : %.2f dBm' %(indCh, 10*np.log10(Pmode/1e-3), 
-                (param.Fc+freqGrid[indCh])/1e12))
+        print('channel %d\t power: %.2f dBm\n'%(indCh, 10*np.log10(Pmode/1e-3)))
         
     print('total WDM signal power: %.2f dBm'%(10*np.log10(Psig/1e-3)))
     
