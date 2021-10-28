@@ -33,14 +33,26 @@ def firFilter(h, x):
     N = h.size
     
     for n in range(0,nModes):
-        x_ = x[:,n]
-        x_ = np.pad(x_, (0, int(N/2)),'constant')
-        y_ = lfilter(h,1,x_)
-        y[:,n] = y_[int(N/2):y_.size]
+       # x_ = x[:,n]
+       # x_ = np.pad(x_, (0, int(N/2)),'constant')
+       # y_ = lfilter(h,1,x_)
+       # y[:,n] = y_[int(N/2):y_.size]
+
+        y = fastlfilter(h, x):
 
     if y.shape[1] == 1:
         y = y[:,0]
         
+    return y
+
+@njit
+def fastlfilter(h, x):
+    
+    y = np.convolve(h, x)
+    shift = len(y)-len(x)
+    y = np.roll(y,-int(shift/2))
+    y = y[0:len(x)]
+    
     return y
 
 def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
