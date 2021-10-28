@@ -8,7 +8,7 @@ from numba import njit
 @njit
 def signal_power(x):
     
-    return np.mean(x*np.conj(x))
+    return np.mean(x*np.conj(x)).real
 
 def simpleWDMTx(param):
     """
