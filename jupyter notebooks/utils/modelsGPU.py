@@ -76,7 +76,10 @@ def manakovSSF(Ei, Fs, paramCh):
         prec = cp.complex64
     elif paramCh.numPre == 'double':
         prec = cp.complex128
-        
+
+    Nspans = int(np.floor(Ltotal/Lspan))
+    Nsteps = int(np.floor(Lspan/hz))
+    
     # channel parameters  
     c_kms = const.c/1e3 # speed of light (vacuum) in km/s
     λ  = c_kms/Fc
@@ -90,14 +93,13 @@ def manakovSSF(Ei, Fs, paramCh):
     β2 = cp.asarray(β2, dtype=prec)
     γ  = cp.asarray(γ, dtype=prec)
     hz = cp.asarray(hz, dtype=prec)
+   # Ltotal = cp.asarray(Ltotal, dtype=prec)
+   # Lspan = cp.asarray(Lspan, dtype=prec)
     
     # generate frequency axis 
     Nfft = len(Ei)
     ω = 2*np.pi*Fs*fftfreq(Nfft)
     
-    Nspans = int(np.floor(Ltotal/Lspan))
-    Nsteps = int(np.floor(Lspan/hz))
-
     Ei_ = cp.asarray(Ei, dtype=prec)
     
     Ech_x = Ei_[:,0::2].T
