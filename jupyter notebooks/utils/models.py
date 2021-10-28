@@ -191,7 +191,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
     
     return np.concatenate((Sx, Sy), axis=1)
 
-@njit
+
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
     Simple EDFA model
@@ -212,7 +212,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     nsp      = (G_lin*NF_lin - 1)/(2*(G_lin - 1))
     N_ase    = (G_lin - 1)*nsp*const.h*Fc
     p_noise  = N_ase*Fs    
-    noise    = normal(0, np.sqrt(p_noise), Ei.shape) + 1j*normal(0, np.sqrt(p_noise), Ei.shape)
+    noise    = normal(0, np.sqrt(p_noise/2), Ei.shape) + 1j*normal(0, np.sqrt(p_noise/2), Ei.shape)
     return Ei*np.sqrt(G_lin) + noise
 
 def ssfm(Ei, Fs, paramCh):      

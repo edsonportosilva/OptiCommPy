@@ -27,7 +27,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     nsp      = (G_lin*NF_lin - 1)/(2*(G_lin - 1))
     N_ase    = (G_lin - 1)*nsp*const.h*Fc
     p_noise  = N_ase*Fs    
-    noise    = normal(0, cp.sqrt(p_noise), Ei.shape) + 1j*normal(0, cp.sqrt(p_noise), Ei.shape)
+    noise    = normal(0, cp.sqrt(p_noise/2), Ei.shape) + 1j*normal(0, cp.sqrt(p_noise/2), Ei.shape)
     return Ei*cp.sqrt(G_lin) + noise
 
 def manakovSSF(Ei, Fs, paramCh):      
