@@ -114,7 +114,7 @@ def simpleWDMTx(param):
 
             sigTxWDM[:,indMode] += sigTxCh*np.exp(1j*2*π*(freqGrid[indCh]/Fa)*t)
             
-        Psig += Pch/param.Nmodes #signal_power(sigTxWDM[:,indMode])
+        Psig += signal_power(sigTxWDM[:,indMode])
         
     print('total WDM signal power: %.2f dBm'%(10*np.log10(Psig/1e-3)))
     
