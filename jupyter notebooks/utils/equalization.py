@@ -146,6 +146,8 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
             H, errSq[:,ind] = rdeUp(x[indIn, :], Rrde, outEq, mu, H, nModes)
         elif alg == 'da-rde':
             H, errSq[:,ind] = dardeUp(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
+        elif alg == 'static':
+            errSq[:,ind] = errSq[:,ind-1]
         else:
             raise ValueError('Equalization algorithm not specified (or incorrectly specified).')
         
