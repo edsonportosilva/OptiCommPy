@@ -1,4 +1,6 @@
+from scipy import signal
 from scipy.signal import lfilter
+
 import numpy as np
 
 from commpy.filters import rrcosfilter, rcosfilter
@@ -323,3 +325,67 @@ def dbp(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12):
     Ech = ifft(Ech) 
        
     return Ech.reshape(len(Ech),)
+
+def decimate(Ei, param):
+
+    decFactor = int(param.SpS_in/param.SpS_out)
+    
+    # simple timing recovery
+    sampDelay = np.zeros(Ei.shape[1])
+
+    # finds best sampling instant
+    # (maximum variance sampling time)
+    for k in range(0, Ei.shape[1]):
+        a = Ei[:,k].reshape(Ei.shape[0],1)
+        varVector = np.var(a.reshape(-1,param.SpS_in), axis=0) 
+        sampDelay[k] = np.where(varVector == np.amax(varVector))[0][0]
+
+    # downsampling
+    Eo = Ei[::decFactor,:]
+    
+    for k in range(0, Ei.shape[1]):
+        Ei[:,k] = np.roll(Ei[:,k], int(sampDelay[k]))
+        Eo[:,k] = Ei[0::decFactor,k]
+
+    return Eo
+
+def symbolSync(rx, tx, SpS):
+
+    nModes = rx.shape[1]
+
+    rx = rx[0::SpS,:]
+    
+    # calculate time delay
+    delay = np.zeros(nModes)
+    
+    corrMatrix = np.zeros((nModes, nModes))
+
+    for n in range(0,nModes):
+        for m in range(0,nModes):
+            corrMatrix[m, n] = np.max( np.abs( signal.correlate(np.abs(tx[:,m]),np.abs(rx[:,n]) ) ) )
+
+    swap = np.argmax(corrMatrix, axis=0)
+
+    tx = tx[:,swap]
+    
+    for k in range(0, nModes):
+        delay[k] = finddelay(np.abs(tx[:,k]), np.abs(rx[:,k]))        
+
+    # compensate time delay
+    for k in range(nModes):    
+        tx[:,k] = np.roll(tx[:,k], -int(delay[k]))
+
+    return tx
+
+
+def finddelay(x, y):
+
+    d = np.argmax(signal.correlate(x, y)) - x.shape[0]+1
+
+    return d
+
+    
+
+
+
+    
