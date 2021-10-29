@@ -178,6 +178,41 @@ def nlmsUp(x, dx, outEq, mu, H, nModes):
     return H, np.abs(err)**2
 
 @njit
+def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
+    """
+    coefficient update with the RLS algorithm    
+    """
+    nTaps   = H.shape[0] 
+    indMode = np.arange(0, nModes)
+    indTaps = np.arange(0, nTaps)
+    
+    err = dx - outEq.T # calculate output error for the NLMS algorithm 
+    
+    errDiag = np.diag(err[0]) # define diagonal matrix from error array
+    
+    # update equalizer taps 
+    for N in range(0, nModes):
+
+            h   = H[indUpdTaps,:]
+            Sd_ = Sd[indTaps+N*nTaps,:]
+
+            inAdapt = x[:, N].T # input samples
+            inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
+            inAdaptPar = np.conj(inAdaptPar)            
+           # in  = conj(repmat(x(indTaps+(ind-1)*SpS, N+1).',nModes,1));
+           
+            in_ = np.conj(inAdapt);
+                        
+            Sd_ = (1/λ)*( Sd_ - (Sd_@(in_@(in_.H))@Sd_)/(λ + (in_.H)@Sd_@in_)))
+
+            h = h + errDiag@(Sd_@inAdapt.T).T;
+                        
+            H[indUpdTaps,:]  = h;
+            Sd[indTaps+N*nTaps,:] = Sd_;
+
+    return H, np.abs(err)**2
+
+@njit
 def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
     """
     coefficient update with the DDLMS algorithm    
