@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.3
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -20,7 +20,7 @@ import numpy as np
 
 from commpy.modulation import QAMModem
 
-from utils.dsp import pulseShape, firFilter, edc, cpr #, fourthPowerFOE, dbp, cpr
+from utils.dsp import pulseShape, firFilter, edc, cpr, decimate, symbolSync #, fourthPowerFOE, dbp, cpr
 from utils.models import phaseNoise, pdmCoherentReceiver#, manakovSSF
 from utils.modelsGPU import manakovSSF
 from utils.tx import simpleWDMTx, signal_power
@@ -103,9 +103,8 @@ paramCh.Lspan  = 50    # km
 paramCh.alpha = 0.2    # dB/km
 paramCh.D = 16         # ps/nm/km
 paramCh.Fc = 193.1e12  # Hz
-paramCh.hz = 0.1       # km
+paramCh.hz = 0.5       # km
 paramCh.gamma = 1.3    # 1/(W.km)
-paramCh.numPre = 'double'
 
 if linearChannel:
     paramCh.hz = paramCh.Lspan 
@@ -139,7 +138,7 @@ plt.title('optical WDM spectrum');
 ### Receiver
 
 # parameters
-chIndex  = 5    # index of the channel to be demodulated
+chIndex  = 2    # index of the channel to be demodulated
 plotPSD  = True
 
 Fa = param.SpS*param.Rs
@@ -204,42 +203,24 @@ ax1.plot(sigRx[0::param.SpS,0].real, sigRx[0::param.SpS,0].imag,'.')
 ax1.axis('square');
 ax2.plot(sigRx[0::param.SpS,1].real, sigRx[0::param.SpS,1].imag,'.')
 ax2.axis('square');
+# -
 
-# +
-# simple timing recovery
-sampDelay = np.zeros(sigRx.shape[1])
-for k in range(0, sigRx.shape[1]):
-    a = sigRx[:,k].reshape(sigRx.shape[0],1)
-    varVector = np.var(a.reshape(-1,param.SpS), axis=0) # finds best sampling instant
-    plt.plot(varVector)
-    sampDelay[k] = np.where(varVector == np.amax(varVector))[0][0]
+# decimation
+paramDec = parameters()
+paramDec.SpS_in  = param.SpS
+paramDec.SpS_out = 2
+sigRx = decimate(sigRx, paramDec)
 
-# downsampling
-sigRx_ = sigRx[::int(param.SpS/2),:]
-for k in range(0, sigRx.shape[1]):
-    sigRx[:,k]  = np.roll(sigRx[:,k], int(sampDelay[k]))
-    sigRx_[:,k] = sigRx[0::int(param.SpS/2),k]
-
-sigRx = sigRx_
-
-# +
-# calculate time delay due to walkoff
-
-symbDelay = np.zeros(sigRx.shape[1])
-for k in range(0, sigRx.shape[1]):
-    symbDelay[k] = np.argmax(signal.correlate(np.abs(symbTx[:,k]), np.abs(sigRx[::2,k])))-symbTx.shape[0]+1
-    print(symbDelay[k])
-
-# compensate walkoff time delay
-for k in range(len(symbDelay)):    
-    symbTx[:,k] = np.roll(symbTx[:,k], -int(symbDelay[k]))
+# symbol synchronization
+symbTx  = transmSymbols[:,:,chIndex]
+symbTx_ = symbolSync(sigRx, symbTx, 2)
 
 # +
 #from numpy.matlib import repmat
 #from tqdm.notebook import tqdm
 
 x = sigRx
-d = symbTx
+d = symbTx_
 
 x = x.reshape(len(x),2)/np.sqrt(signal_power(x))
 d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
@@ -383,6 +364,15 @@ plt.plot(H.imag.T,'-');
 
 # +
 # #!pip install --upgrade numba --user
+# -
+
+# #!pip install line_profiler --user
+
 
 # +
-# #!pip install line_profiler --user
+a = np.array([[1,2,1],[20,1,0]])
+
+np.argmax(a, axis=0)
+# -
+
+
