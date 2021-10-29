@@ -16,6 +16,7 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
     numIter    = getattr(paramEq, 'numIter', 1)
     nTaps      = getattr(paramEq, 'nTaps', 15)
     mu         = getattr(paramEq, 'mu', 1e-3)
+    lambdaRLS  = getattr(paramEq, 'lambdaRLS', 0.99)
     SpS        = getattr(paramEq, 'SpS', 2)
     H          = getattr(paramEq, 'H', [])
     L          = getattr(paramEq, 'L', [])
@@ -117,6 +118,10 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
         Hiter = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps*L).reshape(nModes**2, nTaps, L)
     else:
         Hiter = np.array([[0+1j*0]]).repeat((nModes**2)*nTaps).reshape(nModes**2, nTaps, 1)
+
+    if alg == 'rls':       
+        Sd = np.eye(nTaps, dtype=np.complex128)
+        Sd = np.tile(Sd, (1, nModes))
         
     # Radii cma, rde
     Rcma = (np.mean(np.abs(constSymb)**4)/np.mean(np.abs(constSymb)**2))*np.ones((1, nModes))+1j*0          
@@ -146,6 +151,8 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
             H, errSq[:,ind] = rdeUp(x[indIn, :], Rrde, outEq, mu, H, nModes)
         elif alg == 'da-rde':
             H, errSq[:,ind] = dardeUp(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
+        elif alg == 'rls':
+            H, errSq[:,ind] = rlsUp(x[indIn, :], dx[ind,:], outEq, lambdaRLS, H, Sd, nModes)
         elif alg == 'static':
             errSq[:,ind] = errSq[:,ind-1]
         else:
@@ -177,7 +184,7 @@ def nlmsUp(x, dx, outEq, mu, H, nModes):
 
     return H, np.abs(err)**2
 
-@njit
+#@njit
 def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
     """
     coefficient update with the RLS algorithm    
@@ -192,23 +199,19 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
     
     # update equalizer taps 
     for N in range(0, nModes):
+            indUpdModes = indMode+N*nModes
+            indUpdTaps  = indTaps+N*nTaps
+                        
+            Sd_ = Sd[indUpTaps,:]
 
-            h   = H[indUpdTaps,:]
-            Sd_ = Sd[indTaps+N*nTaps,:]
-
-            inAdapt = x[:, N].T # input samples
+            inAdapt = x[:, N].H # input samples
             inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
-            inAdaptPar = np.conj(inAdaptPar)            
-           # in  = conj(repmat(x(indTaps+(ind-1)*SpS, N+1).',nModes,1));
-           
-            in_ = np.conj(inAdapt);
-                        
-            Sd_ = (1/λ)*( Sd_ - (Sd_@(in_@(in_.H))@Sd_)/(λ + (in_.H)@Sd_@in_)))
+                                                                    
+            Sd_ = (1/λ)*(Sd_ - (Sd_@(inAdapt@(inAdapt.H))@Sd_)/(λ + (inAdapt.H)@Sd_@inAdapt)) )
 
-            h = h + errDiag@(Sd_@inAdapt.T).T;
-                        
-            H[indUpdTaps,:]  = h;
-            Sd[indTaps+N*nTaps,:] = Sd_;
+            H[indUpdModes,:] += errDiag@(Sd_@inAdapt.T).T;
+                                   
+            Sd[indUpTaps,:]  = Sd_;
 
     return H, np.abs(err)**2
 
