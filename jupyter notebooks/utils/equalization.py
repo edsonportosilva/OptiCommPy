@@ -171,7 +171,7 @@ def nlmsUp(x, dx, outEq, mu, H, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing and improve speed
             inAdapt = x[:, N].T/np.linalg.norm(x[:,N])**2 # NLMS normalization
             inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
-            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(inAdaptPar) # gradient descent update   
+            H[indUpdTaps,:] += mu*errDiag@np.conj(inAdaptPar) # gradient descent update   
 
     return H, np.abs(err)**2
 
@@ -181,11 +181,10 @@ def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
     coefficient update with the DDLMS algorithm    
     """      
     indMode    = np.arange(0, nModes)
-    outEq      = outEq.T
-    decided    = outEq.copy()
-    decided[:] = np.nan
-       
-    for k in range(0, outEq.shape[1]):
+    outEq      = outEq.T    
+    decided    = np.zeros(outEq.shape, dtype=np.complex128)
+           
+    for k in range(0, nModes):
         indSymb = np.argmin(np.abs(outEq[0,k] - constSymb))
         decided[0,k] = constSymb[indSymb]
                 
@@ -198,7 +197,7 @@ def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing
             inAdapt = x[:, N].T
             inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
-            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*errDiag@np.conj(inAdaptPar) # gradient descent update   
+            H[indUpdTaps,:] += mu*errDiag@np.conj(inAdaptPar) # gradient descent update   
 
     return H, np.abs(err)**2
 
@@ -219,7 +218,7 @@ def cmaUp(x, R, outEq, mu, H, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing
             inAdapt = x[:, N].T
             inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
-            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
+            H[indUpdTaps,:] += mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
 
     return H, np.abs(err)**2
 
@@ -229,12 +228,11 @@ def rdeUp(x, R, outEq, mu, H, nModes):
     coefficient update with the RDE algorithm    
     """      
     indMode    = np.arange(0, nModes)
-    outEq      = outEq.T    
-    decidedR    = outEq.copy()
-    decidedR[:] = np.nan
-    
+    outEq      = outEq.T  
+    decidedR   = np.zeros(outEq.shape,dtype=np.complex128)
+        
     # find closest constellation radius
-    for k in range(0, outEq.shape[1]):
+    for k in range(0, nModes):
         indR = np.argmin(np.abs(R - np.abs(outEq[0,k])))
         decidedR[0,k] = R[indR]
         
@@ -247,7 +245,7 @@ def rdeUp(x, R, outEq, mu, H, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing
             inAdapt = x[:, N].T
             inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
-            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
+            H[indUpdTaps,:] += mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
 
     return H, np.abs(err)**2
 
@@ -258,9 +256,14 @@ def dardeUp(x, dx, outEq, mu, H, nModes):
     """      
     indMode    = np.arange(0, nModes)
     outEq      = outEq.T    
-     
-    err  = np.abs(dx)**2 - np.abs(outEq)**2 + 0*1j # calculate output error for the RDE algorithm 
-    
+    decidedR   = np.zeros(outEq.shape,dtype=np.complex128)
+        
+    # find exact constellation radius
+    for k in range(0, nModes):        
+        decidedR[0,k] = np.abs(dx[k])
+        
+    err  = decidedR**2 - np.abs(outEq)**2 # calculate output error for the RDE algorithm 
+        
     prodErrOut = np.diag(err[0])@np.diag(outEq[0]) # define diagonal matrix 
     
     # update equalizer taps 
@@ -268,6 +271,6 @@ def dardeUp(x, dx, outEq, mu, H, nModes):
             indUpdTaps = indMode+N*nModes # simplify indexing
             inAdapt = x[:, N].T
             inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
-            H[indUpdTaps,:] = H[indUpdTaps,:] + mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
+            H[indUpdTaps,:] += mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
 
     return H, np.abs(err)**2
