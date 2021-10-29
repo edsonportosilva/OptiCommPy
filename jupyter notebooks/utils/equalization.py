@@ -79,12 +79,12 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
                 for indIter in tqdm(range(0, numIter)):
                     print(runAlg,'pre-convergence training iteration #%d'%indIter)
                     yEq[nStart:nEnd,:], H, errSq[:,nStart:nEnd], Hiter = coreAdaptEq(x[nStart*SpS:nEnd*SpS,:], dx[nStart:nEnd,:],
-                                                                                     SpS, H, L[indstage], mu[indstage], nTaps,
+                                                                                     SpS, H, L[indstage], mu[indstage], lambdaRLS, nTaps,
                                                                                      storeCoeff, runAlg, constSymb)
                     print(runAlg,'MSE = %.6f.'%np.nanmean(errSq[:,nStart:nEnd]))
             else:
                 yEq[nStart:nEnd,:], H, errSq[:,nStart:nEnd], Hiter = coreAdaptEq(x[nStart*SpS:nEnd*SpS,:], dx[nStart:nEnd,:],
-                                                                             SpS, H, L[indstage], mu[indstage], nTaps,
+                                                                             SpS, H, L[indstage], mu[indstage], lambdaRLS, nTaps,
                                                                              storeCoeff, runAlg, constSymb)               
                 print(runAlg,'MSE = %.6f.'%np.nanmean(errSq[:,nStart:nEnd]))
                 
@@ -98,7 +98,7 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
     return  yEq, H, errSq, Hiter
 
 @njit
-def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
+def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSymb):
     """
     Adaptive equalizer core processing function
     
@@ -121,7 +121,9 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
 
     if alg == 'rls':       
         Sd = np.eye(nTaps, dtype=np.complex128)
-        Sd = np.tile(Sd, (1, nModes))
+        a = Sd.copy()
+        for kk in range(0, nTaps-1):
+            Sd = np.concatenate((Sd, a))        
         
     # Radii cma, rde
     Rcma = (np.mean(np.abs(constSymb)**4)/np.mean(np.abs(constSymb)**2))*np.ones((1, nModes))+1j*0          
@@ -152,7 +154,7 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb):
         elif alg == 'da-rde':
             H, errSq[:,ind] = dardeUp(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
         elif alg == 'rls':
-            H, errSq[:,ind] = rlsUp(x[indIn, :], dx[ind,:], outEq, lambdaRLS, H, Sd, nModes)
+            H, Sd, errSq[:,ind] = rlsUp(x[indIn, :], dx[ind,:], outEq, lambdaRLS, H, Sd, nModes)
         elif alg == 'static':
             errSq[:,ind] = errSq[:,ind-1]
         else:
@@ -184,12 +186,12 @@ def nlmsUp(x, dx, outEq, mu, H, nModes):
 
     return H, np.abs(err)**2
 
-#@njit
+@njit
 def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
     """
     coefficient update with the RLS algorithm    
     """
-    nTaps   = H.shape[0] 
+    nTaps   = H.shape[1] 
     indMode = np.arange(0, nModes)
     indTaps = np.arange(0, nTaps)
     
@@ -202,18 +204,18 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
             indUpdModes = indMode+N*nModes
             indUpdTaps  = indTaps+N*nTaps
                         
-            Sd_ = Sd[indUpTaps,:]
+            Sd_ = Sd[indUpdTaps,:]
 
-            inAdapt = x[:, N].H # input samples
-            inAdaptPar = inAdapt.repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
-                                                                    
-            Sd_ = (1/λ)*(Sd_ - (Sd_@(inAdapt@(inAdapt.H))@Sd_)/(λ + (inAdapt.H)@Sd_@inAdapt)) )
+            inAdapt = np.conj(x[:, N]).reshape(-1,1) # input samples
+            inAdaptPar = (inAdapt.T).repeat(nModes).reshape(len(x), -1).T # expand input to parallelize tap adaptation
+           
+            Sd_ = (1/λ)*(Sd_ - (Sd_@(inAdapt@(np.conj(inAdapt).T))@Sd_)/( λ + (np.conj(inAdapt).T)@Sd_@inAdapt ) )
 
-            H[indUpdModes,:] += errDiag@(Sd_@inAdapt.T).T;
+            H[indUpdModes,:] += errDiag@(Sd_@inAdaptPar.T).T;
                                    
-            Sd[indUpTaps,:]  = Sd_;
-
-    return H, np.abs(err)**2
+            Sd[indUpdTaps,:]  = Sd_;
+           
+    return H, Sd, np.abs(err)**2
 
 @njit
 def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
