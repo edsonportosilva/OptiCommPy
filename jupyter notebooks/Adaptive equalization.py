@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.3
+#       jupytext_version: 1.13.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -53,6 +53,7 @@ figsize(10, 3)
 
 # %load_ext autoreload
 # %autoreload 2
+# %load_ext line_profiler
 
 # # Simulation of coherent WDM systems
 
@@ -71,14 +72,14 @@ help(manakovSSF)
 # +
 # Parâmetros do transmissor:
 param = parameters()
-param.M   = 16           # ordem do formato de modulação
+param.M   = 64           # ordem do formato de modulação
 param.Rs  = 32e9         # taxa de sinalização [baud]
 param.SpS = 16           # número de amostras por símbolo
-param.Nbits = 400000     # número de bits
+param.Nbits = 600000     # número de bits
 param.pulse = 'rrc'      # formato de pulso
 param.Ntaps = 1024       # número de coeficientes do filtro RRC
 param.alphaRRC = 0.01    # rolloff do filtro RRC
-param.Pch_dBm = -5       # potência média por canal WDM [dBm]
+param.Pch_dBm = 1       # potência média por canal WDM [dBm]
 param.Nch     = 11       # número de canais WDM
 param.Fc      = 193.1e12 # frequência central do espectro WDM
 param.freqSpac = 37.5e9    # espaçamento em frequência da grade de canais WDM
@@ -98,7 +99,7 @@ linearChannel = False
 
 # optical channel parameters
 paramCh = parameters()
-paramCh.Ltotal = 1200  # km
+paramCh.Ltotal = 800  # km
 paramCh.Lspan  = 50    # km
 paramCh.alpha = 0.2    # dB/km
 paramCh.D = 16         # ps/nm/km
@@ -138,7 +139,7 @@ plt.title('optical WDM spectrum');
 ### Receiver
 
 # parameters
-chIndex  = 2    # index of the channel to be demodulated
+chIndex  = 5    # index of the channel to be demodulated
 plotPSD  = True
 
 Fa = param.SpS*param.Rs
@@ -225,25 +226,20 @@ d = symbTx_
 x = x.reshape(len(x),2)/np.sqrt(signal_power(x))
 d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
 
-#θ = np.pi/3
-
-#rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])
-
-#x = x@rot
-
 # +
-M = 16
+M = 64
 mod = QAMModem(m=M)
 
 paramEq = parameters()
-paramEq.nTaps = 25
+paramEq.nTaps = 15
 paramEq.SpS   = 2
-paramEq.mu    = [2e-3, 1e-3]
+paramEq.mu    = [5e-3, 1e-3]
+#paramEq.lambdaRLS = 0.97
 paramEq.numIter = 5
 paramEq.storeCoeff = False
-paramEq.alg   = ['da-rde','rde']
+paramEq.alg   = ['nlms','dd-lms']
 paramEq.M     = M
-paramEq.L = [40000, 60000]
+paramEq.L = [20000, 80000]
 
 # from numpy.matlib import repmat
 # y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(np.matlib.repmat(x,1,3),\
@@ -251,6 +247,18 @@ paramEq.L = [40000, 60000]
 #                                             paramEq=paramEq)
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
+
+
+paramEq = parameters()
+paramEq.nTaps = 3
+paramEq.SpS   = 1
+paramEq.lambdaRLS = 0.97
+paramEq.numIter = 1
+paramEq.storeCoeff = False
+paramEq.alg   = ['rls']
+paramEq.M     = M
+
+y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(y_EQ, dx=d, paramEq=paramEq)
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
 discard = 1000
@@ -268,9 +276,12 @@ ax2.set_xlim(-1.5, 1.5)
 ax2.set_ylim(-1.5, 1.5);
 
 # +
+# #%lprun -f mimoAdaptEqualizer mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
+
+# +
 #constSymb  = mod.constellation/np.sqrt(mod.Es)
 #y_CPR, ϕ, θ = cpr(y_EQ, 80, M, np.matlib.repmat(d,1,3), pilotInd=np.arange(0,len(y_EQ), 50))
-y_CPR, ϕ, θ = cpr(y_EQ, 80, M, d, pilotInd=np.arange(0,len(y_EQ), 20))
+y_CPR, ϕ, θ = cpr(y_EQ, 140, M, d, pilotInd=np.arange(0,len(y_EQ), 20))
 
 plt.plot(ϕ,'-.', θ,'-')
 
@@ -351,28 +362,19 @@ plt.plot(H.imag.T,'-');
 # #%autoreload 2
 
 # +
-# #%load_ext line_profiler
-
-# +
 # #%lprun -f monteCarloGMI monteCarloGMI(y_EQ[ind,:], d[ind,:], mod)
 
 # +
 # #%lprun -f fastBERcalc fastBERcalc(y_EQ[ind,:], d[ind,:], mod)
 
 # +
-# #%lprun -f cpr cpr(y_EQ, 25, constSymb, d, pilotInd=np.arange(0,len(y_EQ), 50))
+# #%lprun -f cpr cpr(y_EQ, 25, M, d, pilotInd=np.arange(0,len(y_EQ), 50))
 
 # +
 # #!pip install --upgrade numba --user
 # -
 
-# #!pip install line_profiler --user
+# # !pip install line_profiler --user
 
-
-# +
-a = np.array([[1,2,1],[20,1,0]])
-
-np.argmax(a, axis=0)
-# -
 
 
