@@ -5,7 +5,8 @@ from numba import njit, prange
 
 @njit
 def signal_power(x):
-    return np.mean(x*np.conj(x)).real
+    return np.mean(x * np.conj(x)).real
+
 
 @njit(parallel=True)
 def hardDecision(rxSymb, constSymb, bitMap):
@@ -27,6 +28,9 @@ def fastBERcalc(rx, tx, mod):
     BER calculation
 
     """
+    # constellation parameters
+    constSymb = mod.constellation
+    M = mod.m
 
     # We want all the signal sequences to be disposed in columns:
     try:
@@ -45,9 +49,9 @@ def fastBERcalc(rx, tx, mod):
     SNR = np.zeros(nModes)
     BER = np.zeros(nModes)
     SER = np.zeros(nModes)
-    b = int(np.log2(mod.m))
+    b = int(np.log2(M))
 
-    bitMap = mod.demodulate(mod.constellation, demod_type="hard")
+    bitMap = mod.demodulate(constSymb, demod_type="hard")
     bitMap = bitMap.reshape(-1, b)
 
     # pre-processing
@@ -67,8 +71,8 @@ def fastBERcalc(rx, tx, mod):
 
     for k in range(0, nModes):
         # hard decision demodulation of the received symbols
-        brx = hardDecision(np.sqrt(mod.Es) * rx[:, k], mod.constellation, bitMap)
-        btx = hardDecision(np.sqrt(mod.Es) * tx[:, k], mod.constellation, bitMap)
+        brx = hardDecision(np.sqrt(mod.Es) * rx[:, k], constSymb, bitMap)
+        btx = hardDecision(np.sqrt(mod.Es) * tx[:, k], constSymb, bitMap)
 
         err = np.logical_xor(brx, btx)
         BER[k] = np.mean(err)
@@ -100,6 +104,10 @@ def monteCarloGMI(rx, tx, mod):
     """
     GMI calculation
     """
+    # constellation parameters
+    constSymb = mod.constellation
+    M = mod.m
+    Es = mod.Es
 
     # We want all the signal sequences to be disposed in columns:
     try:
@@ -119,8 +127,8 @@ def monteCarloGMI(rx, tx, mod):
 
     noiseVar = np.var(rx - tx, axis=0)
 
-    bitMap = mod.demodulate(mod.constellation, demod_type="hard")
-    bitMap = bitMap.reshape(-1, int(np.log2(mod.m)))
+    bitMap = mod.demodulate(constSymb, demod_type="hard")
+    bitMap = bitMap.reshape(-1, int(np.log2(M)))
 
     # symbol normalization
     for k in range(0, nModes):
@@ -136,17 +144,15 @@ def monteCarloGMI(rx, tx, mod):
         σ2 = noiseVar[k]
 
         # hard decision demodulation of the transmitted symbols
-        btx = hardDecision(np.sqrt(mod.Es) * tx[:, k], mod.constellation, bitMap)
+        btx = hardDecision(np.sqrt(Es) * tx[:, k], constSymb, bitMap)
         # soft demodulation of the received symbols
-        LLRs = calcLLR(
-            rx[:, k], mod.m, σ2, mod.constellation / np.sqrt(mod.Es), bitMap
-        )
+        LLRs = calcLLR(rx[:, k], mod.m, σ2, constSymb / np.sqrt(Es), bitMap)
 
         LLRs[LLRs == np.inf] = 500
         LLRs[LLRs == -np.inf] = -500
 
         # Compute bitwise MIs and their sum
-        b = int(np.log2(mod.m))
+        b = int(np.log2(M))
 
         MIperBitPosition = np.zeros(b)
 
