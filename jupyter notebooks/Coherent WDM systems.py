@@ -413,9 +413,9 @@ sigWDM = receivedSignal[:,polIndex].reshape(len(sigWDM),)
 symbTx = transmSymbols[:,polIndex,chIndex].reshape(len(symbTx_),)
 
 # local oscillator (LO) parameters:
-FO      = 64e6                 # frequency offset
+FO      = 64e6                  # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 0*100e3                 # linewidth
+lw      = 0*100e3               # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
@@ -609,7 +609,7 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
     L          = getattr(paramEq, 'L', [])
     Hiter      = getattr(paramEq, 'Hiter', [])
     storeCoeff = getattr(paramEq, 'storeCoeff', False)
-    alg        = getattr(paramEq, 'alg', 'nlms')
+    alg        = getattr(paramEq, 'alg', ['nlms'])
     M          = getattr(paramEq, 'M', 4)    
     
     # We want all the signal sequences to be disposed in columns:
@@ -638,20 +638,20 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
     mod = QAMModem(m=M) # commpy QAM constellation modem object
     constSymb = mod.constellation/np.sqrt(mod.Es) # complex-valued constellation symbols
 
-    if not L:
-        L = int(np.fix((len(x)-nTaps)/SpS+1)) # Length of the output (1 sample/symbol) of the training section       
+    if not L: # if L is not defined
+        L = [int(np.fix((len(x)-nTaps)/SpS+1))] # Length of the output (1 sample/symbol) of the training section       
     
-    if len(H) == 0:
+    if len(H) == 0: # if H is not defined
         H  = np.zeros((nModes**2, nTaps), dtype='complex')
         
-        for initH in range(0, nModes):
+        for initH in range(0, nModes): # initialize filters' taps
             H[initH + initH*nModes, int(np.floor(H.shape[1]/2))] = 1 # Central spike initialization
            
     # Equalizer training:
     for indIter in tqdm(range(0, numIter)):
-        print(alg,'training iteration #%d'%indIter)        
-        yEq, H, errSq, Hiter = coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb)               
-        print(alg,'MSE = %.6f.'%np.nanmean(errSq))
+        print(alg[0],'training iteration #%d'%indIter)        
+        yEq, H, errSq, Hiter = coreAdaptEq(x, dx, SpS, H, L[0], mu, nTaps, storeCoeff, alg[0], constSymb)               
+        print(alg[0],'MSE = %.6f.'%np.nanmean(errSq))
         
     return  yEq, H, errSq, Hiter
 
@@ -805,15 +805,15 @@ def rdeUp(x, R, outEq, mu, H, nModes):
 
 # +
 paramEq = parameters()
-paramEq.nTaps = 25
+paramEq.nTaps = 75
 paramEq.SpS   = 2
 paramEq.mu    = 2e-3
-paramEq.numIter = 5
+paramEq.numIter = 1
 paramEq.storeCoeff = False
-paramEq.alg   = 'nlms'
+paramEq.alg   = ['ddlms']
 paramEq.M     = 16
-#paramEq.H = H
-#paramEq.L = 20000
+paramEq.H = H
+#paramEq.L = [20000]
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
@@ -860,5 +860,7 @@ Hiter.shape
 len(x.T)
 
 x.shape[0]
+
+y_EQ.shape
 
 

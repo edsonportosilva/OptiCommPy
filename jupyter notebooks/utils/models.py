@@ -3,7 +3,7 @@ from numpy.fft import fft, ifft, fftfreq
 from numpy.random import normal
 import scipy.constants as const
 from tqdm.notebook import tqdm
-from numba import njit
+from numba import njit, jit
 
 def mzm(Ai, Vπ, u, Vb):
     """
@@ -36,6 +36,32 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
     Ao = mzm(Ai/np.sqrt(2), Vπ, u.real, VbI) + 1j*mzm(Ai/np.sqrt(2), Vπ, u.imag, VbQ)
     
     return Ao
+
+def pbs(E, θ=0):
+    """
+    Polarization beam splitter (pbs)
+    
+    :param E: input pol. multiplexed field [2d nparray]
+    :param θ: rotation angle of input field [rad][default: 0 rad]
+    
+    :return: Ex output single pol. field [1d nparray]
+    :return: Ey output single pol. field [1d nparray]
+    
+    """  
+    try:
+        assert E.shape[1] == 2, 'E need to be a N-by-2 2d nparray or a 1d nparray'
+    except IndexError:
+        E = np.repeat(E, 2).reshape(-1,2)
+        E[:,1] = 0
+        
+    rot = np.array([[np.cos(θ), -np.sin(θ)],[np.sin(θ), np.cos(θ)]])+1j*0
+
+    E = E@rot
+    
+    Ex = E[:,0]
+    Ey = E[:,1]    
+
+    return Ex, Ey
 
 def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     """
@@ -139,7 +165,33 @@ def coherentReceiver(Es, Elo, Rd=1):
     
     return sI + 1j*sQ
 
-@njit
+def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
+    """
+    Polarization multiplexed coherent optical front-end
+    
+    :param Es: input signal field [2d nparray]
+    :param Elo: input LO field [nparray]
+    :param θsig: polarization rotation angle [rad][default: 0]
+    :param Rdx: photodiode resposivity pol.X [scalar]
+    :param Rdy: photodiode resposivity pol.Y [scalar]
+    
+    :return: downconverted signal after balanced detection    
+    """
+    assert Rdx > 0 and Rdy >0, 'PD responsivity should be a positive scalar'
+    assert len(Es) == len(Elo), 'Es and Elo need to have the same number of samples'
+            
+    Elox, Eloy = pbs(Elo, θ = np.pi/4) # split LO into two orthogonal polarizations
+    Esx,  Esy  = pbs(Es, θ = θsig)     # split signal into two orthogonal polarizations
+    
+    Sx = coherentReceiver(Esx, Elox, Rd=Rdx) # coherent detection of pol.X
+    Sy = coherentReceiver(Esy, Eloy, Rd=Rdy) # coherent detection of pol.Y
+    
+    Sx = Sx.reshape(len(Sx),1)
+    Sy = Sy.reshape(len(Sy),1)
+    
+    return np.concatenate((Sx, Sy), axis=1)
+
+
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
     Simple EDFA model
@@ -160,7 +212,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     nsp      = (G_lin*NF_lin - 1)/(2*(G_lin - 1))
     N_ase    = (G_lin - 1)*nsp*const.h*Fc
     p_noise  = N_ase*Fs    
-    noise    = normal(0, np.sqrt(p_noise), Ei.shape) + 1j*normal(0, np.sqrt(p_noise), Ei.shape)
+    noise    = normal(0, np.sqrt(p_noise/2), Ei.shape) + 1j*normal(0, np.sqrt(p_noise/2), Ei.shape)
     return Ei*np.sqrt(G_lin) + noise
 
 def ssfm(Ei, Fs, paramCh):      
@@ -251,7 +303,7 @@ def ssfm(Ei, Fs, paramCh):
     return Ech.reshape(len(Ech),), paramCh
 
 
-def manakov_ssf(Ei, Fs, paramCh):      
+def manakovSSF(Ei, Fs, paramCh):      
     """
     Manakov model split-step Fourier (symmetric, dual-pol.)
 
@@ -354,6 +406,7 @@ def manakov_ssf(Ei, Fs, paramCh):
     
     return Ech, paramCh
 
+@njit
 def phaseNoise(lw, Nsamples, Ts):
     
     σ2 = 2*np.pi*lw*Ts    

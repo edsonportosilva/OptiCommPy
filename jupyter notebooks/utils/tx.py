@@ -1,14 +1,17 @@
 import numpy as np
 from utils.models import iqm
-from commpy.utilities  import signal_power, upsample
+from utils.metrics import signal_power
+from commpy.utilities import upsample
 from commpy.modulation import QAMModem
 from utils.dsp import firFilter, pulseShape
+
 
 def simpleWDMTx(param):
     """
     Simple WDM transmitter
     
-    Generates a complex baseband waveform representing a WDM signal with arbitrary number of carriers
+    Generates a complex baseband waveform representing a WDM signal with
+    arbitrary number of carriers
     
     :param.M: QAM order [default: 16]
     :param.Rs: carrier baud rate [baud][default: 32e9]
@@ -25,89 +28,123 @@ def simpleWDMTx(param):
 
     """
     # check input parameters
-    param.M     = getattr(param, 'M', 16)
-    param.Rs    = getattr(param, 'Rs', 32e9)
-    param.SpS   = getattr(param, 'SpS', 16)
-    param.Nbits = getattr(param, 'Nbits', 60000)
-    param.pulse = getattr(param, 'pulse', 'rrc')
-    param.Ntaps    = getattr(param, 'Ntaps', 4096)
-    param.alphaRRC = getattr(param, 'alphaRRC', 0.01)
-    param.Pch_dBm  = getattr(param, 'Pch_dBm', -3)
-    param.Nch      = getattr(param, 'Nch', 5)
-    param.Fc       = getattr(param, 'Fc', 193.1e12)
-    param.freqSpac = getattr(param, 'freqSpac', 50e9)
-    param.Nmodes   = getattr(param, 'Nmodes', 1)
-    
+    param.M = getattr(param, "M", 16)
+    param.Rs = getattr(param, "Rs", 32e9)
+    param.SpS = getattr(param, "SpS", 16)
+    param.Nbits = getattr(param, "Nbits", 60000)
+    param.pulse = getattr(param, "pulse", "rrc")
+    param.Ntaps = getattr(param, "Ntaps", 4096)
+    param.alphaRRC = getattr(param, "alphaRRC", 0.01)
+    param.Pch_dBm = getattr(param, "Pch_dBm", -3)
+    param.Nch = getattr(param, "Nch", 5)
+    param.Fc = getattr(param, "Fc", 193.1e12)
+    param.freqSpac = getattr(param, "freqSpac", 50e9)
+    param.Nmodes = getattr(param, "Nmodes", 1)
+
     # transmitter parameters
-    Ts  = 1/param.Rs        # symbol period [s]
-    Fa  = 1/(Ts/param.SpS)  # sampling frequency [samples/s]
-    Ta  = 1/Fa              # sampling period [s]
-    
+    Ts = 1 / param.Rs  # symbol period [s]
+    Fa = 1 / (Ts / param.SpS)  # sampling frequency [samples/s]
+    Ta = 1 / Fa  # sampling period [s]
+
     # central frequencies of the WDM channels
-    freqGrid = np.arange(-np.floor(param.Nch/2), np.floor(param.Nch/2)+1,1)*param.freqSpac
-    
+    freqGrid = (
+        np.arange(-np.floor(param.Nch / 2), np.floor(param.Nch / 2) + 1, 1)
+        * param.freqSpac
+    )
+
     if (param.Nch % 2) == 0:
-        freqGrid += param.freqSpac/2
-        
+        freqGrid += param.freqSpac / 2
+
     # IQM parameters
     Ai = 1
     Vπ = 2
     Vb = -Vπ
-    Pch = 10**(param.Pch_dBm/10)*1e-3   # optical signal power per WDM channel
-        
+
+    if type(param.Pch_dBm) == list:
+        assert (
+            len(param.Pch_dBm) == param.Nch
+        ), "list length of power per channel does not match number of channels."
+        Pch = (
+            10 ** (np.array(param.Pch_dBm) / 10) * 1e-3
+        )  # optical signal power per WDM channel
+    else:
+        Pch = 10 ** (param.Pch_dBm / 10) * 1e-3
+        Pch = Pch * np.ones(param.Nch)
+
     π = np.pi
-    
-    t = np.arange(0, int(((param.Nbits)/np.log2(param.M))*param.SpS))
-    
-    # allocate array 
-    sigTxWDM  = np.zeros((len(t), param.Nmodes), dtype='complex')
-    symbTxWDM = np.zeros((int(len(t)/param.SpS), param.Nmodes, param.Nch), dtype='complex')
-    
+    # time array
+    t = np.arange(0, int(((param.Nbits) / np.log2(param.M)) * param.SpS))
+
+    # allocate array
+    sigTxWDM = np.zeros((len(t), param.Nmodes), dtype="complex")
+    symbTxWDM = np.zeros(
+        (int(len(t) / param.SpS), param.Nmodes, param.Nch), dtype="complex"
+    )
+
     Psig = 0
-    
-    for indMode in range(0, param.Nmodes):        
-        print('Mode #%d'%(indMode))
-        
-        for indCh in range(0, param.Nch):
+
+    # map bits to constellation symbols
+    mod = QAMModem(m=param.M)
+    Es = mod.Es
+
+    # pulse shaping filter
+    if param.pulse == "nrz":
+        pulse = pulseShape("nrz", param.SpS)
+    elif param.pulse == "rrc":
+        pulse = pulseShape("rrc", param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts)
+
+    pulse = pulse / np.max(np.abs(pulse))
+
+    for indCh in range(0, param.Nch):
+
+        print(
+            "channel %d\t fc : %3.4f THz" % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
+        )
+
+        Pmode = 0
+        for indMode in range(0, param.Nmodes):
+            print(
+                "  mode #%d\t power: %.2f dBm"
+                % (indMode, 10 * np.log10((Pch[indCh] / param.Nmodes) / 1e-3))
+            )
+
             # generate random bits
-            bitsTx   = np.random.randint(2, size=param.Nbits)    
+            bitsTx = np.random.randint(2, size=param.Nbits)
 
             # map bits to constellation symbols
-            mod = QAMModem(m=param.M)
             symbTx = mod.modulate(bitsTx)
-            Es = mod.Es
 
             # normalize symbols energy to 1
-            symbTx = symbTx/np.sqrt(Es)
-            
-            symbTxWDM[:,indMode,indCh] = symbTx
-            
+            symbTx = symbTx / np.sqrt(Es)
+
+            symbTxWDM[:, indMode, indCh] = symbTx
+
             # upsampling
             symbolsUp = upsample(symbTx, param.SpS)
 
             # pulse shaping
-            if param.pulse == 'nrz':
-                pulse = pulseShape('nrz', param.SpS)
-            elif param.pulse == 'rrc':
-                pulse = pulseShape('rrc', param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts)
-
-            pulse = pulse/np.max(np.abs(pulse))
             sigTx = firFilter(pulse, symbolsUp)
 
             # optical modulation
-            sigTxCh = iqm(Ai, 0.5*sigTx, Vπ, Vb, Vb)
-            sigTxCh = np.sqrt(Pch/param.Nmodes)*sigTxCh/np.sqrt(signal_power(sigTxCh))
-            
-            print('channel %d power : %.2f dBm, fc : %3.4f THz' 
-                  %(indCh+1, 10*np.log10(signal_power(sigTxCh)/1e-3), 
-                    (param.Fc+freqGrid[indCh])/1e12))
+            sigTxCh = iqm(Ai, 0.5 * sigTx, Vπ, Vb, Vb)
+            sigTxCh = (
+                np.sqrt(Pch[indCh] / param.Nmodes)
+                * sigTxCh
+                / np.sqrt(signal_power(sigTxCh))
+            )
 
-            sigTxWDM[:,indMode] += sigTxCh*np.exp(1j*2*π*(freqGrid[indCh]/Fa)*t)
-            
-        Psig += signal_power(sigTxWDM[:,indMode])
-        
-    print('total WDM signal power: %.2f dBm'%(10*np.log10(Psig/1e-3)))
-    
+            sigTxWDM[:, indMode] += sigTxCh * np.exp(
+                1j * 2 * π * (freqGrid[indCh] / Fa) * t
+            )
+
+            Pmode += signal_power(sigTxCh)
+
+        Psig += Pmode
+
+        print("channel %d\t power: %.2f dBm\n" % (indCh, 10 * np.log10(Pmode / 1e-3)))
+
+    print("total WDM signal power: %.2f dBm" % (10 * np.log10(Psig / 1e-3)))
+
     param.freqGrid = freqGrid
-    
+
     return sigTxWDM, symbTxWDM, param
