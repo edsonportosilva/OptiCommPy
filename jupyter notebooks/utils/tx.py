@@ -1,14 +1,11 @@
 import numpy as np
 from utils.models import iqm
+from utils.metrics import signal_power
 from commpy.utilities  import upsample
 from commpy.modulation import QAMModem
 from utils.dsp import firFilter, pulseShape
 from numba import njit
 
-@njit
-def signal_power(x):
-    
-    return np.mean(x*np.conj(x)).real
 
 def simpleWDMTx(param):
     """
