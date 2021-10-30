@@ -1,5 +1,4 @@
 import numpy as np
-from commpy.modulation import QAMModem
 from numba import njit, prange
 
 
@@ -31,6 +30,7 @@ def fastBERcalc(rx, tx, mod):
     # constellation parameters
     constSymb = mod.constellation
     M = mod.m
+    Es = mod.Es
 
     # We want all the signal sequences to be disposed in columns:
     try:
@@ -71,8 +71,8 @@ def fastBERcalc(rx, tx, mod):
 
     for k in range(0, nModes):
         # hard decision demodulation of the received symbols
-        brx = hardDecision(np.sqrt(mod.Es) * rx[:, k], constSymb, bitMap)
-        btx = hardDecision(np.sqrt(mod.Es) * tx[:, k], constSymb, bitMap)
+        brx = hardDecision(np.sqrt(Es) * rx[:, k], constSymb, bitMap)
+        btx = hardDecision(np.sqrt(Es) * tx[:, k], constSymb, bitMap)
 
         err = np.logical_xor(brx, btx)
         BER[k] = np.mean(err)
