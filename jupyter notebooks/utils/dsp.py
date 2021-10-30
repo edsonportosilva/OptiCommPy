@@ -4,7 +4,7 @@ from scipy.signal import lfilter
 import numpy as np
 
 from commpy.filters import rrcosfilter, rcosfilter
-from commpy.utilities  import upsample
+from commpy.utilities import upsample
 from commpy.modulation import QAMModem
 
 from scipy.stats.kde import gaussian_kde
