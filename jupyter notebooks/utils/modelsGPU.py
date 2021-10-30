@@ -1,10 +1,11 @@
 import numpy as np
 from cupyx.scipy.fft import fft, ifft, fftfreq
 from cupy.random import normal
+from utils.metrics import signal_power
 import scipy.constants as const
 from tqdm.notebook import tqdm
-from numba import njit, jit
 import cupy as cp
+
 
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
@@ -29,6 +30,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     noise    = normal(0, np.sqrt(p_noise/2), Ei.shape) + 1j*normal(0, np.sqrt(p_noise/2), Ei.shape)
     noise    = cp.array(noise).astype(cp.complex64)
     return Ei*cp.sqrt(G_lin) + noise
+
 
 def manakovSSF(Ei, Fs, paramCh):      
     """
@@ -160,6 +162,7 @@ def manakovSSF(Ei, Fs, paramCh):
    #                 Ech_y.reshape(len(Ei),)]).T
     
     return Ech, paramCh
+
 
 def setPowerforParSSFM(sig, powers):
 
