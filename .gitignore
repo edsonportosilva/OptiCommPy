@@ -1,3 +1,11 @@
 
 *.pyc
-*.pyc
+*.swp
+*.png
+*.pdf
+
+/doc/_build
+/doc/generated
+/build
+/dist
+/OpticCommpy.egg-info
