@@ -1,8 +1,11 @@
 import numpy as np
-from commpy.utilities import signal_power
 from commpy.modulation import QAMModem
 from numba import njit, prange
 
+
+@njit
+def signal_power(x):
+    return np.mean(x*np.conj(x)).real
 
 @njit(parallel=True)
 def hardDecision(rxSymb, constSymb, bitMap):
