@@ -15,7 +15,7 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
     # check input parameters
     numIter    = getattr(paramEq, 'numIter', 1)
     nTaps      = getattr(paramEq, 'nTaps', 15)
-    mu         = getattr(paramEq, 'mu', 1e-3)
+    mu         = getattr(paramEq, 'mu', [1e-3])
     lambdaRLS  = getattr(paramEq, 'lambdaRLS', 0.99)
     SpS        = getattr(paramEq, 'SpS', 2)
     H          = getattr(paramEq, 'H', [])
@@ -54,7 +54,7 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
     totalNumSymb = int(np.fix((len(x)-nTaps)/SpS+1))
     
     if not L: # if L is not defined
-        L = totalNumSymb # Length of the output (1 sample/symbol) of the training section       
+        L = [totalNumSymb] # Length of the output (1 sample/symbol) of the training section       
     
     if len(H) == 0: # if H is not defined
         H  = np.zeros((nModes**2, nTaps), dtype='complex')
