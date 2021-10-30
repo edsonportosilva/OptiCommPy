@@ -147,7 +147,7 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSy
             H, errSq[:,ind] = nlmsUp(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
         elif alg == 'cma':
             H, errSq[:,ind] = cmaUp(x[indIn, :], Rcma, outEq, mu, H, nModes) 
-        elif alg == 'ddlms':
+        elif alg == 'dd-lms':
             H, errSq[:,ind] = ddlmsUp(x[indIn, :], constSymb, outEq, mu, H, nModes)
         elif alg == 'rde':
             H, errSq[:,ind] = rdeUp(x[indIn, :], Rrde, outEq, mu, H, nModes)
@@ -155,6 +155,8 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSy
             H, errSq[:,ind] = dardeUp(x[indIn, :], dx[ind,:], outEq, mu, H, nModes)
         elif alg == 'rls':
             H, Sd, errSq[:,ind] = rlsUp(x[indIn, :], dx[ind,:], outEq, lambdaRLS, H, Sd, nModes)
+        elif alg == 'dd-rls':
+            H, Sd, errSq[:,ind] = ddrlsUp(x[indIn, :], constSymb, outEq, lambdaRLS, H, Sd, nModes)
         elif alg == 'static':
             errSq[:,ind] = errSq[:,ind-1]
         else:
