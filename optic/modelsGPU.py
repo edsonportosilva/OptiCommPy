@@ -1,7 +1,7 @@
 import numpy as np
 from cupyx.scipy.fft import fft, ifft, fftfreq
 from cupy.random import normal
-from utils.metrics import signal_power
+from optic.metrics import signal_power
 import scipy.constants as const
 from tqdm.notebook import tqdm
 import cupy as cp
