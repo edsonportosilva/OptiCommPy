@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.3
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -20,13 +20,13 @@ import numpy as np
 
 from commpy.modulation import QAMModem
 
-from utils.dsp import pulseShape, firFilter, edc, cpr, decimate, symbolSync #, fourthPowerFOE, dbp, cpr
-from utils.models import phaseNoise, pdmCoherentReceiver#, manakovSSF
-from utils.modelsGPU import manakovSSF
-from utils.tx import simpleWDMTx, signal_power
-from utils.core import parameters
-from utils.equalization import mimoAdaptEqualizer
-from utils.metrics import fastBERcalc, monteCarloGMI
+from optic.dsp import pulseShape, firFilter, edc, cpr, decimate, symbolSync #, fourthPowerFOE, dbp, cpr
+from optic.models import phaseNoise, pdmCoherentReceiver#, manakovSSF
+from optic.modelsGPU import manakovSSF
+from optic.tx import simpleWDMTx
+from optic.core import parameters
+from optic.equalization import mimoAdaptEqualizer
+from optic.metrics import fastBERcalc, monteCarloGMI, signal_power
 
 from scipy import signal
 import scipy.constants as const
