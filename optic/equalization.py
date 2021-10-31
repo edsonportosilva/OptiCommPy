@@ -2,7 +2,7 @@ import numpy as np
 from commpy.utilities  import signal_power
 from commpy.modulation import QAMModem
 from tqdm.notebook import tqdm
-from utils.core import parameters
+from optic.core import parameters
 
 from numba import njit
 

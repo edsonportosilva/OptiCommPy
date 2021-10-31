@@ -9,7 +9,7 @@ from commpy.modulation import QAMModem
 
 from scipy.stats.kde import gaussian_kde
 import scipy.constants as const
-from utils.models import linFiberCh
+from optic.models import linFiberCh
 import matplotlib.pyplot as plt
 from numpy.fft import fft, ifft, fftfreq, fftshift
 from tqdm.notebook import tqdm

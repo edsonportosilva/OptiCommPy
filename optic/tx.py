@@ -1,9 +1,9 @@
 import numpy as np
-from utils.models import iqm
-from utils.metrics import signal_power
+from optic.models import iqm
+from optic.metrics import signal_power
 from commpy.utilities import upsample
 from commpy.modulation import QAMModem
-from utils.dsp import firFilter, pulseShape
+from optic.dsp import firFilter, pulseShape
 
 
 def simpleWDMTx(param):
