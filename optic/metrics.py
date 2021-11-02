@@ -4,11 +4,27 @@ from numba import njit, prange
 
 @njit
 def signal_power(x):
+    """
+    Computes the average power of x
+
+    :param x: input signal [np array]
+
+    :return: P = mean(abs(x)**2)
+    """
     return np.mean(x * np.conj(x)).real
 
 
 @njit(parallel=True)
 def hardDecision(rxSymb, constSymb, bitMap):
+    """
+    Euclidean distance based symbol decision
+
+    :param rxSymb: received symbol sequence
+    :param constSymb: constellation symbols [M x 1 array]
+    :param bitMap: bit mapping [M x log2(M) array]
+
+    :return: sequence of bits decided
+    """
 
     M = len(constSymb)
     b = int(np.log2(M))
@@ -26,6 +42,13 @@ def fastBERcalc(rx, tx, mod):
     """
     BER calculation
 
+    :param rx: received symbol sequence
+    :param tx: transmitted symbol sequence
+    :param mod: commpy modem object
+
+    :return BER: bit-error-rate
+    :return SER: symbol-error-rate
+    :return SNR: estimated SNR
     """
     # constellation parameters
     constSymb = mod.constellation
@@ -82,8 +105,18 @@ def fastBERcalc(rx, tx, mod):
 
 
 @njit(parallel=True)
-def calcLLR(rxSymb, M, σ2, constSymb, bitMap):
+def calcLLR(rxSymb, σ2, constSymb, bitMap):
+    """
+    LLR calculation (circular AGWN channel)
 
+    :param rxSymb: received symbol sequence
+    :param σ2: noise variance
+    :param constSymb: constellation symbols [M x 1 array]
+    :param bitMap: bit mapping [M x log2(M)]
+
+    :return: sequence of calculated LLRs
+    """
+    M = len(constSymb)
     b = int(np.log2(M))
 
     LLRs = np.zeros(len(rxSymb) * b)
@@ -103,6 +136,12 @@ def calcLLR(rxSymb, M, σ2, constSymb, bitMap):
 def monteCarloGMI(rx, tx, mod):
     """
     GMI calculation
+
+    :param rx: received symbol sequence
+    :param tx: transmitted symbol sequence
+    :param mod: commpy modem object
+
+    :return: estimated GMI
     """
     # constellation parameters
     constSymb = mod.constellation
@@ -146,7 +185,7 @@ def monteCarloGMI(rx, tx, mod):
         # hard decision demodulation of the transmitted symbols
         btx = hardDecision(np.sqrt(Es) * tx[:, k], constSymb, bitMap)
         # soft demodulation of the received symbols
-        LLRs = calcLLR(rx[:, k], mod.m, σ2, constSymb / np.sqrt(Es), bitMap)
+        LLRs = calcLLR(rx[:, k], σ2, constSymb / np.sqrt(Es), bitMap)
 
         LLRs[LLRs == np.inf] = 500
         LLRs[LLRs == -np.inf] = -500
