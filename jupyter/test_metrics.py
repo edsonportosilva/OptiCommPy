@@ -188,7 +188,7 @@ MI  = np.zeros((len(SNR),len(qamOrder)))
 for ii, M in enumerate(qamOrder):
     print('run sim: M = ', M)
     
-    probSymb = 1/M*np.ones(M)    
+   # probSymb = 1/M*np.ones(M)    
     mod = QAMModem(m=M)
     constSymb = mod.constellation/np.sqrt(mod.Es)
     
@@ -197,7 +197,7 @@ for ii, M in enumerate(qamOrder):
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2**18)    
+        bitsTx   = np.random.randint(2, size=2**14)    
 
         # Map bits to constellation symbols
         symbTx = mod.modulate(bitsTx)
@@ -211,10 +211,11 @@ for ii, M in enumerate(qamOrder):
         symbRx = awgn(symbTx, noiseVar)
 
         # MI estimation
-        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, constSymb, probSymb)
+        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, mod)
 
 # +
 plt.figure(figsize=(10,6))
+
 for ii, M in enumerate(qamOrder):
     plt.plot(SNR, MI[:,ii],'-', label=str(M)+'QAM monte carlo',linewidth=2)
 
@@ -229,5 +230,7 @@ plt.xlabel('SNR [dB]');
 plt.ylabel('MI [bits]');
 plt.grid()
 # -
+ plt.plot(SNR, MI[:,0],'-*')
+
 
 
