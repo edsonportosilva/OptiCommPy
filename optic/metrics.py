@@ -206,13 +206,14 @@ def monteCarloGMI(rx, tx, mod):
 
     return GMI, MIperBitPosition
 
-def monteCarloMI(rx, tx, mod, probSymb=[]):
+def monteCarloMI(rx, tx, mod, px=[]):
     """
     MI estimation
 
     :param rx: received symbol sequence
     :param tx: transmitted symbol sequence
     :param mod: commpy modem object
+    :param px: probability mass function of constellation symbols
 
     :return: estimated MI
     """
@@ -239,14 +240,15 @@ def monteCarloMI(rx, tx, mod, probSymb=[]):
     nModes = int(rx.shape[1])  # number of sinal modes
     MI = np.zeros(nModes)
     
-    #N0 = mean(covSymb);     # Estimate noise variance from the data               
+    # Estimate noise variance from the data               
     noiseVar = np.var(rx - tx, axis=0)
 
-    pX = probSymb
-        
+    if len(px) == 0: # if px is not defined
+        px = 1/M*np.ones(M) # assume uniform distribution
+            
     for k in range(0, nModes):
         σ2 = noiseVar[k]
-        MI[k] = calcMI(rx, tx, σ2, constSymb, pX)
+        MI[k] = calcMI(rx, tx, σ2, constSymb, px)
         
     return MI
 
@@ -257,15 +259,17 @@ def calcMI(rx, tx, σ2, constSymb, pX):
     H_XgY = np.zeros(1, dtype=np.float64)
     H_X   = np.sum(-pX*np.log2(pX))
 
-    for indSymb in range(0,N):
-        pYgX = np.exp(-(1/σ2)*np.abs(rx[indSymb] - tx[indSymb])**2)  # p(Y|X)        
-        pXY  = np.exp(-(1/σ2)*np.abs(rx[indSymb] - constSymb)**2)*pX  # p(Y,X) = p(Y|X)*p(X)
+    for k in range(0,N):
+        indSymb = np.argmin(np.abs(tx[k] - constSymb))
+        
+        pYgX = np.exp(-(1/σ2)*np.abs(rx[k] - tx[k])**2)  # p(Y|X)        
+        pXY  = np.exp(-(1/σ2)*np.abs(rx[k] - constSymb)**2)*pX  # p(Y,X) = p(Y|X)*p(X)
                
         # p(X|Y) = p(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
         
         pY = np.sum(pXY)
 
-        H_XgY -= np.log2( ( pYgX * pX[0] ) / pY)
+        H_XgY -= np.log2( ( pYgX * pX[indSymb] ) / pY)
 
     H_XgY = H_XgY/N
                     
