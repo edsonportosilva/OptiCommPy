@@ -204,7 +204,21 @@ def monteCarloGMI(rx, tx, mod):
 
     return GMI, MIperBitPosition
 
-def monteCarloMI(rx, tx, constSymb, probSymb):
+def monteCarloMI(rx, tx, mod, probSymb=[]):
+    """
+    MI calculation
+
+    :param rx: received symbol sequence
+    :param tx: transmitted symbol sequence
+    :param mod: commpy modem object
+
+    :return: estimated MI
+    """
+
+    # constellation parameters
+    M = mod.m
+    Es = mod.Es
+    constSymb = mod.constellation/np.sqrt(Es)
     
     # We want all the signal sequences to be disposed in columns:
     try:
