@@ -211,7 +211,7 @@ for ii, M in enumerate(qamOrder):
         symbRx = awgn(symbTx, noiseVar)
 
         # GMI estimation
-        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, constSymb, probSymb)
+        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, mod, probSymb)
 
 # +
 plt.figure(figsize=(10,6))
