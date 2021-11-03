@@ -135,7 +135,7 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap):
 
 def monteCarloGMI(rx, tx, mod):
     """
-    GMI calculation
+    GMI estimation
 
     :param rx: received symbol sequence
     :param tx: transmitted symbol sequence
@@ -184,9 +184,11 @@ def monteCarloGMI(rx, tx, mod):
 
         # hard decision demodulation of the transmitted symbols
         btx = hardDecision(np.sqrt(Es) * tx[:, k], constSymb, bitMap)
+        
         # soft demodulation of the received symbols
         LLRs = calcLLR(rx[:, k], σ2, constSymb / np.sqrt(Es), bitMap)
-
+        
+        # LLR clipping
         LLRs[LLRs == np.inf] = 500
         LLRs[LLRs == -np.inf] = -500
 
@@ -206,7 +208,7 @@ def monteCarloGMI(rx, tx, mod):
 
 def monteCarloMI(rx, tx, mod, probSymb=[]):
     """
-    MI calculation
+    MI estimation
 
     :param rx: received symbol sequence
     :param tx: transmitted symbol sequence
@@ -256,10 +258,11 @@ def calcMI(rx, tx, σ2, constSymb, pX):
     H_X   = np.sum(-pX*np.log2(pX))
 
     for indSymb in range(0,N):
-        pYgX = np.exp(-(1/σ2)*np.abs(rx[indSymb] - tx[indSymb])**2)  # q(Y|X)        
-        pXY  = np.exp(-(1/σ2)*np.abs(rx[indSymb] - constSymb)**2)*pX  # q(Y,X) = q(Y|X)*p(X)
-
-            # qXgY = qXY/np.sum(qXY)  # q(X|Y) = q(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
+        pYgX = np.exp(-(1/σ2)*np.abs(rx[indSymb] - tx[indSymb])**2)  # p(Y|X)        
+        pXY  = np.exp(-(1/σ2)*np.abs(rx[indSymb] - constSymb)**2)*pX  # p(Y,X) = p(Y|X)*p(X)
+               
+        # p(X|Y) = p(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
+        
         pY = np.sum(pXY)
 
         H_XgY -= np.log2( ( pYgX * pX[0] ) / pY)
