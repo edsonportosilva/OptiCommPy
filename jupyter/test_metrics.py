@@ -99,7 +99,7 @@ for ii, M in enumerate(qamOrder):
         
         if BER[indSNR, ii] == 0:              
             break
-        
+
 
 # +
 # Plot simulation results and theoretical curves        
@@ -157,7 +157,7 @@ for ii, M in enumerate(qamOrder):
 
         # GMI estimation
         GMI[indSNR, ii], _  = monteCarloGMI(symbRx, symbTx, mod)
-        
+
 
 # +
 plt.figure(figsize=(10,6))
@@ -173,6 +173,114 @@ plt.xlim(min(SNR), max(SNR))
 plt.legend();
 plt.xlabel('SNR [dB]');
 plt.ylabel('GMI [bits]');
+plt.grid()
+# +
+def monteCarloMI(rx, tx, constSymb, probSymb):
+    
+    # We want all the signal sequences to be disposed in columns:
+    try:
+        if rx.shape[1] > rx.shape[0]:
+            rx = rx.T
+    except IndexError:
+        rx = rx.reshape(len(rx), 1)
+
+    try:
+        if tx.shape[1] > tx.shape[0]:
+            tx = tx.T
+    except IndexError:
+        tx = tx.reshape(len(tx), 1)
+
+        
+    nModes = int(rx.shape[1])  # number of sinal modes
+    MI = np.zeros(nModes)
+    
+    #N0 = mean(covSymb);     # Estimate noise variance from the data               
+    noiseVar = np.var(rx - tx, axis=0)
+
+    pX = probSymb
+        
+    for k in range(0, nModes):
+        σ2 = noiseVar[k]
+        MI[k] = calcMI(rx, tx, σ2, constSymb, pX)
+        
+    return MI
+
+@njit
+def calcMI(rx, tx, σ2, constSymb, pX):
+    
+    N = len(rx)
+    H_XgY = np.zeros(1, dtype=np.float64)
+    H_X   = np.sum(-pX*np.log2(pX))
+
+    for indSymb in range(0,N):
+        pYgX = np.exp(-(1/σ2)*np.abs(rx[indSymb] - tx[indSymb])**2)  # q(Y|X)        
+        pXY  = np.exp(-(1/σ2)*np.abs(rx[indSymb] - constSymb)**2)*pX  # q(Y,X) = q(Y|X)*p(X)
+
+            # qXgY = qXY/np.sum(qXY)  # q(X|Y) = q(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
+        pY = np.sum(pXY)
+
+        H_XgY -= np.log2( ( pYgX * pX[0] ) / pY)
+
+    H_XgY = H_XgY/N
+                    
+    return H_X - H_XgY
+
+
+# -
+
+
+# ## Test mutual information (MI) versus signal-to-noise ratio (SNR)
+
+# +
+# Run MI vs SNR Monte Carlo simulation 
+
+qamOrder  = [4, 16, 64, 256, 1024]  # Modulation order
+
+SNR  = np.arange(-2, 35, 1)
+MI  = np.zeros((len(SNR),len(qamOrder)))
+
+for ii, M in enumerate(qamOrder):
+    print('run sim: M = ', M)
+    
+    probSymb = 1/M*np.ones(M)    
+    mod = QAMModem(m=M)
+    constSymb = mod.constellation/np.sqrt(mod.Es)
+    
+    for indSNR in tqdm(range(SNR.size)):
+
+        snrdB = SNR[indSNR]
+
+        # generate random bits
+        bitsTx   = np.random.randint(2, size=2**18)    
+
+        # Map bits to constellation symbols
+        symbTx = mod.modulate(bitsTx)
+
+        # Normalize symbols energy to 1
+        symbTx = symbTx/np.sqrt(mod.Es)
+
+        # AWGN    
+        noiseVar = 1/(10**(snrdB/10))
+
+        symbRx = awgn(symbTx, noiseVar)
+
+        # GMI estimation
+        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, constSymb, probSymb)
+
+# +
+plt.figure(figsize=(10,6))
+for ii, M in enumerate(qamOrder):
+    plt.plot(SNR, MI[:,ii],'-', label=str(M)+'QAM monte carlo',linewidth=2)
+
+# plot theoretical AWGN channel capacity    
+C = np.log2(1 + 10**(SNR/10))
+plt.plot(SNR, C,'k-', label='AWGN capacity',linewidth=2)
+
+
+plt.xlim(min(SNR), max(SNR))
+plt.legend();
+plt.xlabel('SNR [dB]');
+plt.ylabel('MI [bits]');
 plt.grid()
 # -
 
