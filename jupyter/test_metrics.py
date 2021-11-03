@@ -9,7 +9,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.13.0
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
@@ -190,14 +190,13 @@ for ii, M in enumerate(qamOrder):
     
    # probSymb = 1/M*np.ones(M)    
     mod = QAMModem(m=M)
-    constSymb = mod.constellation/np.sqrt(mod.Es)
-    
+        
     for indSNR in tqdm(range(SNR.size)):
 
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2**14)    
+        bitsTx   = np.random.randint(2, size=2**18)    
 
         # Map bits to constellation symbols
         symbTx = mod.modulate(bitsTx)
@@ -230,7 +229,75 @@ plt.xlabel('SNR [dB]');
 plt.ylabel('MI [bits]');
 plt.grid()
 # -
- plt.plot(SNR, MI[:,0],'-*')
+# ## Test mutual information (MI) versus signal-to-noise ratio (SNR) with probabilistically shaped QAM constellation
+
+# +
+from numpy.random import choice
+
+def maxwellBolt(λ, const):
+    
+    p = np.zeros(const.size)
+    
+    for ind, x in enumerate(const):
+        p[ind] = np.exp(-λ*np.abs(x)**2)
+        
+    p = p/np.sum(p)
+    
+    return p   
+
+probSymb = maxwellBolt(1.5, constSymb)
+
+draw = choice(constSymb, 100000, p=probSymb)
+
+plt.hist(draw.real, bins=256);
+
+# +
+# Run MI vs SNR Monte Carlo simulation 
+
+qamOrder  = [64, 64]  # Modulation order
+
+SNR  = np.arange(-2, 35, 1)
+MI  = np.zeros((len(SNR),len(qamOrder)))
+Nsymbols = 20000
+
+PS = 1.5
+for ii, M in enumerate(qamOrder):
+    print('run sim: M = ', M)
+          
+    mod = QAMModem(m=M)
+    constSymb = mod.constellation/np.sqrt(mod.Es)
+    
+    probSymb = maxwellBolt(PS, constSymb)
+    PS = 0
+    
+    for indSNR in tqdm(range(SNR.size)):
+
+        snrdB = SNR[indSNR]
+
+        # generate random symbols   
+        symbTx = choice(constSymb, Nsymbols, p=probSymb)
+
+        # AWGN    
+        noiseVar = signal_power(symbTx)/(10**(snrdB/10))
+
+        symbRx = awgn(symbTx, noiseVar)
+
+        # MI estimation
+        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, mod, probSymb)
+
+# +
+plt.figure(figsize=(10,6))
+
+for ii, M in enumerate(qamOrder):
+    plt.plot(SNR, MI[:,ii],'-', label=str(M)+'QAM monte carlo',linewidth=2)
+
+# plot theoretical AWGN channel capacity    
+C = np.log2(1 + 10**(SNR/10))
+plt.plot(SNR, C,'k-', label='AWGN capacity',linewidth=2)
 
 
-
+plt.xlim(min(SNR), max(SNR))
+plt.legend();
+plt.xlabel('SNR [dB]');
+plt.ylabel('MI [bits]');
+plt.grid()
