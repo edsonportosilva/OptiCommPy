@@ -14,7 +14,7 @@ def signal_power(x):
     return np.mean(x * np.conj(x)).real
 
 
-@njit(parallel=True)
+@njit
 def hardDecision(rxSymb, constSymb, bitMap):
     """
     Euclidean distance based symbol decision
@@ -104,7 +104,7 @@ def fastBERcalc(rx, tx, mod):
     return BER, SER, SNR
 
 
-@njit(parallel=True)
+@njit
 def calcLLR(rxSymb, σ2, constSymb, bitMap):
     """
     LLR calculation (circular AGWN channel)
