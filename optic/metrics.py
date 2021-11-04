@@ -34,7 +34,7 @@ def hardDecision(rxSymb, constSymb, bitMap):
 
     for i in range(0, len(rxSymb)):
         indSymb = np.argmin(np.abs(rxSymb[i] - constSymb))
-        decBits[i * b : i * b + b] = bitMap[indSymb, :]
+        decBits[i * b: i * b + b] = bitMap[indSymb, :]
 
     return decBits
 
@@ -185,10 +185,10 @@ def monteCarloGMI(rx, tx, mod):
 
         # hard decision demodulation of the transmitted symbols
         btx = hardDecision(np.sqrt(Es) * tx[:, k], constSymb, bitMap)
-        
+
         # soft demodulation of the received symbols
         LLRs = calcLLR(rx[:, k], σ2, constSymb / np.sqrt(Es), bitMap)
-        
+
         # LLR clipping
         LLRs[LLRs == np.inf] = 500
         LLRs[LLRs == -np.inf] = -500
@@ -207,6 +207,7 @@ def monteCarloGMI(rx, tx, mod):
 
     return GMI, MIperBitPosition
 
+
 def monteCarloMI(rx, tx, mod, px=[]):
     """
     MI estimation
@@ -222,8 +223,8 @@ def monteCarloMI(rx, tx, mod, px=[]):
     # constellation parameters
     M = mod.m
     Es = mod.Es
-    constSymb = mod.constellation/np.sqrt(Es)
-    
+    constSymb = mod.constellation / np.sqrt(Es)
+
     # We want all the signal sequences to be disposed in columns:
     try:
         if rx.shape[1] > rx.shape[0]:
@@ -237,43 +238,55 @@ def monteCarloMI(rx, tx, mod, px=[]):
     except IndexError:
         tx = tx.reshape(len(tx), 1)
 
-        
     nModes = int(rx.shape[1])  # number of sinal modes
     MI = np.zeros(nModes)
-    
-    # Estimate noise variance from the data               
+
+    # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
-    if len(px) == 0: # if px is not defined
-        px = 1/M*np.ones(M) # assume uniform distribution
-            
+    if len(px) == 0:  # if px is not defined
+        px = 1 / M * np.ones(M)  # assume uniform distribution
+
     for k in range(0, nModes):
         σ2 = noiseVar[k]
         MI[k] = calcMI(rx, tx, σ2, constSymb, px)
-        
+
     return MI
+
 
 @njit
 def calcMI(rx, tx, σ2, constSymb, pX):
-    
+    """
+    Mutual information (MI) calculation (circular AGWN channel)
+
+    :param rx: received symbol sequence
+    :param tx: transmitted symbol sequence
+    :param σ2: noise variance
+    :param constSymb: constellation symbols [M x 1 array]
+    :param pX: prob. mass function (pmf) of constSymb [M x 1 array]
+
+    :return: estimated MI
+    """
     N = len(rx)
     H_XgY = np.zeros(1, dtype=np.float64)
-    H_X   = np.sum(-pX*np.log2(pX))
+    H_X = np.sum(-pX * np.log2(pX))
 
-    for k in range(0,N):
+    for k in range(0, N):
         indSymb = np.argmin(np.abs(tx[k] - constSymb))
-        
-        pYgX = np.exp(-(1/σ2)*np.abs(rx[k] - tx[k])**2)  # p(Y|X)        
-        pXY  = np.exp(-(1/σ2)*np.abs(rx[k] - constSymb)**2)*pX  # p(Y,X) = p(Y|X)*p(X)
-               
+
+        pYgX = np.exp(-(1 / σ2) * np.abs(rx[k] - tx[k]) ** 2)  # p(Y|X)
+        pXY = (
+            np.exp(-(1 / σ2) * np.abs(rx[k] - constSymb) ** 2) * pX
+        )  # p(Y,X) = p(Y|X)*p(X)
+
         # p(X|Y) = p(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
-        
+
         pY = np.sum(pXY)
 
-        H_XgY -= np.log2( ( pYgX * pX[indSymb] ) / pY)
+        H_XgY -= np.log2((pYgX * pX[indSymb]) / pY)
 
-    H_XgY = H_XgY/N
-                    
+    H_XgY = H_XgY / N
+
     return H_X - H_XgY
 
 
@@ -289,7 +302,7 @@ def theoryBER(M, EbN0, constType):
     :param M: order of the modulation
     :param EbN0: signal-to-noise ratio per bit [dB]
     :param constType: 'qam','psk'
-    
+
     :return: estimated probability of error (Pb)
     """
     EbN0lin = 10 ** (EbN0 / 10)
