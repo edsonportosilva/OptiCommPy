@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit, prange
+from numba import njit
 
 
 @njit
@@ -31,7 +31,7 @@ def hardDecision(rxSymb, constSymb, bitMap):
 
     decBits = np.zeros(len(rxSymb) * b)
 
-    for i in prange(0, len(rxSymb)):
+    for i in range(0, len(rxSymb)):
         indSymb = np.argmin(np.abs(rxSymb[i] - constSymb))
         decBits[i * b : i * b + b] = bitMap[indSymb, :]
 
@@ -121,7 +121,7 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap):
 
     LLRs = np.zeros(len(rxSymb) * b)
 
-    for i in prange(0, len(rxSymb)):
+    for i in range(0, len(rxSymb)):
         prob = np.exp((-np.abs(rxSymb[i] - constSymb) ** 2) / σ2)
 
         for indBit in range(0, b):
