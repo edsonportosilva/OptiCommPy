@@ -168,6 +168,8 @@ plt.grid()
 
 # ## Test generalized mutual information (GMI) versus signal-to-noise ratio (SNR)
 
+# ### QAM constellations with Gray mapping
+
 # +
 # Run GMI vs SNR Monte Carlo simulation 
 
@@ -217,7 +219,60 @@ plt.xlabel('SNR [dB]');
 plt.ylabel('GMI [bits]');
 plt.grid()
 # -
+# ### PSK constellations with Gray mapping
+
+# +
+# Run GMI vs SNR Monte Carlo simulation 
+
+pskOrder  = [4, 8, 16, 64]  # Modulation order
+
+SNR  = np.arange(-2, 35, 1)
+GMI  = np.zeros((len(SNR),len(pskOrder)))
+
+for ii, M in enumerate(pskOrder):
+    print('run sim: M = ', M)
+    for indSNR in tqdm(range(SNR.size)):
+
+        snrdB = SNR[indSNR]
+
+        # generate random bits
+        bitsTx   = np.random.randint(2, size=2**18)    
+
+        # Map bits to constellation symbols
+        mod = PSKModem(m=M)
+        symbTx = mod.modulate(bitsTx)
+
+        # Normalize symbols energy to 1
+        symbTx = symbTx/np.sqrt(mod.Es)
+
+        # AWGN    
+        noiseVar = 1/(10**(snrdB/10))
+
+        symbRx = awgn(symbTx, noiseVar)
+
+        # GMI estimation
+        GMI[indSNR, ii], _  = monteCarloGMI(symbRx, symbTx, mod)
+
+# +
+plt.figure(figsize=(10,6))
+for ii, M in enumerate(pskOrder):
+    plt.plot(SNR, GMI[:,ii],'-', label=str(M)+'PSK monte carlo',linewidth=2)
+
+# plot theoretical AWGN channel capacity    
+C = np.log2(1 + 10**(SNR/10))
+plt.plot(SNR, C,'k-', label='AWGN capacity',linewidth=2)
+
+
+plt.xlim(min(SNR), max(SNR))
+plt.legend();
+plt.xlabel('SNR [dB]');
+plt.ylabel('GMI [bits]');
+plt.grid()
+# -
+
 # ## Test mutual information (MI) versus signal-to-noise ratio (SNR)
+
+# ### QAM constellations with Gray mapping
 
 # +
 # Run MI vs SNR Monte Carlo simulation 
