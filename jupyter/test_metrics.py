@@ -19,33 +19,13 @@
 # -
 
 from commpy.modulation import QAMModem, PSKModem
-from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc
+from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 from tqdm.notebook import tqdm
 from numba import njit
 
-# +
-from scipy.special import erf
-
-def Qfunc(x):
-    return 0.5-0.5*erf(x/np.sqrt(2))
-
-def theoryBER(M, EbN0, constType):
-    
-    EbN0lin = 10**(EbN0/10)        
-    k  = np.log2(M) 
-    
-    if constType == 'qam':
-        L  = np.sqrt(M)      
-        Pb = 2*(1-1/L)/np.log2(L)*Qfunc(np.sqrt(3*np.log2(L)/(L**2-1)*(2*EbN0lin)))
-        
-    elif constType == 'psk':
-        Ps = 2*Qfunc(np.sqrt(2*k*EbN0lin)*np.sin(np.pi/M))
-        Pb = Ps/k
-    
-    return Pb  
 
 @njit
 def awgn(tx, noiseVar):
@@ -58,8 +38,6 @@ def awgn(tx, noiseVar):
     
     return rx
 
-
-# -
 
 # ## Test bit-error-rate (BER) versus signal-to-noise ratio per bit ($E_b/N_0$)
 
