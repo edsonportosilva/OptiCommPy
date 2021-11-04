@@ -1,10 +1,11 @@
-import numpy as np
-from cupyx.scipy.fft import fft, ifft, fftfreq
-from cupy.random import normal
-from optic.metrics import signal_power
-import scipy.constants as const
-from tqdm.notebook import tqdm
 import cupy as cp
+import numpy as np
+import scipy.constants as const
+from cupy.random import normal
+from cupyx.scipy.fft import fft, fftfreq, ifft
+from tqdm.notebook import tqdm
+
+from optic.metrics import signal_power
 
 
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
