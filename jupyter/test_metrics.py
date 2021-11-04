@@ -18,7 +18,7 @@
 # # Test transmission performance metrics for the AWGN channel
 # -
 
-from commpy.modulation import QAMModem
+from commpy.modulation import QAMModem, PSKModem
 from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,10 +27,10 @@ from tqdm.notebook import tqdm
 from numba import njit
 
 # +
-from scipy import special as sp
+from scipy.special import erf
 
 def Qfunc(x):
-    return 0.5-0.5*sp.erf(x/np.sqrt(2))
+    return 0.5-0.5*erf(x/np.sqrt(2))
 
 def theoryBER(M, EbN0, constType):
     
@@ -62,6 +62,8 @@ def awgn(tx, noiseVar):
 # -
 
 # ## Test bit-error-rate (BER) versus signal-to-noise ratio per bit ($E_b/N_0$)
+
+# ### QAM constellations with Gray mapping
 
 # +
 # Run BER vs Ebn0 Monte Carlo simulation 
@@ -115,6 +117,68 @@ for M in qamOrder:
     BERtheory = theoryBER(M, EbN0dB_,'qam')
     BERtheory[BERtheory==0] = np.nan
     plt.plot(EbN0dB_, np.log10(BERtheory),'-', label=str(M)+'QAM theory')
+
+plt.xlim(min(EbN0dB_), max(EbN0dB_))
+plt.ylim(-6, 0)
+plt.legend();
+plt.xlabel('EbN0 [dB]');
+plt.ylabel('log10(BER)');
+plt.grid()
+# -
+
+# ### PSK constellations with Gray mapping
+
+# +
+# Run BER vs Ebn0 Monte Carlo simulation 
+
+pskOrder  = [4, 8, 16, 64]  # Modulation order
+
+EbN0dB_  = np.arange(-2, 35, 1)
+BER      = np.zeros((len(EbN0dB_),len(pskOrder)))
+BER[:]   = np.nan
+
+for ii, M in enumerate(pskOrder):
+    print('run sim: M = ', M)
+    for indSNR in tqdm(range(EbN0dB_.size)):
+
+        EbN0dB = EbN0dB_[indSNR]
+
+        # generate random bits
+        bitsTx = np.random.randint(2, size=2**14)    
+
+        # Map bits to constellation symbols
+        mod = PSKModem(m=M)
+        symbTx = mod.modulate(bitsTx)
+
+        # Normalize symbols energy to 1
+        symbTx = symbTx/np.sqrt(mod.Es)
+
+        # AWGN    
+        snrdB    = EbN0dB + 10*np.log10(np.log2(M))
+        noiseVar = 1/(10**(snrdB/10))
+
+        symbRx = awgn(symbTx, noiseVar)
+
+        # BER calculation
+        BER[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, mod)
+        
+        if BER[indSNR, ii] == 0:              
+            break
+
+# +
+# Plot simulation results and theoretical curves        
+BER[BER==0] = np.nan
+
+plt.figure(figsize=(10,6))
+for ii, M in enumerate(pskOrder):
+    plt.plot(EbN0dB_, np.log10(BER[:,ii]),'o', label=str(M)+'PSK monte carlo')
+
+plt.gca().set_prop_cycle(None)
+
+for M in pskOrder:
+    BERtheory = theoryBER(M, EbN0dB_,'psk')
+    BERtheory[BERtheory==0] = np.nan
+    plt.plot(EbN0dB_, np.log10(BERtheory),'-', label=str(M)+'PSK theory')
 
 plt.xlim(min(EbN0dB_), max(EbN0dB_))
 plt.ylim(-6, 0)
