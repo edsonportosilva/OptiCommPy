@@ -122,7 +122,7 @@ for ii, M in enumerate(pskOrder):
         EbN0dB = EbN0dB_[indSNR]
 
         # generate random bits
-        bitsTx = np.random.randint(2, size=2**14)    
+        bitsTx = np.random.randint(2, size=2**19)    
 
         # Map bits to constellation symbols
         mod = PSKModem(m=M)
@@ -284,8 +284,7 @@ MI  = np.zeros((len(SNR),len(qamOrder)))
 
 for ii, M in enumerate(qamOrder):
     print('run sim: M = ', M)
-    
-   # probSymb = 1/M*np.ones(M)    
+         
     mod = QAMModem(m=M)
         
     for indSNR in tqdm(range(SNR.size)):
@@ -342,11 +341,12 @@ def maxwellBolt(λ, const):
     
     return p   
 
-probSymb = maxwellBolt(1.5, constSymb)
+# probSymb = maxwellBolt(1.5, constSymb)
 
-draw = choice(constSymb, 100000, p=probSymb)
+# draw = choice(constSymb, 100000, p=probSymb)
 
-plt.hist(draw.real, bins=256);
+# plt.hist(draw.real, bins=256);
+
 
 # +
 # Run MI vs SNR Monte Carlo simulation 
@@ -398,3 +398,6 @@ plt.legend();
 plt.xlabel('SNR [dB]');
 plt.ylabel('MI [bits]');
 plt.grid()
+# -
+
+
