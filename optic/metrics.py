@@ -249,7 +249,7 @@ def monteCarloMI(rx, tx, mod, px=[]):
 
     for k in range(0, nModes):
         σ2 = noiseVar[k]
-        MI[k] = calcMI(rx, tx, σ2, constSymb, px)
+        MI[k] = calcMI(rx[:, k], tx[:, k], σ2, constSymb, px)
 
     return MI
 

@@ -26,15 +26,13 @@ from optic.modelsGPU import manakovSSF
 from optic.tx import simpleWDMTx
 from optic.core import parameters
 from optic.equalization import mimoAdaptEqualizer
-from optic.metrics import fastBERcalc, monteCarloGMI, signal_power
+from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power
 
-from scipy import signal
 import scipy.constants as const
 
 # +
 from IPython.core.display import HTML
 from IPython.core.pylabtools import figsize
-from IPython.display import display, Math
 
 HTML("""
 <style>
@@ -70,7 +68,7 @@ paramTx = parameters()
 paramTx.M   = 16           # order of the modulation format
 paramTx.Rs  = 32e9         # symbol rate [baud]
 paramTx.SpS = 16           # samples per symbol
-paramTx.Nbits = 600000     # total number of bits per polarization
+paramTx.Nbits = 400000     # total number of bits per polarization
 paramTx.pulse = 'rrc'      # pulse shaping filter
 paramTx.Ntaps = 1024       # number of pulse shaping filter coefficients
 paramTx.alphaRRC = 0.01    # RRC rolloff
@@ -82,10 +80,7 @@ paramTx.Nmodes = 2         # number of signal modes [2 for polarization multiple
 
 # generate WDM signal
 sigWDM_Tx, symbTx_, paramTx = simpleWDMTx(paramTx)
-# +
-# #%lprun -f simpleWDMTx simpleWDMTx(param)
 # -
-
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
 # +
@@ -97,15 +92,12 @@ paramCh.alpha = 0.2      # fiber loss parameter [dB/km]
 paramCh.D = 16           # fiber dispersion parameter [ps/nm/km]
 paramCh.gamma = 1.3      # fiber nonlinear parameter [1/(W.km)]
 paramCh.Fc = paramTx.Fc  # central optical frequency of the WDM spectrum
-paramCh.hz = 0.5         # step-size of the split-step Fourier method [km]
+paramCh.hz = 0.1         # step-size of the split-step Fourier method [km]
 
 Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
 # nonlinear signal propagation
 sigWDM, paramCh = manakovSSF(sigWDM_Tx, Fs, paramCh)
-
-# +
-# #%lprun -f manakovSSF manakovSSF(sigWDM_Tx, Fs, paramCh)
 # -
 
 # **Optical WDM spectrum before and after transmission**
@@ -119,12 +111,10 @@ plt.legend(loc='lower left')
 plt.title('optical WDM spectrum');
 
 
-# **WDM channels coherent detection and demodulation**
+# ### WDM channels coherent detection and demodulation
 
 # +
-### Receiver
-receivedSignal = sigWDM.copy()
-transmSymbols  = symbTx_.copy()
+# Receiver
 
 # parameters
 chIndex  = 5     # index of the channel to be demodulated
@@ -132,18 +122,18 @@ plotPSD  = True
 
 Fc = paramCh.Fc
 Ts = 1/Fs
-mod = QAMModem(m=param.M)
+mod = QAMModem(m=paramTx.M)
 
 freqGrid = paramTx.freqGrid
 print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
       %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
 
-symbTx = transmSymbols[:,:,chIndex]
+symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
 FO      = 0*64e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 0*10e3                  # linewidth
+lw      = 100e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
@@ -162,91 +152,81 @@ sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig = π/3, Rdx=1, Rdy=1)
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
-ax1.plot(sigRx[0::param.SpS,0].real, sigRx[0::param.SpS,0].imag,'.')
+ax1.plot(sigRx[0::paramTx.SpS,0].real, sigRx[0::paramTx.SpS,0].imag,'.')
 ax1.axis('square');
-ax2.plot(sigRx[0::param.SpS,1].real, sigRx[0::param.SpS,1].imag,'.')
+ax2.plot(sigRx[0::paramTx.SpS,1].real, sigRx[0::paramTx.SpS,1].imag,'.')
 ax2.axis('square');
+# -
 
+# ### Matched filtering and CD compensation
+
+# +
 # Rx filtering
 
 # Matched filtering
-if param.pulse == 'nrz':
-    pulse = pulseShape('nrz', param.SpS)
-elif param.pulse == 'rrc':
-    pulse = pulseShape('rrc', param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=1/param.Rs)
+if paramTx.pulse == 'nrz':
+    pulse = pulseShape('nrz', paramTx.SpS)
+elif paramTx.pulse == 'rrc':
+    pulse = pulseShape('rrc', paramTx.SpS, N=paramTx.Ntaps, alpha=paramTx.alphaRRC, Ts=1/paramTx.Rs)
     
 pulse = pulse/np.max(np.abs(pulse))            
 sigRx = firFilter(pulse, sigRx)
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
-ax1.plot(sigRx[0::param.SpS,0].real, sigRx[0::param.SpS,0].imag,'.')
+ax1.plot(sigRx[0::paramTx.SpS,0].real, sigRx[0::paramTx.SpS,0].imag,'.')
 ax1.axis('square');
-ax2.plot(sigRx[0::param.SpS,1].real, sigRx[0::param.SpS,1].imag,'.')
+ax2.plot(sigRx[0::paramTx.SpS,1].real, sigRx[0::paramTx.SpS,1].imag,'.')
 ax2.axis('square');
 
 # CD compensation
 sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
-ax1.plot(sigRx[0::param.SpS,0].real, sigRx[0::param.SpS,0].imag,'.')
+ax1.plot(sigRx[0::paramTx.SpS,0].real, sigRx[0::paramTx.SpS,0].imag,'.')
 ax1.axis('square');
-ax2.plot(sigRx[0::param.SpS,1].real, sigRx[0::param.SpS,1].imag,'.')
+ax2.plot(sigRx[0::paramTx.SpS,1].real, sigRx[0::paramTx.SpS,1].imag,'.')
 ax2.axis('square');
 # -
 
+# ### Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences
+
+# +
 # decimation
 paramDec = parameters()
-paramDec.SpS_in  = param.SpS
+paramDec.SpS_in  = paramTx.SpS
 paramDec.SpS_out = 2
 sigRx = decimate(sigRx, paramDec)
 
-# symbol synchronization
-symbTx  = transmSymbols[:,:,chIndex]
-symbTx_ = symbolSync(sigRx, symbTx, 2)
+symbRx = symbolSync(sigRx, symbTx, 2)
+# -
+
+# ### Power normalization
 
 # +
-#from numpy.matlib import repmat
-#from tqdm.notebook import tqdm
-
 x = sigRx
-d = symbTx_
+d = symbRx
 
 x = x.reshape(len(x),2)/np.sqrt(signal_power(x))
 d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
+# -
+
+# ### Adaptive equalization
 
 # +
-M = 64
-mod = QAMModem(m=M)
+mod = QAMModem(m=paramTx.M)
 
 paramEq = parameters()
 paramEq.nTaps = 15
 paramEq.SpS   = 2
-paramEq.mu    = [5e-3, 1e-3]
-#paramEq.lambdaRLS = 0.97
+paramEq.mu    = [5e-3, 2e-3]
 paramEq.numIter = 5
 paramEq.storeCoeff = False
 paramEq.alg   = ['nlms','dd-lms']
 paramEq.M     = M
 paramEq.L = [20000, 80000]
 
-# from numpy.matlib import repmat
-# y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(np.matlib.repmat(x,1,3),\
-#                                            dx=np.matlib.repmat(d,1,3),\
-#                                             paramEq=paramEq)
-
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
-
-paramEq = parameters()
-paramEq.nTaps = 3
-paramEq.SpS   = 1
-paramEq.lambdaRLS = 0.97
-paramEq.numIter = 1
-paramEq.storeCoeff = False
-paramEq.alg   = ['rls']
-paramEq.M     = M
-
-y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(y_EQ, dx=d, paramEq=paramEq)
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
 discard = 1000
@@ -262,35 +242,22 @@ ax2.plot(d[:,1].real, d[:,1].imag,'.')
 ax2.axis('square')
 ax2.set_xlim(-1.5, 1.5)
 ax2.set_ylim(-1.5, 1.5);
+# -
+
+# ### Carrier phase recovery
 
 # +
-# #%lprun -f mimoAdaptEqualizer mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
+y_CPR, ϕ, θ = cpr(y_EQ, 30, M, d, pilotInd=np.arange(0,len(y_EQ), 20))
 
-# +
-#constSymb  = mod.constellation/np.sqrt(mod.Es)
-#y_CPR, ϕ, θ = cpr(y_EQ, 80, M, np.matlib.repmat(d,1,3), pilotInd=np.arange(0,len(y_EQ), 50))
-y_CPR, ϕ, θ = cpr(y_EQ, 140, M, d, pilotInd=np.arange(0,len(y_EQ), 20))
+y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
-plt.plot(ϕ,'-.', θ,'-')
+plt.figure()
+plt.title('Carrier phase recovery')
+plt.plot(ϕ,'-.', θ,'-');
 
-discard = 2000
-ind = np.arange(discard, d.shape[0]-discard)
 
-# BER, SER, SNR = fastBERcalc(y_CPR[ind,:], np.matlib.repmat(d[ind,:],1,3), mod)
-# GMI,_    = monteCarloGMI(y_CPR[ind,:], np.matlib.repmat(d[ind,:],1,3), mod)
-
-BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], mod)
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], mod)
-
-print('     pol.X     pol.Y      ')
-print('SER: %.2e, %.2e'%(SER[0], SER[1]))
-print('BER: %.2e, %.2e'%(BER[0], BER[1]))
-print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
-print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
-
-# +
 fig, (ax1, ax2) = plt.subplots(1, 2)
-discard = 1000
+discard = 5000
 
 ax1.plot(y_CPR[discard:-discard,0].real, y_CPR[discard:-discard,0].imag,'.')
 ax1.plot(d[:,0].real, d[:,0].imag,'.')
@@ -303,66 +270,19 @@ ax2.plot(d[:,1].real, d[:,1].imag,'.')
 ax2.axis('square')
 ax2.set_xlim(-1.5, 1.5)
 ax2.set_ylim(-1.5, 1.5);
-
-# +
-fig, (ax1, ax2) = plt.subplots(1, 2)
-discard = 1
-
-ax1.plot(np.abs(y_EQ[discard:-discard,0]),'.')
-ax1.plot(np.abs(d[:,0]),'.');
-#ax1.axis('square')
-#ax1.set_xlim(-1.5, 1.5)
-#ax1.set_ylim(-1.5, 1.5)
-
-ax2.plot(np.abs(y_EQ[discard:-discard,1]),'.')
-ax2.plot(np.abs(d[:,1]),'.');
-#ax2.axis('square')
-#ax2.set_xlim(-1.5, 1.5)
-#ax2.set_ylim(-1.5, 1.5);
-
-# +
-Nav = 200
-h = np.ones(Nav)/Nav
-
-plt.figure()
-for ind in range(0, errSq.shape[0]):
-    err_ = errSq[ind,:]
-    plt.plot(10*np.log10(firFilter(h, err_)));
-    
-# for ind in range(0, errSq.shape[0]):
-#     err_ = errSq[ind,:]
-#     plt.plot(10*np.log10(np.convolve(h, err_)));
-
-plt.grid()
-plt.xlim(0,errSq.shape[1])
-plt.xlabel('symbol')
-plt.ylabel('MSE (dB)');
-
-# +
-plt.plot(H.real.T,'-');
-plt.plot(H.imag.T,'-');
-
-# plt.stem(H[0,:].real.T,linefmt='r');
-# plt.stem(H[3,:].imag.T,linefmt='b');
-
-# +
-# #%load_ext autoreload
-# #%autoreload 2
-
-# +
-# #%lprun -f monteCarloGMI monteCarloGMI(y_EQ[ind,:], d[ind,:], mod)
-
-# +
-# #%lprun -f fastBERcalc fastBERcalc(y_EQ[ind,:], d[ind,:], mod)
-
-# +
-# #%lprun -f cpr cpr(y_EQ, 25, M, d, pilotInd=np.arange(0,len(y_EQ), 50))
-
-# +
-# #!pip install --upgrade numba --user
 # -
 
-# # !pip install line_profiler --user
+# ### Evaluate transmission metrics
 
+# +
+ind = np.arange(discard, d.shape[0]-discard)
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], mod)
+GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], mod)
+MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], mod)
 
-
+print('     pol.X     pol.Y      ')
+print('SER: %.2e, %.2e'%(SER[0], SER[1]))
+print('BER: %.2e, %.2e'%(BER[0], BER[1]))
+print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
+print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
+print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
