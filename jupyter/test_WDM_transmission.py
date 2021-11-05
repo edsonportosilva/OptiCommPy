@@ -15,8 +15,9 @@
 # ---
 
 # +
+# from os import chdir as cd
 # # ! git clone https://github.com/edsonportosilva/OpticCommpy-public
-# # cd /content/OpticCommpy-public
+# cd('/content/OpticCommpy-public')
 # # !pip install .
 
 # +
