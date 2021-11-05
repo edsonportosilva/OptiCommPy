@@ -1,18 +1,19 @@
 import numpy as np
-from optic.models import iqm
-from optic.metrics import signal_power
-from commpy.utilities import upsample
 from commpy.modulation import QAMModem
+from commpy.utilities import upsample
+
 from optic.dsp import firFilter, pulseShape
+from optic.metrics import signal_power
+from optic.models import iqm
 
 
 def simpleWDMTx(param):
     """
     Simple WDM transmitter
-    
+
     Generates a complex baseband waveform representing a WDM signal with
     arbitrary number of carriers
-    
+
     :param.M: QAM order [default: 16]
     :param.Rs: carrier baud rate [baud][default: 32e9]
     :param.SpS: samples per symbol [default: 16]
@@ -43,8 +44,7 @@ def simpleWDMTx(param):
 
     # transmitter parameters
     Ts = 1 / param.Rs  # symbol period [s]
-    Fa = 1 / (Ts / param.SpS)  # sampling frequency [samples/s]
-    Ta = 1 / Fa  # sampling period [s]
+    Fsa = 1 / (Ts / param.SpS)  # sampling frequency [samples/s]
 
     # central frequencies of the WDM channels
     freqGrid = (
@@ -134,7 +134,7 @@ def simpleWDMTx(param):
             )
 
             sigTxWDM[:, indMode] += sigTxCh * np.exp(
-                1j * 2 * π * (freqGrid[indCh] / Fa) * t
+                1j * 2 * π * (freqGrid[indCh] / Fsa) * t
             )
 
             Pmode += signal_power(sigTxCh)
