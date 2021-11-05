@@ -109,7 +109,7 @@ plt.grid()
 # +
 # Run BER vs Ebn0 Monte Carlo simulation 
 
-pskOrder  = [4, 8, 16, 64]  # Modulation order
+pskOrder  = [4, 8, 16, 32, 64]  # Modulation order
 
 EbN0dB_  = np.arange(-2, 35, 1)
 BER      = np.zeros((len(EbN0dB_),len(pskOrder)))
@@ -224,7 +224,7 @@ plt.grid()
 # +
 # Run GMI vs SNR Monte Carlo simulation 
 
-pskOrder  = [4, 8, 16, 64]  # Modulation order
+pskOrder  = [4, 8, 16, 32, 64]  # Modulation order
 
 SNR  = np.arange(-2, 35, 1)
 GMI  = np.zeros((len(SNR),len(pskOrder)))
