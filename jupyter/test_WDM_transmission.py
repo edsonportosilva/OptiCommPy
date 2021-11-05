@@ -15,6 +15,11 @@
 # ---
 
 # +
+# # ! git clone https://github.com/edsonportosilva/OpticCommpy-public
+# # cd /content/OpticCommpy-public
+# # !pip install .
+
+# +
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -222,7 +227,7 @@ paramEq.mu    = [5e-3, 2e-3]
 paramEq.numIter = 5
 paramEq.storeCoeff = False
 paramEq.alg   = ['nlms','dd-lms']
-paramEq.M     = M
+paramEq.M     = paramTx.M
 paramEq.L = [20000, 80000]
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
@@ -247,7 +252,7 @@ ax2.set_ylim(-1.5, 1.5);
 # ### Carrier phase recovery
 
 # +
-y_CPR, ϕ, θ = cpr(y_EQ, 30, M, d, pilotInd=np.arange(0,len(y_EQ), 20))
+y_CPR, ϕ, θ = cpr(y_EQ, 30, paramTx.M, d, pilotInd=np.arange(0,len(y_EQ), 20))
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
