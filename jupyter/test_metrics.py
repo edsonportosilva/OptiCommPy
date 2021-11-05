@@ -216,7 +216,7 @@ plt.plot(SNR, C,'k-', label='AWGN capacity',linewidth=2)
 plt.xlim(min(SNR), max(SNR))
 plt.legend();
 plt.xlabel('SNR [dB]');
-plt.ylabel('GMI [bits]');
+plt.ylabel('GMI [bits/symbol]');
 plt.grid()
 # -
 # ### PSK constellations with Gray mapping
@@ -266,7 +266,7 @@ plt.plot(SNR, C,'k-', label='AWGN capacity',linewidth=2)
 plt.xlim(min(SNR), max(SNR))
 plt.legend();
 plt.xlabel('SNR [dB]');
-plt.ylabel('GMI [bits]');
+plt.ylabel('GMI [bits/symbol]');
 plt.grid()
 # -
 
@@ -322,7 +322,7 @@ plt.plot(SNR, C,'k-', label='AWGN capacity',linewidth=2)
 plt.xlim(min(SNR), max(SNR))
 plt.legend();
 plt.xlabel('SNR [dB]');
-plt.ylabel('MI [bits]');
+plt.ylabel('MI [bits/symbol]');
 plt.grid()
 # -
 # ## Test mutual information (MI) versus signal-to-noise ratio (SNR) with probabilistically shaped QAM constellation
@@ -396,7 +396,7 @@ plt.plot(SNR, C,'k-', label='AWGN capacity',linewidth=2)
 plt.xlim(min(SNR), max(SNR))
 plt.legend();
 plt.xlabel('SNR [dB]');
-plt.ylabel('MI [bits]');
+plt.ylabel('MI [bits/symbol]');
 plt.grid()
 # -
 
