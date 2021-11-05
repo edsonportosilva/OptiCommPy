@@ -1,29 +1,28 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.constants as const
+from commpy.filters import rcosfilter, rrcosfilter
+from commpy.modulation import QAMModem
+from commpy.utilities import upsample
+from numba import njit
+from numpy.fft import fft, fftfreq, fftshift, ifft
 from scipy import signal
 from scipy.signal import lfilter
-
-import numpy as np
-
-from commpy.filters import rrcosfilter, rcosfilter
-from commpy.utilities import upsample
-from commpy.modulation import QAMModem
-
 from scipy.stats.kde import gaussian_kde
-import scipy.constants as const
-from optic.models import linFiberCh
-import matplotlib.pyplot as plt
-from numpy.fft import fft, ifft, fftfreq, fftshift
 from tqdm.notebook import tqdm
-from numba import njit
+
+from optic.models import linFiberCh
 
 
 def firFilter(h, x):
     """
     Implements FIR filtering and compensates filter delay
     (assuming the impulse response is symmetric)
-    
+
     :param h: impulse response (symmetric)
-    :param x: input signal 
-    :return y: output filtered signal    
+    :param x: input signal
+
+    :return y: output filtered signal
     """
 
     try:
@@ -39,7 +38,7 @@ def firFilter(h, x):
         x_ = x[:, n]
         x_ = np.pad(x_, (0, int(N / 2)), "constant")
         y_ = lfilter(h, 1, x_)
-        y[:, n] = y_[int(N / 2) : y_.size]
+        y[:, n] = y_[int(N / 2): y_.size]
 
     if y.shape[1] == 1:
         y = y[:, 0]
@@ -50,14 +49,14 @@ def firFilter(h, x):
 def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     """
     Generate pulse shaping filters
-    
+
     :param pulseType: 'rect','nrz','rrc'
     :param SpS: samples per symbol
     :param N: number of filter coefficients
     :param alpha: RRC rolloff factor
     :param Ts: symbol period
-    
-    :return filterCoeffs: normalized filter coefficients   
+
+    :return filterCoeffs: normalized filter coefficients
     """
     fa = (1 / Ts) * SpS
 
@@ -116,8 +115,8 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             xi, yi = (
                 1.1
                 * np.mgrid[
-                    x.min() : x.max() : x.size ** 0.5 * 1j,
-                    y.min() : y.max() : y.size ** 0.5 * 1j,
+                    x.min(): x.max(): x.size ** 0.5 * 1j,
+                    y.min(): y.max(): y.size ** 0.5 * 1j,
                 ]
             )
             zi = k(np.vstack([xi.flatten(), yi.flatten()]))
@@ -133,7 +132,7 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             plt.ylabel("amplitude")
             plt.title("eye diagram")
 
-            if plotlabel != None:
+            if plotlabel is not None:
                 plt.legend(loc="upper left")
 
             plt.grid()
@@ -169,12 +168,12 @@ def sincInterp(x, fa):
 def lowPassFIR(fc, fa, N, typeF="rect"):
     """
     Calculate FIR coeffs for a lowpass filter
-    
+
     :param fc : cutoff frequency
     :param fa : sampling frequency
     :param N  : number of coefficients
     :param typeF : 'rect' or 'gauss'
-    
+
     :return h : FIR filter coefficients
     """
     fu = fc / fa
@@ -199,11 +198,11 @@ def edc(Ei, L, D, Fc, Fs):
     Electronic chromatic dispersion compensation (EDC)
 
     :param Ei: dispersed signal
-    :param L: fiber length [km]    
-    :param D: chromatic dispersion parameter [ps/nm/km]   
+    :param L: fiber length [km]
+    :param D: chromatic dispersion parameter [ps/nm/km]
     :param Fc: carrier frequency [Hz]
     :param Fs: sampling frequency [Hz]
-    
+
     :return Eo: CD compensated signal
     """
     Eo = linFiberCh(Ei, L, 0, -D, Fc, Fs)
@@ -254,7 +253,7 @@ def ddpll(Ei, N, constSymb, symbTx, pilotInd):
 def cpr(Ei, N, M, symbTx, pilotInd=[]):
     """
     Carrier phase recovery (CPR)
-    
+
     """
     try:
         Ei.shape[1]
@@ -276,7 +275,7 @@ def cpr(Ei, N, M, symbTx, pilotInd=[]):
 
 def fourthPowerFOE(Ei, Ts, plotSpec=False):
     """
-    4th power frequency offset estimator (FOE)    
+    4th power frequency offset estimator (FOE)
     """
 
     Fs = 1 / Ts
