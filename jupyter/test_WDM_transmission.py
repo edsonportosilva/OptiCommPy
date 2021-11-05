@@ -28,13 +28,11 @@ from optic.core import parameters
 from optic.equalization import mimoAdaptEqualizer
 from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power
 
-from scipy import signal
 import scipy.constants as const
 
 # +
 from IPython.core.display import HTML
 from IPython.core.pylabtools import figsize
-from IPython.display import display, Math
 
 HTML("""
 <style>
