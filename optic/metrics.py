@@ -1,5 +1,6 @@
 import numpy as np
-from numba import njit, prange
+from numba import njit
+from scipy.special import erf
 
 
 @njit
@@ -14,7 +15,7 @@ def signal_power(x):
     return np.mean(x * np.conj(x)).real
 
 
-@njit(parallel=True)
+@njit
 def hardDecision(rxSymb, constSymb, bitMap):
     """
     Euclidean distance based symbol decision
@@ -31,9 +32,9 @@ def hardDecision(rxSymb, constSymb, bitMap):
 
     decBits = np.zeros(len(rxSymb) * b)
 
-    for i in prange(0, len(rxSymb)):
+    for i in range(0, len(rxSymb)):
         indSymb = np.argmin(np.abs(rxSymb[i] - constSymb))
-        decBits[i * b : i * b + b] = bitMap[indSymb, :]
+        decBits[i * b: i * b + b] = bitMap[indSymb, :]
 
     return decBits
 
@@ -104,7 +105,7 @@ def fastBERcalc(rx, tx, mod):
     return BER, SER, SNR
 
 
-@njit(parallel=True)
+@njit
 def calcLLR(rxSymb, σ2, constSymb, bitMap):
     """
     LLR calculation (circular AGWN channel)
@@ -121,7 +122,7 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap):
 
     LLRs = np.zeros(len(rxSymb) * b)
 
-    for i in prange(0, len(rxSymb)):
+    for i in range(0, len(rxSymb)):
         prob = np.exp((-np.abs(rxSymb[i] - constSymb) ** 2) / σ2)
 
         for indBit in range(0, b):
@@ -135,7 +136,7 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap):
 
 def monteCarloGMI(rx, tx, mod):
     """
-    GMI calculation
+    GMI estimation
 
     :param rx: received symbol sequence
     :param tx: transmitted symbol sequence
@@ -184,9 +185,11 @@ def monteCarloGMI(rx, tx, mod):
 
         # hard decision demodulation of the transmitted symbols
         btx = hardDecision(np.sqrt(Es) * tx[:, k], constSymb, bitMap)
+
         # soft demodulation of the received symbols
         LLRs = calcLLR(rx[:, k], σ2, constSymb / np.sqrt(Es), bitMap)
 
+        # LLR clipping
         LLRs[LLRs == np.inf] = 500
         LLRs[LLRs == -np.inf] = -500
 
@@ -204,13 +207,15 @@ def monteCarloGMI(rx, tx, mod):
 
     return GMI, MIperBitPosition
 
-def monteCarloMI(rx, tx, mod, probSymb=[]):
+
+def monteCarloMI(rx, tx, mod, px=[]):
     """
-    MI calculation
+    MI estimation
 
     :param rx: received symbol sequence
     :param tx: transmitted symbol sequence
     :param mod: commpy modem object
+    :param px: probability mass function of constellation symbols
 
     :return: estimated MI
     """
@@ -218,8 +223,8 @@ def monteCarloMI(rx, tx, mod, probSymb=[]):
     # constellation parameters
     M = mod.m
     Es = mod.Es
-    constSymb = mod.constellation/np.sqrt(Es)
-    
+    constSymb = mod.constellation / np.sqrt(Es)
+
     # We want all the signal sequences to be disposed in columns:
     try:
         if rx.shape[1] > rx.shape[0]:
@@ -233,37 +238,87 @@ def monteCarloMI(rx, tx, mod, probSymb=[]):
     except IndexError:
         tx = tx.reshape(len(tx), 1)
 
-        
     nModes = int(rx.shape[1])  # number of sinal modes
     MI = np.zeros(nModes)
-    
-    #N0 = mean(covSymb);     # Estimate noise variance from the data               
+
+    # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
-    pX = probSymb
-        
+    if len(px) == 0:  # if px is not defined
+        px = 1 / M * np.ones(M)  # assume uniform distribution
+
     for k in range(0, nModes):
         σ2 = noiseVar[k]
-        MI[k] = calcMI(rx, tx, σ2, constSymb, pX)
-        
+        MI[k] = calcMI(rx, tx, σ2, constSymb, px)
+
     return MI
+
 
 @njit
 def calcMI(rx, tx, σ2, constSymb, pX):
-    
+    """
+    Mutual information (MI) calculation (circular AGWN channel)
+
+    :param rx: received symbol sequence
+    :param tx: transmitted symbol sequence
+    :param σ2: noise variance
+    :param constSymb: constellation symbols [M x 1 array]
+    :param pX: prob. mass function (pmf) of constSymb [M x 1 array]
+
+    :return: estimated MI
+    """
     N = len(rx)
     H_XgY = np.zeros(1, dtype=np.float64)
-    H_X   = np.sum(-pX*np.log2(pX))
+    H_X = np.sum(-pX * np.log2(pX))
 
-    for indSymb in range(0,N):
-        pYgX = np.exp(-(1/σ2)*np.abs(rx[indSymb] - tx[indSymb])**2)  # q(Y|X)        
-        pXY  = np.exp(-(1/σ2)*np.abs(rx[indSymb] - constSymb)**2)*pX  # q(Y,X) = q(Y|X)*p(X)
+    for k in range(0, N):
+        indSymb = np.argmin(np.abs(tx[k] - constSymb))
 
-            # qXgY = qXY/np.sum(qXY)  # q(X|Y) = q(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
+        pYgX = np.exp(-(1 / σ2) * np.abs(rx[k] - tx[k]) ** 2)  # p(Y|X)
+        pXY = (
+            np.exp(-(1 / σ2) * np.abs(rx[k] - constSymb) ** 2) * pX
+        )  # p(Y,X) = p(Y|X)*p(X)
+
+        # p(X|Y) = p(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
+
         pY = np.sum(pXY)
 
-        H_XgY -= np.log2( ( pYgX * pX[0] ) / pY)
+        H_XgY -= np.log2((pYgX * pX[indSymb]) / pY)
 
-    H_XgY = H_XgY/N
-                    
+    H_XgY = H_XgY / N
+
     return H_X - H_XgY
+
+
+def Qfunc(x):
+    return 0.5 - 0.5 * erf(x / np.sqrt(2))
+
+
+def theoryBER(M, EbN0, constType):
+    """
+    Theoretical bit error probability for QAM/PSK equiprobable constellations
+    in AWGN channel (approximated calculation)
+
+    :param M: order of the modulation
+    :param EbN0: signal-to-noise ratio per bit [dB]
+    :param constType: 'qam','psk'
+
+    :return: estimated probability of error (Pb)
+    """
+    EbN0lin = 10 ** (EbN0 / 10)
+    k = np.log2(M)
+
+    if constType == "qam":
+        L = np.sqrt(M)
+        Pb = (
+            2
+            * (1 - 1 / L)
+            / np.log2(L)
+            * Qfunc(np.sqrt(3 * np.log2(L) / (L ** 2 - 1) * (2 * EbN0lin)))
+        )
+
+    elif constType == "psk":
+        Ps = 2 * Qfunc(np.sqrt(2 * k * EbN0lin) * np.sin(np.pi / M))
+        Pb = Ps / k
+
+    return Pb

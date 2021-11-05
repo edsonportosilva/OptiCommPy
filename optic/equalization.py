@@ -1,10 +1,11 @@
 import numpy as np
-from commpy.utilities  import signal_power
 from commpy.modulation import QAMModem
+from commpy.utilities import signal_power
+from numba import njit
 from tqdm.notebook import tqdm
+
 from optic.core import parameters
 
-from numba import njit
 
 def mimoAdaptEqualizer(x, dx=[], paramEq=[]):              
     """
