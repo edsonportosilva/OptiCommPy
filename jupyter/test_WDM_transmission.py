@@ -15,10 +15,13 @@
 # ---
 
 # +
+# Uncomment and run the code below to run this notebook in Colab
+#
 # from os import chdir as cd
 # # ! git clone https://github.com/edsonportosilva/OpticCommpy-public
 # cd('/content/OpticCommpy-public')
 # # !pip install .
+# # !pip install numba --upgrade
 
 # +
 import matplotlib.pyplot as plt
