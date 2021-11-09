@@ -2,7 +2,7 @@
 
 Simulate optical communications systems with Python.
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OpticCommpy-public/HEAD?urlpath=lab)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommpy-public/HEAD?urlpath=lab)
 
 ## Available features
 
@@ -15,7 +15,7 @@ Simulate optical communications systems with Python.
 
 How can I contribute?
 ---------------------
-If you want to contribute to this project, just implement the feature you want and send me a pull request. If you want to suggest new features or discuss anything related to OpticCommPy, please get in touch with me (edsonporto88@gmail.com).
+If you want to contribute to this project, just implement the feature you want and send me a pull request. If you want to suggest new features or discuss anything related to OptiCommPy, please get in touch with me (edsonporto88@gmail.com).
 
 Requirements/Dependencies
 -------------------------
@@ -33,6 +33,6 @@ Installation
 Clone from github and install as follows::
 
 ```
-$ git clone https://github.com/edsonportosilva/OpticCommPy.git
-$ cd OpticCommPy
+$ git clone https://github.com/edsonportosilva/OptiCommPy.git
+$ cd OptiCommPy
 $ python setup.py install
