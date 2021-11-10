@@ -23,8 +23,7 @@ Requirements/Dependencies
 - numpy 1.10 or above
 - scipy 0.15 or above
 - matplotlib 1.4 or above
-- nose 1.3 or above
-- sympy 1.7 or above
+- Commpy 0.7.0 or above
 - numba 0.54.1 or above
 
 Installation
