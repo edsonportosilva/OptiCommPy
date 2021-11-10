@@ -25,6 +25,7 @@ If you want to contribute to this project, just implement the feature you want a
 - matplotlib 1.4 or above
 - Commpy 0.7.0 or above
 - numba 0.54.1 or above
+- tqdm
 
 ## Installation
 
