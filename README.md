@@ -32,8 +32,8 @@ If you want to contribute to this project, just implement the feature you want a
 Clone from github and install as follows::
 
 ```
-$ git clone https://github.com/edsonportosilva/OptiCommPy.git
-$ cd OptiCommPy
+$ git clone https://github.com/edsonportosilva/OptiCommPy-public.git
+$ cd OptiCommPy-public
 $ python setup.py install
 ```
 
