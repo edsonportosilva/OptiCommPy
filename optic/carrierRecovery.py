@@ -86,6 +86,6 @@ def bps(x, constSymb, B, N):
     for indPhase, phi in enumerate(phi_test):        
         dist[:,indPhase] = np.abs(x-constSymb*np.exp(1j*phi))
         
-    
+    phi_dec = np.argwhere( dist == np.min(dist) )[1]
 
 
