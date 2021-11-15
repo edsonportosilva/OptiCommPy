@@ -7,85 +7,100 @@ from tqdm.notebook import tqdm
 from optic.core import parameters
 
 
-def cpr(x, dx=[], paramCPR=[]):              
+@njit
+def ddpll(Ei, N, constSymb, symbTx, pilotInd):
+    """
+    DDPLL
+    """
+    nModes = Ei.shape[1]
+
+    ϕ = np.zeros(Ei.shape)
+    θ = np.zeros(Ei.shape)
+
+    for n in range(0, nModes):
+        # correct (possible) initial phase rotation
+        rot = np.mean(symbTx[:, n] / Ei[:, n])
+        Ei[:, n] = rot * Ei[:, n]
+
+        for k in range(0, len(Ei)):
+
+            decided = np.argmin(
+                np.abs(Ei[k, n] * np.exp(1j * θ[k - 1, n]) - constSymb)
+            )  # find closest constellation symbol
+
+            if k in pilotInd:
+                ϕ[k, n] = np.angle(
+                    symbTx[k, n] / (Ei[k, n])
+                )  # phase estimation with pilot symbol
+            else:
+                ϕ[k, n] = np.angle(
+                    constSymb[decided] / (Ei[k, n])
+                )  # phase estimation after symbol decision
+
+            if k > N:
+                θ[k, n] = np.mean(ϕ[k - N: k, n])  # moving average filter
+            else:
+                θ[k, n] = np.angle(symbTx[k, n] / (Ei[k, n]))
+
+    Eo = Ei * np.exp(1j * θ)  # compensate phase rotation
+
+    return Eo, ϕ, θ
+
+
+def cpr(Ei, N, M, symbTx, pilotInd=[]):
     """
     Carrier phase recovery (CPR)
-    
+
     """
-   
-    # check input parameters
-    numIter    = getattr(paramEq, 'numIter', 1)
-    nTaps      = getattr(paramEq, 'nTaps', 15)
-    mu         = getattr(paramEq, 'mu', [1e-3])
-    lambdaRLS  = getattr(paramEq, 'lambdaRLS', 0.99)
-    SpS        = getattr(paramEq, 'SpS', 2)
-    H          = getattr(paramEq, 'H', [])
-    L          = getattr(paramEq, 'L', [])
-    Hiter      = getattr(paramEq, 'Hiter', [])
-    storeCoeff = getattr(paramEq, 'storeCoeff', False)
-    alg        = getattr(paramEq, 'alg', ['nlms'])
-    M          = getattr(paramEq, 'M', 4)    
-    
-    # We want all the signal sequences to be disposed in columns:
-    if not len(dx):
-        dx = x.copy()
-        
     try:
-        if x.shape[1] > x.shape[0]:
-            x = x.T       
+        Ei.shape[1]
     except IndexError:
-        x  = x.reshape(len(x),1)       
-        
-    try:        
-        if dx.shape[1] > dx.shape[0]:
-            dx = dx.T
-    except IndexError:        
-        dx = dx.reshape(len(dx),1)
+        Ei = Ei.reshape(len(Ei), 1)
 
-    nModes = int(x.shape[1]) # number of sinal modes (order of the MIMO equalizer)
-    
-    
-    # Defining training parameters:
-    mod = QAMModem(m=M) # commpy QAM constellation modem object
-    constSymb = mod.constellation/np.sqrt(mod.Es) # complex-valued constellation symbols
-    for indMode in range(nModes):       
-        for indstage, runAlg in enumerate(alg):
+    mod = QAMModem(m=M)
+    constSymb = mod.constellation / np.sqrt(mod.Es)
+    if alg == 'ddpll':
+        Eo, ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
+    elif: 
+         Eo, ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
+         
+    if Eo.shape[1] == 1:
+        Eo = Eo[:]
+        ϕ = ϕ[:]
+        θ = θ[:]
 
-        
-    return  yCPR
+    return Eo, ϕ, θ
+
 
 @njit
-def coreCPR(x, dx, constSymb):
-    """
-    Carrier phase recovery core processing function
-    
-    """
-    
-    # allocate variables
-        
-    for ind in range(0, L):       
-                    
-        # update equalizer taps acording to the specified 
-        # algorithm and save squared error:        
-        if alg == 'bps':
-            H, errSq[:,ind] = bps(x, constSymb, B, N)        
-        else:
-            raise ValueError('CPR algorithm not specified (or incorrectly specified).')
-        
-            
-    return yCPR
-
-@njit
-def bps(x, constSymb, B, N):
+def bps(Ei, constSymb, B, N):
     """
     blind phase search (BPS) algorithm  
     """          
-    phi_test = np.arange(0, B)*(np.pi/2)/B
-    dist = np.zeros((constSymb.shape[0], B), dtype=np.float)
+    ϕ_test = np.arange(0, B)*(np.pi/2)/B # test phases
     
-    for indPhase, phi in enumerate(phi_test):        
-        dist[:,indPhase] = np.abs(x-constSymb*np.exp(1j*phi))
+    dist = np.zeros((constSymb.shape[0], B), dtype=np.float)
+    L = Ei.shape[0]
+    
+    ϕ_dec = np.zeros(L, dtype=np.float)
+    θ = np.zeros(L, dtype=np.float)
+    
+    for k in range(0, L):                
+        for indPhase, ϕ in enumerate(ϕ_test):     
+            
+            dist[:, indPhase] = np.abs(Ei[k]-constSymb*np.exp(1j*ϕ))
         
-    phi_dec = np.argwhere( dist == np.min(dist) )[1]
+        indRot = np.argwhere( dist == np.min(dist) )[0, 1]
+        
+        ϕ_dec[k] = ϕ_test[indRot]
+        
+        if k > 2*N+1:
+            θ[k] = np.mean(ϕ_dec[k - N: k + N])  # moving average filter
+        else:
+            θ[k] = ϕ_dec[k]
+            
+    Eo = Ei * np.exp(1j * θ)  # compensate phase rotation
+        
+    return Eo, θ, ϕ
 
 
