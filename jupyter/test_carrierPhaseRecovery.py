@@ -194,7 +194,7 @@ y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 plt.figure()
 plt.title('Carrier phase recovery')
-plt.plot(np.unwrap(4*ϕ, axis=0)/4,'-.', np.unwrap(4*θ, axis=0)/4,'-');
+plt.plot(ϕ,'-.', θ,'-');
 
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
@@ -213,7 +213,7 @@ ax2.set_xlim(-1.5, 1.5)
 ax2.set_ylim(-1.5, 1.5);
 # -
 
-# ### Evaluate transmission metrics
+# ### Evaluate performance metrics
 
 # +
 # correct (possible) phase ambiguity
