@@ -59,9 +59,11 @@ HTML("""
 #figsize(7, 2.5)
 figsize(10, 3)
 
-# %load_ext autoreload
-# %autoreload 2
+# +
+# #%load_ext autoreload
+# #%autoreload 2
 # #%load_ext line_profiler
+# -
 
 # # Simulation of coherent WDM transmission
 
@@ -256,11 +258,12 @@ ax2.set_ylim(-1.5, 1.5);
 
 # +
 paramCPR = parameters()
-paramCPR.alg = 'ddpll'
+paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
 paramCPR.N   = 35
 paramCPR.B   = 64
-       
+paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
+
 y_CPR, ϕ, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
@@ -310,6 +313,3 @@ print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
-# -
-
-

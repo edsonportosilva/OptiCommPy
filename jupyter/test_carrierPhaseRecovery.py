@@ -59,9 +59,11 @@ HTML("""
 figsize(10, 3)
 
 
-# %load_ext autoreload
-# %autoreload 2
+# +
+# #%load_ext autoreload
+# #%autoreload 2
 # #%load_ext line_profiler
+# -
 
 @njit
 def awgn(tx, noiseVar):
@@ -306,6 +308,3 @@ print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
-# -
-
-
