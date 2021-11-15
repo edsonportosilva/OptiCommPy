@@ -29,12 +29,13 @@ import numpy as np
 
 from commpy.modulation import QAMModem
 
-from optic.dsp import pulseShape, firFilter, edc, cpr, decimate, symbolSync #, fourthPowerFOE, dbp, cpr
+from optic.dsp import pulseShape, firFilter, edc, decimate, symbolSync #, fourthPowerFOE, dbp, cpr
 from optic.models import phaseNoise, pdmCoherentReceiver#, manakovSSF
 from optic.modelsGPU import manakovSSF
 from optic.tx import simpleWDMTx
 from optic.core import parameters
 from optic.equalization import mimoAdaptEqualizer
+from optic.carrierRecovery import cpr
 from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power
 
 import scipy.constants as const
@@ -256,13 +257,21 @@ ax2.set_ylim(-1.5, 1.5);
 # ### Carrier phase recovery
 
 # +
-y_CPR, ϕ, θ = cpr(y_EQ, 30, paramTx.M, d, pilotInd=np.arange(0,len(y_EQ), 20))
+paramCPR = parameters()
+paramCPR.alg = 'bps'
+paramCPR.M   = paramTx.M
+paramCPR.N   = 35
+paramCPR.B   = 64
+       
+y_CPR, ϕ, θ = cpr(sigRx, paramCPR=paramCPR)
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 plt.figure()
-plt.title('Carrier phase recovery')
-plt.plot(ϕ,'-.', θ,'-');
+plt.title('CPR estimated phase')
+plt.plot(ϕ,'-.', θ,'-')
+plt.xlim(0, len(θ))
+plt.grid();
 
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
