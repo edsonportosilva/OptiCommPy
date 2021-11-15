@@ -241,6 +241,10 @@ def monteCarloMI(rx, tx, mod, px=[]):
     nModes = int(rx.shape[1])  # number of sinal modes
     MI = np.zeros(nModes)
 
+    for k in range(0, nModes):
+        rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
+        tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
+
     # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
@@ -248,9 +252,6 @@ def monteCarloMI(rx, tx, mod, px=[]):
         px = 1 / M * np.ones(M)  # assume uniform distribution
 
     for k in range(0, nModes):
-        rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
-        tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
-
         σ2 = noiseVar[k]
         MI[k] = calcMI(rx[:, k], tx[:, k], σ2, constSymb, px)
 
