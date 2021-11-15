@@ -59,11 +59,9 @@ HTML("""
 #figsize(7, 2.5)
 figsize(10, 3)
 
-# +
-# #%load_ext autoreload
-# #%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 # #%load_ext line_profiler
-# -
 
 # # Simulation of coherent WDM transmission
 
@@ -143,7 +141,7 @@ symbTx = symbTx_[:,:,chIndex]
 # local oscillator (LO) parameters:
 FO      = 0*64e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 100e3                 # linewidth
+lw      = 200e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
@@ -231,7 +229,7 @@ paramEq.SpS   = 2
 paramEq.mu    = [5e-3, 2e-3]
 paramEq.numIter = 5
 paramEq.storeCoeff = False
-paramEq.alg   = ['nlms','dd-lms']
+paramEq.alg   = ['da-rde','rde']
 paramEq.M     = paramTx.M
 paramEq.L = [20000, 80000]
 
@@ -258,12 +256,12 @@ ax2.set_ylim(-1.5, 1.5);
 
 # +
 paramCPR = parameters()
-paramCPR.alg = 'bps'
+paramCPR.alg = 'ddpll'
 paramCPR.M   = paramTx.M
 paramCPR.N   = 35
 paramCPR.B   = 64
        
-y_CPR, ϕ, θ = cpr(sigRx, paramCPR=paramCPR)
+y_CPR, ϕ, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
@@ -293,6 +291,14 @@ ax2.set_ylim(-1.5, 1.5);
 # ### Evaluate transmission metrics
 
 # +
+# correct (possible) phase ambiguity
+for k in range(y_CPR.shape[1]):
+    rot = np.mean(d[:,k]/y_CPR[:,k])
+    y_CPR[:,k] = rot*y_CPR[:,k]
+
+y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+
+
 ind = np.arange(discard, d.shape[0]-discard)
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], mod)
 GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], mod)
@@ -304,3 +310,6 @@ print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+# -
+
+
