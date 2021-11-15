@@ -14,12 +14,12 @@ def cpr(Ei, symbTx=[], param=[]):
 
     """
     # check input parameters
-    alg        = getattr(param, 'alg', 'bps')
-    M          = getattr(param, 'M', 4)
-    B          = getattr(param, 'B', 16)
-    N          = getattr(param, 'N', 15)    
-    pilotInd   = getattr(param, 'pilotInd', [])
-    
+    alg = getattr(param, "alg", "bps")
+    M = getattr(param, "M", 4)
+    B = getattr(param, "B", 16)
+    N = getattr(param, "N", 15)
+    pilotInd = getattr(param, "pilotInd", [])
+
     try:
         Ei.shape[1]
     except IndexError:
@@ -28,16 +28,18 @@ def cpr(Ei, symbTx=[], param=[]):
     mod = QAMModem(m=M)
     constSymb = mod.constellation / np.sqrt(mod.Es)
 
-    if alg == 'ddpll':
-        ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)      
-        Eo = Ei*np.exp(1j*np.unwrap(4*θ, axis=0)/4)
-
-    elif alg == 'bps':
+    if alg == "ddpll":
+        ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
+    elif alg == "bps":
         θ = bps(Ei, N, constSymb, B)
         ϕ = θ.copy()
-        Eo = Ei*np.exp(1j*np.unwrap(4*θ, axis=0)/4)
     else:
-        raise ValueError('CPR algorithm not specified (or incorrectly specified).')
+        raise ValueError("CPR algorithm not specified (or incorrectly specified).")
+
+    ϕ = np.unwrap(4 * ϕ, axis=0) / 4
+    θ = np.unwrap(4 * θ, axis=0) / 4
+
+    Eo = Ei * np.exp(1j * θ)
 
     if Eo.shape[1] == 1:
         Eo = Eo[:]
