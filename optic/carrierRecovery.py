@@ -3,17 +3,25 @@ from commpy.modulation import QAMModem
 from numba import njit
 
 
-def cpr(Ei, symbTx=[], param=[]):
+def cpr(Ei, symbTx=[], paramCPR=[]):
     """
     Carrier phase recovery (CPR)
 
+    :param Ei: received symbols
+    :param symbTx: transmitted symbols [only for pilot-aided CPR]
+    :param paramCPR.alg: CPR algorithm to be used ['bps' or 'ddpll']
+    :param paramCPR.N: length of the moving average window
+    :param paramCPR.M: constellation
+    :param paramCPR.B: number of BPS test phases
+
+    :return θ: estimated phases
     """
     # check input parameters
-    alg = getattr(param, "alg", "bps")
-    M = getattr(param, "M", 4)
-    B = getattr(param, "B", 64)
-    N = getattr(param, "N", 35)
-    pilotInd = getattr(param, "pilotInd", [])
+    alg = getattr(paramCPR, "alg", "bps")
+    M = getattr(paramCPR, "M", 4)
+    B = getattr(paramCPR, "B", 64)
+    N = getattr(paramCPR, "N", 35)
+    pilotInd = getattr(paramCPR, "pilotInd", [])
 
     try:
         Ei.shape[1]
@@ -26,10 +34,10 @@ def cpr(Ei, symbTx=[], param=[]):
     if alg == "ddpll":
         ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
     elif alg == "bps":
-        θ = bps(Ei, N, constSymb, B)
+        θ = bps(Ei, int(N/2), constSymb, B)
         ϕ = θ.copy()
     else:
-        raise ValueError("CPR algorithm not specified (or incorrectly specified).")
+        raise ValueError("CPR algorithm incorrectly specified.")
 
     ϕ = np.unwrap(4 * ϕ, axis=0) / 4
     θ = np.unwrap(4 * θ, axis=0) / 4
@@ -47,7 +55,14 @@ def cpr(Ei, symbTx=[], param=[]):
 @njit
 def bps(Ei, N, constSymb, B):
     """
-    blind phase search (BPS) algorithm
+    Blind phase search (BPS) algorithm
+
+    :param Ei: received symbols
+    :param N: half of the 2*N+1 average window
+    :param constSymb: constellation
+    :param B: number of test phases
+
+    :return θ: estimated phases
     """
     nModes = Ei.shape[1]
 
@@ -68,7 +83,6 @@ def bps(Ei, N, constSymb, B):
         dmin = np.zeros((B, 2 * N + 1), dtype="float")
 
         for k in range(0, L):
-
             for indPhase, ϕ in enumerate(ϕ_test):
                 dist[indPhase, :] = np.abs(x[k, n]*np.exp(1j * ϕ) - constSymb) ** 2
                 dmin[indPhase, -1] = np.min(dist[indPhase, :])
@@ -86,7 +100,16 @@ def bps(Ei, N, constSymb, B):
 @njit
 def ddpll(Ei, N, constSymb, symbTx, pilotInd):
     """
-    decision directed phase-locked loop (DDPLL)
+    Decision directed phase-locked loop (DDPLL)
+
+    :param Ei: received symbols
+    :param N: moving average window size
+    :param constSymb: constellation
+    :param symbTx: sequence of transmitted symbols
+    :param pilotInd: indices of pilot symbol positions
+
+    :return ϕ: estimated phases (before the moving average filter)
+    :return θ: estimated phases (after the moving average filter)
     """
     nModes = Ei.shape[1]
 
