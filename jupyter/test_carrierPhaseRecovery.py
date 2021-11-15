@@ -18,8 +18,8 @@
 # Uncomment and run the code below to run this notebook in Colab
 #
 # from os import chdir as cd
-# # ! git clone https://github.com/edsonportosilva/OpticCommpy-public
-# cd('/content/OpticCommpy-public')
+# # ! git clone https://github.com/edsonportosilva/OptiCommPy-public
+# cd('/content/OptiCommPy-public')
 # # !pip install .
 # # !pip install numba --upgrade
 
@@ -37,6 +37,7 @@ from optic.core import parameters
 from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power
 
 import scipy.constants as const
+from numba import njit
 
 # +
 from IPython.core.display import HTML
@@ -57,9 +58,22 @@ HTML("""
 #figsize(7, 2.5)
 figsize(10, 3)
 
+
 # %load_ext autoreload
 # %autoreload 2
 # #%load_ext line_profiler
+
+@njit
+def awgn(tx, noiseVar):
+    
+    σ        = np.sqrt(noiseVar)
+    noise    = np.random.normal(0,σ, tx.shape) + 1j*np.random.normal(0,σ, tx.shape)
+    noise    = 1/np.sqrt(2)*noise
+    
+    rx = tx + noise
+    
+    return rx
+
 
 # # Simulation of coherent transmission
 
@@ -86,7 +100,15 @@ paramTx.Nmodes = 2         # number of signal modes [2 for polarization multiple
 
 # generate WDM signal
 sigTx, symbTx_, paramTx = simpleWDMTx(paramTx)
+# +
+SNR = 25
+
+SNRlin = 10**(SNR/10)/paramTx.SpS
+noiseVar = signal_power(sigTx)/SNRlin
+
+sigTx = awgn(sigTx, noiseVar)
 # -
+
 # ###  coherent detection and demodulation
 
 # +
@@ -156,7 +178,7 @@ ax2.plot(sigRx[0::paramTx.SpS,1].real, sigRx[0::paramTx.SpS,1].imag,'.')
 ax2.axis('square');
 # -
 
-# ### Downsampling to 1 sample/symbol and re-synchronization with transmitted sequences
+# ### Downsample to 1 sample/symbol and re-synchronization with transmitted sequences
 
 # +
 # decimation
@@ -165,30 +187,23 @@ paramDec.SpS_in  = paramTx.SpS
 paramDec.SpS_out = 1
 sigRx = decimate(sigRx, paramDec)
 
-symbRx = symbolSync(sigRx, symbTx, 1)
-# -
+d = symbolSync(sigRx, symbTx, 1)
 
-# ### Power normalization
-
-# +
-x = sigRx
-d = symbRx
-
+# power normalization
 sigRx = sigRx.reshape(len(sigRx),2)/np.sqrt(signal_power(sigRx))
 d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
 # -
 
-# ### Carrier phase recovery
+# ### Carrier phase recovery with blind phase search (BPS)
 
 # +
 paramCPR = parameters()
 paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
-paramCPR.N   = 55
-#paramCPR.B   = 64
-paramCPR.pilotInd = np.arange(0, len(sigRx), 50)
+paramCPR.N   = 35
+paramCPR.B   = 64
        
-y_CPR, ϕ, θ = cpr(sigRx, symbTx=d, param=paramCPR)
+y_CPR, ϕ, θ = cpr(sigRx, paramCPR=paramCPR)
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
@@ -213,17 +228,72 @@ ax2.plot(d[:,1].real, d[:,1].imag,'.')
 ax2.axis('square')
 ax2.set_xlim(-1.5, 1.5)
 ax2.set_ylim(-1.5, 1.5);
-# -
 
-# ### Evaluate performance metrics
+## Performance metrics
 
-# +
 # correct (possible) phase ambiguity
 for k in range(y_CPR.shape[1]):
     rot = np.mean(d[:,k]/y_CPR[:,k])
     y_CPR[:,k] = rot*y_CPR[:,k]
 
-#y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+
+ind = np.arange(discard, d.shape[0]-discard)
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], mod)
+GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], mod)
+MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], mod)
+
+print('     pol.X     pol.Y      ')
+print('SER: %.2e, %.2e'%(SER[0], SER[1]))
+print('BER: %.2e, %.2e'%(BER[0], BER[1]))
+print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
+print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
+print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+# -
+
+# ### Carrier phase recovery with decision-directed phase-locked loop (DDPLL)
+
+# +
+paramCPR = parameters()
+paramCPR.alg = 'ddpll'
+paramCPR.M   = paramTx.M
+paramCPR.N   = 15
+paramCPR.pilotInd = np.arange(0, len(sigRx), 20)
+       
+y_CPR, ϕ, θ = cpr(sigRx, symbTx=d, paramCPR=paramCPR)
+
+y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+
+plt.figure()
+plt.title('CPR estimated phase')
+plt.plot(ϕ,'-.', θ,'-')
+plt.xlim(0, len(θ))
+plt.grid();
+
+
+fig, (ax1, ax2) = plt.subplots(1, 2)
+discard = 1000
+
+ax1.plot(y_CPR[discard:-discard,0].real, y_CPR[discard:-discard,0].imag,'.')
+ax1.plot(d[:,0].real, d[:,0].imag,'.')
+ax1.axis('square')
+ax1.set_xlim(-1.5, 1.5)
+ax1.set_ylim(-1.5, 1.5)
+
+ax2.plot(y_CPR[discard:-discard,1].real, y_CPR[discard:-discard,1].imag,'.')
+ax2.plot(d[:,1].real, d[:,1].imag,'.')
+ax2.axis('square')
+ax2.set_xlim(-1.5, 1.5)
+ax2.set_ylim(-1.5, 1.5);
+
+## Performance metrics
+
+# correct (possible) phase ambiguity
+for k in range(y_CPR.shape[1]):
+    rot = np.mean(d[:,k]/y_CPR[:,k])
+    y_CPR[:,k] = rot*y_CPR[:,k]
+
+y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 ind = np.arange(discard, d.shape[0]-discard)
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], mod)
