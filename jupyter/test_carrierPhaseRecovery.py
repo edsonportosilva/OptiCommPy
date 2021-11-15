@@ -29,8 +29,8 @@ import numpy as np
 
 from commpy.modulation import QAMModem
 
-from optic.dsp import pulseShape, firFilter, edc, decimate, symbolSync #, fourthPowerFOE, dbp, cpr
-from optic.models import phaseNoise, pdmCoherentReceiver#, manakovSSF
+from optic.dsp import pulseShape, firFilter, decimate, symbolSync
+from optic.models import phaseNoise, pdmCoherentReceiver
 from optic.carrierRecovery import cpr
 from optic.tx import simpleWDMTx
 from optic.core import parameters
@@ -110,7 +110,7 @@ symbTx = symbTx_[:,:,chIndex]
 # local oscillator (LO) parameters:
 FO      = 0*64e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 100e3                 # linewidth
+lw      = 200e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
@@ -184,17 +184,19 @@ d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
 paramCPR = parameters()
 paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
-paramCPR.N   = 35
-paramCPR.B   = 64
-paramCPR.pilotInd = np.arange(0, len(sigRx), 20)
+paramCPR.N   = 55
+#paramCPR.B   = 64
+paramCPR.pilotInd = np.arange(0, len(sigRx), 50)
        
 y_CPR, ϕ, θ = cpr(sigRx, symbTx=d, param=paramCPR)
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 plt.figure()
-plt.title('Carrier phase recovery')
-plt.plot(ϕ,'-.', θ,'-');
+plt.title('CPR estimated phase')
+plt.plot(ϕ,'-.', θ,'-')
+plt.xlim(0, len(θ))
+plt.grid();
 
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
