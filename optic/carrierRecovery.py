@@ -1,11 +1,6 @@
 import numpy as np
 from commpy.modulation import QAMModem
-from commpy.utilities import signal_power
 from numba import njit
-from tqdm.notebook import tqdm
-
-from optic.core import parameters
-
 
 
 def cpr(Ei, symbTx=[], param=[]):
@@ -16,8 +11,8 @@ def cpr(Ei, symbTx=[], param=[]):
     # check input parameters
     alg = getattr(param, "alg", "bps")
     M = getattr(param, "M", 4)
-    B = getattr(param, "B", 16)
-    N = getattr(param, "N", 15)
+    B = getattr(param, "B", 64)
+    N = getattr(param, "N", 35)
     pilotInd = getattr(param, "pilotInd", [])
 
     try:
@@ -52,7 +47,7 @@ def cpr(Ei, symbTx=[], param=[]):
 @njit
 def bps(Ei, N, constSymb, B):
     """
-    blind phase search (BPS) algorithm  
+    blind phase search (BPS) algorithm
     """
     nModes = Ei.shape[1]
 
@@ -122,6 +117,5 @@ def ddpll(Ei, N, constSymb, symbTx, pilotInd):
                 θ[k, n] = np.mean(ϕ[k - N: k, n])  # moving average filter
             else:
                 θ[k, n] = np.angle(symbTx[k, n] / (Ei[k, n]))
-
 
     return ϕ, θ
