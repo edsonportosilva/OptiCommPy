@@ -21,7 +21,7 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     M = getattr(paramCPR, "M", 4)
     B = getattr(paramCPR, "B", 64)
     N = getattr(paramCPR, "N", 35)
-    pilotInd = getattr(paramCPR, "pilotInd", [])
+    pilotInd = getattr(paramCPR, "pilotInd", np.array([len(Ei)+1]))
 
     try:
         Ei.shape[1]
@@ -30,12 +30,15 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
 
     mod = QAMModem(m=M)
     constSymb = mod.constellation / np.sqrt(mod.Es)
-
+    
+    θ = np.zeros(Ei.shape)
+    ϕ = np.zeros(Ei.shape)
+    
     if alg == "ddpll":
-        ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
+        ϕ[:], θ[:] = ddpll(Ei, N, constSymb, symbTx, pilotInd)
     elif alg == "bps":
-        θ = bps(Ei, int(N/2), constSymb, B)
-        ϕ = θ.copy()
+        θ[:] = bps(Ei, int(N/2), constSymb, B)
+        ϕ[:] = np.copy(θ)
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
 
@@ -117,10 +120,6 @@ def ddpll(Ei, N, constSymb, symbTx, pilotInd):
     θ = np.zeros(Ei.shape)
 
     for n in range(0, nModes):
-        # correct (possible) initial phase rotation
-        rot = np.mean(symbTx[:, n] / Ei[:, n])
-        Ei[:, n] = rot * Ei[:, n]
-
         for k in range(0, len(Ei)):
 
             decided = np.argmin(
