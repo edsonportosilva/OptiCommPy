@@ -248,6 +248,9 @@ def monteCarloMI(rx, tx, mod, px=[]):
         px = 1 / M * np.ones(M)  # assume uniform distribution
 
     for k in range(0, nModes):
+        rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
+        tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
+
         σ2 = noiseVar[k]
         MI[k] = calcMI(rx[:, k], tx[:, k], σ2, constSymb, px)
 
