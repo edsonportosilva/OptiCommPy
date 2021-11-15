@@ -18,8 +18,8 @@
 # Uncomment and run the code below to run this notebook in Colab
 #
 # from os import chdir as cd
-# # ! git clone https://github.com/edsonportosilva/OpticCommpy-public
-# cd('/content/OpticCommpy-public')
+# # ! git clone https://github.com/edsonportosilva/OptiCommPy-public
+# cd('/content/OptiCommPy-public')
 # # !pip install .
 # # !pip install numba --upgrade
 
