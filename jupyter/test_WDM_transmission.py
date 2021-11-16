@@ -56,8 +56,6 @@ HTML("""
 """)
 # -
 
-# %matplotlib inline
-#figsize(7, 2.5)
 figsize(10, 3)
 
 # +
@@ -162,7 +160,7 @@ sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig = π/3, Rdx=1, Rdy=1)
 
 # plot constellations
-pconst(sigRx[0::paramTx.SpS,:])
+pconst(sigRx[0::paramTx.SpS,:], lim=True, R=3)
 # -
 
 # ### Matched filtering and CD compensation
@@ -180,13 +178,13 @@ pulse = pulse/np.max(np.abs(pulse))
 sigRx = firFilter(pulse, sigRx)
 
 # plot constellations after matched filtering
-pconst(sigRx[0::paramTx.SpS,:])
+pconst(sigRx[0::paramTx.SpS,:], lim=True, R=3)
 
 # CD compensation
 sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
 
 # plot constellations after CD compensation
-pconst(sigRx[0::paramTx.SpS,:])
+pconst(sigRx[0::paramTx.SpS,:], lim=True, R=3)
 # -
 
 # ### Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences
@@ -229,22 +227,7 @@ paramEq.L = [20000, 80000]
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
 #plot constellations after adaptive equalization
-pconst([y_EQ[discard:-discard,:], d])
-
-# fig, (ax1, ax2) = plt.subplots(1, 2)
-# discard = 1000
-
-# ax1.plot(y_EQ[discard:-discard,0].real, y_EQ[discard:-discard,0].imag,'.')
-# ax1.plot(d[:,0].real, d[:,0].imag,'.')
-# ax1.axis('square')
-# ax1.set_xlim(-1.5, 1.5)
-# ax1.set_ylim(-1.5, 1.5)
-
-# ax2.plot(y_EQ[discard:-discard,1].real, y_EQ[discard:-discard,1].imag,'.')
-# ax2.plot(d[:,1].real, d[:,1].imag,'.')
-# ax2.axis('square')
-# ax2.set_xlim(-1.5, 1.5)
-# ax2.set_ylim(-1.5, 1.5);
+pconst([y_EQ[discard:-discard,:], d], lim=True)
 # -
 
 # ### Carrier phase recovery
@@ -270,21 +253,7 @@ plt.grid();
 discard = 5000
 
 #plot constellations after CPR
-pconst([y_CPR[discard:-discard,:], d])
-
-# fig, (ax1, ax2) = plt.subplots(1, 2)
-
-# ax1.plot(y_CPR[discard:-discard,0].real, y_CPR[discard:-discard,0].imag,'.')
-# ax1.plot(d[:,0].real, d[:,0].imag,'.')
-# ax1.axis('square')
-# ax1.set_xlim(-1.5, 1.5)
-# ax1.set_ylim(-1.5, 1.5)
-
-# ax2.plot(y_CPR[discard:-discard,1].real, y_CPR[discard:-discard,1].imag,'.')
-# ax2.plot(d[:,1].real, d[:,1].imag,'.')
-# ax2.axis('square')
-# ax2.set_xlim(-1.5, 1.5)
-# ax2.set_ylim(-1.5, 1.5);
+pconst([y_CPR[discard:-discard,:], d], lim=True)
 # -
 
 # ### Evaluate transmission metrics
