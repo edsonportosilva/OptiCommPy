@@ -35,6 +35,7 @@ from optic.carrierRecovery import cpr
 from optic.tx import simpleWDMTx
 from optic.core import parameters
 from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power
+from optic.plot import pconst
 
 import scipy.constants as const
 from numba import njit
@@ -151,12 +152,8 @@ sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 # polarization multiplexed coherent optical receiver
 sigRx = pdmCoherentReceiver(sigTx, sigLO, θsig = 0, Rdx=1, Rdy=1)
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
-
-ax1.plot(sigRx[0::paramTx.SpS,0].real, sigRx[0::paramTx.SpS,0].imag,'.')
-ax1.axis('square');
-ax2.plot(sigRx[0::paramTx.SpS,1].real, sigRx[0::paramTx.SpS,1].imag,'.')
-ax2.axis('square');
+# plot constellation
+pconst(sigRx[0::paramTx.SpS,:])
 # -
 
 # ### Matched filtering
@@ -173,11 +170,8 @@ elif paramTx.pulse == 'rrc':
 pulse = pulse/np.max(np.abs(pulse))            
 sigRx = firFilter(pulse, sigRx)
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
-ax1.plot(sigRx[0::paramTx.SpS,0].real, sigRx[0::paramTx.SpS,0].imag,'.')
-ax1.axis('square');
-ax2.plot(sigRx[0::paramTx.SpS,1].real, sigRx[0::paramTx.SpS,1].imag,'.')
-ax2.axis('square');
+# plot constellation
+pconst(sigRx[0::paramTx.SpS,:])
 # -
 
 # ### Downsample to 1 sample/symbol and re-synchronization with transmitted sequences
@@ -215,21 +209,11 @@ plt.plot(ϕ,'-.', θ,'-')
 plt.xlim(0, len(θ))
 plt.grid();
 
-
-fig, (ax1, ax2) = plt.subplots(1, 2)
 discard = 1000
 
-ax1.plot(y_CPR[discard:-discard,0].real, y_CPR[discard:-discard,0].imag,'.')
-ax1.plot(d[:,0].real, d[:,0].imag,'.')
-ax1.axis('square')
-ax1.set_xlim(-1.5, 1.5)
-ax1.set_ylim(-1.5, 1.5)
-
-ax2.plot(y_CPR[discard:-discard,1].real, y_CPR[discard:-discard,1].imag,'.')
-ax2.plot(d[:,1].real, d[:,1].imag,'.')
-ax2.axis('square')
-ax2.set_xlim(-1.5, 1.5)
-ax2.set_ylim(-1.5, 1.5);
+# plot constellations
+pconst([y_CPR[discard:-discard,:],\
+            d[discard:-discard,:]])
 
 ## Performance metrics
 
@@ -272,21 +256,11 @@ plt.plot(ϕ,'-.', θ,'-')
 plt.xlim(0, len(θ))
 plt.grid();
 
-
-fig, (ax1, ax2) = plt.subplots(1, 2)
 discard = 1000
 
-ax1.plot(y_CPR[discard:-discard,0].real, y_CPR[discard:-discard,0].imag,'.')
-ax1.plot(d[:,0].real, d[:,0].imag,'.')
-ax1.axis('square')
-ax1.set_xlim(-1.5, 1.5)
-ax1.set_ylim(-1.5, 1.5)
-
-ax2.plot(y_CPR[discard:-discard,1].real, y_CPR[discard:-discard,1].imag,'.')
-ax2.plot(d[:,1].real, d[:,1].imag,'.')
-ax2.axis('square')
-ax2.set_xlim(-1.5, 1.5)
-ax2.set_ylim(-1.5, 1.5);
+# plot constellations
+pconst([y_CPR[discard:-discard,:],\
+            d[discard:-discard,:]])
 
 ## Performance metrics
 
