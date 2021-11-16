@@ -33,20 +33,20 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     mod = QAMModem(m=M)
     constSymb = mod.constellation / np.sqrt(mod.Es)
     
-    θ = np.zeros(Ei.shape)
-    ϕ = np.zeros(Ei.shape)
+  #  θ = np.zeros(Ei.shape)
+  #  ϕ = np.zeros(Ei.shape)
     
     if alg == "ddpll":
-        ϕ[:], θ[:] = ddpll(Ei, N, constSymb, symbTx, pilotInd)
+        ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
     elif alg == "bps":
-        θ[:] = bps(Ei, int(N/2), constSymb, B)
-        ϕ[:] = np.copy(θ)
+        θ = bps(Ei, int(N/2), constSymb, B)
+        ϕ = np.copy(θ)        
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
-
+        
     ϕ = np.unwrap(4 * ϕ, axis=0) / 4
-    θ = np.unwrap(4 * θ, axis=0) / 4
-
+    θ = np.unwrap(4 * θ, axis=0) / 4 
+    
     Eo = Ei * np.exp(1j * θ)
 
     if Eo.shape[1] == 1:

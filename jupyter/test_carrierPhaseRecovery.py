@@ -60,11 +60,9 @@ HTML("""
 figsize(10, 3)
 
 
-# +
-# #%load_ext autoreload
-# #%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 # #%load_ext line_profiler
-# -
 
 @njit
 def awgn(tx, noiseVar):
@@ -90,7 +88,7 @@ def awgn(tx, noiseVar):
 paramTx = parameters()
 paramTx.M   = 64           # order of the modulation format
 paramTx.Rs  = 32e9         # symbol rate [baud]
-paramTx.SpS = 4            # samples per symbol
+paramTx.SpS = 8            # samples per symbol
 paramTx.Nbits = 120000      # total number of bits per polarization
 paramTx.pulse = 'rrc'      # pulse shaping filter
 paramTx.Ntaps = 1024       # number of pulse shaping filter coefficients
@@ -185,9 +183,14 @@ sigRx = decimate(sigRx, paramDec)
 
 d = symbolSync(sigRx, symbTx, 1)
 
+# correct (possible) phase ambiguity w.r.t transmitted symbols
+for k in range(sigRx.shape[1]):
+    rot = np.mean(d[:,k]/sigRx[:,k])
+    sigRx[:,k] = rot*sigRx[:,k]
+
 # power normalization
-sigRx = sigRx.reshape(len(sigRx),2)/np.sqrt(signal_power(sigRx))
-d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
+sigRx = sigRx/np.sqrt(signal_power(sigRx))
+d = d/np.sqrt(signal_power(d))
 # -
 
 # ### Carrier phase recovery with blind phase search (BPS)
@@ -243,9 +246,9 @@ print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 paramCPR = parameters()
 paramCPR.alg = 'ddpll'
 paramCPR.M   = paramTx.M
-paramCPR.N   = 15
+paramCPR.N   = 35
 paramCPR.pilotInd = np.arange(0, len(sigRx), 20)
-       
+
 y_CPR, ϕ, θ = cpr(sigRx, symbTx=d, paramCPR=paramCPR)
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
@@ -264,7 +267,7 @@ pconst([y_CPR[discard:-discard,:],\
 
 ## Performance metrics
 
-# correct (possible) phase ambiguity
+# correct (possible) phase ambiguity after CPR
 for k in range(y_CPR.shape[1]):
     rot = np.mean(d[:,k]/y_CPR[:,k])
     y_CPR[:,k] = rot*y_CPR[:,k]
