@@ -37,6 +37,7 @@ from optic.core import parameters
 from optic.equalization import mimoAdaptEqualizer
 from optic.carrierRecovery import cpr
 from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power
+from optic.plot import pconst
 
 import scipy.constants as const
 
@@ -160,12 +161,8 @@ sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 # polarization multiplexed coherent optical receiver
 sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig = π/3, Rdx=1, Rdy=1)
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
-
-ax1.plot(sigRx[0::paramTx.SpS,0].real, sigRx[0::paramTx.SpS,0].imag,'.')
-ax1.axis('square');
-ax2.plot(sigRx[0::paramTx.SpS,1].real, sigRx[0::paramTx.SpS,1].imag,'.')
-ax2.axis('square');
+# plot constellations
+pconst(sigRx[0::paramTx.SpS,:])
 # -
 
 # ### Matched filtering and CD compensation
@@ -182,20 +179,14 @@ elif paramTx.pulse == 'rrc':
 pulse = pulse/np.max(np.abs(pulse))            
 sigRx = firFilter(pulse, sigRx)
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
-ax1.plot(sigRx[0::paramTx.SpS,0].real, sigRx[0::paramTx.SpS,0].imag,'.')
-ax1.axis('square');
-ax2.plot(sigRx[0::paramTx.SpS,1].real, sigRx[0::paramTx.SpS,1].imag,'.')
-ax2.axis('square');
+# plot constellations after matched filtering
+pconst(sigRx[0::paramTx.SpS,:])
 
 # CD compensation
 sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
-ax1.plot(sigRx[0::paramTx.SpS,0].real, sigRx[0::paramTx.SpS,0].imag,'.')
-ax1.axis('square');
-ax2.plot(sigRx[0::paramTx.SpS,1].real, sigRx[0::paramTx.SpS,1].imag,'.')
-ax2.axis('square');
+# plot constellations after CD compensation
+pconst(sigRx[0::paramTx.SpS,:])
 # -
 
 # ### Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences
@@ -237,21 +228,23 @@ paramEq.L = [20000, 80000]
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
+#plot constellations after adaptive equalization
+pconst([y_EQ[discard:-discard,:], d])
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
-discard = 1000
+# fig, (ax1, ax2) = plt.subplots(1, 2)
+# discard = 1000
 
-ax1.plot(y_EQ[discard:-discard,0].real, y_EQ[discard:-discard,0].imag,'.')
-ax1.plot(d[:,0].real, d[:,0].imag,'.')
-ax1.axis('square')
-ax1.set_xlim(-1.5, 1.5)
-ax1.set_ylim(-1.5, 1.5)
+# ax1.plot(y_EQ[discard:-discard,0].real, y_EQ[discard:-discard,0].imag,'.')
+# ax1.plot(d[:,0].real, d[:,0].imag,'.')
+# ax1.axis('square')
+# ax1.set_xlim(-1.5, 1.5)
+# ax1.set_ylim(-1.5, 1.5)
 
-ax2.plot(y_EQ[discard:-discard,1].real, y_EQ[discard:-discard,1].imag,'.')
-ax2.plot(d[:,1].real, d[:,1].imag,'.')
-ax2.axis('square')
-ax2.set_xlim(-1.5, 1.5)
-ax2.set_ylim(-1.5, 1.5);
+# ax2.plot(y_EQ[discard:-discard,1].real, y_EQ[discard:-discard,1].imag,'.')
+# ax2.plot(d[:,1].real, d[:,1].imag,'.')
+# ax2.axis('square')
+# ax2.set_xlim(-1.5, 1.5)
+# ax2.set_ylim(-1.5, 1.5);
 # -
 
 # ### Carrier phase recovery
@@ -274,21 +267,24 @@ plt.plot(ϕ,'-.', θ,'-')
 plt.xlim(0, len(θ))
 plt.grid();
 
-
-fig, (ax1, ax2) = plt.subplots(1, 2)
 discard = 5000
 
-ax1.plot(y_CPR[discard:-discard,0].real, y_CPR[discard:-discard,0].imag,'.')
-ax1.plot(d[:,0].real, d[:,0].imag,'.')
-ax1.axis('square')
-ax1.set_xlim(-1.5, 1.5)
-ax1.set_ylim(-1.5, 1.5)
+#plot constellations after CPR
+pconst([y_CPR[discard:-discard,:], d])
 
-ax2.plot(y_CPR[discard:-discard,1].real, y_CPR[discard:-discard,1].imag,'.')
-ax2.plot(d[:,1].real, d[:,1].imag,'.')
-ax2.axis('square')
-ax2.set_xlim(-1.5, 1.5)
-ax2.set_ylim(-1.5, 1.5);
+# fig, (ax1, ax2) = plt.subplots(1, 2)
+
+# ax1.plot(y_CPR[discard:-discard,0].real, y_CPR[discard:-discard,0].imag,'.')
+# ax1.plot(d[:,0].real, d[:,0].imag,'.')
+# ax1.axis('square')
+# ax1.set_xlim(-1.5, 1.5)
+# ax1.set_ylim(-1.5, 1.5)
+
+# ax2.plot(y_CPR[discard:-discard,1].real, y_CPR[discard:-discard,1].imag,'.')
+# ax2.plot(d[:,1].real, d[:,1].imag,'.')
+# ax2.axis('square')
+# ax2.set_xlim(-1.5, 1.5)
+# ax2.set_ylim(-1.5, 1.5);
 # -
 
 # ### Evaluate transmission metrics
