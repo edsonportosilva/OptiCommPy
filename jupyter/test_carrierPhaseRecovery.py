@@ -104,7 +104,7 @@ paramTx.Nmodes = 2         # number of signal modes [2 for polarization multiple
 # generate WDM signal
 sigTx, symbTx_, paramTx = simpleWDMTx(paramTx)
 # +
-SNR = 25
+SNR = 30
 
 SNRlin = 10**(SNR/10)/paramTx.SpS
 noiseVar = signal_power(sigTx)/SNRlin
@@ -282,3 +282,6 @@ print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+# -
+
+

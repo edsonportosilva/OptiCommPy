@@ -29,12 +29,12 @@ import numpy as np
 
 from commpy.modulation import QAMModem
 
-from optic.dsp import pulseShape, firFilter, edc, decimate, symbolSync #, fourthPowerFOE, dbp, cpr
+from optic.dsp import pulseShape, firFilter, decimate, symbolSync
 from optic.models import phaseNoise, pdmCoherentReceiver#, manakovSSF
 from optic.modelsGPU import manakovSSF
 from optic.tx import simpleWDMTx
 from optic.core import parameters
-from optic.equalization import mimoAdaptEqualizer
+from optic.equalization import edc, mimoAdaptEqualizer
 from optic.carrierRecovery import cpr
 from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power
 from optic.plot import pconst
