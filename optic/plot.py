@@ -4,7 +4,7 @@ import numpy as np
 from optic.metrics import signal_power
 
 
-def pconst(x):
+def pconst(x, lim=False, R=1.5):
     """
     Function to plot signal constellations
 
@@ -13,10 +13,10 @@ def pconst(x):
     """
     if type(x) == list:
         nSubPts = x[0].shape[1]
-        radius = 1.5 * np.sqrt(signal_power(x[0]))
+        radius = R * np.sqrt(signal_power(x[0]))
     else:
         nSubPts = x.shape[1]
-        radius = 1.5 * np.sqrt(signal_power(x))
+        radius = R * np.sqrt(signal_power(x))
 
     if nSubPts > 1:
         if nSubPts < 5:
@@ -41,8 +41,10 @@ def pconst(x):
                 ax.axis("square")
                 ax.grid()
                 ax.set_title("mode " + str(Position[k] - 1))
-                ax.set_xlim(-radius, radius)
-                ax.set_ylim(-radius, radius)
+                
+                if lim:
+                    ax.set_xlim(-radius, radius)
+                    ax.set_ylim(-radius, radius)
         else:
             for k in range(nSubPts):
                 ax = fig.add_subplot(nRows, nCols, Position[k])
@@ -50,14 +52,18 @@ def pconst(x):
                 ax.axis("square")
                 ax.grid()
                 ax.set_title("mode " + str(Position[k] - 1))
-                ax.set_xlim(-radius, radius)
-                ax.set_ylim(-radius, radius)
+                
+                if lim:
+                    ax.set_xlim(-radius, radius)
+                    ax.set_ylim(-radius, radius)
 
     elif nSubPts == 1:
         plt.figure()
         plt.plot(x.real, x.imag, ".")
         plt.axis("square")
-        plt.xlim(-radius, radius)
-        plt.ylim(-radius, radius)
+        
+        if lim:
+            ax.set_xlim(-radius, radius)
+            ax.set_ylim(-radius, radius)
 
     plt.show()
