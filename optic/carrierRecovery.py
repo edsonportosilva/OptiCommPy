@@ -1,6 +1,8 @@
+import matplotlib.pyplot as plt
 import numpy as np
 from commpy.modulation import QAMModem
 from numba import njit
+from numpy.fft import fft, fftfreq, fftshift
 
 
 def cpr(Ei, symbTx=[], paramCPR=[]):
@@ -141,3 +143,28 @@ def ddpll(Ei, N, constSymb, symbTx, pilotInd):
                 θ[k, n] = np.angle(symbTx[k, n] / (Ei[k, n]))
 
     return ϕ, θ
+
+
+def fourthPowerFOE(Ei, Ts, plotSpec=False):
+    """
+    4th power frequency offset estimator (FOE)
+    """
+
+    Fs = 1 / Ts
+    Nfft = len(Ei)
+
+    f = Fs * fftfreq(Nfft)
+    f = fftshift(f)
+
+    f4 = 10 * np.log10(np.abs(fftshift(fft(Ei ** 4))))
+    indFO = np.argmax(f4)
+
+    if plotSpec:
+        plt.figure()
+        plt.plot(f, f4, label="$|FFT(s[k]^4)|[dB]$")
+        plt.plot(f[indFO], f4[indFO], "x", label="$4f_o$")
+        plt.legend()
+        plt.xlim(min(f), max(f))
+        plt.grid()
+
+    return f[indFO] / 4

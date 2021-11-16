@@ -1,11 +1,28 @@
 import numpy as np
+import scipy.constants as const
 from commpy.modulation import QAMModem
-from commpy.utilities import signal_power
 from numba import njit
+from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
-from optic.core import parameters
+from optic.models import linFiberCh
 
+
+def edc(Ei, L, D, Fc, Fs):
+    """
+    Electronic chromatic dispersion compensation (EDC)
+
+    :param Ei: dispersed signal
+    :param L: fiber length [km]
+    :param D: chromatic dispersion parameter [ps/nm/km]
+    :param Fc: carrier frequency [Hz]
+    :param Fs: sampling frequency [Hz]
+
+    :return Eo: CD compensated signal
+    """
+    Eo = linFiberCh(Ei, L, 0, -D, Fc, Fs)
+
+    return Eo
 
 def mimoAdaptEqualizer(x, dx=[], paramEq=[]):              
     """
@@ -356,3 +373,59 @@ def dardeUp(x, dx, outEq, mu, H, nModes):
             H[indUpdTaps,:] += mu*prodErrOut@np.conj(inAdaptPar) # gradient descent update   
 
     return H, np.abs(err)**2
+
+
+def dbp(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12):
+    """
+    Digital backpropagation (symmetric, single-pol.)
+
+    :param Ei: input signal
+    :param Ltotal: total fiber length [km]
+    :param Lspan: span length [km]
+    :param hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+    :param alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+    :param D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+    :param gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+    :param Fc: carrier frequency [Hz][default: 193.1e12 Hz]
+    :param Fs: sampling frequency [Hz]
+
+    :return Ech: backpropagated signal
+    """
+    # c = 299792458   # speed of light (vacuum)
+    c_kms = const.c / 1e3
+    λ = c_kms / Fc
+    α = -alpha / (10 * np.log10(np.exp(1)))
+    β2 = (D * λ ** 2) / (2 * np.pi * c_kms)
+    γ = -gamma
+
+    Nfft = len(Ei)
+
+    ω = 2 * np.pi * Fs * fftfreq(Nfft)
+
+    Nspans = int(np.floor(Ltotal / Lspan))
+    Nsteps = int(np.floor(Lspan / hz))
+
+    Ech = Ei.reshape(len(Ei),)
+    Ech = fft(Ech)  # single-polarization field
+
+    linOperator = np.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω ** 2) * (hz / 2))
+
+    for spanN in tqdm(range(0, Nspans)):
+
+        Ech = Ech * np.exp((α / 2) * Nsteps * hz)
+
+        for stepN in range(0, Nsteps):
+            # First linear step (frequency domain)
+            Ech = Ech * linOperator
+
+            # Nonlinear step (time domain)
+            Ech = ifft(Ech)
+            Ech = Ech * np.exp(1j * γ * (Ech * np.conj(Ech)) * hz)
+
+            # Second linear step (frequency domain)
+            Ech = fft(Ech)
+            Ech = Ech * linOperator
+
+    Ech = ifft(Ech)
+
+    return Ech.reshape(len(Ech),)
