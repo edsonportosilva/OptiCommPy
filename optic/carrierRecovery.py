@@ -41,11 +41,11 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     elif alg == "bps":
         θ[:] = bps(Ei, int(N/2), constSymb, B)
         ϕ[:] = np.copy(θ)
+        
+        ϕ = np.unwrap(4 * ϕ, axis=0) / 4
+        θ = np.unwrap(4 * θ, axis=0) / 4        
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
-
-    ϕ = np.unwrap(4 * ϕ, axis=0) / 4
-    θ = np.unwrap(4 * θ, axis=0) / 4
 
     Eo = Ei * np.exp(1j * θ)
 
