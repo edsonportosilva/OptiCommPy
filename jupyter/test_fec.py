@@ -126,21 +126,18 @@ Es = mod.Es
 llr = calcLLR(symbRx, noiseVar, constSymb / np.sqrt(Es), bitMap)
 llr = llr.reshape(-1,1)
 
-err = np.logical_xor(encodedBitsTx, ((np.sign(-llr) + 1)/2).astype('int').reshape(-1,1))
-
-BERpost1 = np.mean(err)
-
-print('BERpost1 = ', BERpost1)
-
 decBits = np.zeros((10*Nwords,1))
 decBits[:] = np.nan
 
-for kk in range(Nwords):  
-    llr_in = llr[10*kk:10*kk+10, :]
+for k in range(Nwords):  
+    llr_in = llr[10*k:10*k+10, :]
     llr_out,_ = loggaldecode(H, llr_in, Nloop, Lc)
-    decBits[10*kk:10*kk+10,:] = ( np.sign(-llr_out) + 1 )/2
+    decBits[10*k:10*k+10,:] = ( np.sign(-llr_out) + 1 )/2
 
-BERpost2 = np.mean(np.logical_xor(encodedBitsTx, decBits))
+BERpost = np.mean(np.logical_xor(encodedBitsTx, decBits))
 
-print('BERpost2 = ', BERpost2)
+print('BERpostFEC = ', BERpost)
+# -
+
+
 
