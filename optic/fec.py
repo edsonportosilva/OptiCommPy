@@ -141,4 +141,4 @@ Nloop = 50;
 Lc = 2*a/sigma2;
 
 #x = galdecode(A,p1,Nloop)
-lamb, x = loggaldecode(A,r,Nloop,Lc)
+lamb, x = loggaldecode(H, r, Nloop,Lc)
