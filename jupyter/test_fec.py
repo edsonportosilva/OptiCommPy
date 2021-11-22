@@ -117,9 +117,9 @@ lamb, x = loggaldecode(H, r, Nloop,Lc, Nl, Ml)
 
 # +
 # Run AWGN simulation 
-EbN0dB = 12
+EbN0dB = 8
 M      = 16
-Nwords = 10000
+Nwords = 100000
 Nloop  = 50
 Lc = 1
 
