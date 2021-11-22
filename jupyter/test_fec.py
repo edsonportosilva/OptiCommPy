@@ -117,7 +117,7 @@ lamb, x = loggaldecode(H, r, Nloop,Lc, Nl, Ml)
 
 # +
 # Run AWGN simulation 
-EbN0dB = 7
+EbN0dB = 12
 M      = 16
 Nwords = 10000
 Nloop  = 50
@@ -164,3 +164,5 @@ for k in range(Nwords):
 BERpost = np.mean(np.logical_xor(encodedBitsTx, decBits))
 
 print('BERpostFEC = ', BERpost)
+# -
+
