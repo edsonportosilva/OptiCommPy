@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.3
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -27,8 +27,10 @@ import numpy as np
 import scipy as sp
 from tqdm.notebook import tqdm
 from numba import njit
+from numba.typed import List
 
 
+# +
 @njit
 def awgn(tx, noiseVar):
     
@@ -40,6 +42,30 @@ def awgn(tx, noiseVar):
     
     return rx
 
+def sparse(H):
+    
+    M, N = H.shape
+
+    Nl = []
+    Ml = []
+    for m in range(M):
+        Nl.append([])
+
+    for n in range(N):
+        Ml.append([])
+
+    # Build the sparse representation of A using the M and N sets
+
+    for m in range(M):
+        for n in range(N):
+            if H[m, n]:
+                Nl[m].append(n)
+                Ml[n].append(m)
+    
+    return List(Nl), List(Ml)
+
+
+# -
 
 # ## Test LDPC decoding
 
@@ -84,15 +110,16 @@ z0 = (A@x0)%2
 Nloop = 50;
 
 Lc = 2*a/sigma2;
+Nl, Ml = sparse(H)
 
 #x = galdecode(A,p1,Nloop)
-lamb, x = loggaldecode(H, r, Nloop,Lc)
+lamb, x = loggaldecode(H, r, Nloop,Lc, Nl, Ml)
 
 # +
 # Run AWGN simulation 
-EbN0dB = 4
-M      = 4
-Nwords = 100
+EbN0dB = 7
+M      = 16
+Nwords = 10000
 Nloop  = 50
 Lc = 1
 
@@ -131,13 +158,9 @@ decBits[:] = np.nan
 
 for k in range(Nwords):  
     llr_in = llr[10*k:10*k+10, :]
-    llr_out,_ = loggaldecode(H, llr_in, Nloop, Lc)
+    llr_out,_ = loggaldecode(H, llr_in, Nloop, Lc, Nl, Ml)
     decBits[10*k:10*k+10,:] = ( np.sign(-llr_out) + 1 )/2
 
 BERpost = np.mean(np.logical_xor(encodedBitsTx, decBits))
 
 print('BERpostFEC = ', BERpost)
-# -
-
-
-
