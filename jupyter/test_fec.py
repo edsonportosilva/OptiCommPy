@@ -129,3 +129,94 @@ BERpost = np.mean(np.logical_xor(codedBitsTx, decodedBits))
 
 print('BERpostFEC = %.2e'%BERpost)
 print('Number of bits = ', decodedBits.size)
+# -
+
+
+
+# +
+Nwords = 800
+nIter  = 20
+
+# FEC parameters
+LDPCparams = ldpc.get_ldpc_code_params(filePath)
+K = LDPCparams['n_vnodes'] - LDPCparams['n_cnodes']
+
+# Run BER vs Ebn0 Monte Carlo simulation 
+qamOrder  = [16]  # Modulation order
+EbN0dB_  = np.arange(2, 8, 0.125)
+
+BERpre   = np.zeros((len(EbN0dB_),len(qamOrder)))
+BERpost  = np.zeros((len(EbN0dB_),len(qamOrder)))
+
+BERpre[:]  = np.nan
+BERpost[:] = np.nan
+
+for ii, M in enumerate(qamOrder):
+    print('run sim: M = ', M)
+    
+    # modulation parameters
+    mod = QAMModem(m=M)
+    constSymb = mod.constellation
+    bitMap = mod.demodulate(constSymb, demod_type="hard")
+    bitMap = bitMap.reshape(-1, int(np.log2(M)))
+    Es = mod.Es
+
+    for indSNR in tqdm(range(EbN0dB_.size)):
+        
+        EbN0dB = EbN0dB_[indSNR]
+        
+        # generate random bits
+        bits = np.random.randint(2, size = (K, Nwords))
+
+        # encode data bits with LDPC soft-FEC
+        bitsTx, codedBitsTx, interlv = ldpcEncode(bits, LDPCparams)
+
+        # Map bits to constellation symbols
+        symbTx = mod.modulate(bitsTx)
+
+        # Normalize symbols energy to 1
+        symbTx = symbTx/np.sqrt(Es)
+
+        # AWGN    
+        snrdB    = EbN0dB + 10*np.log10(np.log2(M))
+        noiseVar = 1/(10**(snrdB/10))
+
+        symbRx = awgn(symbTx, noiseVar)
+
+        # pre-FEC BER calculation (hard demodulation)
+        BERpre[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, mod)
+        #print('BER = %.2e'%BERpre[indSNR, ii])
+
+        # soft-demodulation
+        llr = calcLLR(symbRx, noiseVar, constSymb/np.sqrt(Es), bitMap)
+
+        # soft-FEC decoding
+        decodedBits, llr_out = ldpcDecode(llr, interlv, LDPCparams, nIter, alg="SPA")
+
+        # post-FEC BER calculation
+        BERpost[indSNR, ii] = np.mean(np.logical_xor(codedBitsTx, decodedBits))
+        #print('BERpostFEC = %.2e'%BERpost[indSNR, ii])
+
+# +
+# Plot simulation results and theoretical curves        
+BERpre[BERpre==0] = np.nan
+BERpost[BERpost==0] = np.nan
+
+plt.figure(figsize=(10,6))
+for ii, M in enumerate(qamOrder):
+    plt.plot(EbN0dB_, np.log10(BERpre[:,ii]),'o-', label=str(M)+'QAM monte carlo [pre]')
+
+#plt.gca().set_prop_cycle(None)
+
+for ii, M in enumerate(qamOrder):
+    plt.plot(EbN0dB_, np.log10(BERpost[:,ii]),'x-', label=str(M)+'QAM monte carlo [post]')
+
+plt.xlim(min(EbN0dB_), max(EbN0dB_))
+plt.ylim(-6, 0)
+plt.legend();
+plt.xlabel('EbN0 [dB]');
+plt.ylabel('log10(BER)');
+plt.grid()
+# -
+
+
