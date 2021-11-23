@@ -14,6 +14,7 @@
 #     name: python3
 # ---
 
+# +
 from commpy.modulation import QAMModem, PSKModem
 from optic.metrics import signal_power, calcLLR, fastBERcalc
 from optic.fec import loggaldecode
@@ -25,6 +26,14 @@ from tqdm.notebook import tqdm
 from numba import njit
 from numba.typed import List
 
+import os.path as path
+# -
+
+mainDir = path.abspath(path.join("../"))
+
+
+# %load_ext autoreload
+# %autoreload 2
 
 # +
 @njit
@@ -57,7 +66,7 @@ def sparse(H):
                 Nl[m].append(n)
                 Ml[n].append(m)
                 
-    #return Nl, Ml            
+   # return Nl, Ml            
     return List(Nl), List(Ml)
 
 
@@ -110,25 +119,31 @@ Nl, Ml = sparse(H)
 
 #x = galdecode(A,p1,Nloop)
 lamb, x = loggaldecode(H, r, Nloop,Lc, Nl, Ml)
+print('c = ', c.T)
+print('x = ', x.T)
 
 # +
 # Run AWGN simulation 
-EbN0dB = 8
+EbN0dB = 10
 M      = 16
-Nwords = 1000
-Nloop  = 50
-Lc = 1
+Nwords = 10000
+Nloop  = 100
+Lc = 2
 
 K = H.shape[0]
+
+inter = np.random.permutation(N)
+deint = inter.argsort()
 
 # generate random bits
 bitsTx = np.random.randint(2, size=(K, Nwords)) 
 encodedBitsTx = ((G@bitsTx)%2).astype('int')
+interBitsTx   = (encodedBitsTx[inter,:].T).reshape(1,-1).T
 encodedBitsTx = (encodedBitsTx.T).reshape(1,-1).T
 
 # Map bits to constellation symbols
 mod = QAMModem(m=M)
-symbTx = mod.modulate(encodedBitsTx)
+symbTx = mod.modulate(interBitsTx)
 
 # Normalize symbols energy to 1
 symbTx = symbTx/np.sqrt(mod.Es)
@@ -153,26 +168,38 @@ llr = llr.reshape(-1,1)
 
 decBits = np.zeros((10*Nwords,1))
 decBits[:] = np.nan
-
+# +
+Nloop = 4
 for k in range(Nwords):  
     llr_in = llr[10*k:10*k+10, :]
-    llr_out,_ = loggaldecode(H, llr_in, Nloop, Lc, Nl, Ml)
+    llr_out,_ = loggaldecode(H, llr_in[deint], Nloop, Lc, Nl, Ml)
     decBits[10*k:10*k+10,:] = ( np.sign(-llr_out) + 1 )/2
 
 BERpost = np.mean(np.logical_xor(encodedBitsTx, decBits))
 
 print('BERpostFEC = ', BERpost)
+
+plt.plot(np.logical_xor(encodedBitsTx, decBits))
 # -
 # ## Test AR4JA LDPC 
 
 # +
-path = r'C:\Users\edson\Documents\GitHub\edsonportosilva\robochameleon-private\addons\IEEE_802_11n_LDPC_FEC'
+path = r'C:\Users\edson\Documents\GitHub\edsonportosilva\robochameleon-private\addons\AR4JA_LDPC_FEC'
 
-d = sp.io.loadmat(path+'\LDPC_11nD2_1944b_R12.mat')
-H = d['LDPC']['H'] # parity check matrix
-H = H[0][0][0][0][0]
-H = H.astype(np.int32)
+d = sp.io.loadmat(path+'\LDPC_AR4JA_6144b_R23.mat')
+H = d['H']
+
+# H = d['LDPC']['H'] # parity check matrix
+# H = H[0][0][0][0][0]
+H = sp.sparse.csr_matrix.todense(H).astype(np.int8)
+H = np.asarray(H)
+
+file_path = r'C:\Users\edson\Documents\GitHub\edsonportosilva\OpticCommPy\optic\fecParams\LDPC_AR4JA_6144b_R23.txt'
+
+ldpc.write_ldpc_params(H, file_path)
 # -
+
+H
 
 M, N = H.shape
 K = N-M
@@ -181,20 +208,24 @@ G = np.concatenate((P, np.eye(int(K)))) # now A*G = 0 (mod 2)
 
 # +
 # Run AWGN simulation 
-EbN0dB = 20
-M      = 4
-Nwords = 8
-Nloop  = 10
-Lc = 1
+EbN0dB = 10
+M      = 16
+Nwords = 2
+Nloop  = 2
+Lc = 2
+
+inter = np.random.permutation(N)
+deint = inter.argsort()
 
 # generate random bits
 bitsTx = np.random.randint(2, size=(K, Nwords)) 
 encodedBitsTx = ((G@bitsTx)%2).astype('int')
+interBitsTx   = (encodedBitsTx[inter,:].T).reshape(1,-1).T
 encodedBitsTx = (encodedBitsTx.T).reshape(1,-1).T
 
 # Map bits to constellation symbols
 mod = QAMModem(m=M)
-symbTx = mod.modulate(encodedBitsTx)
+symbTx = mod.modulate(interBitsTx)
 
 # Normalize symbols energy to 1
 symbTx = symbTx/np.sqrt(mod.Es)
@@ -223,9 +254,10 @@ decBits[:] = np.nan
 Nl, Ml = sparse(H)
 
 # +
+Nloop = 20
 for ii in range(Nwords):  
     llr_in = llr[N*ii:N*ii+N, :]
-    llr_out,_ = loggaldecode(H, llr_in, Nloop, Lc, Nl, Ml)
+    llr_out,_ = loggaldecode(H, llr_in[deint], Nloop, Lc, Nl, Ml)
     decBits[N*ii:N*ii+N,:] = ( np.sign(-llr_out) + 1 )/2
 
 BERpost = np.mean(np.logical_xor(encodedBitsTx, decBits))
@@ -234,5 +266,76 @@ print('BERpostFEC = ', BERpost)
 # -
 
 plt.plot(np.logical_xor(encodedBitsTx, decBits))
+
+from commpy.channelcoding import ldpc
+from commpy.channelcoding.ldpc import triang_ldpc_systematic_encode as encodeLDPC
+from commpy.channelcoding.ldpc import ldpc_bp_decode as decodeLDPC
+from commpy.channelcoding.interleavers import RandInterlv
+
+# +
+# FEC parameters
+family = "11nD2"
+R = 56
+n = 648
+    
+filename = '\LDPC_' + family + '_' + str(n) + 'b_R' + str(R) + '.txt'
+filePath = mainDir + r'\optic\fecParams' + filename
+filePath
+
+# +
+# Run AWGN simulation 
+EbN0dB = 15
+M      = 256
+Nwords = 80
+Nloop  = 40
+Lc = 2
+
+LDPCparams = ldpc.get_ldpc_code_params(filePath)
+
+N = LDPCparams['n_vnodes']
+K = N-LDPCparams['n_cnodes']
+
+inter = np.random.permutation(N)
+deint = inter.argsort()
+
+# generate random bits
+bitsTx = np.random.randint(2, size=(K, Nwords))
+
+encodedBitsTx = encodeLDPC(bitsTx, LDPCparams)
+interBitsTx   = (encodedBitsTx[inter,:].T).reshape(1,-1).T
+
+# Map bits to constellation symbols
+mod = QAMModem(m=M)
+symbTx = mod.modulate(interBitsTx)
+
+# Normalize symbols energy to 1
+symbTx = symbTx/np.sqrt(mod.Es)
+
+# AWGN    
+snrdB    = EbN0dB + 10*np.log10(np.log2(M))
+noiseVar = 1/(10**(snrdB/10))
+
+symbRx = awgn(symbTx, noiseVar)
+
+# BER calculation
+BER, _, _ = fastBERcalc(symbRx, symbTx, mod)
+print('BER = ', BER[0])
+
+constSymb = mod.constellation
+bitMap = mod.demodulate(constSymb, demod_type="hard")
+bitMap = bitMap.reshape(-1, int(np.log2(M)))
+Es = mod.Es
+
+llr = calcLLR(symbRx, noiseVar, constSymb / np.sqrt(Es), bitMap)
+
+llr_in = llr.reshape(-1, N)
+llr_in = llr_in[:, deint].ravel()
+
+decodedBits, llr_out = decodeLDPC(llr_in, LDPCparams, 'SPA', Nloop)
+BERpost = np.mean(np.logical_xor(encodedBitsTx, decodedBits))
+
+print('BERpostFEC = ', BERpost)
+print('Number of bits = ', decodedBits.size)
+# -
 
 
