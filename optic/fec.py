@@ -5,19 +5,16 @@ Created on Sat Nov 20 19:23:45 2021
 @author: edson
 """
 import numpy as np
-from commpy.channelcoding import ldpc
 from commpy.channelcoding.ldpc import triang_ldpc_systematic_encode as enc
 from commpy.channelcoding.ldpc import ldpc_bp_decode as dec
 
 
-def ldpcEncode(b, filePath):
+def ldpcEncode(b, LDPCparams):
     """
     Encode data bits with binary LDPC code
     b = np.random.randint(2, size=(K, Nwords))
 
-    """
-    LDPCparams = ldpc.get_ldpc_code_params(filePath)
-
+    """   
     N = LDPCparams["n_vnodes"]
 
     # generate random interleaver
@@ -27,7 +24,7 @@ def ldpcEncode(b, filePath):
     codedBits = enc(b, LDPCparams)
     interCodedBits = (codedBits[interlv, :].T).reshape(1, -1).T
 
-    return interCodedBits, codedBits, interlv, LDPCparams
+    return interCodedBits, codedBits, interlv
 
 
 def ldpcDecode(llr, interlv, LDPCparams, nIter, alg="SPA"):
