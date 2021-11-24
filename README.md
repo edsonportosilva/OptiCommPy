@@ -6,7 +6,7 @@ Simulate optical communications systems with Python. This repository contains co
 
 ## Available features
 
-* QAM/PSK signal generation with [Commpy](https://github.com/veeresht/CommPy)
+* QAM/PSK signal generation with [CommPy](https://github.com/veeresht/CommPy)
 * Numerical models to simulate optical transmitters, nonlinear propagation over optical fibers, and optical receivers.
 * CPU and GPU-based implementations of the [*split-step Fourier Method*](https://en.wikipedia.org/wiki/Split-step_method) to simulate polarization multiplexed WDM transmission.
 * Standard digital signal processing (DSP) blocks employed in coherent optical receivers. For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the core functions.
