@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Nov 20 19:23:45 2021
 
-@author: edson
-"""
 import numpy as np
 from commpy.channelcoding.ldpc import triang_ldpc_systematic_encode as enc
 from commpy.channelcoding.ldpc import ldpc_bp_decode as dec
@@ -14,7 +10,7 @@ def ldpcEncode(b, LDPCparams):
     Encode data bits with binary LDPC code
     b = np.random.randint(2, size=(K, Nwords))
 
-    """   
+    """
     N = LDPCparams["n_vnodes"]
 
     # generate random interleaver
