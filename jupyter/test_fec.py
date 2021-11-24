@@ -34,7 +34,6 @@ from commpy.channelcoding.ldpc import ldpc_bp_decode as decodeLDPC
 from commpy.channelcoding.interleavers import RandInterlv
 
 
-
 # %load_ext autoreload
 # %autoreload 2
 
