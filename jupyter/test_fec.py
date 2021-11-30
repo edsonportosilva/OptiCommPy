@@ -197,7 +197,7 @@ for ii, M in enumerate(qamOrder):
         #print('BERpostFEC = %.2e'%BERpost[indSNR, ii])
 
 # +
-# Plot simulation results and theoretical curves        
+# Plot simulation results       
 BERpre[BERpre==0] = np.nan
 BERpost[BERpost==0] = np.nan
 
@@ -208,7 +208,7 @@ for ii, M in enumerate(qamOrder):
 #plt.gca().set_prop_cycle(None)
 
 for ii, M in enumerate(qamOrder):
-    plt.plot(EbN0dB_, np.log10(BERpost[:,ii]),'x-', label=str(M)+'QAM monte carlo [post]')
+    plt.plot(EbN0dB_, np.log10(BERpost[:,ii]),'kx-', label=str(M)+'QAM monte carlo [post]')
 
 plt.xlim(min(EbN0dB_), max(EbN0dB_))
 plt.ylim(-6, 0)
@@ -216,6 +216,3 @@ plt.legend();
 plt.xlabel('EbN0 [dB]');
 plt.ylabel('log10(BER)');
 plt.grid()
-# -
-
-
