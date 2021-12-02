@@ -52,9 +52,9 @@ def awgn(tx, noiseVar):
 # ## Create LDPCparam files
 
 # +
-# path = r'C:\Users\edson\Documents\GitHub\edsonportosilva\robochameleon-private\addons\AR4JA_LDPC_FEC'
+# path = r'C:\Users\Edson Porto da Silva\Documents\GitHub\robochameleon-private\addons\AR4JA_LDPC_FEC'
 
-# d = sp.io.loadmat(path+'\LDPC_AR4JA_6144b_R23.mat')
+# d = sp.io.loadmat(path+'\LDPC_AR4JA_32768b_R12.mat')
 # H = d['H']
 
 # # H = d['LDPC']['H'] # parity check matrix
@@ -62,7 +62,7 @@ def awgn(tx, noiseVar):
 # H = sp.sparse.csr_matrix.todense(H).astype(np.int8)
 # H = np.asarray(H)
 
-# file_path = r'C:\Users\edson\Documents\GitHub\edsonportosilva\OpticCommPy\optic\fecParams\LDPC_AR4JA_6144b_R23.txt'
+# file_path = r'C:\Users\Edson Porto da Silva\Documents\GitHub\OptiCommPy-private\optic\fecParams\LDPC_AR4JA_32768b_R12.txt'
 
 # ldpc.write_ldpc_params(H, file_path)
 
@@ -70,7 +70,7 @@ def awgn(tx, noiseVar):
 # FEC parameters
 family = "11nD2"
 R = 56
-n = 648
+n = 1944
 
 mainDir  = path.abspath(path.join("../")) 
 filename = '\LDPC_' + family + '_' + str(n) + 'b_R' + str(R) + '.txt'
@@ -78,15 +78,20 @@ filePath = mainDir + r'\optic\fecParams' + filename
 filePath
 
 # +
+#LDPCparams['filemane'][12:]
+
+# +
 # Run AWGN simulation 
-EbN0dB = 16
-M      = 256
-Nwords = 800
-nIter  = 20
+EbN0dB = 11
+M      = 64
+Nwords = 600
+nIter  = 50
 
 # FEC parameters
 LDPCparams = ldpc.get_ldpc_code_params(filePath)
 K = LDPCparams['n_vnodes'] - LDPCparams['n_cnodes']
+
+LDPCparams['filename'] = filename
 
 # modulation parameters
 mod = QAMModem(m=M)
@@ -124,25 +129,22 @@ llr = calcLLR(symbRx, noiseVar, constSymb/np.sqrt(Es), bitMap)
 decodedBits, llr_out = ldpcDecode(llr, interlv, LDPCparams, nIter, alg="SPA")
 
 # post-FEC BER calculation
-BERpost = np.mean(np.logical_xor(codedBitsTx, decodedBits))
+BERpost = np.mean(np.logical_xor(bits, decodedBits[0:K,:]))
 
 print('BERpostFEC = %.2e'%BERpost)
 print('Number of bits = ', decodedBits.size)
-# -
-
-
-
 # +
-Nwords = 800
-nIter  = 20
+Nwords = 600
+nIter  = 50
 
 # FEC parameters
 LDPCparams = ldpc.get_ldpc_code_params(filePath)
+LDPCparams['filename'] = filename
 K = LDPCparams['n_vnodes'] - LDPCparams['n_cnodes']
 
 # Run BER vs Ebn0 Monte Carlo simulation 
-qamOrder  = [16]  # Modulation order
-EbN0dB_  = np.arange(2, 8, 0.125)
+qamOrder  = [64]  # Modulation order
+EbN0dB_  = np.arange(7, 12, 0.125)
 
 BERpre   = np.zeros((len(EbN0dB_),len(qamOrder)))
 BERpost  = np.zeros((len(EbN0dB_),len(qamOrder)))
@@ -216,3 +218,6 @@ plt.legend();
 plt.xlabel('EbN0 [dB]');
 plt.ylabel('log10(BER)');
 plt.grid()
+# -
+
+
