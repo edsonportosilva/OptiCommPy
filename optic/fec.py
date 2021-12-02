@@ -3,7 +3,7 @@
 import numpy as np
 from commpy.channelcoding.ldpc import triang_ldpc_systematic_encode as enc
 from commpy.channelcoding.ldpc import ldpc_bp_decode as dec
-
+import re
 
 def ldpcEncode(b, LDPCparams):
     """
@@ -11,7 +11,16 @@ def ldpcEncode(b, LDPCparams):
     b = np.random.randint(2, size=(K, Nwords))
 
     """
-    N = LDPCparams["n_vnodes"]
+    fecFamily = LDPCparams['filename'][6:11]
+    fecID = LDPCparams['filename'][12:]
+    
+    num = [float(s) for s in re.findall(r'-?\d+\.?\d*', fecID)]    
+    n = int(num[0])
+       
+    if fecFamily == 'AR4JA':
+        N = n
+    else:
+        N = LDPCparams["n_vnodes"]
 
     # generate random interleaver
     interlv = np.random.permutation(N)
@@ -29,15 +38,29 @@ def ldpcDecode(llr, interlv, LDPCparams, nIter, alg="SPA"):
     b = np.random.randint(2, size=(K, Nwords))
 
     """
+    
+    fecID = LDPCparams['filename'][12:]
+    
+    num = [float(s) for s in re.findall(r'-?\d+\.?\d*', fecID)]    
+    
     N = LDPCparams["n_vnodes"]
-
+    n = int(num[0])
+    
+    dep = int(N-n)
+    
     # generate deinterleaver
     deinterlv = interlv.argsort()
 
     # deinterleave received LLRs
-    llr = llr.reshape(-1, N)
-    llr = llr[:, deinterlv].ravel()
-
+    llr = llr.reshape(-1, n)
+    llr = llr[:, deinterlv]
+    
+    # depuncturing
+    if dep > 0:
+        llr = np.concatenate((llr, np.zeros((llr.shape[0], dep))), axis=1)
+                
+    llr = llr.ravel()
+        
     # decode received code words
     decodedBits, llr_out = dec(llr, LDPCparams, alg, nIter)
 
