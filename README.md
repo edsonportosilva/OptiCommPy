@@ -32,13 +32,13 @@ If you want to contribute to this project, just implement the feature you want a
 Clone from github and install as follows::
 
 ```
-$ git clone https://github.com/edsonportosilva/OptiCommPy-public.git
-$ cd OptiCommPy-public
+$ git clone https://github.com/edsonportosilva/OptiCommPy.git
+$ cd OptiCommPy
 $ python setup.py install
 ```
 
 ## Citing this repository
 
-Edson Porto da Silva, & Adolfo Herbster. (2021). edsonportosilva/OptiCommpy-public: First release (alpha version) (v0.1.0-alpha).
+Edson Porto da Silva, & Adolfo Herbster. (2021). edsonportosilva/OptiCommpy: First release (alpha version) (v0.1.0-alpha).
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5668218.svg)](https://doi.org/10.5281/zenodo.5668218)
