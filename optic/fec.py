@@ -26,7 +26,7 @@ def ldpcEncode(b, LDPCparams):
     interlv = np.random.permutation(N)
 
     # encode bits
-    codedBits = enc(b, LDPCparams)
+    codedBits = enc(b, LDPCparams, pad=False)
     interCodedBits = (codedBits[interlv, :].T).reshape(1, -1).T
 
     return interCodedBits, codedBits, interlv
