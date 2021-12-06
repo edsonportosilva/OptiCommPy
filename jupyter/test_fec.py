@@ -52,9 +52,9 @@ def awgn(tx, noiseVar):
 # ## Create LDPCparam files
 
 # +
-# path = r'C:\Users\Edson Porto da Silva\Documents\GitHub\robochameleon-private\addons\AR4JA_LDPC_FEC'
+# pathdir = r'C:\Users\edson.DESKTOP-54IJM4F\Desktop\DVBS2'
 
-# d = sp.io.loadmat(path+'\LDPC_AR4JA_32768b_R12.mat')
+# d = sp.io.loadmat(pathdir+'\LDPC_ARJA_1280b_R45.mat')
 # H = d['H']
 
 # # H = d['LDPC']['H'] # parity check matrix
@@ -62,15 +62,15 @@ def awgn(tx, noiseVar):
 # H = sp.sparse.csr_matrix.todense(H).astype(np.int8)
 # H = np.asarray(H)
 
-# file_path = r'C:\Users\Edson Porto da Silva\Documents\GitHub\OptiCommPy-private\optic\fecParams\LDPC_AR4JA_32768b_R12.txt'
+# file_path = r'C:\Users\edson.DESKTOP-54IJM4F\Documents\GitHub\OptiCommPy-private\optic\fecParams\LDPC_ARJA_1280b_R45.txt'
 
 # ldpc.write_ldpc_params(H, file_path)
 
 # +
 # FEC parameters
-family = "11nD2"
+family = "DVBS2"
 R = 56
-n = 1944
+n = 64800
 
 mainDir  = path.abspath(path.join("../")) 
 filename = '\LDPC_' + family + '_' + str(n) + 'b_R' + str(R) + '.txt'
@@ -82,10 +82,10 @@ filePath
 
 # +
 # Run AWGN simulation 
-EbN0dB = 11
+EbN0dB = 10
 M      = 64
-Nwords = 600
-nIter  = 50
+Nwords = 16
+nIter  = 10
 
 # FEC parameters
 LDPCparams = ldpc.get_ldpc_code_params(filePath)
@@ -134,7 +134,7 @@ BERpost = np.mean(np.logical_xor(bits, decodedBits[0:K,:]))
 print('BERpostFEC = %.2e'%BERpost)
 print('Number of bits = ', decodedBits.size)
 # +
-Nwords = 600
+Nwords = 16
 nIter  = 50
 
 # FEC parameters
@@ -144,7 +144,7 @@ K = LDPCparams['n_vnodes'] - LDPCparams['n_cnodes']
 
 # Run BER vs Ebn0 Monte Carlo simulation 
 qamOrder  = [64]  # Modulation order
-EbN0dB_  = np.arange(7, 12, 0.125)
+EbN0dB_  = np.arange(7, 9.5, 0.05)
 
 BERpre   = np.zeros((len(EbN0dB_),len(qamOrder)))
 BERpost  = np.zeros((len(EbN0dB_),len(qamOrder)))
