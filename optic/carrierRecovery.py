@@ -59,16 +59,27 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
 
 @njit
 def bps(Ei, N, constSymb, B):
-    """
+    '''
     Blind phase search (BPS) algorithm
 
-    :param Ei: received symbols
-    :param N: half of the 2*N+1 average window
-    :param constSymb: constellation
-    :param B: number of test phases
+    Parameters
+    ----------
+    Ei : ndarray
+        Received constellation symbols.
+    N : int
+        Half of the 2*N+1 average window.
+    constSymb : ndarray
+        Complex-valued constellation.
+    B : int
+        number of test phases.
 
-    :return θ: estimated phases
-    """
+    Returns
+    -------
+    θ : ndarray
+        Estimated phases.
+
+    '''
+    
     nModes = Ei.shape[1]
 
     ϕ_test = np.arange(0, B) * (np.pi / 2) / B  # test phases
