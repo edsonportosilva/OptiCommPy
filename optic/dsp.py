@@ -7,15 +7,23 @@ from scipy.signal import lfilter
 
 
 def firFilter(h, x):
-    """
-    Implements FIR filtering and compensates filter delay
+    '''
+    Performs FIR filtering and compensates for filter delay
     (assuming the impulse response is symmetric)
+    
+    Parameters
+    ----------
+    h : ndarray
+        Coefficients of the FIR filter.
+    x : ndarray
+        Input signal.
 
-    :param h: impulse response (symmetric)
-    :param x: input signal
+    Returns
+    -------
+    y : ndarray
+        Output (filtered) signal.
 
-    :return y: output filtered signal
-    """
+    '''
 
     try:
         x.shape[1]
@@ -39,17 +47,29 @@ def firFilter(h, x):
 
 
 def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
-    """
-    Generate pulse shaping filters
+    '''
+    Generates a pulse shaping filter
 
-    :param pulseType: 'rect','nrz','rrc'
-    :param SpS: samples per symbol
-    :param N: number of filter coefficients
-    :param alpha: RRC rolloff factor
-    :param Ts: symbol period
+    Parameters
+    ----------
+    pulseType : string ('rect','nrz','rrc')
+        type of pulse shaping filter.
+    SpS : int, optional
+        Number of samples per symbol of input signal. The default is 2.
+    N : int, optional
+        Number of filter coefficients. The default is 1024.
+    alpha : float, optional
+        Rolloff of RRC filter. The default is 0.1.
+    Ts : float, optional
+        Symbol period in seconds. The default is 1.
 
-    :return filterCoeffs: normalized filter coefficients
-    """
+    Returns
+    -------
+    filterCoeffs : nparray
+        Array of filter coefficients (normalized).
+
+    '''
+
     fa = (1 / Ts) * SpS
 
     t = np.linspace(-2, 2, SpS)
@@ -69,8 +89,10 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
         tindex, filterCoeffs = rrcosfilter(N, alpha, Ts, fa)
     elif pulseType == "rc":
         tindex, filterCoeffs = rcosfilter(N, alpha, Ts, fa)
-
-    return filterCoeffs / np.sqrt(np.sum(filterCoeffs ** 2))
+    
+    filterCoeffs = filterCoeffs / np.sqrt(np.sum(filterCoeffs ** 2))
+    
+    return filterCoeffs
 
 
 def sincInterp(x, fa):
@@ -99,16 +121,27 @@ def sincInterp(x, fa):
 
 
 def lowPassFIR(fc, fa, N, typeF="rect"):
-    """
-    Calculate FIR coeffs for a lowpass filter
+    '''
+    Calculate FIR coefficients of a lowpass filter
 
-    :param fc : cutoff frequency
-    :param fa : sampling frequency
-    :param N  : number of coefficients
-    :param typeF : 'rect' or 'gauss'
+    Parameters
+    ----------
+    fc : float
+        Cutoff frequency.
+    fa : float
+        Sampling frequency.
+    N : int
+        Number of filter coefficients.
+    typeF : string, optional
+        Type of response ('rect', 'gauss'). The default is "rect".
 
-    :return h : FIR filter coefficients
-    """
+    Returns
+    -------
+    h : ndarray
+        Filter coefficients.
+
+    '''
+   
     fu = fc / fa
     d = (N - 1) / 2
     n = np.arange(0, N)
@@ -127,7 +160,25 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
 
 
 def decimate(Ei, param):
+    '''
+    Decimate signal
 
+    Parameters
+    ----------
+    Ei : ndarray
+        Input signal.
+    param : core.parameter
+        Decimation parameters:            
+            param.SpS_in  : samples per symbol of the input signal.
+            param.SpS_out : samples per symbol of the output signal.
+
+    Returns
+    -------
+    Eo : ndarray
+        Decimated signal.
+
+    '''
+    
     decFactor = int(param.SpS_in / param.SpS_out)
 
     # simple timing recovery
@@ -151,7 +202,24 @@ def decimate(Ei, param):
 
 
 def symbolSync(rx, tx, SpS):
+    '''
+    Symbol synchronizer
 
+    Parameters
+    ----------
+    rx : ndarray
+        Received symbol sequence.
+    tx : ndarray
+        Transmitted symbol sequence.
+    SpS : int
+        Samples per symbol of input signals.
+
+    Returns
+    -------
+    tx : ndarray
+        Transmitted sequence synchronized to rx.
+
+    '''
     nModes = rx.shape[1]
 
     rx = rx[0::SpS, :]
@@ -182,6 +250,22 @@ def symbolSync(rx, tx, SpS):
 
 
 def finddelay(x, y):
+    '''
+    Find delay between x and y
+
+    Parameters
+    ----------
+    x : ndarray
+        signal 1.
+    y : ndarray
+        signal 2.
+
+    Returns
+    -------
+    d : int
+        Delay between x and y, in samples.
+
+    '''
 
     d = np.argmax(signal.correlate(x, y)) - x.shape[0]+1
 
