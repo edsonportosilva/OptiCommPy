@@ -7,7 +7,7 @@ from numpy.fft import fft, fftfreq, fftshift
 
 def cpr(Ei, symbTx=[], paramCPR=[]):
     """
-    Carrier phase recovery (CPR)
+    Carrier phase recovery function (CPR)
 
     Parameters
     ----------
@@ -34,10 +34,8 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     -------
     Eo : complex-valued ndarray
         Phase-compensated signal.
-    ϕ : real-valued ndarray
-        Raw estimated phase-shifts.
     θ : real-valued ndarray
-        Moving-average of estimated phase-shifts.
+        Time-varying estimated phase-shifts.
 
     """
 
@@ -46,6 +44,10 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     M = getattr(paramCPR, "M", 4)
     B = getattr(paramCPR, "B", 64)
     N = getattr(paramCPR, "N", 35)
+    Kv = getattr(paramCPR, "Kv", 0.3)
+    tau1 = getattr(paramCPR, "tau1", 1 / (2 * np.pi * 10e6))
+    tau2 = getattr(paramCPR, "tau2", 1 / (2 * np.pi * 10e6))
+    Ts = getattr(paramCPR, "Ts", 1 / 32e9)
     pilotInd = getattr(paramCPR, "pilotInd", np.array([len(Ei) + 1]))
 
     try:
@@ -56,22 +58,19 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     constSymb = mod.constellation / np.sqrt(mod.Es)
 
     if alg == "ddpll":
-        ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
+        θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
         θ = bps(Ei, int(N / 2), constSymb, B)
-        ϕ = np.copy(θ)
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
-    ϕ = np.unwrap(4 * ϕ, axis=0) / 4
     θ = np.unwrap(4 * θ, axis=0) / 4
 
     Eo = Ei * np.exp(1j * θ)
 
     if Eo.shape[1] == 1:
         Eo = Eo[:]
-        ϕ = ϕ[:]
         θ = θ[:]
-    return Eo, ϕ, θ
+    return Eo, θ
 
 
 @njit
@@ -93,7 +92,7 @@ def bps(Ei, N, constSymb, B):
     Returns
     -------
     θ : real-valued ndarray
-        Estimated phases.
+        Time-varying estimated phase-shifts.
 
     """
 
@@ -128,7 +127,7 @@ def bps(Ei, N, constSymb, B):
 
 
 @njit
-def ddpll(Ei, N, constSymb, symbTx, pilotInd):
+def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     """
     Decision-directed Phase-locked Loop (DDPLL) algorithm
 
@@ -136,8 +135,14 @@ def ddpll(Ei, N, constSymb, symbTx, pilotInd):
     ----------
     Ei : complex-valued ndarray
         Received constellation symbols.
-    N : TYPE
-        DESCRIPTION.
+    Ts : float scalar
+        Symbol period.
+    Kv : float scalar
+        Loop filter gain.
+    tau1 : float scalar
+        Loop filter parameter.
+    tau2 : float scalar
+        Loop filter parameter.
     constSymb : complex-valued ndarray
         Complex-valued ideal constellation symbols.
     symbTx : complex-valued ndarray
@@ -147,37 +152,52 @@ def ddpll(Ei, N, constSymb, symbTx, pilotInd):
 
     Returns
     -------
-    ϕ : real-valued ndarray
-        Raw estimated phase-shifts.
     θ : real-valued ndarray
-        Moving-average of estimated phase-shifts.
+        Time-varying estimated phase-shifts.
 
     """
     nModes = Ei.shape[1]
 
-    ϕ = np.zeros(Ei.shape)
     θ = np.zeros(Ei.shape)
 
+    # Loop filter coefficients
+    a1b = np.array(
+        [
+            1,
+            Ts / (2 * tau1) * (1 - 1 / np.tan(Ts / (2 * tau2))),
+            Ts / (2 * tau1) * (1 + 1 / np.tan(Ts / (2 * tau2))),
+        ]
+    )
+
+    u = np.zeros(3)  # [u_f, u_d1, u_d]
+
     for n in range(0, nModes):
+
+        u[2] = 0  # Output of phase detector (residual phase error)
+        u[0] = 0  # Output of loop filter
+
         for k in range(0, len(Ei)):
+            u[1] = u[2]
 
-            decided = np.argmin(
-                np.abs(Ei[k, n] * np.exp(1j * θ[k - 1, n]) - constSymb)
-            )  # find closest constellation symbol
+            # Remove estimate of phase error from input symbol
+            Eo = Ei[k, n] * np.exp(1j * θ[k, n])
 
+            # Slicer (perform hard decision on symbol)
             if k in pilotInd:
-                ϕ[k, n] = np.angle(
-                    symbTx[k, n] / (Ei[k, n])
-                )  # phase estimation with pilot symbol
+                # phase estimation with pilot symbol
+                # Generate phase error signal (also called x_n (Meyer))
+                u[2] = np.imag(Eo * np.conj(symbTx[k, n]))
             else:
-                ϕ[k, n] = np.angle(
-                    constSymb[decided] / (Ei[k, n])
-                )  # phase estimation after symbol decision
-            if k > N:
-                θ[k, n] = np.mean(ϕ[k - N : k, n])  # moving average filter
-            else:
-                θ[k, n] = np.angle(symbTx[k, n] / (Ei[k, n]))
-    return ϕ, θ
+                # find closest constellation symbol
+                decided = np.argmin(np.abs(Eo - constSymb))
+                # Generate phase error signal (also called x_n (Meyer))
+                u[2] = np.imag(Eo * np.conj(constSymb[decided]))
+            # Pass phase error signal in Loop Filter (also called e_n (Meyer))
+            u[0] = np.sum(a1b * u)
+
+            # Estimate the phase error for the next symbol
+            θ[k + 1, n] = θ[k, n] - Kv * u[0]
+    return θ
 
 
 def fourthPowerFOE(Ei, Ts, plotSpec=False):
