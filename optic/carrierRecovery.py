@@ -9,77 +9,94 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     """
     Carrier phase recovery (CPR)
 
-    :param Ei: received symbols
-    :param symbTx: transmitted symbols [only for pilot-aided CPR]
-    :param paramCPR.alg: CPR algorithm to be used ['bps' or 'ddpll']
-    :param paramCPR.N: length of the moving average window
-    :param paramCPR.M: constellation
-    :param paramCPR.B: number of BPS test phases
+    Parameters
+    ----------
+    Ei : complex-valued ndarray
+        received constellation symbols.
+    symbTx :complex-valued ndarray, optional
+        Transmitted symbol sequence. The default is [].
+    paramCPR : core.param object, optional
+        configuration parameters. The default is [].
+        
+        paramCPR.alg: CPR algorithm to be used ['bps' or 'ddpll']
+        paramCPR.N: length of the moving average window
+        paramCPR.M: constellation
+        paramCPR.B: number of BPS test phases
+        paramCPR.pilotInd: indexes of pilot-symbol locations
 
-    :return θ: estimated phases
+    Raises
+    ------
+    ValueError
+        Error is generated if the CPR algorithm is not correctly
+        passed.
+
+    Returns
+    -------
+    Eo : complex-valued ndarray
+        Phase-compensated signal.
+    ϕ : real-valued ndarray
+        Raw estimated phase-shifts.
+    θ : real-valued ndarray
+        moving-average of estimated phase-shifts.
+
     """
+
     # check input parameters
     alg = getattr(paramCPR, "alg", "bps")
     M = getattr(paramCPR, "M", 4)
     B = getattr(paramCPR, "B", 64)
     N = getattr(paramCPR, "N", 35)
-    pilotInd = getattr(paramCPR, "pilotInd", np.array([len(Ei)+1]))
+    pilotInd = getattr(paramCPR, "pilotInd", np.array([len(Ei) + 1]))
 
     try:
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
-
     mod = QAMModem(m=M)
     constSymb = mod.constellation / np.sqrt(mod.Es)
-    
-  #  θ = np.zeros(Ei.shape)
-  #  ϕ = np.zeros(Ei.shape)
-    
+
     if alg == "ddpll":
         ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
     elif alg == "bps":
-        θ = bps(Ei, int(N/2), constSymb, B)
-        ϕ = np.copy(θ)        
+        θ = bps(Ei, int(N / 2), constSymb, B)
+        ϕ = np.copy(θ)
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
-        
     ϕ = np.unwrap(4 * ϕ, axis=0) / 4
-    θ = np.unwrap(4 * θ, axis=0) / 4 
-    
+    θ = np.unwrap(4 * θ, axis=0) / 4
+
     Eo = Ei * np.exp(1j * θ)
 
     if Eo.shape[1] == 1:
         Eo = Eo[:]
         ϕ = ϕ[:]
         θ = θ[:]
-
     return Eo, ϕ, θ
 
 
 @njit
 def bps(Ei, N, constSymb, B):
-    '''
+    """
     Blind phase search (BPS) algorithm
 
     Parameters
     ----------
-    Ei : ndarray
+    Ei : complex-valued ndarray
         Received constellation symbols.
     N : int
         Half of the 2*N+1 average window.
-    constSymb : ndarray
+    constSymb : complex-valued ndarray
         Complex-valued constellation.
     B : int
         number of test phases.
 
     Returns
     -------
-    θ : ndarray
+    θ : real-valued ndarray
         Estimated phases.
 
-    '''
-    
+    """
+
     nModes = Ei.shape[1]
 
     ϕ_test = np.arange(0, B) * (np.pi / 2) / B  # test phases
@@ -100,16 +117,13 @@ def bps(Ei, N, constSymb, B):
 
         for k in range(0, L):
             for indPhase, ϕ in enumerate(ϕ_test):
-                dist[indPhase, :] = np.abs(x[k, n]*np.exp(1j * ϕ) - constSymb) ** 2
+                dist[indPhase, :] = np.abs(x[k, n] * np.exp(1j * ϕ) - constSymb) ** 2
                 dmin[indPhase, -1] = np.min(dist[indPhase, :])
-
             if k >= 2 * N:
                 sumDmin = np.sum(dmin, axis=1)
                 indRot = np.argmin(sumDmin)
                 θ[k - 2 * N, n] = ϕ_test[indRot]
-
             dmin = np.roll(dmin, -1)
-
     return θ
 
 
@@ -147,12 +161,10 @@ def ddpll(Ei, N, constSymb, symbTx, pilotInd):
                 ϕ[k, n] = np.angle(
                     constSymb[decided] / (Ei[k, n])
                 )  # phase estimation after symbol decision
-
             if k > N:
-                θ[k, n] = np.mean(ϕ[k - N: k, n])  # moving average filter
+                θ[k, n] = np.mean(ϕ[k - N : k, n])  # moving average filter
             else:
                 θ[k, n] = np.angle(symbTx[k, n] / (Ei[k, n]))
-
     return ϕ, θ
 
 
@@ -177,5 +189,4 @@ def fourthPowerFOE(Ei, Ts, plotSpec=False):
         plt.legend()
         plt.xlim(min(f), max(f))
         plt.grid()
-
     return f[indFO] / 4
