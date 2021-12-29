@@ -140,9 +140,9 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     Kv : float scalar
         Loop filter gain.
     tau1 : float scalar
-        Loop filter parameter.
+        Loop filter parameter 1.
     tau2 : float scalar
-        Loop filter parameter.
+        Loop filter parameter 2.
     constSymb : complex-valued ndarray
         Complex-valued ideal constellation symbols.
     symbTx : complex-valued ndarray
@@ -155,6 +155,11 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     θ : real-valued ndarray
         Time-varying estimated phase-shifts.
 
+    References
+    -------
+    [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel 
+    estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.    
+    
     """
     nModes = Ei.shape[1]
 
