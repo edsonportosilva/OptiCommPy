@@ -102,7 +102,7 @@ paramTx.Nmodes = 2         # number of signal modes [2 for polarization multiple
 # generate WDM signal
 sigTx, symbTx_, paramTx = simpleWDMTx(paramTx)
 # +
-SNR = 30
+SNR = 18
 
 SNRlin = 10**(SNR/10)/paramTx.SpS
 noiseVar = signal_power(sigTx)/SNRlin
