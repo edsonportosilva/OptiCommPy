@@ -248,7 +248,7 @@ paramCPR.alg = 'ddpll'
 paramCPR.M   = paramTx.M
 paramCPR.tau1 = 1/(2*np.pi*10e3)
 paramCPR.tau2 = 1/(2*np.pi*10e3)
-paramCPR.Kv  = 0.15
+paramCPR.Kv  = 0.1
 paramCPR.pilotInd = np.arange(0, len(sigRx), 25)
 
 y_CPR, θ = cpr(sigRx, symbTx=d, paramCPR=paramCPR)
