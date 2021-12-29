@@ -29,7 +29,7 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
             
         paramCPR.tau1: DDPLL loop filter param. 1. The default is 1/2*pi*10e6.
         paramCPR.tau2: DDPLL loop filter param. 2. The default is 1/2*pi*10e6.
-        paramCPR.Kv: DDPLL loop filter gain. The default is 0.3.
+        paramCPR.Kv: DDPLL loop filter gain. The default is 0.1.
         paramCPR.Ts: symbol period. The default is 1/32e9.
         paramCPR.pilotInd: indexes of pilot-symbol locations.
 
@@ -53,7 +53,7 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     M = getattr(paramCPR, "M", 4)
     B = getattr(paramCPR, "B", 64)
     N = getattr(paramCPR, "N", 35)
-    Kv = getattr(paramCPR, "Kv", 0.3)
+    Kv = getattr(paramCPR, "Kv", 0.1)
     tau1 = getattr(paramCPR, "tau1", 1 / (2 * np.pi * 10e6))
     tau2 = getattr(paramCPR, "tau2", 1 / (2 * np.pi * 10e6))
     Ts = getattr(paramCPR, "Ts", 1 / 32e9)
