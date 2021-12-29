@@ -9,7 +9,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.13.0
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -202,13 +202,13 @@ paramCPR.M   = paramTx.M
 paramCPR.N   = 35
 paramCPR.B   = 64
        
-y_CPR, ϕ, θ = cpr(sigRx, paramCPR=paramCPR)
+y_CPR, θ = cpr(sigRx, paramCPR=paramCPR)
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 plt.figure()
 plt.title('CPR estimated phase')
-plt.plot(ϕ,'-.', θ,'-')
+plt.plot(θ,'-')
 plt.xlim(0, len(θ))
 plt.grid();
 
@@ -246,16 +246,18 @@ print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 paramCPR = parameters()
 paramCPR.alg = 'ddpll'
 paramCPR.M   = paramTx.M
-paramCPR.N   = 35
-paramCPR.pilotInd = np.arange(0, len(sigRx), 20)
+paramCPR.tau1 = 1/(2*np.pi*10e3)
+paramCPR.tau2 = 1/(2*np.pi*10e3)
+paramCPR.Kv  = 0.15
+paramCPR.pilotInd = np.arange(0, len(sigRx), 25)
 
-y_CPR, ϕ, θ = cpr(sigRx, symbTx=d, paramCPR=paramCPR)
+y_CPR, θ = cpr(sigRx, symbTx=d, paramCPR=paramCPR)
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 plt.figure()
 plt.title('CPR estimated phase')
-plt.plot(ϕ,'-.', θ,'-')
+plt.plot(θ,'-')
 plt.xlim(0, len(θ))
 plt.grid();
 
