@@ -37,7 +37,7 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     ϕ : real-valued ndarray
         Raw estimated phase-shifts.
     θ : real-valued ndarray
-        moving-average of estimated phase-shifts.
+        Moving-average of estimated phase-shifts.
 
     """
 
@@ -130,16 +130,28 @@ def bps(Ei, N, constSymb, B):
 @njit
 def ddpll(Ei, N, constSymb, symbTx, pilotInd):
     """
-    Decision directed phase-locked loop (DDPLL)
+    Decision-directed Phase-locked Loop (DDPLL) algorithm
 
-    :param Ei: received symbols
-    :param N: moving average window size
-    :param constSymb: constellation
-    :param symbTx: sequence of transmitted symbols
-    :param pilotInd: indices of pilot symbol positions
+    Parameters
+    ----------
+    Ei : complex-valued ndarray
+        Received constellation symbols.
+    N : TYPE
+        DESCRIPTION.
+    constSymb : complex-valued ndarray
+        Complex-valued ideal constellation symbols.
+    symbTx : complex-valued ndarray
+        Transmitted symbol sequence.
+    pilotInd : int ndarray
+        Indexes of pilot-symbol locations.
 
-    :return ϕ: estimated phases (before the moving average filter)
-    :return θ: estimated phases (after the moving average filter)
+    Returns
+    -------
+    ϕ : real-valued ndarray
+        Raw estimated phase-shifts.
+    θ : real-valued ndarray
+        Moving-average of estimated phase-shifts.
+
     """
     nModes = Ei.shape[1]
 
