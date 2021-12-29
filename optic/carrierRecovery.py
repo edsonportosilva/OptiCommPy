@@ -18,11 +18,20 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     paramCPR : core.param object, optional
         configuration parameters. The default is [].
         
+        BPS params:
+            
         paramCPR.alg: CPR algorithm to be used ['bps' or 'ddpll']
-        paramCPR.N: length of the moving average window
-        paramCPR.M: constellation
-        paramCPR.B: number of BPS test phases
-        paramCPR.pilotInd: indexes of pilot-symbol locations
+        paramCPR.M: constellation order. The default is 4.
+        paramCPR.N: length of BPS the moving average window. The default is 35.    
+        paramCPR.B: number of BPS test phases. The default is 64.
+        
+        DDPLL params:
+            
+        paramCPR.tau1: DDPLL loop filter param. 1. The default is 1/2*pi*10e6.
+        paramCPR.tau2: DDPLL loop filter param. 2. The default is 1/2*pi*10e6.
+        paramCPR.Kv: DDPLL loop filter gain. The default is 0.3.
+        paramCPR.Ts: symbol period. The default is 1/32e9.
+        paramCPR.pilotInd: indexes of pilot-symbol locations.
 
     Raises
     ------
