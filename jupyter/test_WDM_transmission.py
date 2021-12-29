@@ -9,7 +9,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.13.0
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -240,13 +240,13 @@ paramCPR.N   = 35
 paramCPR.B   = 64
 paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
 
-y_CPR, ϕ, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
+y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 plt.figure()
 plt.title('CPR estimated phase')
-plt.plot(ϕ,'-.', θ,'-')
+plt.plot(θ,'-')
 plt.xlim(0, len(θ))
 plt.grid();
 
