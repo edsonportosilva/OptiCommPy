@@ -63,10 +63,11 @@ def pconst(x, lim=False, R=1.5):
         plt.figure()
         plt.plot(x.real, x.imag, ".")
         plt.axis("square")
+        plt.grid()
 
         if lim:
-            ax.set_xlim(-radius, radius)
-            ax.set_ylim(-radius, radius)
+            plt.xlim(-radius, radius)
+            plt.ylim(-radius, radius)
 
     plt.show()
 
