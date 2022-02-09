@@ -14,9 +14,19 @@ def pconst(x, lim=False, R=1.5):
 
     """
     if type(x) == list:
+        try:
+            x[0].shape[1]
+        except IndexError:
+            x[0] = x[0].reshape(len(x[0]), 1)
+
         nSubPts = x[0].shape[1]
         radius = R * np.sqrt(signal_power(x[0]))
     else:
+        try:
+            x.shape[1]
+        except IndexError:
+            x = x.reshape(len(x), 1)
+            
         nSubPts = x.shape[1]
         radius = R * np.sqrt(signal_power(x))
 
