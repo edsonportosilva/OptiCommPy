@@ -201,6 +201,57 @@ def decimate(Ei, param):
     return Eo
 
 
+def resample(Ei, param):
+    '''
+    Resample signal to a given sampling rate
+
+    Parameters
+    ----------
+    Ei : ndarray
+        Input signal.
+    param : core.parameter
+        Resampling parameters:
+            param.Rs      : symbol rate of the signal
+            param.SpS_in  : samples per symbol of the input signal.
+            param.SpS_out : samples per symbol of the output signal.
+
+    Returns
+    -------
+    Eo : ndarray
+        Resampled signal.
+
+    '''
+    try:
+        Ei.shape[1]
+    except IndexError:
+        Ei = Ei.reshape(len(Ei), 1)
+
+    inFs = param.SpS_in*param.Rs
+    outFs = param.SpS_out*param.Rs
+
+    tin = np.arange(0, Ei.shape[0])*(1/inFs)
+    tout = np.arange(0, Ei.shape[0]*(1/inFs), 1/outFs)
+
+    Eo = np.zeros((len(tout), Ei.shape[1]))
+
+    # Anti-aliasing filters:
+    N = 2048
+    hi = lowPassFIR(inFs/2, inFs, N, typeF="rect")
+    ho = lowPassFIR(outFs/2, outFs, N, typeF="rect")
+
+    Ei = firFilter(hi, Ei)
+
+    for k in range(0, Ei.shape[1]):
+        Eo = np.interp(tout, tin, Ei)
+
+    Eo = firFilter(ho, Eo)
+
+    if Eo.shape[1] == 1:
+        Eo = Eo[:, 0]
+
+    return Eo
+
+
 def symbolSync(rx, tx, SpS):
     '''
     Symbol synchronizer
