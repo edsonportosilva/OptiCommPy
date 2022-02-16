@@ -232,7 +232,7 @@ def resample(Ei, param):
     tin = np.arange(0, Ei.shape[0])*(1/inFs)
     tout = np.arange(0, Ei.shape[0]*(1/inFs), 1/outFs)
 
-    Eo = np.zeros((len(tout), Ei.shape[1]))
+    Eo = np.zeros((len(tout), Ei.shape[1]), dtype='complex')
 
     # Anti-aliasing filters:
     N = 2048
@@ -242,7 +242,7 @@ def resample(Ei, param):
     Ei = firFilter(hi, Ei)
 
     for k in range(0, Ei.shape[1]):
-        Eo = np.interp(tout, tin, Ei)
+        Eo[:,k] = np.interp(tout, tin, Ei[:,k])
 
     Eo = firFilter(ho, Eo)
 
