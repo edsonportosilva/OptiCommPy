@@ -225,7 +225,8 @@ def resample(Ei, param):
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
-
+    
+    nModes = Ei.shape[1]
     inFs = param.SpS_in*param.Rs
     outFs = param.SpS_out*param.Rs
 
@@ -240,14 +241,14 @@ def resample(Ei, param):
     ho = lowPassFIR(outFs/2, outFs, N, typeF="rect")
 
     Ei = firFilter(hi, Ei)
-
-    for k in range(0, Ei.shape[1]):
+    
+    if nModes == 1:
+        Ei = Ei.reshape(len(Ei), 1)        
+    
+    for k in range(0, nModes):
         Eo[:,k] = np.interp(tout, tin, Ei[:,k])
 
     Eo = firFilter(ho, Eo)
-
-    if Eo.shape[1] == 1:
-        Eo = Eo[:, 0]
 
     return Eo
 
