@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Feb 19 12:58:47 2022
+Test functions in dsp.py
 
-@author: edson
 """
 
 from optic.dsp import finddelay
