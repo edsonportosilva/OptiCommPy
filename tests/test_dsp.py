@@ -16,6 +16,7 @@ def test_finddelay_for_arrays_of_real_values():
     b = np.roll(a, -delay)
 
     assert delay == finddelay(a, b)
+    assert delay == -finddelay(b, a)
 
 
 def test_finddelay_for_arrays_of_complex_values():
@@ -25,3 +26,4 @@ def test_finddelay_for_arrays_of_complex_values():
     b = np.roll(a, -delay)
 
     assert delay == finddelay(a, b)
+    assert delay == -finddelay(b, a)
