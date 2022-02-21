@@ -75,17 +75,25 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
 
 def pbs(E, θ=0):
     """
-    Polarization beam splitter (pbs)
+    Polarization beam splitter (PBS)
 
-    :param E: input pol. multiplexed field [2d nparray]
-    :param θ: rotation angle of input field [rad][default: 0 rad]
+    Parameters
+    ----------
+    E : (N,2) nparray
+        Input pol. multiplexed optical field.
+    θ : float, optional
+        Rotation angle of input field in radians. The default is 0.
 
-    :return: Ex output single pol. field [1d nparray]
-    :return: Ey output single pol. field [1d nparray]
-    
+    Returns
+    -------
+    Ex : (N,) nparray
+        Ex output single pol. field.
+    Ey : (N,) nparray
+        Ey output single pol. field.
+
     """
     try:
-        assert E.shape[1] == 2, "E need to be a N-by-2 2d nparray or a 1d nparray"
+        assert E.shape[1] == 2, "E need to be a (N,2) or a (N,) nparray"
     except IndexError:
         E = np.repeat(E, 2).reshape(-1, 2)
         E[:, 1] = 0
