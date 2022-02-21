@@ -28,9 +28,9 @@ def mzm(Ai, u, Vπ, Vb):
 
     """
     try:
-        assert len(Ai) == len(u), "Ai and u need to have the same dimensions"
-    except TypeError:
-        Ai = Ai*np.ones(u.shape)
+        assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
+    except AttributeError:
+        Ai = Ai * np.ones(u.shape)
 
     π = np.pi
     Ao = Ai * np.cos(0.5 / Vπ * (u + Vb) * π)
@@ -62,12 +62,12 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
 
     """
     try:
-        assert len(Ai) == len(u), "Ai and u need to have the same dimensions"
-    except TypeError:
-        Ai = Ai*np.ones(u.shape)
+        assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
+    except AttributeError:
+        Ai = Ai * np.ones(u.shape)
 
     Ao = mzm(Ai / np.sqrt(2), u.real, Vπ, VbI) + 1j * mzm(
-        Ai / np.sqrt(2), u.imag, Vπ,  VbQ
+        Ai / np.sqrt(2), u.imag, Vπ, VbQ
     )
 
     return Ao
