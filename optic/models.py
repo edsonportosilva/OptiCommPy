@@ -12,13 +12,13 @@ def mzm(Ai, u, Vπ, Vb):
 
     Parameters
     ----------
-    Ai : float or np.array
+    Ai : scalar or np.array
         Amplitude of the optical field at the input of the MZM.
     u : np.array
         Electrical driving signal.
-    Vπ : float
+    Vπ : scalar
         MZM's Vπ voltage.
-    Vb : float
+    Vb : scalar
         MZM's bias voltage.
 
     Returns
@@ -44,15 +44,15 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
 
     Parameters
     ----------
-    Ai : float or np.array
+    Ai : scalar or np.array
         Amplitude of the optical field at the input of the IQM.
     u : complex-valued np.array
         Modulator's driving signal (complex-valued baseband).
-    Vπ : float
+    Vπ : scalar
         MZM Vπ-voltage.
-    VbI : float
+    VbI : scalar
         I-MZM's bias voltage.
-    VbQ : float
+    VbQ : scalar
         Q-MZM's bias voltage.
 
     Returns
@@ -81,7 +81,7 @@ def pbs(E, θ=0):
     ----------
     E : (N,2) nparray
         Input pol. multiplexed optical field.
-    θ : float, optional
+    θ : scalar, optional
         Rotation angle of input field in radians. The default is 0.
 
     Returns
@@ -149,21 +149,32 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
 
 def balancedPD(E1, E2, R=1):
     """
-    Balanced photodetector (BPD)
+    Balanced photodiode (BPD)
 
-    :param E1: input field [nparray]
-    :param E2: input field [nparray]
-    :param R: photodiode responsivity [A/W][scalar, default: 1 A/W]
+    Parameters
+    ----------
+    E1 : nparray
+        Input optical field.
+    E2 : nparray
+        Input optical field.
+    R : scalar, optional
+        Photodiode responsivity in A/W. The default is 1.
 
-    :return: balanced photocurrent
+    Returns
+    -------
+    ibpd : nparray
+           Balanced photocurrent.
+
     """
+
     assert R > 0, "PD responsivity should be a positive scalar"
-    assert E1.size == E2.size, "E1 and E2 need to have the same size"
+    assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
     i1 = R * E1 * np.conj(E1)
     i2 = R * E2 * np.conj(E2)
+    ibpd = i1 - i2
 
-    return i1 - i2
+    return ibpd
 
 
 def hybrid_2x4_90deg(E1, E2):
