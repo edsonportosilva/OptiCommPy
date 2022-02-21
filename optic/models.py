@@ -6,17 +6,32 @@ from numpy.random import normal
 from tqdm.notebook import tqdm
 
 
-def mzm(Ai, Vπ, u, Vb):
+def mzm(Ai, u, Vπ, Vb):
     """
-    MZM modulator
+    Optical Mach-Zehnder Modulator (MZM)
 
-    :param Vπ: Vπ-voltage
-    :param Vb: bias voltage
-    :param u:  modulator's driving signal (real-valued)
-    :param Ai: amplitude of the input CW carrier
+    Parameters
+    ----------
+    Ai : float or np.array
+        Amplitude of the optical field at the input of the MZM.
+    u : np.array
+        Electrical driving signal.
+    Vπ : float
+        MZM's Vπ voltage.
+    Vb : float
+        MZM's bias voltage.
 
-    :return Ao: output optical signal
+    Returns
+    -------
+    Ao : np.array
+        Modulated optical field at the output of the MZM.
+
     """
+    try:
+        assert len(Ai) == len(u), "Ai and u need to have the same dimensions"
+    except TypeError:
+        Ai = Ai*np.ones(u.shape)
+
     π = np.pi
     Ao = Ai * np.cos(0.5 / Vπ * (u + Vb) * π)
 
@@ -25,18 +40,34 @@ def mzm(Ai, Vπ, u, Vb):
 
 def iqm(Ai, u, Vπ, VbI, VbQ):
     """
-    IQ modulator
+    Optical In-Phase/Quadrature Modulator (IQM)
 
-    :param Vπ: MZM Vπ-voltage
-    :param VbI: in-phase MZM bias voltage
-    :param VbQ: quadrature MZM bias voltage
-    :param u:  modulator's driving signal (complex-valued baseband)
-    :param Ai: amplitude of the input CW carrier
+    Parameters
+    ----------
+    Ai : float or np.array
+        Amplitude of the optical field at the input of the IQM.
+    u : complex-valued np.array
+        Modulator's driving signal (complex-valued baseband).
+    Vπ : float
+        MZM Vπ-voltage.
+    VbI : float
+        I-MZM's bias voltage.
+    VbQ : float
+        Q-MZM's bias voltage.
 
-    :return Ao: output optical signal
+    Returns
+    -------
+    Ao : complex-valued np.array
+        Modulated optical field at the output of the IQM.
+
     """
-    Ao = mzm(Ai / np.sqrt(2), Vπ, u.real, VbI) + 1j * mzm(
-        Ai / np.sqrt(2), Vπ, u.imag, VbQ
+    try:
+        assert len(Ai) == len(u), "Ai and u need to have the same dimensions"
+    except TypeError:
+        Ai = Ai*np.ones(u.shape)
+
+    Ao = mzm(Ai / np.sqrt(2), u.real, Vπ, VbI) + 1j * mzm(
+        Ai / np.sqrt(2), u.imag, Vπ,  VbQ
     )
 
     return Ao
