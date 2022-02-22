@@ -186,7 +186,10 @@ def hybrid_2x4_90deg(E1, E2):
 
     :return: hybrid outputs
     """
-    assert E1.size == E2.size, "E1 and E2 need to have the same size"
+
+    assert E1.shape == (len(E1),), "E1 need to have a (N,) shape"
+    assert E2.shape == (len(E2),), "E2 need to have a (N,) shape"
+    assert E1.shape == E2.shape, "E1 and E2 need to have the same (N,) shape"
 
     # optical hybrid transfer matrix
     T = np.array(
