@@ -177,18 +177,26 @@ def balancedPD(E1, E2, R=1):
     return ibpd
 
 
-def hybrid_2x4_90deg(E1, E2):
+def hybrid_2x4_90deg(Es, Elo):
     """
     Optical 2 x 4 90° hybrid
 
-    :param E1: input signal field [nparray]
-    :param E2: input LO field [nparray]
+    Parameters
+    ----------
+    Es : nparray
+        Input signal optical field.
+    Elo : nparray
+        Input LO optical field.
 
-    :return: hybrid outputs
+    Returns
+    -------
+    Eo : nparray
+        Optical hybrid outputs.
+
     """
-    assert E1.shape == (len(E1),), "E1 need to have a (N,) shape"
-    assert E2.shape == (len(E2),), "E2 need to have a (N,) shape"
-    assert E1.shape == E2.shape, "E1 and E2 need to have the same (N,) shape"
+    assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
+    assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
+    assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
 
     # optical hybrid transfer matrix
     T = np.array(
@@ -200,7 +208,7 @@ def hybrid_2x4_90deg(E1, E2):
         ]
     )
 
-    Ei = np.array([E1, np.zeros((E1.size,)), np.zeros((E1.size,)), E2])
+    Ei = np.array([Es, np.zeros((Es.size,)), np.zeros((Es.size,)), Elo])
 
     Eo = T @ Ei
 
@@ -211,11 +219,20 @@ def coherentReceiver(Es, Elo, Rd=1):
     """
     Single polarization coherent optical front-end
 
-    :param Es: input signal field [nparray]
-    :param Elo: input LO field [nparray]
-    :param Rd: photodiode resposivity [scalar]
+    Parameters
+    ----------
+    Es : nparray
+        Input signal optical field.
+    Elo : nparray
+        Input LO optical field.
+    Rd : scalar, optional
+        Photodiodes responsivity in A/W. The default is 1.
 
-    :return: downconverted signal after balanced detection
+    Returns
+    -------
+    s : nparray
+        Downconverted signal after balanced detection.
+
     """
     assert Rd > 0, "PD responsivity should be a positive scalar"
     assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
@@ -249,17 +266,15 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
     assert Rdx > 0 and Rdy > 0, "PD responsivity should be a positive scalar"
     assert len(Es) == len(Elo), "Es and Elo need to have the same number of samples"
 
-    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orthogonal polarizations
-    Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orthogonal polarizations
+    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
+    Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orth. polarizations
 
     Sx = coherentReceiver(Esx, Elox, Rd=Rdx)  # coherent detection of pol.X
     Sy = coherentReceiver(Esy, Eloy, Rd=Rdy)  # coherent detection of pol.Y
 
-    # Sx = Sx.reshape(len(Sx), 1)
-    # Sy = Sy.reshape(len(Sy), 1)
-    S  = np.array([Sx, Sy]).T 
-    
-    return S #np.concatenate((Sx, Sy), axis=1)
+    S = np.array([Sx, Sy]).T
+
+    return S
 
 
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
