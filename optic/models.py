@@ -255,8 +255,8 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
     Sx = coherentReceiver(Esx, Elox, Rd=Rdx)  # coherent detection of pol.X
     Sy = coherentReceiver(Esy, Eloy, Rd=Rdy)  # coherent detection of pol.Y
 
-    # Sx = Sx.reshape(len(Sx), 1)
-    # Sy = Sy.reshape(len(Sy), 1)
+    Sx = Sx.reshape(len(Sx), 1)
+    Sy = Sy.reshape(len(Sy), 1)
     S  = np.array([Sx, Sy]) 
     
     return S #np.concatenate((Sx, Sy), axis=1)
