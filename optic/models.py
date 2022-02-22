@@ -79,21 +79,21 @@ def pbs(E, θ=0):
 
     Parameters
     ----------
-    E : (N,2) nparray
+    E : (N,2) np.array
         Input pol. multiplexed optical field.
     θ : scalar, optional
         Rotation angle of input field in radians. The default is 0.
 
     Returns
     -------
-    Ex : (N,) nparray
+    Ex : (N,) np.array
         Ex output single pol. field.
-    Ey : (N,) nparray
+    Ey : (N,) np.array
         Ey output single pol. field.
 
     """
     try:
-        assert E.shape[1] == 2, "E need to be a (N,2) or a (N,) nparray"
+        assert E.shape[1] == 2, "E need to be a (N,2) or a (N,) np.array"
     except IndexError:
         E = np.repeat(E, 2).reshape(-1, 2)
         E[:, 1] = 0
@@ -153,16 +153,16 @@ def balancedPD(E1, E2, R=1):
 
     Parameters
     ----------
-    E1 : nparray
+    E1 : np.array
         Input optical field.
-    E2 : nparray
+    E2 : np.array
         Input optical field.
     R : scalar, optional
         Photodiode responsivity in A/W. The default is 1.
 
     Returns
     -------
-    ibpd : nparray
+    ibpd : np.array
            Balanced photocurrent.
 
     """
@@ -183,14 +183,14 @@ def hybrid_2x4_90deg(Es, Elo):
 
     Parameters
     ----------
-    Es : nparray
+    Es : np.array
         Input signal optical field.
-    Elo : nparray
+    Elo : np.array
         Input LO optical field.
 
     Returns
     -------
-    Eo : nparray
+    Eo : np.array
         Optical hybrid outputs.
 
     """
@@ -221,16 +221,16 @@ def coherentReceiver(Es, Elo, Rd=1):
 
     Parameters
     ----------
-    Es : nparray
+    Es : np.array
         Input signal optical field.
-    Elo : nparray
+    Elo : np.array
         Input LO optical field.
     Rd : scalar, optional
         Photodiodes responsivity in A/W. The default is 1.
 
     Returns
     -------
-    s : nparray
+    s : np.array
         Downconverted signal after balanced detection.
 
     """
@@ -255,16 +255,27 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
     """
     Polarization multiplexed coherent optical front-end
 
-    :param Es: input signal field [2d nparray]
-    :param Elo: input LO field [nparray]
-    :param θsig: polarization rotation angle [rad][default: 0]
-    :param Rdx: photodiode resposivity pol.X [scalar]
-    :param Rdy: photodiode resposivity pol.Y [scalar]
+    Parameters
+    ----------
+    Es : np.array
+        Input signal optical field.
+    Elo : np.array
+        Input LO optical field.
+    θsig : scalar, optional
+        Input polarization rotation angle in rad. The default is 0.
+    Rdx : scalar, optional
+        Photodiode resposivity pol.X in A/W. The default is 1.
+    Rdy : scalar, optional
+        Photodiode resposivity pol.Y in A/W. The default is 1.
 
-    :return: downconverted signal after balanced detection
+    Returns
+    -------
+    S : nparary
+        Downconverted signal after balanced detection.
+
     """
     assert Rdx > 0 and Rdy > 0, "PD responsivity should be a positive scalar"
-    assert len(Es) == len(Elo), "Es and Elo need to have the same number of samples"
+    assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
     Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
     Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orth. polarizations
@@ -281,13 +292,13 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
     Simple EDFA model
 
-    :param Ei: input signal field [nparray]
+    :param Ei: input signal field [np.array]
     :param Fs: sampling frequency [Hz][scalar]
     :param G: gain [dB][scalar, default: 20 dB]
     :param NF: EDFA noise figure [dB][scalar, default: 4.5 dB]
     :param Fc: optical center frequency [Hz][scalar, default: 193.1e12 Hz]
 
-    :return: amplified noisy optical signal [nparray]
+    :return: amplified noisy optical signal [np.array]
     """
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
