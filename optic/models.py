@@ -186,7 +186,6 @@ def hybrid_2x4_90deg(E1, E2):
 
     :return: hybrid outputs
     """
-
     assert E1.shape == (len(E1),), "E1 need to have a (N,) shape"
     assert E2.shape == (len(E2),), "E2 need to have a (N,) shape"
     assert E1.shape == E2.shape, "E1 and E2 need to have the same (N,) shape"
@@ -219,7 +218,9 @@ def coherentReceiver(Es, Elo, Rd=1):
     :return: downconverted signal after balanced detection
     """
     assert Rd > 0, "PD responsivity should be a positive scalar"
-    assert Es.size == Elo.size, "Es and Elo need to have the same size"
+    assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
+    assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
+    assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
 
     # optical 2 x 4 90° hybrid
     Eo = hybrid_2x4_90deg(Es, Elo)
@@ -228,7 +229,9 @@ def coherentReceiver(Es, Elo, Rd=1):
     sI = balancedPD(Eo[1, :], Eo[0, :], Rd)
     sQ = balancedPD(Eo[2, :], Eo[3, :], Rd)
 
-    return sI + 1j * sQ
+    s = sI + 1j * sQ
+
+    return s
 
 
 def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
@@ -252,10 +255,11 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
     Sx = coherentReceiver(Esx, Elox, Rd=Rdx)  # coherent detection of pol.X
     Sy = coherentReceiver(Esy, Eloy, Rd=Rdy)  # coherent detection of pol.Y
 
-    Sx = Sx.reshape(len(Sx), 1)
-    Sy = Sy.reshape(len(Sy), 1)
-
-    return np.concatenate((Sx, Sy), axis=1)
+    # Sx = Sx.reshape(len(Sx), 1)
+    # Sy = Sy.reshape(len(Sy), 1)
+    S  = np.array([Sx, Sy]) 
+    
+    return S #np.concatenate((Sx, Sy), axis=1)
 
 
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
