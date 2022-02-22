@@ -270,7 +270,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
 
     Returns
     -------
-    S : nparary
+    S : np.array
         Downconverted signal after balanced detection.
 
     """
@@ -292,13 +292,24 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
     Simple EDFA model
 
-    :param Ei: input signal field [np.array]
-    :param Fs: sampling frequency [Hz][scalar]
-    :param G: gain [dB][scalar, default: 20 dB]
-    :param NF: EDFA noise figure [dB][scalar, default: 4.5 dB]
-    :param Fc: optical center frequency [Hz][scalar, default: 193.1e12 Hz]
+    Parameters
+    ----------
+    Ei : np.array
+        Input signal field .
+    Fs : scalar
+        Sampling frequency in Hz.
+    G : scalar, optional
+        Amplifier gain in dB. The default is 20.
+    NF : scalar, optional
+        EDFA noise figure in dB. The default is 4.5.
+    Fc : scalar, optional
+        Central optical frequency. The default is 193.1e12.
 
-    :return: amplified noisy optical signal [np.array]
+    Returns
+    -------
+    Eo : np.array
+        Amplified noisy optical signal.
+
     """
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
@@ -311,7 +322,9 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     noise = normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * normal(
         0, np.sqrt(p_noise / 2), Ei.shape
     )
-    return Ei * np.sqrt(G_lin) + noise
+    Eo = Ei * np.sqrt(G_lin) + noise
+
+    return Eo
 
 
 def ssfm(Ei, Fs, paramCh):
