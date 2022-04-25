@@ -35,7 +35,7 @@ def pconst(x, lim=False, R=1.5):
             nCols = nSubPts
             nRows = 1
         elif nSubPts >= 6:
-            nCols = np.ceil(nSubPts / 2)
+            nCols = int(np.ceil(nSubPts / 2))
             nRows = 2
 
         # Create a Position index
