@@ -78,9 +78,10 @@ def pconst(x, lim=False, R=1.5):
         if lim:
             plt.xlim(-radius, radius)
             plt.ylim(-radius, radius)
-
+    
+    fig.tight_layout()
     plt.show()
-
+    
     return None
 
 
