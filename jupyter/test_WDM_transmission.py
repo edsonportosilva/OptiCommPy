@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -227,6 +227,7 @@ paramEq.L = [20000, 80000]
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
 #plot constellations after adaptive equalization
+discard = 5000
 pconst([y_EQ[discard:-discard,:], d], lim=True)
 # -
 
