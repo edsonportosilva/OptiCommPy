@@ -73,7 +73,7 @@ def fastBERcalc(rx, tx, M, constType):
 
     # get bit mapping
     b = int(np.log2(M))
-    bitMap = demodulateGray(constSymb, M, "qam")
+    bitMap = demodulateGray(constSymb, M, constType)
     bitMap = bitMap.reshape(-1, b)
 
     # pre-processing
@@ -161,7 +161,7 @@ def monteCarloGMI(rx, tx, M, constType):
 
     # get bit mapping
     b = int(np.log2(M))
-    bitMap = demodulateGray(constSymb, M, "qam")
+    bitMap = demodulateGray(constSymb, M, constType)
     bitMap = bitMap.reshape(-1, b)
 
     # symbol normalization
