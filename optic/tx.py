@@ -1,11 +1,15 @@
 import numpy as np
 from commpy.utilities import upsample
 
-from optic.dsp import firFilter, pulseShape
+from optic.dsp import pulseShape
 from optic.metrics import signal_power
 from optic.models import iqm
 from optic.modulation import GrayMapping, modulateGray
 
+try:
+    from optic.dspGPU import firFilter
+except:
+    from optic.dsp import firFilter
 
 def simpleWDMTx(param):
     """
