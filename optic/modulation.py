@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.matlib import repmat
-from commpy.utilities import bitarray2dec
+from commpy.utilities import bitarray2dec, dec2bitarray
+from numba import njit
 
 def GrayCode(n):
     
@@ -56,6 +57,10 @@ def GrayMapping(M, constType):
     
     return const
 
+@njit
+def minEuclid(symb, const):
+    return np.abs(symb - const).argmin()
+
 def modulateGray(bits, M, constType):
        
     bitsSymb = int(np.log2(M))      
@@ -65,3 +70,13 @@ def modulateGray(bits, M, constType):
     symbInd = bitarray2dec(symb)    
 
     return const[symbInd,0]
+
+def demodulateGray(symb, M ,constType):
+    
+    const = GrayMapping(M, constType)
+         
+    minEuclid_vec = np.vectorize(minEuclid, excluded = [1])        
+    index_list = minEuclid_vec(symb, const[:,0])     
+    demodBits = dec2bitarray(index_list, int(np.log2(M)))
+    
+    return demodBits
