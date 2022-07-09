@@ -1,10 +1,10 @@
 import numpy as np
-from commpy.modulation import QAMModem
 from commpy.utilities import upsample
 
 from optic.dsp import firFilter, pulseShape
 from optic.metrics import signal_power
 from optic.models import iqm
+from optic.modulation import GrayMapping, modulateGray
 
 
 def simpleWDMTx(param):
@@ -14,7 +14,8 @@ def simpleWDMTx(param):
     Generates a complex baseband waveform representing a WDM signal with
     arbitrary number of carriers
 
-    :param.M: QAM order [default: 16]
+    :param.M: modulation order [default: 16]
+    :param.constType: 'qam' or 'psk' [default: 'qam']
     :param.Rs: carrier baud rate [baud][default: 32e9]
     :param.SpS: samples per symbol [default: 16]
     :param.Nbits: total number of bits per carrier [default: 60000]
@@ -30,6 +31,7 @@ def simpleWDMTx(param):
     """
     # check input parameters
     param.M = getattr(param, "M", 16)
+    param.constType = getattr(param,'constType','qam')
     param.Rs = getattr(param, "Rs", 32e9)
     param.SpS = getattr(param, "SpS", 16)
     param.Nbits = getattr(param, "Nbits", 60000)
@@ -83,9 +85,9 @@ def simpleWDMTx(param):
 
     Psig = 0
 
-    # map bits to constellation symbols
-    mod = QAMModem(m=param.M)
-    Es = mod.Es
+    # constellation symbols info
+    const = GrayMapping(param.M, param.constType)[:,0]
+    Es = np.mean(np.abs(const)**2)    
 
     # pulse shaping filter
     if param.pulse == "nrz":
@@ -111,8 +113,8 @@ def simpleWDMTx(param):
             # generate random bits
             bitsTx = np.random.randint(2, size=param.Nbits)
 
-            # map bits to constellation symbols
-            symbTx = mod.modulate(bitsTx)
+            # map bits to constellation symbols            
+            symbTx = modulateGray(bitsTx, param.M, param.constType)
 
             # normalize symbols energy to 1
             symbTx = symbTx / np.sqrt(Es)
