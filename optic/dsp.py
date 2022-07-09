@@ -3,7 +3,6 @@ import numpy as np
 from commpy.filters import rcosfilter, rrcosfilter
 from commpy.utilities import upsample
 from scipy import signal
-from scipy.signal import lfilter
 
 
 def firFilter(h, x):
@@ -17,12 +16,10 @@ def firFilter(h, x):
         Coefficients of the FIR filter.
     x : ndarray
         Input signal.
-
     Returns
     -------
     y : ndarray
         Output (filtered) signal.
-
     '''
 
     try:
@@ -32,19 +29,14 @@ def firFilter(h, x):
 
     y = x.copy()
     nModes = x.shape[1]
-    N = h.size
-
+    
     for n in range(0, nModes):
-        x_ = x[:, n]
-        x_ = np.pad(x_, (0, int(N / 2)), "constant")
-        y_ = lfilter(h, 1, x_)
-        y[:, n] = y_[int(N / 2): y_.size]
-
+        y[:, n] = np.convolve(x[:, n], h, mode='same')
+        
     if y.shape[1] == 1:
         y = y[:, 0]
 
     return y
-
 
 def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     '''
