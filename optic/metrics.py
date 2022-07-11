@@ -272,7 +272,7 @@ def calcMI(rx, tx, σ2, constSymb, pX):
 
         pY = np.sum(pXY)
 
-        H_XgY -= np.log2((pYgX * pX[indSymb]) / pY)
+        H_XgY -= np.log2((pYgX * pX[indSymb])) - np.log2(pY)
     H_XgY = H_XgY / N
 
     return H_X - H_XgY
