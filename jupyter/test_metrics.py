@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.13.8
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -18,7 +18,7 @@
 # # Test transmission performance metrics for the AWGN channel
 # -
 
-from commpy.modulation import QAMModem, PSKModem
+from optic.modulation import modulateGray, GrayMapping
 from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER
 import matplotlib.pyplot as plt
 import numpy as np
@@ -59,14 +59,13 @@ for ii, M in enumerate(qamOrder):
         EbN0dB = EbN0dB_[indSNR]
 
         # generate random bits
-        bitsTx = np.random.randint(2, size=2**19)    
+        bitsTx = np.random.randint(2, size=2*3*5*2**15)    
 
         # Map bits to constellation symbols
-        mod = QAMModem(m=M)
-        symbTx = mod.modulate(bitsTx)
+        symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = symbTx/np.sqrt(mod.Es)
+        symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN    
         snrdB    = EbN0dB + 10*np.log10(np.log2(M))
@@ -75,7 +74,7 @@ for ii, M in enumerate(qamOrder):
         symbRx = awgn(symbTx, noiseVar)
 
         # BER calculation
-        BER[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, mod)
+        BER[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, M, 'qam')
         
         if BER[indSNR, ii] == 0:              
             break
@@ -122,14 +121,13 @@ for ii, M in enumerate(pskOrder):
         EbN0dB = EbN0dB_[indSNR]
 
         # generate random bits
-        bitsTx = np.random.randint(2, size=2**19)    
+        bitsTx = np.random.randint(2, size=2*3*5*2**15)    
 
         # Map bits to constellation symbols
-        mod = PSKModem(m=M)
-        symbTx = mod.modulate(bitsTx)
+        symbTx = modulateGray(bitsTx, M, 'psk')
 
         # Normalize symbols energy to 1
-        symbTx = symbTx/np.sqrt(mod.Es)
+        symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN    
         snrdB    = EbN0dB + 10*np.log10(np.log2(M))
@@ -138,7 +136,7 @@ for ii, M in enumerate(pskOrder):
         symbRx = awgn(symbTx, noiseVar)
 
         # BER calculation
-        BER[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, mod)
+        BER[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, M, 'psk')
         
         if BER[indSNR, ii] == 0:              
             break
@@ -185,14 +183,13 @@ for ii, M in enumerate(qamOrder):
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2**18)    
+        bitsTx   = np.random.randint(2, size=2*3*5*2**14)    
 
         # Map bits to constellation symbols
-        mod = QAMModem(m=M)
-        symbTx = mod.modulate(bitsTx)
+        symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = symbTx/np.sqrt(mod.Es)
+        symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN    
         noiseVar = 1/(10**(snrdB/10))
@@ -200,7 +197,7 @@ for ii, M in enumerate(qamOrder):
         symbRx = awgn(symbTx, noiseVar)
 
         # GMI estimation
-        GMI[indSNR, ii], _  = monteCarloGMI(symbRx, symbTx, mod)
+        GMI[indSNR, ii], _  = monteCarloGMI(symbRx, symbTx, M, 'qam')
 
 
 # +
@@ -236,14 +233,13 @@ for ii, M in enumerate(pskOrder):
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2**18)    
+        bitsTx   = np.random.randint(2, size=2*3*5*2**14)    
 
         # Map bits to constellation symbols
-        mod = PSKModem(m=M)
-        symbTx = mod.modulate(bitsTx)
+        symbTx = modulateGray(bitsTx, M, 'psk')
 
         # Normalize symbols energy to 1
-        symbTx = symbTx/np.sqrt(mod.Es)
+        symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN    
         noiseVar = 1/(10**(snrdB/10))
@@ -251,7 +247,7 @@ for ii, M in enumerate(pskOrder):
         symbRx = awgn(symbTx, noiseVar)
 
         # GMI estimation
-        GMI[indSNR, ii], _  = monteCarloGMI(symbRx, symbTx, mod)
+        GMI[indSNR, ii], _  = monteCarloGMI(symbRx, symbTx, M, 'psk')
 
 # +
 plt.figure(figsize=(10,6))
@@ -283,22 +279,20 @@ SNR  = np.arange(-2, 35, 1)
 MI  = np.zeros((len(SNR),len(qamOrder)))
 
 for ii, M in enumerate(qamOrder):
-    print('run sim: M = ', M)
-         
-    mod = QAMModem(m=M)
-        
+    print('run sim: M = ', M)         
+            
     for indSNR in tqdm(range(SNR.size)):
 
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2**18)    
+        bitsTx   = np.random.randint(2, size=2*3*5*2**14)    
 
         # Map bits to constellation symbols
-        symbTx = mod.modulate(bitsTx)
+        symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = symbTx/np.sqrt(mod.Es)
+        symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN    
         noiseVar = 1/(10**(snrdB/10))
@@ -306,7 +300,7 @@ for ii, M in enumerate(qamOrder):
         symbRx = awgn(symbTx, noiseVar)
 
         # MI estimation
-        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, mod)
+        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam')
 
 # +
 plt.figure(figsize=(10,6))
@@ -353,19 +347,23 @@ def maxwellBolt(λ, const):
 
 qamOrder  = [64, 64]  # Modulation order
 
-SNR  = np.arange(-2, 35, 1)
+SNR  = np.arange(-2, 34, 1)
 MI  = np.zeros((len(SNR),len(qamOrder)))
 Nsymbols = 20000
 
-PS = 1.5
+PS = 0
 for ii, M in enumerate(qamOrder):
     print('run sim: M = ', M)
           
-    mod = QAMModem(m=M)
-    constSymb = mod.constellation/np.sqrt(mod.Es)
+    constSymb = GrayMapping(M, 'qam')[:, 0]
+    Es = np.mean(np.abs(constSymb) ** 2)
+    constSymb = constSymb / np.sqrt(Es)
     
-    probSymb = maxwellBolt(PS, constSymb)
+    probSymb = np.round(maxwellBolt(PS, constSymb),8)
+    probSymb = probSymb/np.sum(probSymb)
     PS = 0
+    
+    Es = np.sum(( np.abs(constSymb) ** 2 ) * probSymb)
     
     for indSNR in tqdm(range(SNR.size)):
 
@@ -373,14 +371,15 @@ for ii, M in enumerate(qamOrder):
 
         # generate random symbols   
         symbTx = choice(constSymb, Nsymbols, p=probSymb)
-
+        symbTx = symbTx/np.sqrt(Es)
+        
         # AWGN    
-        noiseVar = signal_power(symbTx)/(10**(snrdB/10))
+        noiseVar = 1/(10**(snrdB/10))
 
         symbRx = awgn(symbTx, noiseVar)
 
         # MI estimation
-        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, mod, probSymb)
+        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam', probSymb)
 
 # +
 plt.figure(figsize=(10,6))
@@ -399,5 +398,6 @@ plt.xlabel('SNR [dB]');
 plt.ylabel('MI [bits/symbol]');
 plt.grid()
 # -
+type(probSymb)
 
 
