@@ -68,7 +68,9 @@ def pconst(x, lim=False, R=1.5):
                 if lim:
                     ax.set_xlim(-radius, radius)
                     ax.set_ylim(-radius, radius)
-
+                    
+        fig.tight_layout()
+        
     elif nSubPts == 1:
         plt.figure()
         plt.plot(x.real, x.imag, ".")
@@ -79,7 +81,7 @@ def pconst(x, lim=False, R=1.5):
             plt.xlim(-radius, radius)
             plt.ylim(-radius, radius)
     
-    fig.tight_layout()
+    
     plt.show()
     
     return None
