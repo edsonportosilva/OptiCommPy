@@ -245,7 +245,7 @@ y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
-plt.figure()
+plt.figure(figsize=(10, 3))
 plt.title('CPR estimated phase')
 plt.plot(θ,'-')
 plt.xlim(0, len(θ))
