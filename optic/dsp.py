@@ -175,19 +175,20 @@ def decimate(Ei, param):
 
     # simple timing recovery
     sampDelay = np.zeros(Ei.shape[1])
-
+    
     # finds best sampling instant
     # (maximum variance sampling time)
     for k in range(0, Ei.shape[1]):
         a = Ei[:, k].reshape(Ei.shape[0], 1)
         varVector = np.var(a.reshape(-1, param.SpS_in), axis=0)
         sampDelay[k] = np.where(varVector == np.amax(varVector))[0][0]
-
+    
+    print('sample delay:', sampDelay)
     # downsampling
-    Eo = Ei[::decFactor, :]
+    Eo = Ei[::decFactor, :].copy()
 
     for k in range(0, Ei.shape[1]):
-        Ei[:, k] = np.roll(Ei[:, k], int(sampDelay[k]))
+        Ei[:, k] = np.roll(Ei[:, k], -int(sampDelay[k]))
         Eo[:, k] = Ei[0::decFactor, k]
 
     return Eo
