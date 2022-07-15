@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -38,6 +38,10 @@ def awgn(tx, noiseVar):
     
     return rx
 
+
+# %load_ext autoreload
+# %autoreload 2
+# #%load_ext line_profiler
 
 # ## Test bit-error-rate (BER) versus signal-to-noise ratio per bit ($E_b/N_0$)
 
@@ -335,12 +339,6 @@ def maxwellBolt(λ, const):
     
     return p   
 
-# probSymb = maxwellBolt(1.5, constSymb)
-
-# draw = choice(constSymb, 100000, p=probSymb)
-
-# plt.hist(draw.real, bins=256);
-
 
 # +
 # Run MI vs SNR Monte Carlo simulation 
@@ -349,7 +347,7 @@ qamOrder  = [64, 64]  # Modulation order
 
 SNR  = np.arange(-2, 34, 1)
 MI  = np.zeros((len(SNR),len(qamOrder)))
-Nsymbols = 20000
+Nsymbols = 80000
 
 PS = 0
 for ii, M in enumerate(qamOrder):
@@ -359,9 +357,8 @@ for ii, M in enumerate(qamOrder):
     Es = np.mean(np.abs(constSymb) ** 2)
     constSymb = constSymb / np.sqrt(Es)
     
-    probSymb = np.round(maxwellBolt(PS, constSymb),8)
-    probSymb = probSymb/np.sum(probSymb)
-    PS = 0
+    probSymb = maxwellBolt(PS, constSymb)    
+    PS = 1.5
     
     Es = np.sum(( np.abs(constSymb) ** 2 ) * probSymb)
     
@@ -370,22 +367,30 @@ for ii, M in enumerate(qamOrder):
         snrdB = SNR[indSNR]
 
         # generate random symbols   
-        symbTx = choice(constSymb, Nsymbols, p=probSymb)
-        symbTx = symbTx/np.sqrt(Es)
-        
+        symbTx = choice(constSymb, Nsymbols, p=probSymb)     
+              
         # AWGN    
-        noiseVar = 1/(10**(snrdB/10))
+        noiseVar = Es/(10**(snrdB/10))
 
-        symbRx = awgn(symbTx, noiseVar)
-
+        symbRx = awgn(symbTx, noiseVar)       
+            
         # MI estimation
-        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam', probSymb)
+        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam', probSymb)       
+        
+        if indSNR == len(SNR)-10:
+            plt.figure()
+            plt.hist2d(symbRx.real,symbRx.imag, bins=256, density=True);
 
 # +
 plt.figure(figsize=(10,6))
 
 for ii, M in enumerate(qamOrder):
-    plt.plot(SNR, MI[:,ii],'-', label=str(M)+'QAM monte carlo',linewidth=2)
+    if ii == 0:
+        pltLabel = 'QAM uniform'
+    else:
+        pltLabel = 'QAM shaped'
+        
+    plt.plot(SNR, MI[:,ii],'-', label=str(M)+pltLabel,linewidth=2)
 
 # plot theoretical AWGN channel capacity    
 C = np.log2(1 + 10**(SNR/10))
@@ -397,7 +402,3 @@ plt.legend();
 plt.xlabel('SNR [dB]');
 plt.ylabel('MI [bits/symbol]');
 plt.grid()
-# -
-type(probSymb)
-
-
