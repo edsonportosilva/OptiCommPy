@@ -210,11 +210,14 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
 
     :return: estimated MI
     """
+    if len(px) == 0:  # if px is not defined
+        px = 1 / M * np.ones(M)  # assume uniform distribution
+        
     # constellation parameters
     constSymb = GrayMapping(M, constType)[:, 0]
-    Es = np.mean(np.abs(constSymb) ** 2)
+    Es = np.sum(np.abs(constSymb) ** 2 * px)
     constSymb = constSymb / np.sqrt(Es)
-
+    
     # We want all the signal sequences to be disposed in columns:
     try:
         if rx.shape[1] > rx.shape[0]:
@@ -235,8 +238,7 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
     # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
-    if len(px) == 0:  # if px is not defined
-        px = 1 / M * np.ones(M)  # assume uniform distribution
+
     for k in range(0, nModes):
         σ2 = noiseVar[k]
         MI[k] = calcMI(rx[:, k], tx[:, k], σ2, constSymb, px)
@@ -263,16 +265,19 @@ def calcMI(rx, tx, σ2, constSymb, pX):
     for k in range(0, N):
         indSymb = np.argmin(np.abs(tx[k] - constSymb))
 
-        pYgX = np.exp(-(1 / σ2) * np.abs(rx[k] - tx[k]) ** 2)  # p(Y|X)
+        log2_pYgX = -(1 / σ2) * np.abs(rx[k] - tx[k]) ** 2 * np.log2(np.exp(1))  # log2 p(Y|X)
+        #print('pYgX:', pYgX)
         pXY = (
             np.exp(-(1 / σ2) * np.abs(rx[k] - constSymb) ** 2) * pX
         )  # p(Y,X) = p(Y|X)*p(X)
-
+        #print('pXY:', pXY)
         # p(X|Y) = p(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
 
         pY = np.sum(pXY)
-
-        H_XgY -= np.log2((pYgX * pX[indSymb])) - np.log2(pY)
+        
+        #print('pY:', pY)
+        H_XgY -= log2_pYgX + np.log2(pX[indSymb]) - np.log2(pY)
+        
     H_XgY = H_XgY / N
 
     return H_X - H_XgY
