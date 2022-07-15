@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -112,7 +112,7 @@ sigWDM, paramCh = manakovSSF(sigWDM_Tx, Fs, paramCh)
 # **Optical WDM spectrum before and after transmission**
 
 # plot psd
-plt.figure()
+plt.figure(figsize=(10, 3))
 plt.xlim(paramCh.Fc-Fs/2,paramCh.Fc+Fs/2);
 plt.psd(sigWDM_Tx[:,0], Fs=Fs, Fc=paramCh.Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Tx')
 plt.psd(sigWDM[:,0], Fs=Fs, Fc=paramCh.Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Rx')
@@ -269,9 +269,9 @@ y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 
 ind = np.arange(discard, d.shape[0]-discard)
-BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], mod)
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], mod)
-MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], mod)
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 
 print('     pol.X     pol.Y      ')
 print('SER: %.2e, %.2e'%(SER[0], SER[1]))
