@@ -90,7 +90,7 @@ def simpleWDMTx(param):
     Psig = 0
 
     # constellation symbols info
-    const = GrayMapping(param.M, param.constType)[:,0]
+    const = GrayMapping(param.M, param.constType)
     Es = np.mean(np.abs(const)**2)    
 
     # pulse shaping filter
