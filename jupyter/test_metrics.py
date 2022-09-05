@@ -353,7 +353,7 @@ PS = 0
 for ii, M in enumerate(qamOrder):
     print('run sim: M = ', M)
           
-    constSymb = GrayMapping(M, 'qam')[:, 0]
+    constSymb = GrayMapping(M, 'qam')
     Es = np.mean(np.abs(constSymb) ** 2)
     constSymb = constSymb / np.sqrt(Es)
     
