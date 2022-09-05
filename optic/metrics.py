@@ -52,7 +52,7 @@ def fastBERcalc(rx, tx, M, constType):
     :return SNR: estimated SNR
     """
     # constellation parameters
-    constSymb = GrayMapping(M, constType)[:, 0]
+    constSymb = GrayMapping(M, constType)
     Es = np.mean(np.abs(constSymb) ** 2)
 
     # We want all the signal sequences to be disposed in columns:
@@ -140,7 +140,7 @@ def monteCarloGMI(rx, tx, M, constType):
     :return: estimated GMI
     """
     # constellation parameters
-    constSymb = GrayMapping(M, constType)[:, 0]
+    constSymb = GrayMapping(M, constType)
     Es = np.mean(np.abs(constSymb) ** 2)
 
     # We want all the signal sequences to be disposed in columns:
@@ -214,7 +214,7 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
         px = 1 / M * np.ones(M)  # assume uniform distribution
         
     # constellation parameters
-    constSymb = GrayMapping(M, constType)[:, 0]
+    constSymb = GrayMapping(M, constType)
     Es = np.sum(np.abs(constSymb) ** 2 * px)
     constSymb = constSymb / np.sqrt(Es)
     
