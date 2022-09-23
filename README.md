@@ -1,4 +1,4 @@
-# Fiber Optic Communications with Python
+# OptiCommPy: Fiber Optic Communications with Python
 
 Simulate optical communications systems with Python. This repository contains code to simulate systems, subsystems and components of fiber optic communication systems, for educational and research purposes.
 <p align="center">
