@@ -13,11 +13,26 @@
 #     name: python3
 # ---
 
+# +
 from os import chdir as cd
-# ! git clone -b add-nonlinear-SDM-models https://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@github.com/edsonportosilva/OptiCommPy-private
+# ! git clone -b run-SSFM-Colab https://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@github.com/edsonportosilva/OptiCommPy-private
 cd('/content/OptiCommPy-private')
 # !pip install .
 # !pip install numba --upgrade
+
+from google.colab import drive
+drive.mount('/content/drive')
+
+# +
+import matplotlib.pyplot as plt
+import numpy as np
+
+from optic.modelsGPU import manakovSSF
+from optic.core import parameters
+from optic.metrics import signal_power
+from optic.plot import pconst
+
+import scipy.constants as const
 
 # +
 import scipy.io
@@ -49,9 +64,24 @@ traceID = 'SSF_'+str(numberOfCarriers)+'xWDMCh_'+str(int(Rs/1e9))+\
             'GBd_DP'+str(M)+'QAM_'+str(spans)+'x'+str(spanLength)+'km_'+str(codeBlocks)+\
             '_blk_CI_'+str(codeIndex)
 
-mat = scipy.io.loadmat(path+traceID+'.mat')
+dataLoad = scipy.io.loadmat(path+traceID+'.mat')
 # -
 
-mat
+dataLoad['x']
 
+# +
+# optical channel parameters
+paramCh = parameters()
+paramCh.Ltotal = spans*spanLength         # total link distance [km]
+paramCh.Lspan  = spanLength               # span length [km]
+paramCh.alpha = dataLoad['alpha'][0][0]   # fiber loss parameter [dB/km]
+paramCh.D = dataLoad['D'][0][0]           # fiber dispersion parameter [ps/nm/km]
+paramCh.gamma = dataLoad['gamma'][0][0]   # fiber nonlinear parameter [1/(W.km)]
+paramCh.Fc = dataLoad['Fc'][0][0]         # central optical frequency of the WDM spectrum
+paramCh.hz = dataLoad['stepSize'][0][0]   # step-size of the split-step Fourier method [km]
 
+Fs = dataLoad['Fs'][0][0] # sampling rate
+
+# nonlinear signal propagation
+sigWDM_Tx = np.array(dataLoad['x'], dataLoad['y'])
+sigWDM, paramCh = manakovSSF(sigWDM_Tx, Fs, paramCh)
