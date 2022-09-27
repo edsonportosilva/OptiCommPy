@@ -2,7 +2,7 @@
 
 Simulate optical communications systems with Python. This repository is a Python-based framework to simulate systems, subsystems and components of fiber optic communication systems, for educational and research purposes.
 <p align="center">
-<img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/40GOOK_ElectricalEyeTx_10km.jpg" width="400">  <img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/40GOOK_spectrum.jpg" width="400">
+<img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/eyeDisp.gif" width="400">  <img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/40GOOK_spectrum.jpg" width="400">
 
 <img src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/DSP.jpg" width="800">
 
