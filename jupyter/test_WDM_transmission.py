@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -30,8 +30,13 @@ import numpy as np
 from commpy.modulation import QAMModem
 
 from optic.dsp import pulseShape, firFilter, decimate, symbolSync
-from optic.models import phaseNoise, pdmCoherentReceiver#, manakovSSF
-from optic.modelsGPU import manakovSSF
+from optic.models import phaseNoise, pdmCoherentReceiver
+
+try:
+    from optic.modelsGPU import manakovSSF
+except:
+    from optic.models import manakovSSF
+
 from optic.tx import simpleWDMTx
 from optic.core import parameters
 from optic.equalization import edc, mimoAdaptEqualizer

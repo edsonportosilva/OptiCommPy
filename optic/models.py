@@ -6,17 +6,32 @@ from numpy.random import normal
 from tqdm.notebook import tqdm
 
 
-def mzm(Ai, Vπ, u, Vb):
+def mzm(Ai, u, Vπ, Vb):
     """
-    MZM modulator
+    Optical Mach-Zehnder Modulator (MZM)
 
-    :param Vπ: Vπ-voltage
-    :param Vb: bias voltage
-    :param u:  modulator's driving signal (real-valued)
-    :param Ai: amplitude of the input CW carrier
+    Parameters
+    ----------
+    Ai : scalar or np.array
+        Amplitude of the optical field at the input of the MZM.
+    u : np.array
+        Electrical driving signal.
+    Vπ : scalar
+        MZM's Vπ voltage.
+    Vb : scalar
+        MZM's bias voltage.
 
-    :return Ao: output optical signal
+    Returns
+    -------
+    Ao : np.array
+        Modulated optical field at the output of the MZM.
+
     """
+    try:
+        assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
+    except AttributeError:
+        Ai = Ai * np.ones(u.shape)
+
     π = np.pi
     Ao = Ai * np.cos(0.5 / Vπ * (u + Vb) * π)
 
@@ -25,18 +40,34 @@ def mzm(Ai, Vπ, u, Vb):
 
 def iqm(Ai, u, Vπ, VbI, VbQ):
     """
-    IQ modulator
+    Optical In-Phase/Quadrature Modulator (IQM)
 
-    :param Vπ: MZM Vπ-voltage
-    :param VbI: in-phase MZM bias voltage
-    :param VbQ: quadrature MZM bias voltage
-    :param u:  modulator's driving signal (complex-valued baseband)
-    :param Ai: amplitude of the input CW carrier
+    Parameters
+    ----------
+    Ai : scalar or np.array
+        Amplitude of the optical field at the input of the IQM.
+    u : complex-valued np.array
+        Modulator's driving signal (complex-valued baseband).
+    Vπ : scalar
+        MZM Vπ-voltage.
+    VbI : scalar
+        I-MZM's bias voltage.
+    VbQ : scalar
+        Q-MZM's bias voltage.
 
-    :return Ao: output optical signal
+    Returns
+    -------
+    Ao : complex-valued np.array
+        Modulated optical field at the output of the IQM.
+
     """
-    Ao = mzm(Ai / np.sqrt(2), Vπ, u.real, VbI) + 1j * mzm(
-        Ai / np.sqrt(2), Vπ, u.imag, VbQ
+    try:
+        assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
+    except AttributeError:
+        Ai = Ai * np.ones(u.shape)
+
+    Ao = mzm(Ai / np.sqrt(2), u.real, Vπ, VbI) + 1j * mzm(
+        Ai / np.sqrt(2), u.imag, Vπ, VbQ
     )
 
     return Ao
@@ -44,17 +75,25 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
 
 def pbs(E, θ=0):
     """
-    Polarization beam splitter (pbs)
+    Polarization beam splitter (PBS)
 
-    :param E: input pol. multiplexed field [2d nparray]
-    :param θ: rotation angle of input field [rad][default: 0 rad]
+    Parameters
+    ----------
+    E : (N,2) np.array
+        Input pol. multiplexed optical field.
+    θ : scalar, optional
+        Rotation angle of input field in radians. The default is 0.
 
-    :return: Ex output single pol. field [1d nparray]
-    :return: Ey output single pol. field [1d nparray]
-    
+    Returns
+    -------
+    Ex : (N,) np.array
+        Ex output single pol. field.
+    Ey : (N,) np.array
+        Ey output single pol. field.
+
     """
     try:
-        assert E.shape[1] == 2, "E need to be a N-by-2 2d nparray or a 1d nparray"
+        assert E.shape[1] == 2, "E need to be a (N,2) or a (N,) np.array"
     except IndexError:
         E = np.repeat(E, 2).reshape(-1, 2)
         E[:, 1] = 0
@@ -110,33 +149,54 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
 
 def balancedPD(E1, E2, R=1):
     """
-    Balanced photodetector (BPD)
+    Balanced photodiode (BPD)
 
-    :param E1: input field [nparray]
-    :param E2: input field [nparray]
-    :param R: photodiode responsivity [A/W][scalar, default: 1 A/W]
+    Parameters
+    ----------
+    E1 : np.array
+        Input optical field.
+    E2 : np.array
+        Input optical field.
+    R : scalar, optional
+        Photodiode responsivity in A/W. The default is 1.
 
-    :return: balanced photocurrent
+    Returns
+    -------
+    ibpd : np.array
+           Balanced photocurrent.
+
     """
+
     assert R > 0, "PD responsivity should be a positive scalar"
-    assert E1.size == E2.size, "E1 and E2 need to have the same size"
+    assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
     i1 = R * E1 * np.conj(E1)
     i2 = R * E2 * np.conj(E2)
+    ibpd = i1 - i2
 
-    return i1 - i2
+    return ibpd
 
 
-def hybrid_2x4_90deg(E1, E2):
+def hybrid_2x4_90deg(Es, Elo):
     """
     Optical 2 x 4 90° hybrid
 
-    :param E1: input signal field [nparray]
-    :param E2: input LO field [nparray]
+    Parameters
+    ----------
+    Es : np.array
+        Input signal optical field.
+    Elo : np.array
+        Input LO optical field.
 
-    :return: hybrid outputs
+    Returns
+    -------
+    Eo : np.array
+        Optical hybrid outputs.
+
     """
-    assert E1.size == E2.size, "E1 and E2 need to have the same size"
+    assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
+    assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
+    assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
 
     # optical hybrid transfer matrix
     T = np.array(
@@ -148,7 +208,7 @@ def hybrid_2x4_90deg(E1, E2):
         ]
     )
 
-    Ei = np.array([E1, np.zeros((E1.size,)), np.zeros((E1.size,)), E2])
+    Ei = np.array([Es, np.zeros((Es.size,)), np.zeros((Es.size,)), Elo])
 
     Eo = T @ Ei
 
@@ -159,14 +219,25 @@ def coherentReceiver(Es, Elo, Rd=1):
     """
     Single polarization coherent optical front-end
 
-    :param Es: input signal field [nparray]
-    :param Elo: input LO field [nparray]
-    :param Rd: photodiode resposivity [scalar]
+    Parameters
+    ----------
+    Es : np.array
+        Input signal optical field.
+    Elo : np.array
+        Input LO optical field.
+    Rd : scalar, optional
+        Photodiodes responsivity in A/W. The default is 1.
 
-    :return: downconverted signal after balanced detection
+    Returns
+    -------
+    s : np.array
+        Downconverted signal after balanced detection.
+
     """
     assert Rd > 0, "PD responsivity should be a positive scalar"
-    assert Es.size == Elo.size, "Es and Elo need to have the same size"
+    assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
+    assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
+    assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
 
     # optical 2 x 4 90° hybrid
     Eo = hybrid_2x4_90deg(Es, Elo)
@@ -175,47 +246,70 @@ def coherentReceiver(Es, Elo, Rd=1):
     sI = balancedPD(Eo[1, :], Eo[0, :], Rd)
     sQ = balancedPD(Eo[2, :], Eo[3, :], Rd)
 
-    return sI + 1j * sQ
+    s = sI + 1j * sQ
+
+    return s
 
 
 def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
     """
     Polarization multiplexed coherent optical front-end
 
-    :param Es: input signal field [2d nparray]
-    :param Elo: input LO field [nparray]
-    :param θsig: polarization rotation angle [rad][default: 0]
-    :param Rdx: photodiode resposivity pol.X [scalar]
-    :param Rdy: photodiode resposivity pol.Y [scalar]
+    Parameters
+    ----------
+    Es : np.array
+        Input signal optical field.
+    Elo : np.array
+        Input LO optical field.
+    θsig : scalar, optional
+        Input polarization rotation angle in rad. The default is 0.
+    Rdx : scalar, optional
+        Photodiode resposivity pol.X in A/W. The default is 1.
+    Rdy : scalar, optional
+        Photodiode resposivity pol.Y in A/W. The default is 1.
 
-    :return: downconverted signal after balanced detection
+    Returns
+    -------
+    S : np.array
+        Downconverted signal after balanced detection.
+
     """
     assert Rdx > 0 and Rdy > 0, "PD responsivity should be a positive scalar"
-    assert len(Es) == len(Elo), "Es and Elo need to have the same number of samples"
+    assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
-    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orthogonal polarizations
-    Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orthogonal polarizations
+    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
+    Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orth. polarizations
 
     Sx = coherentReceiver(Esx, Elox, Rd=Rdx)  # coherent detection of pol.X
     Sy = coherentReceiver(Esy, Eloy, Rd=Rdy)  # coherent detection of pol.Y
 
-    Sx = Sx.reshape(len(Sx), 1)
-    Sy = Sy.reshape(len(Sy), 1)
+    S = np.array([Sx, Sy]).T
 
-    return np.concatenate((Sx, Sy), axis=1)
+    return S
 
 
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
     Simple EDFA model
 
-    :param Ei: input signal field [nparray]
-    :param Fs: sampling frequency [Hz][scalar]
-    :param G: gain [dB][scalar, default: 20 dB]
-    :param NF: EDFA noise figure [dB][scalar, default: 4.5 dB]
-    :param Fc: optical center frequency [Hz][scalar, default: 193.1e12 Hz]
+    Parameters
+    ----------
+    Ei : np.array
+        Input signal field .
+    Fs : scalar
+        Sampling frequency in Hz.
+    G : scalar, optional
+        Amplifier gain in dB. The default is 20.
+    NF : scalar, optional
+        EDFA noise figure in dB. The default is 4.5.
+    Fc : scalar, optional
+        Central optical frequency. The default is 193.1e12.
 
-    :return: amplified noisy optical signal [nparray]
+    Returns
+    -------
+    Eo : np.array
+        Amplified noisy optical signal.
+
     """
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
@@ -228,7 +322,9 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     noise = normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * normal(
         0, np.sqrt(p_noise / 2), Ei.shape
     )
-    return Ei * np.sqrt(G_lin) + noise
+    Eo = Ei * np.sqrt(G_lin) + noise
+
+    return Eo
 
 
 def ssfm(Ei, Fs, paramCh):

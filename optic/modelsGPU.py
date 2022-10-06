@@ -8,7 +8,7 @@ from tqdm.notebook import tqdm
 from optic.metrics import signal_power
 
 
-def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
+def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12, prec=cp.complex128):
     """
     Simple EDFA model
 
@@ -31,11 +31,11 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     noise = normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * normal(
         0, np.sqrt(p_noise / 2), Ei.shape
     )
-    noise = cp.array(noise).astype(cp.complex64)
+    noise = cp.array(noise).astype(prec)
     return Ei * cp.sqrt(G_lin) + noise
 
 
-def manakovSSF(Ei, Fs, paramCh):
+def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     """
     Manakov model split-step Fourier (symmetric, dual-pol.)
 
@@ -77,7 +77,7 @@ def manakovSSF(Ei, Fs, paramCh):
     NF = paramCh.NF
 
     # fft in CuPy uses only complex64
-    prec = cp.complex64
+    # prec = cp.complex64
 
     Nspans = int(np.floor(Ltotal / Lspan))
     Nsteps = int(np.floor(Lspan / hz))
