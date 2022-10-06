@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -18,8 +18,8 @@
 # Uncomment and run the code below to run this notebook in Colab
 #
 # from os import chdir as cd
-# # ! git clone https://github.com/edsonportosilva/OptiCommPy-public
-# cd('/content/OptiCommPy-public')
+# # ! git clone https://github.com/edsonportosilva/OptiCommPy
+# cd('/content/OptiCommPy')
 # # !pip install .
 # # !pip install numba --upgrade
 
@@ -112,7 +112,7 @@ sigWDM, paramCh = manakovSSF(sigWDM_Tx, Fs, paramCh)
 # **Optical WDM spectrum before and after transmission**
 
 # plot psd
-plt.figure()
+plt.figure(figsize=(10, 3))
 plt.xlim(paramCh.Fc-Fs/2,paramCh.Fc+Fs/2);
 plt.psd(sigWDM_Tx[:,0], Fs=Fs, Fc=paramCh.Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Tx')
 plt.psd(sigWDM[:,0], Fs=Fs, Fc=paramCh.Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Rx')
@@ -227,6 +227,7 @@ paramEq.L = [20000, 80000]
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
 #plot constellations after adaptive equalization
+discard = 5000
 pconst([y_EQ[discard:-discard,:], d], lim=True)
 # -
 
@@ -244,7 +245,7 @@ y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
 
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
-plt.figure()
+plt.figure(figsize=(10, 3))
 plt.title('CPR estimated phase')
 plt.plot(θ,'-')
 plt.xlim(0, len(θ))
@@ -268,9 +269,9 @@ y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 
 ind = np.arange(discard, d.shape[0]-discard)
-BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], mod)
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], mod)
-MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], mod)
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 
 print('     pol.X     pol.Y      ')
 print('SER: %.2e, %.2e'%(SER[0], SER[1]))
