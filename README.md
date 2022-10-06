@@ -1,6 +1,12 @@
-# Fiber Optic Communications with Python
+# OptiCommPy: Fiber Optic Communications with Python
 
-Simulate optical communications systems with Python. This repository contains code to simulate systems, subsystems and components of fiber optic communication systems, for educational and research purposes.
+Simulate optical communications systems with Python. This repository is a Python-based framework to simulate systems, subsystems and components of fiber optic communication systems, for educational and research purposes.
+<p align="center">
+<img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/eyeDisp.gif" width="400">  <img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/40GOOK_spectrum.jpg" width="400">
+
+<img src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/DSP.jpg" width="800">
+
+</p>
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommpy-public/HEAD?urlpath=lab)
 
