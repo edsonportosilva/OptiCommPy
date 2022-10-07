@@ -186,7 +186,9 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
                     * hz
                     / 2
                 )
-                
+            Ech_x = Ex_ 
+            Ech_y = Ey_    
+            
         # amplification step
         if amp == "edfa":
             Ech_x = edfa(Ech_x, Fs, alpha * Lspan, NF, Fc)
