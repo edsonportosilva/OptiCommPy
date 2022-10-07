@@ -39,8 +39,8 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12, prec=cp.complex128):
 def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
 
     lim = cp.sqrt(
-        cp.sum(Ex_fd - Ex_conv) ** 2 + cp.sum(Ey_fd - Ey_conv) ** 2
-    ) / cp.sqrt(cp.sum(Ex_conv) ** 2 + cp.sum(Ey_conv) ** 2)
+        cp.sum((Ex_fd - Ex_conv) ** 2) + cp.sum( (Ey_fd - Ey_conv) ** 2)
+    ) / cp.sqrt(cp.sum(Ex_conv ** 2)  + cp.sum(Ey_conv ** 2))
 
     return lim
 
@@ -76,7 +76,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     paramCh.amp = getattr(paramCh, "amp", "edfa")
     paramCh.NF = getattr(paramCh, "NF", 4.5)
     paramCh.maxIter = getattr(paramCh, "maxIter", 10)
-    paramCh.tol = getattr(paramCh, "tol", 1e-6)
+    paramCh.tol = getattr(paramCh, "tol", 1e-5)
 
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
