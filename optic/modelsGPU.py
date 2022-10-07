@@ -141,9 +141,9 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
             # First linear step (frequency domain)
             Ex_hd = ifft( fft(Ech_x) * linOperator )
             Ey_hd = ifft( fft(Ech_y) * linOperator )
-                                    
+                                   
             # Nonlinear step (time domain)
-            for nIter in range(maxIter):      
+            for nIter in range(maxIter): 
                 
                 phiRot = (
                     (8 / 9)
@@ -156,8 +156,8 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
                     )
                     * hz
                     / 2
-                )
-                
+                ) 
+                                
                 Ech_x_fd = Ex_hd * cp.exp( 1j * phiRot )
                 Ech_y_fd = Ey_hd * cp.exp( 1j * phiRot )
 
@@ -166,16 +166,16 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
                 Ech_y_fd = ifft( fft(Ech_y_fd) * linOperator )
 
                 # check convergence
-                lim = convergenceCondition(Ech_x_fd, Ech_y_fd, Ex_conv, Ey_conv)
-
-                if lim < tol:
-                    break
-                elif nIter == maxIter-1:
-                    print('Warning: target SSFM error tolerance was not achieved in '+str(maxIter)+' iterations')
+                lim = convergenceCondition(Ech_x_fd, Ech_y_fd, Ex_conv, Ey_conv) 
                 
                 Ex_conv = Ech_x_fd.copy()
                 Ey_conv = Ech_y_fd.copy()
                 
+                if lim < tol:
+                    break
+                elif nIter == maxIter-1:
+                    print('Warning: target SSFM error tolerance was not achieved in '+str(maxIter)+' iterations')    
+                                    
             Ech_x = Ech_x_fd.copy()
             Ech_y = Ech_y_fd.copy()
             
