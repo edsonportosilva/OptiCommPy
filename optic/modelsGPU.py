@@ -137,48 +137,56 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
             
         # fiber propagation step
         for stepN in range(1, Nsteps + 1):
-            # First linear step (frequency domain)
-            Ech_x = fft(Ech_x) * linOperator
-            Ech_y = fft(Ech_y) * linOperator
-
-            # Nonlinear step (time domain)
-            Ex = ifft(Ech_x)
-            Ey = ifft(Ech_y)
-
-            for nIter in range(maxIter):
-
-                phiRot = (
+            
+            phiRot = (
                     (8 / 9)
                     * γ
                     * (
-                        Ex * cp.conj(Ex)
-                        + Ey * cp.conj(Ey)
+                        Ech_x * cp.conj(Ech_x)
+                        + Ech_y * cp.conj(Ech_y)
                         + Ex_ * cp.conj(Ex_)
                         + Ey_ * cp.conj(Ey_)
                     )
                     * hz
                     / 2
                 )
+                                
+            # First linear step (frequency domain)
+            Ex = ifft(fft(Ech_x) * linOperator)
+            Ey = ifft(fft(Ech_y) * linOperator)
+            
+            # Nonlinear step (time domain)
+            for nIter in range(maxIter):
 
-                Ech_x = Ex * cp.exp(1j * phiRot)
-                Ech_y = Ey * cp.exp(1j * phiRot)
+                Ech_x_fd = Ex * cp.exp(1j * phiRot)
+                Ech_y_fd = Ey * cp.exp(1j * phiRot)
 
-                # Second linear step (frequency domain)         
-                Ech_x = fft(Ech_x) * linOperator
-                Ech_y = fft(Ech_y) * linOperator
-
-                Ech_x = ifft(Ech_x)
-                Ech_y = ifft(Ech_y)
+                # Second linear step (frequency domain)       
+                Ech_x_fd = ifft(fft(Ech_x_fd) * linOperator)
+                Ech_y_fd = ifft(fft(Ech_y_fd) * linOperator)
                 
                 # check convergence 
-                lim = convergenceCondition(Ech_x, Ech_y, Ex_, Ey_)
+                lim = convergenceCondition(Ech_x_fd, Ech_y_fd, Ex_, Ey_)
                 
-                Ex_ = Ech_x.copy()
-                Ey_ = Ech_y.copy()
+                Ex_ = Ech_x_fd.copy()
+                Ey_ = Ech_y_fd.copy()               
                 
                 if lim < tol:
                     break
                
+                phiRot = (
+                    (8 / 9)
+                    * γ
+                    * (
+                        Ech_x * cp.conj(Ech_x)
+                        + Ech_y * cp.conj(Ech_y)
+                        + Ex_ * cp.conj(Ex_)
+                        + Ey_ * cp.conj(Ey_)
+                    )
+                    * hz
+                    / 2
+                )
+                
         # amplification step
         if amp == "edfa":
             Ech_x = edfa(Ech_x, Fs, alpha * Lspan, NF, Fc)
