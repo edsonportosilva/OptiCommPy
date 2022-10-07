@@ -3,6 +3,7 @@ import numpy as np
 import scipy.constants as const
 from cupy.random import normal
 from cupyx.scipy.fft import fft, fftfreq, ifft
+from cupy.linalg import norm
 from tqdm.notebook import tqdm
 
 from optic.metrics import signal_power
@@ -34,6 +35,12 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12, prec=cp.complex128):
     noise = cp.array(noise).astype(prec)
     return Ei * cp.sqrt(G_lin) + noise
 
+
+def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv,):
+    
+    lim = cp.sqrt(norm(Ex_fd - Ex_conv,2)**2 + norm(Ey_fd - Ey_conv, 2)**2)/cp.sqrt(norm(Ex_conv, 2)**2 + norm(Ey_conv, 2)**2)
+            
+    return lim
 
 def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     """
@@ -125,27 +132,37 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
             # First linear step (frequency domain)
             Ech_x = Ech_x * linOperator
             Ech_y = Ech_y * linOperator
-
+            
             # Nonlinear step (time domain)
             Ex = ifft(Ech_x)
             Ey = ifft(Ech_y)
-            Ech_x = Ex * cp.exp(
-                1j * (8 / 9) * γ * (Ex * cp.conj(Ex) + Ey * cp.conj(Ey)) * hz
-            )
-            Ech_y = Ey * cp.exp(
-                1j * (8 / 9) * γ * (Ex * cp.conj(Ex) + Ey * cp.conj(Ey)) * hz
-            )
-
-            # Second linear step (frequency domain)
-            Ech_x = fft(Ech_x)
-            Ech_y = fft(Ech_y)
-
-            Ech_x = Ech_x * linOperator
-            Ech_y = Ech_y * linOperator
+                
+            for nIter in range(maxIter):
+                
+                phiRot = (8 / 9) * γ * (Ex * cp.conj(Ex) + Ey * cp.conj(Ey)) * hz
+                            
+                Ech_x = Ex * cp.exp(1j * phiRot)
+                Ech_y = Ey * cp.exp(1j * phiRot)
+    
+                # Second linear step (frequency domain)
+                Ech_x = fft(Ech_x)
+                Ech_y = fft(Ech_y)
+    
+                Ech_x = Ech_x * linOperator
+                Ech_y = Ech_y * linOperator
+                
+                Ech_x = ifft(Ech_x)
+                Ech_y = ifft(Ech_y)
+                
+                lim = convergenceCondition(Ech_x, Ech_y, Ex, Ey)
+                
+                if lim < tol:
+                    break
+                else:
+                    Ex = Ech_x
+                    Ey = Ech_y
 
         # amplification step
-        Ech_x = ifft(Ech_x)
-        Ech_y = ifft(Ech_y)
 
         if amp == "edfa":
             Ech_x = edfa(Ech_x, Fs, alpha * Lspan, NF, Fc)
