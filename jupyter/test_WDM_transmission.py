@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -63,11 +63,9 @@ HTML("""
 
 figsize(10, 3)
 
-# +
-# #%load_ext autoreload
-# #%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 # #%load_ext line_profiler
-# -
 
 # # Simulation of coherent WDM transmission
 
@@ -107,6 +105,8 @@ paramCh.D = 16           # fiber dispersion parameter [ps/nm/km]
 paramCh.gamma = 1.3      # fiber nonlinear parameter [1/(W.km)]
 paramCh.Fc = paramTx.Fc  # central optical frequency of the WDM spectrum
 paramCh.hz = 0.1         # step-size of the split-step Fourier method [km]
+paramCh.maxIter = 5      # maximum number of convergence iterations per step
+paramCh.tol = 1e-5       # error tolerance per step
 
 Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
@@ -242,7 +242,7 @@ pconst([y_EQ[discard:-discard,:], d], lim=True)
 paramCPR = parameters()
 paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
-paramCPR.N   = 35
+paramCPR.N   = 20
 paramCPR.B   = 64
 paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
 
