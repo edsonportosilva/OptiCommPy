@@ -357,7 +357,8 @@ def ssfm(Ei, Fs, paramCh):
     paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
     paramCh.amp = getattr(paramCh, "amp", "edfa")
     paramCh.NF = getattr(paramCh, "NF", 4.5)
-
+    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
+    
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
     hz = paramCh.hz
@@ -367,7 +368,8 @@ def ssfm(Ei, Fs, paramCh):
     Fc = paramCh.Fc
     amp = paramCh.amp
     NF = paramCh.NF
-
+    prgsBar = paramCh.prgsBar
+    
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
     λ = c_kms / Fc
@@ -387,7 +389,7 @@ def ssfm(Ei, Fs, paramCh):
     # define linear operator
     linOperator = np.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω ** 2) * (hz / 2))
 
-    for spanN in tqdm(range(1, Nspans + 1)):
+    for spanN in tqdm(range(1, Nspans + 1), disable=not(prgsBar)):
         Ech = fft(Ech)  # single-polarization field
 
         # fiber propagation step
@@ -445,7 +447,8 @@ def manakovSSF(Ei, Fs, paramCh):
     paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
     paramCh.amp = getattr(paramCh, "amp", "edfa")
     paramCh.NF = getattr(paramCh, "NF", 4.5)
-
+    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
+    
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
     hz = paramCh.hz
@@ -455,7 +458,8 @@ def manakovSSF(Ei, Fs, paramCh):
     Fc = paramCh.Fc
     amp = paramCh.amp
     NF = paramCh.NF
-
+    prgsBar = paramCh.prgsBar
+    
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
     λ = c_kms / Fc
@@ -476,7 +480,7 @@ def manakovSSF(Ei, Fs, paramCh):
     # define linear operator
     linOperator = np.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω ** 2) * (hz / 2))
 
-    for spanN in tqdm(range(1, Nspans + 1)):
+    for spanN in tqdm(range(1, Nspans + 1), disable=not(prgsBar)):
         Ech_x = fft(Ech_x)  # polarization x field
         Ech_y = fft(Ech_y)  # polarization y field
 

@@ -77,6 +77,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     paramCh.NF = getattr(paramCh, "NF", 4.5)
     paramCh.maxIter = getattr(paramCh, "maxIter", 10)
     paramCh.tol = getattr(paramCh, "tol", 1e-5)
+    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
 
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
@@ -89,6 +90,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     NF = paramCh.NF
     maxIter = paramCh.maxIter
     tol = paramCh.tol
+    prgsBar = paramCh.prgsBar
 
     # fft in CuPy uses only complex64
     # prec = cp.complex64
@@ -130,7 +132,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     else:
         linOperator = linOperator.reshape(1, -1)
 
-    for spanN in tqdm(range(1, Nspans + 1)):
+    for spanN in tqdm(range(1, Nspans + 1), disable=not(prgsBar)):
 
         Ex_conv = Ech_x.copy()
         Ey_conv = Ech_y.copy()
