@@ -6,7 +6,7 @@ from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
 from optic.models import linFiberCh
-
+import logging as logg
 
 def edc(Ei, L, D, Fc, Fs):
     """
@@ -42,6 +42,7 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
     storeCoeff = getattr(paramEq, 'storeCoeff', False)
     alg        = getattr(paramEq, 'alg', ['nlms'])
     M          = getattr(paramEq, 'M', 4)    
+    prgsBar    = getattr(paramEq, "prgsBar", True)
     
     # We want all the signal sequences to be disposed in columns:
     if not len(dx):
@@ -87,31 +88,30 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
         errSq = np.zeros((totalNumSymb,x.shape[1])).T        
        
         nStart = 0        
-        for indstage, runAlg in enumerate(alg):
-            print('\n')
-            print(runAlg,'- training stage #%d'%indstage)
+        for indstage, runAlg in enumerate(alg):            
+            logg.info(runAlg+' - training stage #%d', indstage)
 
             nEnd = nStart+L[indstage]
 
             if indstage == 0:
-                for indIter in tqdm(range(0, numIter)):
-                    print(runAlg,'pre-convergence training iteration #%d'%indIter)
+                for indIter in tqdm(range(0, numIter), disable=not(prgsBar)):
+                    logg.info(runAlg+' pre-convergence training iteration #%d', indIter)
                     yEq[nStart:nEnd,:], H, errSq[:,nStart:nEnd], Hiter = coreAdaptEq(x[nStart*SpS:nEnd*SpS,:], dx[nStart:nEnd,:],
                                                                                      SpS, H, L[indstage], mu[indstage], lambdaRLS, nTaps,
                                                                                      storeCoeff, runAlg, constSymb)
-                    print(runAlg,'MSE = %.6f.'%np.nanmean(errSq[:,nStart:nEnd]))
+                    logg.info(runAlg+' MSE = %.6f.', np.nanmean(errSq[:,nStart:nEnd]))
             else:
                 yEq[nStart:nEnd,:], H, errSq[:,nStart:nEnd], Hiter = coreAdaptEq(x[nStart*SpS:nEnd*SpS,:], dx[nStart:nEnd,:],
                                                                              SpS, H, L[indstage], mu[indstage], lambdaRLS, nTaps,
                                                                              storeCoeff, runAlg, constSymb)               
-                print(runAlg,'MSE = %.6f.'%np.nanmean(errSq[:,nStart:nEnd]))
+                logg.info(runAlg+' MSE = %.6f.', np.nanmean(errSq[:,nStart:nEnd]))
                 
             nStart = nEnd
     else:        
-        for indIter in tqdm(range(0, numIter)):
-            print(alg,'training iteration #%d'%indIter)        
+        for indIter in tqdm(range(0, numIter), disable=not(prgsBar)):
+            logg.info(alg+'training iteration #%d', indIter)        
             yEq, H, errSq, Hiter = coreAdaptEq(x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb)               
-            print(alg,'MSE = %.6f.'%np.nanmean(errSq))
+            logg.info(alg+'MSE = %.6f.', np.nanmean(errSq))
         
     return  yEq, H, errSq, Hiter
 
