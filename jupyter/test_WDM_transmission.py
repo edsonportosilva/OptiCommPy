@@ -14,14 +14,12 @@
 #     name: python3
 # ---
 
-# +
-# Uncomment and run the code below to run this notebook in Colab
-#
-# from os import chdir as cd
-# # ! git clone https://github.com/edsonportosilva/OptiCommPy
-# cd('/content/OptiCommPy')
-# # !pip install .
-# # !pip install numba --upgrade
+# # Simulation of coherent WDM transmission
+
+if 'google.colab' in str(get_ipython()):    
+    # ! git clone -b master https://github.com/edsonportosilva/OptiCommPy
+    from os import chdir as cd
+    cd('/content/OptiCommPy/Jupyter')
 
 # +
 import matplotlib.pyplot as plt
@@ -67,8 +65,6 @@ figsize(10, 3)
 # %autoreload 2
 # #%load_ext line_profiler
 
-# # Simulation of coherent WDM transmission
-
 #
 # ## Transmitter
 
@@ -98,15 +94,16 @@ sigWDM_Tx, symbTx_, paramTx = simpleWDMTx(paramTx)
 # +
 # optical channel parameters
 paramCh = parameters()
-paramCh.Ltotal = 800     # total link distance [km]
+paramCh.Ltotal = 700     # total link distance [km]
 paramCh.Lspan  = 50      # span length [km]
 paramCh.alpha = 0.2      # fiber loss parameter [dB/km]
 paramCh.D = 16           # fiber dispersion parameter [ps/nm/km]
 paramCh.gamma = 1.3      # fiber nonlinear parameter [1/(W.km)]
 paramCh.Fc = paramTx.Fc  # central optical frequency of the WDM spectrum
-paramCh.hz = 0.1         # step-size of the split-step Fourier method [km]
+paramCh.hz = 1           # step-size of the split-step Fourier method [km]
 paramCh.maxIter = 5      # maximum number of convergence iterations per step
 paramCh.tol = 1e-5       # error tolerance per step
+paramCh.prgsBar = True   # show progress bar?
 
 Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
@@ -132,13 +129,11 @@ plt.title('optical WDM spectrum');
 
 # parameters
 chIndex  = 5     # index of the channel to be demodulated
-plotPSD  = True
 
 Fc = paramCh.Fc
 Ts = 1/Fs
-mod = QAMModem(m=paramTx.M)
-
 freqGrid = paramTx.freqGrid
+
 print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
       %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
 
@@ -217,8 +212,7 @@ d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
 # ### Adaptive equalization
 
 # +
-mod = QAMModem(m=paramTx.M)
-
+# adaptive equalization parameters
 paramEq = parameters()
 paramEq.nTaps = 15
 paramEq.SpS   = 2
