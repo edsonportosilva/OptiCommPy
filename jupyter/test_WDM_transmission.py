@@ -236,7 +236,7 @@ pconst([y_EQ[discard:-discard,:], d], lim=True)
 paramCPR = parameters()
 paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
-paramCPR.N   = 20
+paramCPR.N   = 75
 paramCPR.B   = 64
 paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
 
