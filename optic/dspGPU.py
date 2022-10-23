@@ -1,6 +1,6 @@
 import cupy as cp
 
-def firFilter(h, x):
+def firFilter(h, x, prec = cp.complex128):
     '''
     Performs FIR filtering and compensates for filter delay
     (assuming the impulse response is symmetric)
@@ -11,6 +11,8 @@ def firFilter(h, x):
         Coefficients of the FIR filter.
     x : ndarray
         Input signal.
+    prec: cp.dtype
+        Size of the complex representation.
     Returns
     -------
     y : ndarray
@@ -24,9 +26,7 @@ def firFilter(h, x):
 
     
     nModes = x.shape[1]
-        
-    # fft in CuPy uses only complex64
-    prec = cp.complex64
+         
     x_ = cp.asarray(x).astype(prec)
     h_ = cp.asarray(h).astype(prec)
     y_ = x_.copy()
