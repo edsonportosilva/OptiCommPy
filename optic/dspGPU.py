@@ -13,6 +13,7 @@ def firFilter(h, x, prec = cp.complex128):
         Input signal.
     prec: cp.dtype
         Size of the complex representation.
+        
     Returns
     -------
     y : ndarray
