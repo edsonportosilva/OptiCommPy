@@ -48,6 +48,9 @@ from optic.plot import pconst
 
 import scipy.constants as const
 
+import logging as logg
+logg.getLogger().setLevel(logg.INFO)
+
 # + colab={"base_uri": "https://localhost:8080/", "height": 17} id="7df01820" outputId="604d8ed4-041f-4280-ec2b-972c3a244a4d"
 from IPython.core.display import HTML
 from IPython.core.pylabtools import figsize
@@ -231,6 +234,7 @@ paramEq.storeCoeff = False
 paramEq.alg   = ['da-rde','rde']
 paramEq.M     = paramTx.M
 paramEq.L = [20000, 80000]
+paramEq.prgsBar = False
 
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
