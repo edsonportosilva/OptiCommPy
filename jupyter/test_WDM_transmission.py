@@ -50,6 +50,7 @@ import scipy.constants as const
 
 import logging as logg
 logg.getLogger().setLevel(logg.INFO)
+logg.basicConfig(format='%(message)s')
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 17} id="7df01820" outputId="604d8ed4-041f-4280-ec2b-972c3a244a4d"
 from IPython.core.display import HTML
@@ -113,7 +114,7 @@ paramCh.Fc = paramTx.Fc  # central optical frequency of the WDM spectrum
 paramCh.hz = 1           # step-size of the split-step Fourier method [km]
 paramCh.maxIter = 5      # maximum number of convergence iterations per step
 paramCh.tol = 1e-5       # error tolerance per step
-paramCh.prgsBar = True   # show progress bar?
+paramCh.prgsBar = False   # show progress bar?
 
 Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
