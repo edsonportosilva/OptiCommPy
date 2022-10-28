@@ -4,7 +4,7 @@ from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from numpy.random import normal
 from tqdm.notebook import tqdm
-
+from optic.metrics import signal_power
 
 def mzm(Ai, u, Vπ, Vb):
     """
@@ -125,7 +125,7 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     c_kms = const.c / 1e3
     λ = c_kms / Fc
     α = alpha / (10 * np.log10(np.exp(1)))
-    β2 = -(D * λ ** 2) / (2 * np.pi * c_kms)
+    β2 = -(D * λ**2) / (2 * np.pi * c_kms)
 
     Nfft = len(Ei)
 
@@ -139,10 +139,14 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
         Ei = Ei.reshape(Ei.size, Nmodes)
 
     ω = np.tile(ω, (1, Nmodes))
-    Eo = ifft(fft(Ei, axis=0) * np.exp(-α * L + 1j * (β2 / 2) * (ω ** 2) * L), axis=0)
+    Eo = ifft(
+        fft(Ei, axis=0) * np.exp(-α * L + 1j * (β2 / 2) * (ω**2) * L), axis=0
+    )
 
     if Nmodes == 1:
-        Eo = Eo.reshape(Eo.size,)
+        Eo = Eo.reshape(
+            Eo.size,
+        )
 
     return Eo
 
@@ -358,7 +362,7 @@ def ssfm(Ei, Fs, paramCh):
     paramCh.amp = getattr(paramCh, "amp", "edfa")
     paramCh.NF = getattr(paramCh, "NF", 4.5)
     paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
-    
+
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
     hz = paramCh.hz
@@ -369,12 +373,12 @@ def ssfm(Ei, Fs, paramCh):
     amp = paramCh.amp
     NF = paramCh.NF
     prgsBar = paramCh.prgsBar
-    
+
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
     λ = c_kms / Fc
     α = alpha / (10 * np.log10(np.exp(1)))
-    β2 = -(D * λ ** 2) / (2 * np.pi * c_kms)
+    β2 = -(D * λ**2) / (2 * np.pi * c_kms)
     γ = gamma
 
     # generate frequency axis
@@ -384,12 +388,16 @@ def ssfm(Ei, Fs, paramCh):
     Nspans = int(np.floor(Ltotal / Lspan))
     Nsteps = int(np.floor(Lspan / hz))
 
-    Ech = Ei.reshape(len(Ei),)
+    Ech = Ei.reshape(
+        len(Ei),
+    )
 
     # define linear operator
-    linOperator = np.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω ** 2) * (hz / 2))
+    linOperator = np.exp(
+        -(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2)
+    )
 
-    for spanN in tqdm(range(1, Nspans + 1), disable=not(prgsBar)):
+    for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
         Ech = fft(Ech)  # single-polarization field
 
         # fiber propagation step
@@ -414,7 +422,12 @@ def ssfm(Ei, Fs, paramCh):
         elif amp is None:
             Ech = Ech * np.exp(0)
 
-    return Ech.reshape(len(Ech),), paramCh
+    return (
+        Ech.reshape(
+            len(Ech),
+        ),
+        paramCh,
+    )
 
 
 def manakovSSF(Ei, Fs, paramCh):
@@ -448,7 +461,7 @@ def manakovSSF(Ei, Fs, paramCh):
     paramCh.amp = getattr(paramCh, "amp", "edfa")
     paramCh.NF = getattr(paramCh, "NF", 4.5)
     paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
-    
+
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
     hz = paramCh.hz
@@ -459,12 +472,12 @@ def manakovSSF(Ei, Fs, paramCh):
     amp = paramCh.amp
     NF = paramCh.NF
     prgsBar = paramCh.prgsBar
-    
+
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
     λ = c_kms / Fc
     α = alpha / (10 * np.log10(np.exp(1)))
-    β2 = -(D * λ ** 2) / (2 * np.pi * c_kms)
+    β2 = -(D * λ**2) / (2 * np.pi * c_kms)
     γ = gamma
 
     # generate frequency axis
@@ -474,13 +487,19 @@ def manakovSSF(Ei, Fs, paramCh):
     Nspans = int(np.floor(Ltotal / Lspan))
     Nsteps = int(np.floor(Lspan / hz))
 
-    Ech_x = Ei[:, 0].reshape(len(Ei),)
-    Ech_y = Ei[:, 1].reshape(len(Ei),)
+    Ech_x = Ei[:, 0].reshape(
+        len(Ei),
+    )
+    Ech_y = Ei[:, 1].reshape(
+        len(Ei),
+    )
 
     # define linear operator
-    linOperator = np.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω ** 2) * (hz / 2))
+    linOperator = np.exp(
+        -(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2)
+    )
 
-    for spanN in tqdm(range(1, Nspans + 1), disable=not(prgsBar)):
+    for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
         Ech_x = fft(Ech_x)  # polarization x field
         Ech_y = fft(Ech_y)  # polarization y field
 
@@ -521,7 +540,16 @@ def manakovSSF(Ei, Fs, paramCh):
             Ech_x = Ech_x * np.exp(0)
             Ech_y = Ech_y * np.exp(0)
 
-    Ech = np.array([Ech_x.reshape(len(Ei),), Ech_y.reshape(len(Ei),)]).T
+    Ech = np.array(
+        [
+            Ech_x.reshape(
+                len(Ei),
+            ),
+            Ech_y.reshape(
+                len(Ei),
+            ),
+        ]
+    ).T
 
     return Ech, paramCh
 
@@ -536,3 +564,38 @@ def phaseNoise(lw, Nsamples, Ts):
         phi[ind + 1] = phi[ind] + normal(0, np.sqrt(σ2))
 
     return phi
+
+
+@njit
+def awgn(sig, snr, Fs=1, B=1):
+    """
+    Implement an AWGN channel.
+
+    Parameters
+    ----------
+    sig : np.array
+        input signal.
+    snr : scalar
+        signal-to-noise ratio in dB.
+    Fs : scalar
+        sampling frequency. The default is 1.
+    B : scalar
+        signal bandwidth. The default is 1.
+
+    Returns
+    -------
+    sigNoisy : np.array
+        input signal plus noise.
+
+    """
+    snr_lin = 10**(snr/10)
+    noiseVar = signal_power(sig)/snr_lin
+    σ = np.sqrt((Fs / B) * noiseVar)
+    noise = np.random.normal(0, σ, sig.size) + 1j * np.random.normal(
+        0, σ, sig.size
+    )
+    noise = 1 / np.sqrt(2) * noise
+
+    sigNoisy = sig + noise
+
+    return sigNoisy
