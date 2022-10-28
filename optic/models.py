@@ -5,6 +5,13 @@ from numpy.fft import fft, fftfreq, ifft
 from numpy.random import normal
 from tqdm.notebook import tqdm
 from optic.metrics import signal_power
+from optic.dsp import lowPassFIR
+
+try:
+    from optic.dspGPU import firFilter
+except:
+    from optic.dsp import firFilter
+
 
 def mzm(Ai, u, Vπ, Vb):
     """
@@ -149,6 +156,66 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
         )
 
     return Eo
+
+
+def photodiode(E, paramPD=[]):
+    """
+    Pin photodiode (PD).
+
+    Parameters
+    ----------
+    E : np.array
+        Input optical field.
+    paramPD : scalar, optional
+        Photodiode responsivity in A/W. The default is 1.
+
+    Returns
+    -------
+    ipd : np.array
+          photocurrent.
+
+    """
+    kB = const.value("Boltzmann constant")
+    q = const.value("elementary charge")
+
+    # check input parameters
+    R = getattr(paramPD, "R", 1)
+    Tc = getattr(paramPD, "Tc", 25)
+    Id = getattr(paramPD, "Id", 5e-9)
+    RL = getattr(paramPD, "RL", 50)
+    B = getattr(paramPD, "B", 30e9)
+    Fs = getattr(paramPD, "Fs", 60e9)
+    N = getattr(paramPD, "N", 8001)
+    fType = getattr(paramPD, "fType", "rect")
+    ideal = getattr(paramPD, "ideal", True)
+
+    assert R > 0, "PD responsivity should be a positive scalar"
+    assert Fs >= 2*B, "Sampling frequency Fs needs to be at least twice of B."
+
+    ipd = R * E * np.conj(E)  # ideal fotodetected current
+
+    if not (ideal):
+
+        Pin = (np.abs(E) ** 2).mean()
+
+        # shot noise
+        σ2_s = 2 * q * (R * Pin + Id) * B  # shot noise variance
+
+        # thermal noise
+        T = Tc + 273.15  # temperature in Kelvin
+        σ2_T = 4 * kB * T * B / RL  # thermal noise variance
+
+        # add noise sources to the p-i-n receiver
+        Is = normal(0, np.sqrt(Fs * (σ2_s / (2 * B))), ipd.size)
+        It = normal(0, np.sqrt(Fs * (σ2_T / (2 * B))), ipd.size)
+
+        ipd += Is + It
+
+        # lowpass filtering
+        h = lowPassFIR(B, Fs, N, typeF=fType)
+        ipd = firFilter(h, ipd)
+
+    return ipd
 
 
 def balancedPD(E1, E2, R=1):
@@ -605,10 +672,10 @@ def awgn(sig, snr, Fs=1, B=1):
         input signal plus noise.
 
     """
-    snr_lin = 10**(snr/10)
-    noiseVar = signal_power(sig)/snr_lin
+    snr_lin = 10 ** (snr / 10)
+    noiseVar = signal_power(sig) / snr_lin
     σ = np.sqrt((Fs / B) * noiseVar)
-    noise = np.random.normal(0, σ, sig.size) + 1j * np.random.normal(
+    noise = normal(0, σ, sig.size) + 1j * normal(
         0, σ, sig.size
     )
     noise = 1 / np.sqrt(2) * noise
