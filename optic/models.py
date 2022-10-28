@@ -15,7 +15,7 @@ except:
 
 def mzm(Ai, u, Vπ, Vb):
     """
-    Optical Mach-Zehnder Modulator (MZM)
+    Optical Mach-Zehnder Modulator (MZM).
 
     Parameters
     ----------
@@ -47,7 +47,7 @@ def mzm(Ai, u, Vπ, Vb):
 
 def iqm(Ai, u, Vπ, VbI, VbQ):
     """
-    Optical In-Phase/Quadrature Modulator (IQM)
+    Optical In-Phase/Quadrature Modulator (IQM).
 
     Parameters
     ----------
@@ -82,7 +82,7 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
 
 def pbs(E, θ=0):
     """
-    Polarization beam splitter (PBS)
+    Polarization beam splitter (PBS).
 
     Parameters
     ----------
@@ -117,7 +117,7 @@ def pbs(E, θ=0):
 
 def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     """
-    Linear fiber channel w/ loss and chromatic dispersion
+    Linear fiber channel w/ loss and chromatic dispersion.
 
     :param Ei: optical signal at the input of the fiber
     :param L: fiber length [km]
@@ -166,8 +166,17 @@ def photodiode(E, paramPD=[]):
     ----------
     E : np.array
         Input optical field.
-    paramPD : scalar, optional
-        Photodiode responsivity in A/W. The default is 1.
+    paramPD : struct, optional
+
+    paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
+    paramPD.Tc: temperature [°C][default: 25°C]
+    paramPD.Id: dark current [A][default: 5e-9 A]
+    paramPD.RL: impedance load [Ω] [default: 50Ω]
+    paramPD.B bandwidth [Hz][default: 30e9 Hz]
+    paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
+    paramPD.fType: frequency response type [default: 'rect']
+    paramPD.N: number of the frequency resp. filter taps. [default: 8001]
+    paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
 
     Returns
     -------
@@ -220,7 +229,7 @@ def photodiode(E, paramPD=[]):
 
 def balancedPD(E1, E2, R=1):
     """
-    Balanced photodiode (BPD)
+    Balanced photodiode (BPD).
 
     Parameters
     ----------
@@ -237,7 +246,6 @@ def balancedPD(E1, E2, R=1):
            Balanced photocurrent.
 
     """
-
     assert R > 0, "PD responsivity should be a positive scalar"
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
@@ -250,7 +258,7 @@ def balancedPD(E1, E2, R=1):
 
 def hybrid_2x4_90deg(Es, Elo):
     """
-    Optical 2 x 4 90° hybrid
+    Optical 2 x 4 90° hybrid.
 
     Parameters
     ----------
@@ -288,7 +296,7 @@ def hybrid_2x4_90deg(Es, Elo):
 
 def coherentReceiver(Es, Elo, Rd=1):
     """
-    Single polarization coherent optical front-end
+    Single polarization coherent optical front-end.
 
     Parameters
     ----------
@@ -324,7 +332,7 @@ def coherentReceiver(Es, Elo, Rd=1):
 
 def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
     """
-    Polarization multiplexed coherent optical front-end
+    Polarization multiplexed coherent optical front-end.
 
     Parameters
     ----------
@@ -361,7 +369,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
 
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
-    Simple EDFA model
+    Implement simple EDFA model.
 
     Parameters
     ----------
@@ -400,7 +408,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
 
 def ssfm(Ei, Fs, paramCh):
     """
-    Split-step Fourier method (symmetric, single-pol.)
+    Split-step Fourier method (symmetric, single-pol.).
 
     :param Ei: input signal
     :param Fs: sampling frequency of Ei [Hz]
@@ -499,7 +507,7 @@ def ssfm(Ei, Fs, paramCh):
 
 def manakovSSF(Ei, Fs, paramCh):
     """
-    Manakov split-step Fourier model (symmetric, dual-pol.)
+    Manakov split-step Fourier model (symmetric, dual-pol.).
 
     :param Ei: input signal
     :param Fs: sampling frequency of Ei [Hz]
