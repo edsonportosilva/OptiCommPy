@@ -432,7 +432,7 @@ def ssfm(Ei, Fs, paramCh):
 
 def manakovSSF(Ei, Fs, paramCh):
     """
-    Manakov model split-step Fourier (symmetric, dual-pol.)
+    Manakov split-step Fourier model (symmetric, dual-pol.)
 
     :param Ei: input signal
     :param Fs: sampling frequency of Ei [Hz]
@@ -556,7 +556,24 @@ def manakovSSF(Ei, Fs, paramCh):
 
 @njit
 def phaseNoise(lw, Nsamples, Ts):
+    """
+    Generate realization of a random-walk phase-noise process.
 
+    Parameters
+    ----------
+    lw : scalar
+        laser linewidth.
+    Nsamples : scalar
+        number of samples to be draw.
+    Ts : scalar
+        sampling period.
+
+    Returns
+    -------
+    phi : np.array
+        realization of the phase noise process.
+
+    """
     σ2 = 2 * np.pi * lw * Ts
     phi = np.zeros(Nsamples)
 
