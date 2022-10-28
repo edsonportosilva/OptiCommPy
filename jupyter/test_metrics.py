@@ -18,26 +18,20 @@
 # # Test transmission performance metrics for the AWGN channel
 # -
 
+if 'google.colab' in str(get_ipython()):    
+    # ! git clone -b main https://github.com/edsonportosilva/OptiCommPy
+    from os import chdir as cd
+    cd('/content/OptiCommPy/')
+    # ! pip install 
+
 from optic.modulation import modulateGray, GrayMapping
 from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER
+from optic.models import awgn
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 from tqdm.notebook import tqdm
 from numba import njit
-
-
-@njit
-def awgn(tx, noiseVar):
-    
-    σ        = np.sqrt(noiseVar)
-    noise    = np.random.normal(0,σ, tx.size) + 1j*np.random.normal(0,σ, tx.size)
-    noise    = 1/np.sqrt(2)*noise
-    
-    rx = tx + noise
-    
-    return rx
-
 
 # %load_ext autoreload
 # %autoreload 2
@@ -48,7 +42,7 @@ def awgn(tx, noiseVar):
 # ### QAM constellations with Gray mapping
 
 # +
-# Run BER vs Ebn0 Monte Carlo simulation 
+# Run BER vs Ebn0 Monte Carlo simulation in the AWGN channel
 
 qamOrder  = [4, 16, 64, 256, 1024, 4096]  # Modulation order
 
@@ -71,11 +65,9 @@ for ii, M in enumerate(qamOrder):
         # Normalize symbols energy to 1
         symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
-        # AWGN    
-        snrdB    = EbN0dB + 10*np.log10(np.log2(M))
-        noiseVar = 1/(10**(snrdB/10))
-
-        symbRx = awgn(symbTx, noiseVar)
+        # AWGN channel  
+        snrdB  = EbN0dB + 10*np.log10(np.log2(M))
+        symbRx = awgn(symbTx, snrdB)
 
         # BER calculation
         BER[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, M, 'qam')
@@ -133,11 +125,9 @@ for ii, M in enumerate(pskOrder):
         # Normalize symbols energy to 1
         symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
-        # AWGN    
-        snrdB    = EbN0dB + 10*np.log10(np.log2(M))
-        noiseVar = 1/(10**(snrdB/10))
-
-        symbRx = awgn(symbTx, noiseVar)
+        # AWGN channel  
+        snrdB  = EbN0dB + 10*np.log10(np.log2(M))
+        symbRx = awgn(symbTx, snrdB)
 
         # BER calculation
         BER[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, M, 'psk')
@@ -195,10 +185,8 @@ for ii, M in enumerate(qamOrder):
         # Normalize symbols energy to 1
         symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
-        # AWGN    
-        noiseVar = 1/(10**(snrdB/10))
-
-        symbRx = awgn(symbTx, noiseVar)
+        # AWGN channel       
+        symbRx = awgn(symbTx, snrdB)
 
         # GMI estimation
         GMI[indSNR, ii], _  = monteCarloGMI(symbRx, symbTx, M, 'qam')
@@ -245,10 +233,8 @@ for ii, M in enumerate(pskOrder):
         # Normalize symbols energy to 1
         symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
-        # AWGN    
-        noiseVar = 1/(10**(snrdB/10))
-
-        symbRx = awgn(symbTx, noiseVar)
+        # AWGN channel       
+        symbRx = awgn(symbTx, snrdB)
 
         # GMI estimation
         GMI[indSNR, ii], _  = monteCarloGMI(symbRx, symbTx, M, 'psk')
@@ -298,10 +284,8 @@ for ii, M in enumerate(qamOrder):
         # Normalize symbols energy to 1
         symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
-        # AWGN    
-        noiseVar = 1/(10**(snrdB/10))
-
-        symbRx = awgn(symbTx, noiseVar)
+        # AWGN channel        
+        symbRx = awgn(symbTx, snrdB)
 
         # MI estimation
         MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam')
@@ -367,12 +351,10 @@ for ii, M in enumerate(qamOrder):
         snrdB = SNR[indSNR]
 
         # generate random symbols   
-        symbTx = choice(constSymb, Nsymbols, p=probSymb)     
-              
-        # AWGN    
-        noiseVar = Es/(10**(snrdB/10))
-
-        symbRx = awgn(symbTx, noiseVar)       
+        symbTx = choice(constSymb, Nsymbols, p=probSymb)           
+       
+        # AWGN channel       
+        symbRx = awgn(symbTx, snrdB)      
             
         # MI estimation
         MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam', probSymb)       
