@@ -194,7 +194,7 @@ def photodiode(E, paramPD=[]):
     RL = getattr(paramPD, "RL", 50)
     B = getattr(paramPD, "B", 30e9)
     Fs = getattr(paramPD, "Fs", 60e9)
-    N = getattr(paramPD, "N", 8001)
+    N = getattr(paramPD, "N", 8000)
     fType = getattr(paramPD, "fType", "rect")
     ideal = getattr(paramPD, "ideal", True)
 
@@ -224,7 +224,7 @@ def photodiode(E, paramPD=[]):
         h = lowPassFIR(B, Fs, N, typeF=fType)
         ipd = firFilter(h, ipd)
 
-    return ipd
+    return ipd.real
 
 
 def balancedPD(E1, E2, R=1):
