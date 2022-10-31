@@ -86,8 +86,9 @@ def simpleWDMTx(param):
     # allocate array
     sigTxWDM = np.zeros((len(t), param.Nmodes), dtype="complex")
     symbTxWDM = np.zeros(
-        (int(len(t) / param.SpS), param.Nmodes, param.Nch), dtype="complex"
+        (len(t) // param.SpS, param.Nmodes, param.Nch), dtype="complex"
     )
+
 
     Psig = 0
 
@@ -103,14 +104,14 @@ def simpleWDMTx(param):
 
     pulse = pulse / np.max(np.abs(pulse))
 
-    for indCh in range(0, param.Nch):
+    for indCh in range(param.Nch):
 
         logg.info(
             "channel %d\t fc : %3.4f THz" % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
         )
 
         Pmode = 0
-        for indMode in range(0, param.Nmodes):
+        for indMode in range(param.Nmodes):
             logg.info(
                 "  mode #%d\t power: %.2f dBm"
                 % (indMode, 10 * np.log10((Pch[indCh] / param.Nmodes) / 1e-3))

@@ -71,7 +71,7 @@ for ii, M in enumerate(qamOrder):
 
         # BER calculation
         BER[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, M, 'qam')
-        
+
         if BER[indSNR, ii] == 0:              
             break
 
@@ -82,14 +82,14 @@ BER[BER==0] = np.nan
 
 plt.figure(figsize=(10,6))
 for ii, M in enumerate(qamOrder):
-    plt.plot(EbN0dB_, np.log10(BER[:,ii]),'o', label=str(M)+'QAM monte carlo')
+    plt.plot(EbN0dB_, np.log10(BER[:,ii]), 'o', label=f'{str(M)}QAM monte carlo')
 
 plt.gca().set_prop_cycle(None)
 
 for M in qamOrder:
     BERtheory = theoryBER(M, EbN0dB_,'qam')
     BERtheory[BERtheory==0] = np.nan
-    plt.plot(EbN0dB_, np.log10(BERtheory),'-', label=str(M)+'QAM theory')
+    plt.plot(EbN0dB_, np.log10(BERtheory), '-', label=f'{str(M)}QAM theory')
 
 plt.xlim(min(EbN0dB_), max(EbN0dB_))
 plt.ylim(-6, 0)
@@ -131,7 +131,7 @@ for ii, M in enumerate(pskOrder):
 
         # BER calculation
         BER[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, M, 'psk')
-        
+
         if BER[indSNR, ii] == 0:              
             break
 
@@ -141,14 +141,14 @@ BER[BER==0] = np.nan
 
 plt.figure(figsize=(10,6))
 for ii, M in enumerate(pskOrder):
-    plt.plot(EbN0dB_, np.log10(BER[:,ii]),'o', label=str(M)+'PSK monte carlo')
+    plt.plot(EbN0dB_, np.log10(BER[:,ii]), 'o', label=f'{str(M)}PSK monte carlo')
 
 plt.gca().set_prop_cycle(None)
 
 for M in pskOrder:
     BERtheory = theoryBER(M, EbN0dB_,'psk')
     BERtheory[BERtheory==0] = np.nan
-    plt.plot(EbN0dB_, np.log10(BERtheory),'-', label=str(M)+'PSK theory')
+    plt.plot(EbN0dB_, np.log10(BERtheory), '-', label=f'{str(M)}PSK theory')
 
 plt.xlim(min(EbN0dB_), max(EbN0dB_))
 plt.ylim(-6, 0)
@@ -195,7 +195,7 @@ for ii, M in enumerate(qamOrder):
 # +
 plt.figure(figsize=(10,6))
 for ii, M in enumerate(qamOrder):
-    plt.plot(SNR, GMI[:,ii],'-', label=str(M)+'QAM monte carlo',linewidth=2)
+    plt.plot(SNR, GMI[:,ii], '-', label=f'{str(M)}QAM monte carlo', linewidth=2)
 
 # plot theoretical AWGN channel capacity    
 C = np.log2(1 + 10**(SNR/10))
@@ -242,7 +242,7 @@ for ii, M in enumerate(pskOrder):
 # +
 plt.figure(figsize=(10,6))
 for ii, M in enumerate(pskOrder):
-    plt.plot(SNR, GMI[:,ii],'-', label=str(M)+'PSK monte carlo',linewidth=2)
+    plt.plot(SNR, GMI[:,ii], '-', label=f'{str(M)}PSK monte carlo', linewidth=2)
 
 # plot theoretical AWGN channel capacity    
 C = np.log2(1 + 10**(SNR/10))
@@ -270,7 +270,7 @@ MI  = np.zeros((len(SNR),len(qamOrder)))
 
 for ii, M in enumerate(qamOrder):
     print('run sim: M = ', M)         
-            
+
     for indSNR in tqdm(range(SNR.size)):
 
         snrdB = SNR[indSNR]
@@ -294,7 +294,7 @@ for ii, M in enumerate(qamOrder):
 plt.figure(figsize=(10,6))
 
 for ii, M in enumerate(qamOrder):
-    plt.plot(SNR, MI[:,ii],'-', label=str(M)+'QAM monte carlo',linewidth=2)
+    plt.plot(SNR, MI[:,ii], '-', label=f'{str(M)}QAM monte carlo', linewidth=2)
 
 # plot theoretical AWGN channel capacity    
 C = np.log2(1 + 10**(SNR/10))
@@ -336,29 +336,29 @@ Nsymbols = 80000
 PS = 0
 for ii, M in enumerate(qamOrder):
     print('run sim: M = ', M)
-          
+
     constSymb = GrayMapping(M, 'qam')
     Es = np.mean(np.abs(constSymb) ** 2)
     constSymb = constSymb / np.sqrt(Es)
-    
+
     probSymb = maxwellBolt(PS, constSymb)    
     PS = 1.5
-    
+
     Es = np.sum(( np.abs(constSymb) ** 2 ) * probSymb)
-    
+
     for indSNR in tqdm(range(SNR.size)):
 
         snrdB = SNR[indSNR]
 
         # generate random symbols   
         symbTx = choice(constSymb, Nsymbols, p=probSymb)           
-       
+
         # AWGN channel       
         symbRx = awgn(symbTx, snrdB)      
-            
+
         # MI estimation
         MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam', probSymb)       
-        
+
         if indSNR == len(SNR)-10:
             plt.figure()
             plt.hist2d(symbRx.real,symbRx.imag, bins=256, density=True);
@@ -367,11 +367,7 @@ for ii, M in enumerate(qamOrder):
 plt.figure(figsize=(10,6))
 
 for ii, M in enumerate(qamOrder):
-    if ii == 0:
-        pltLabel = 'QAM uniform'
-    else:
-        pltLabel = 'QAM shaped'
-        
+    pltLabel = 'QAM uniform' if ii == 0 else 'QAM shaped'
     plt.plot(SNR, MI[:,ii],'-', label=str(M)+pltLabel,linewidth=2)
 
 # plot theoretical AWGN channel capacity    

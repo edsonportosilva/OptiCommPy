@@ -77,7 +77,7 @@ def GrayMapping(M, constType):
     const = const.reshape(M, 1)
     const_ = np.zeros((M, 2), dtype=complex)
 
-    for ind in range(0, M):
+    for ind in range(M):
         const_[ind, 0] = const[ind, 0]   # complex constellation symbol
         const_[ind, 1] = int(code[ind], 2) # mapped bit sequence (as integer decimal)
 
@@ -165,6 +165,4 @@ def demodulateGray(symb, M, constType):
 
     minEuclid_vec = np.vectorize(minEuclid, excluded=[1])
     index_list = minEuclid_vec(symb, const)
-    demodBits = dec2bitarray(index_list, int(np.log2(M)))
-
-    return demodBits
+    return dec2bitarray(index_list, int(np.log2(M)))
