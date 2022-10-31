@@ -40,9 +40,7 @@ def mzm(Ai, u, Vπ, Vb):
         Ai = Ai * np.ones(u.shape)
 
     π = np.pi
-    Ao = Ai * np.cos(0.5 / Vπ * (u + Vb) * π)
-
-    return Ao
+    return Ai * np.cos(0.5 / Vπ * (u + Vb) * π)
 
 
 def iqm(Ai, u, Vπ, VbI, VbQ):
@@ -73,11 +71,9 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
-    Ao = mzm(Ai / np.sqrt(2), u.real, Vπ, VbI) + 1j * mzm(
+    return mzm(Ai / np.sqrt(2), u.real, Vπ, VbI) + 1j * mzm(
         Ai / np.sqrt(2), u.imag, Vπ, VbQ
     )
-
-    return Ao
 
 
 def pbs(E, θ=0):
@@ -251,9 +247,7 @@ def balancedPD(E1, E2, R=1):
 
     i1 = R * E1 * np.conj(E1)
     i2 = R * E2 * np.conj(E2)
-    ibpd = i1 - i2
-
-    return ibpd
+    return i1 - i2
 
 
 def hybrid_2x4_90deg(Es, Elo):
@@ -289,9 +283,7 @@ def hybrid_2x4_90deg(Es, Elo):
 
     Ei = np.array([Es, np.zeros((Es.size,)), np.zeros((Es.size,)), Elo])
 
-    Eo = T @ Ei
-
-    return Eo
+    return T @ Ei
 
 
 def coherentReceiver(Es, Elo, Rd=1):
@@ -325,9 +317,7 @@ def coherentReceiver(Es, Elo, Rd=1):
     sI = balancedPD(Eo[1, :], Eo[0, :], Rd)
     sQ = balancedPD(Eo[2, :], Eo[3, :], Rd)
 
-    s = sI + 1j * sQ
-
-    return s
+    return sI + 1j * sQ
 
 
 def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
@@ -362,9 +352,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
     Sx = coherentReceiver(Esx, Elox, Rd=Rdx)  # coherent detection of pol.X
     Sy = coherentReceiver(Esy, Eloy, Rd=Rdy)  # coherent detection of pol.Y
 
-    S = np.array([Sx, Sy]).T
-
-    return S
+    return np.array([Sx, Sy]).T
 
 
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
@@ -401,9 +389,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     noise = normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * normal(
         0, np.sqrt(p_noise / 2), Ei.shape
     )
-    Eo = Ei * np.sqrt(G_lin) + noise
-
-    return Eo
+    return Ei * np.sqrt(G_lin) + noise
 
 
 def ssfm(Ei, Fs, paramCh):
@@ -472,11 +458,11 @@ def ssfm(Ei, Fs, paramCh):
         -(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2)
     )
 
-    for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
+    for _ in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
         Ech = fft(Ech)  # single-polarization field
 
         # fiber propagation step
-        for stepN in range(1, Nsteps + 1):
+        for _ in range(1, Nsteps + 1):
             # First linear step (frequency domain)
             Ech = Ech * linOperator
 
@@ -574,12 +560,12 @@ def manakovSSF(Ei, Fs, paramCh):
         -(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2)
     )
 
-    for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
+    for _ in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
         Ech_x = fft(Ech_x)  # polarization x field
         Ech_y = fft(Ech_y)  # polarization y field
 
         # fiber propagation step
-        for stepN in range(1, Nsteps + 1):
+        for _ in range(1, Nsteps + 1):
             # First linear step (frequency domain)
             Ech_x = Ech_x * linOperator
             Ech_y = Ech_y * linOperator
@@ -652,7 +638,7 @@ def phaseNoise(lw, Nsamples, Ts):
     σ2 = 2 * np.pi * lw * Ts
     phi = np.zeros(Nsamples)
 
-    for ind in range(0, Nsamples - 1):
+    for ind in range(Nsamples - 1):
         phi[ind + 1] = phi[ind] + normal(0, np.sqrt(σ2))
 
     return phi
@@ -688,6 +674,4 @@ def awgn(sig, snr, Fs=1, B=1):
     )
     noise = 1 / np.sqrt(2) * noise
 
-    sigNoisy = sig + noise
-
-    return sigNoisy
+    return sig + noise

@@ -42,9 +42,8 @@ path = 'I:\\Meu Drive\\Colab\\Pesquisa\\Turbo equalização com PAS\\traces\\'
 
 # Transmitter:
 numberOfCarriers = 11;
-M   = 256;        # Modulation format
-Rs  = 32e9;       # Symbol rate
-
+M   = 256
+Rs  = 32e9
 Pin = -2;
 WDMgrid  = 37.5e9;
 pilotsOH = 0.05;
@@ -60,9 +59,8 @@ spanLength = 50;
 
 MonteCarloSim = 1;
 
-traceID = 'SSF_'+str(numberOfCarriers)+'xWDMCh_'+str(int(Rs/1e9))+\
-            'GBd_DP'+str(M)+'QAM_'+str(spans)+'x'+str(spanLength)+'km_'+str(codeBlocks)+\
-            '_blk_CI_'+str(codeIndex)
+traceID = f'SSF_{numberOfCarriers}xWDMCh_{int(Rs / 1000000000.0)}GBd_DP{M}QAM_{spans}x{spanLength}km_{codeBlocks}_blk_CI_{codeIndex}'
+
 
 dataLoad = scipy.io.loadmat(path+traceID+'.mat')
 # -

@@ -43,10 +43,8 @@ def awgn(tx, noiseVar):
     σ        = np.sqrt(noiseVar)
     noise    = np.random.normal(0,σ, tx.size) + 1j*np.random.normal(0,σ, tx.size)
     noise    = 1/np.sqrt(2)*noise
-    
-    rx = tx + noise
-    
-    return rx
+
+    return tx + noise
 
 
 # ## Create LDPCparam files
@@ -72,7 +70,7 @@ family = "DVBS2"
 R = 56
 n = 64800
 
-mainDir  = path.abspath(path.join("../")) 
+mainDir  = path.abspath(path.join("../"))
 filename = '\LDPC_' + family + '_' + str(n) + 'b_R' + str(R) + '.txt'
 filePath = mainDir + r'\optic\fecParams' + filename
 filePath
@@ -153,7 +151,7 @@ BERpost[:] = np.nan
 
 for ii, M in enumerate(qamOrder):
     print('run sim: M = ', M)
-    
+
     # modulation parameters
     constSymb = GrayMapping(M,'qam')[:,0]        # constellation
     bitMap = demodulateGray(constSymb, M, 'qam') # bit mapping
@@ -161,9 +159,9 @@ for ii, M in enumerate(qamOrder):
     Es = signal_power(constSymb) # mean symbol energy
 
     for indSNR in tqdm(range(EbN0dB_.size)):
-        
+
         EbN0dB = EbN0dB_[indSNR]
-        
+
         # generate random bits
         bits = np.random.randint(2, size = (K, Nwords))
 
@@ -203,12 +201,24 @@ BERpost[BERpost==0] = np.nan
 
 plt.figure(figsize=(10,6))
 for ii, M in enumerate(qamOrder):
-    plt.plot(EbN0dB_, np.log10(BERpre[:,ii]),'o-', label=str(M)+'QAM monte carlo [pre]')
+    plt.plot(
+        EbN0dB_,
+        np.log10(BERpre[:, ii]),
+        'o-',
+        label=f'{str(M)}QAM monte carlo [pre]',
+    )
+
 
 #plt.gca().set_prop_cycle(None)
 
 for ii, M in enumerate(qamOrder):
-    plt.plot(EbN0dB_, np.log10(BERpost[:,ii]),'kx-', label=str(M)+'QAM monte carlo [post]')
+    plt.plot(
+        EbN0dB_,
+        np.log10(BERpost[:, ii]),
+        'kx-',
+        label=f'{str(M)}QAM monte carlo [post]',
+    )
+
 
 plt.xlim(min(EbN0dB_), max(EbN0dB_))
 plt.ylim(-6, 0)

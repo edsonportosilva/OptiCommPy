@@ -33,7 +33,7 @@ def hardDecision(rxSymb, constSymb, bitMap):
 
     decBits = np.zeros(len(rxSymb) * b)
 
-    for i in range(0, len(rxSymb)):
+    for i in range(len(rxSymb)):
         indSymb = np.argmin(np.abs(rxSymb[i] - constSymb))
         decBits[i * b : i * b + b] = bitMap[indSymb, :]
     return decBits
@@ -77,7 +77,7 @@ def fastBERcalc(rx, tx, M, constType):
     bitMap = bitMap.reshape(-1, b)
 
     # pre-processing
-    for k in range(0, nModes):
+    for k in range(nModes):
         # symbol normalization
         rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
         tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
@@ -90,7 +90,7 @@ def fastBERcalc(rx, tx, M, constType):
         SNR[k] = 10 * np.log10(
             signal_power(tx[:, k]) / signal_power(rx[:, k] - tx[:, k])
         )
-    for k in range(0, nModes):
+    for k in range(nModes):
         # hard decision demodulation of the received symbols
         brx = hardDecision(np.sqrt(Es) * rx[:, k], constSymb, bitMap)
         btx = hardDecision(np.sqrt(Es) * tx[:, k], constSymb, bitMap)
@@ -118,10 +118,10 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap):
 
     LLRs = np.zeros(len(rxSymb) * b)
 
-    for i in range(0, len(rxSymb)):
+    for i in range(len(rxSymb)):
         prob = np.exp((-np.abs(rxSymb[i] - constSymb) ** 2) / σ2)
 
-        for indBit in range(0, b):
+        for indBit in range(b):
             p0 = np.sum(prob[bitMap[:, indBit] == 0])
             p1 = np.sum(prob[bitMap[:, indBit] == 1])
 
@@ -165,14 +165,14 @@ def monteCarloGMI(rx, tx, M, constType):
     bitMap = bitMap.reshape(-1, b)
 
     # symbol normalization
-    for k in range(0, nModes):
+    for k in range(nModes):
         rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
         tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
 
         # correct (possible) phase ambiguity
         rot = np.mean(tx[:, k] / rx[:, k])
         rx[:, k] = rot * rx[:, k]
-    for k in range(0, nModes):
+    for k in range(nModes):
         # set the noise variance
         σ2 = noiseVar[k]
 
@@ -191,7 +191,7 @@ def monteCarloGMI(rx, tx, M, constType):
 
         MIperBitPosition = np.zeros(b)
 
-        for n in range(0, b):
+        for n in range(b):
             MIperBitPosition[n] = 1 - np.mean(
                 np.log2(1 + np.exp((2 * btx[n::b] - 1) * LLRs[n::b]))
             )
@@ -212,12 +212,12 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
     """
     if len(px) == 0:  # if px is not defined
         px = 1 / M * np.ones(M)  # assume uniform distribution
-        
+
     # constellation parameters
     constSymb = GrayMapping(M, constType)
     Es = np.sum(np.abs(constSymb) ** 2 * px)
     constSymb = constSymb / np.sqrt(Es)
-    
+
     # We want all the signal sequences to be disposed in columns:
     try:
         if rx.shape[1] > rx.shape[0]:
@@ -232,14 +232,14 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
     nModes = int(rx.shape[1])  # number of sinal modes
     MI = np.zeros(nModes)
 
-    for k in range(0, nModes):
+    for k in range(nModes):
         rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
         tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
     # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
 
-    for k in range(0, nModes):
+    for k in range(nModes):
         σ2 = noiseVar[k]
         MI[k] = calcMI(rx[:, k], tx[:, k], σ2, constSymb, px)
     return MI
@@ -262,7 +262,7 @@ def calcMI(rx, tx, σ2, constSymb, pX):
     H_XgY = np.zeros(1, dtype=np.float64)
     H_X = np.sum(-pX * np.log2(pX))
 
-    for k in range(0, N):
+    for k in range(N):
         indSymb = np.argmin(np.abs(tx[k] - constSymb))
 
         log2_pYgX = -(1 / σ2) * np.abs(rx[k] - tx[k]) ** 2 * np.log2(np.exp(1))  # log2 p(Y|X)
@@ -274,10 +274,10 @@ def calcMI(rx, tx, σ2, constSymb, pX):
         # p(X|Y) = p(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
 
         pY = np.sum(pXY)
-        
+
         #print('pY:', pY)
         H_XgY -= log2_pYgX + np.log2(pX[indSymb]) - np.log2(pY)
-        
+
     H_XgY = H_XgY / N
 
     return H_X - H_XgY
