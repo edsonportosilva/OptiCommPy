@@ -263,7 +263,6 @@ def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
 
     return H, np.abs(err)**2
 
-
 @njit
 def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
     """
