@@ -25,18 +25,18 @@ def firFilter(h, x, prec = cp.complex128):
     except IndexError:
         x = x.reshape(len(x), 1)
 
-    
+
     nModes = x.shape[1]
-         
+
     x_ = cp.asarray(x).astype(prec)
     h_ = cp.asarray(h).astype(prec)
     y_ = x_.copy()
-    
-    for n in range(0, nModes):
+
+    for n in range(nModes):
         y_[:, n] = cp.convolve(x_[:, n], h_, mode='same')
-    
+
     y = cp.asnumpy(y_)
-    
+
     if y.shape[1] == 1:
         y = y[:, 0]
 

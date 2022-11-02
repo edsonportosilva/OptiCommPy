@@ -70,10 +70,8 @@ def awgn(tx, noiseVar):
     σ        = np.sqrt(noiseVar)
     noise    = np.random.normal(0,σ, tx.shape) + 1j*np.random.normal(0,σ, tx.shape)
     noise    = 1/np.sqrt(2)*noise
-    
-    rx = tx + noise
-    
-    return rx
+
+    return tx + noise
 
 
 # # Simulation of coherent transmission

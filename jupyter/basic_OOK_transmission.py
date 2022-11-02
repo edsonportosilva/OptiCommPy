@@ -217,10 +217,11 @@ powerValues = np.arange(-30,-14) # power values at the input of the pin receiver
 BER = np.zeros(powerValues.shape)
 Pb = np.zeros(powerValues.shape)
 
+discard = 100
 for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
     
     Pi = 10**((Pi_dBm+3)/10)*1e-3 # optical signal power in W at the MZM input
-    
+
     # generate pseudo-random bit sequence
     bitsTx = np.random.randint(2, size=10**6)
     n = np.arange(0, bitsTx.size)
@@ -238,14 +239,14 @@ for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
     # optical modulation
     Ai = np.sqrt(Pi)*np.ones(sigTx.size)
     sigTxo = mzm(Ai, sigTx, Vπ, Vb)
-    
+
     # pin receiver
     paramPD = parameters()
     paramPD.ideal = False
     paramPD.B = 1.1*Rs
     paramPD.Fs = Fs
 
-    I_Rx = photodiode(sigTxo.real, paramPD)    
+    I_Rx = photodiode(sigTxo.real, paramPD)
     I_Rx = I_Rx/np.std(I_Rx)
 
     # capture samples in the middle of signaling intervals
@@ -267,7 +268,6 @@ for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
     bitsRx[I_Rx>  Id] = 1
     bitsRx[I_Rx<= Id] = 0
 
-    discard = 100
     err = np.logical_xor(bitsRx[discard:bitsRx.size-discard], bitsTx[discard:bitsTx.size-discard])
     BER[indPi] = np.mean(err)
     Pb[indPi] = 0.5*erfc(Q/np.sqrt(2)) # probability of bit error (theory)

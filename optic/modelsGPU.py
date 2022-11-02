@@ -38,11 +38,9 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12, prec=cp.complex128):
 
 def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
 
-    lim = cp.sqrt(
+    return cp.sqrt(
         norm(Ex_fd - Ex_conv) ** 2 + norm(Ey_fd - Ey_conv) ** 2
     ) / cp.sqrt(norm(Ex_conv) ** 2 + norm(Ey_conv) ** 2)
-
-    return lim
 
 
 def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
@@ -132,14 +130,12 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     else:
         linOperator = linOperator.reshape(1, -1)
 
-    for spanN in tqdm(range(1, Nspans + 1), disable=not(prgsBar)):
-
+    for _ in tqdm(range(1, Nspans + 1), disable=not(prgsBar)):
         Ex_conv = Ech_x.copy()
         Ey_conv = Ech_y.copy()
 
         # fiber propagation step
-        for stepN in range(1, Nsteps + 1):
-
+        for _ in range(1, Nsteps + 1):
             # First linear step (frequency domain)
             Ex_hd = ifft(fft(Ech_x) * linOperator)
             Ey_hd = ifft(fft(Ech_y) * linOperator)
@@ -179,10 +175,9 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
                     break
                 elif nIter == maxIter - 1:
                     print(
-                        "Warning: target SSFM error tolerance was not achieved in "
-                        + str(maxIter)
-                        + " iterations"
+                        f"Warning: target SSFM error tolerance was not achieved in {maxIter} iterations"
                     )
+
 
             Ech_x = Ech_x_fd.copy()
             Ech_y = Ech_y_fd.copy()
@@ -220,7 +215,7 @@ def setPowerforParSSFM(sig, powers):
     powers_lin = powers_lin.repeat(2) / 2
 
     for i in np.arange(0, sig.shape[1], 2):
-        for k in range(0, 2):
+        for k in range(2):
             sig[:, i + k] = (
                 np.sqrt(powers_lin[i] / signal_power(sig[:, i + k]))
                 * sig[:, i + k]

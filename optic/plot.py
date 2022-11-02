@@ -26,7 +26,7 @@ def pconst(x, lim=False, R=1.5):
             x.shape[1]
         except IndexError:
             x = x.reshape(len(x), 1)
-            
+
         nSubPts = x.shape[1]
         radius = R * np.sqrt(signal_power(x))
 
@@ -52,7 +52,7 @@ def pconst(x, lim=False, R=1.5):
 
                 ax.axis("square")
                 ax.grid()
-                ax.set_title("mode " + str(Position[k] - 1))
+                ax.set_title(f"mode {str(Position[k] - 1)}")
 
                 if lim:
                     ax.set_xlim(-radius, radius)
@@ -63,14 +63,14 @@ def pconst(x, lim=False, R=1.5):
                 ax.plot(x[:, k].real, x[:, k].imag, ".")
                 ax.axis("square")
                 ax.grid()
-                ax.set_title("mode " + str(Position[k] - 1))
+                ax.set_title(f"mode {str(Position[k] - 1)}")
 
                 if lim:
                     ax.set_xlim(-radius, radius)
                     ax.set_ylim(-radius, radius)
-                    
+
         fig.tight_layout()
-        
+
     elif nSubPts == 1:
         plt.figure()
         plt.plot(x.real, x.imag, ".")
@@ -80,10 +80,10 @@ def pconst(x, lim=False, R=1.5):
         if lim:
             plt.xlim(-radius, radius)
             plt.ylim(-radius, radius)
-    
-    
+
+
     plt.show()
-    
+
     return None
 
 
@@ -100,18 +100,18 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
 
     if np.iscomplex(sig).any():
         d = 1
-        plotlabel_ = plotlabel + " [real]"
+        plotlabel_ = f"{plotlabel} [real]"
     else:
         d = 0
         plotlabel_ = plotlabel
 
-    for ind in range(0, d + 1):
+    for ind in range(d + 1):
         if ind == 0:
-            y = sig[0:Nsamples].real
+            y = sig[:Nsamples].real
             x = np.arange(0, y.size, 1) % (n * SpS)
         else:
-            y = sig[0:Nsamples].imag
-            plotlabel_ = plotlabel + " [imag]"
+            y = sig[:Nsamples].imag
+            plotlabel_ = f"{plotlabel} [imag]"
 
         plt.figure()
         if ptype == "fancy":

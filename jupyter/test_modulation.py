@@ -38,10 +38,8 @@ def awgn(tx, noiseVar):
     σ        = np.sqrt(noiseVar)
     noise    = np.random.normal(0,σ, tx.size) + 1j*np.random.normal(0,σ, tx.size)
     noise    = 1/np.sqrt(2)*noise
-    
-    rx = tx + noise
-    
-    return rx
+
+    return tx + noise
 
 
 # ## Define modulation, modulate and demodulate data
