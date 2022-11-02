@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.14.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -70,10 +70,8 @@ def awgn(tx, noiseVar):
     σ        = np.sqrt(noiseVar)
     noise    = np.random.normal(0,σ, tx.shape) + 1j*np.random.normal(0,σ, tx.shape)
     noise    = 1/np.sqrt(2)*noise
-    
-    rx = tx + noise
-    
-    return rx
+
+    return tx + noise
 
 
 # # Simulation of coherent transmission
@@ -191,6 +189,8 @@ for k in range(sigRx.shape[1]):
 # power normalization
 sigRx = sigRx/np.sqrt(signal_power(sigRx))
 d = d/np.sqrt(signal_power(d))
+
+pconst(sigRx)
 # -
 
 # ### Carrier phase recovery with blind phase search (BPS)
@@ -199,7 +199,7 @@ d = d/np.sqrt(signal_power(d))
 paramCPR = parameters()
 paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
-paramCPR.N   = 35
+paramCPR.N   = 85
 paramCPR.B   = 64
        
 y_CPR, θ = cpr(sigRx, paramCPR=paramCPR)
@@ -228,9 +228,9 @@ for k in range(y_CPR.shape[1]):
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 ind = np.arange(discard, d.shape[0]-discard)
-BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], mod)
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], mod)
-MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], mod)
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 
 print('     pol.X     pol.Y      ')
 print('SER: %.2e, %.2e'%(SER[0], SER[1]))
@@ -277,9 +277,9 @@ for k in range(y_CPR.shape[1]):
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 ind = np.arange(discard, d.shape[0]-discard)
-BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], mod)
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], mod)
-MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], mod)
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 
 print('     pol.X     pol.Y      ')
 print('SER: %.2e, %.2e'%(SER[0], SER[1]))
@@ -287,6 +287,3 @@ print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
-# -
-
-

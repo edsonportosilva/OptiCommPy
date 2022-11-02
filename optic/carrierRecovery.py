@@ -69,7 +69,7 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     if alg == "ddpll":
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
-        θ = bps(Ei, int(N / 2), constSymb, B)
+        θ = bps(Ei, N // 2, constSymb, B)
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
     θ = np.unwrap(4 * θ, axis=0) / 4
@@ -118,12 +118,12 @@ def bps(Ei, N, constSymb, B):
 
     L = x.shape[0]
 
-    for n in range(0, nModes):
+    for n in range(nModes):
 
         dist = np.zeros((B, constSymb.shape[0]), dtype="float")
         dmin = np.zeros((B, 2 * N + 1), dtype="float")
 
-        for k in range(0, L):
+        for k in range(L):
             for indPhase, ϕ in enumerate(ϕ_test):
                 dist[indPhase, :] = np.abs(x[k, n] * np.exp(1j * ϕ) - constSymb) ** 2
                 dmin[indPhase, -1] = np.min(dist[indPhase, :])
@@ -185,12 +185,12 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
 
     u = np.zeros(3)  # [u_f, u_d1, u_d]
 
-    for n in range(0, nModes):
+    for n in range(nModes):
 
         u[2] = 0  # Output of phase detector (residual phase error)
         u[0] = 0  # Output of loop filter
 
-        for k in range(0, len(Ei)):
+        for k in range(len(Ei)):
             u[1] = u[2]
 
             # Remove estimate of phase error from input symbol

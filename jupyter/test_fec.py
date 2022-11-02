@@ -7,15 +7,15 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.14.1
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
 
 # +
-from commpy.modulation import QAMModem, PSKModem
+from optic.modulation import modulateGray, demodulateGray, GrayMapping
 from optic.metrics import signal_power, calcLLR, fastBERcalc
 from optic.fec import ldpcEncode, ldpcDecode
 import matplotlib.pyplot as plt
@@ -43,10 +43,8 @@ def awgn(tx, noiseVar):
     σ        = np.sqrt(noiseVar)
     noise    = np.random.normal(0,σ, tx.size) + 1j*np.random.normal(0,σ, tx.size)
     noise    = 1/np.sqrt(2)*noise
-    
-    rx = tx + noise
-    
-    return rx
+
+    return tx + noise
 
 
 # ## Create LDPCparam files
@@ -72,7 +70,7 @@ family = "DVBS2"
 R = 56
 n = 64800
 
-mainDir  = path.abspath(path.join("../")) 
+mainDir  = path.abspath(path.join("../"))
 filename = '\LDPC_' + family + '_' + str(n) + 'b_R' + str(R) + '.txt'
 filePath = mainDir + r'\optic\fecParams' + filename
 filePath
@@ -94,11 +92,10 @@ K = LDPCparams['n_vnodes'] - LDPCparams['n_cnodes']
 LDPCparams['filename'] = filename
 
 # modulation parameters
-mod = QAMModem(m=M)
-constSymb = mod.constellation
-bitMap = mod.demodulate(constSymb, demod_type="hard")
+constSymb = GrayMapping(M,'qam')[:,0]        # constellation
+bitMap = demodulateGray(constSymb, M, 'qam') # bit mapping
 bitMap = bitMap.reshape(-1, int(np.log2(M)))
-Es = mod.Es
+Es = signal_power(constSymb)                 # mean symbol energy
 
 # generate random bits
 bits = np.random.randint(2, size = (K, Nwords))
@@ -107,10 +104,10 @@ bits = np.random.randint(2, size = (K, Nwords))
 bitsTx, codedBitsTx, interlv = ldpcEncode(bits, LDPCparams)
 
 # Map bits to constellation symbols
-symbTx = mod.modulate(bitsTx)
+symbTx = modulateGray(bitsTx, M, 'qam')
 
 # Normalize symbols energy to 1
-symbTx = symbTx/np.sqrt(Es)
+symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
 # AWGN    
 snrdB    = EbN0dB + 10*np.log10(np.log2(M))
@@ -119,7 +116,7 @@ noiseVar = 1/(10**(snrdB/10))
 symbRx = awgn(symbTx, noiseVar)
 
 # pre-FEC BER calculation (hard demodulation)
-BER, _, _ = fastBERcalc(symbRx, symbTx, mod)
+BER, _, _ = fastBERcalc(symbRx, symbTx, M, 'qam')
 print('BER = %.2e'%BER[0])
 
 # soft-demodulation
@@ -154,18 +151,17 @@ BERpost[:] = np.nan
 
 for ii, M in enumerate(qamOrder):
     print('run sim: M = ', M)
-    
+
     # modulation parameters
-    mod = QAMModem(m=M)
-    constSymb = mod.constellation
-    bitMap = mod.demodulate(constSymb, demod_type="hard")
+    constSymb = GrayMapping(M,'qam')[:,0]        # constellation
+    bitMap = demodulateGray(constSymb, M, 'qam') # bit mapping
     bitMap = bitMap.reshape(-1, int(np.log2(M)))
-    Es = mod.Es
+    Es = signal_power(constSymb) # mean symbol energy
 
     for indSNR in tqdm(range(EbN0dB_.size)):
-        
+
         EbN0dB = EbN0dB_[indSNR]
-        
+
         # generate random bits
         bits = np.random.randint(2, size = (K, Nwords))
 
@@ -173,10 +169,10 @@ for ii, M in enumerate(qamOrder):
         bitsTx, codedBitsTx, interlv = ldpcEncode(bits, LDPCparams)
 
         # Map bits to constellation symbols
-        symbTx = mod.modulate(bitsTx)
+        symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = symbTx/np.sqrt(Es)
+        symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN    
         snrdB    = EbN0dB + 10*np.log10(np.log2(M))
@@ -185,7 +181,7 @@ for ii, M in enumerate(qamOrder):
         symbRx = awgn(symbTx, noiseVar)
 
         # pre-FEC BER calculation (hard demodulation)
-        BERpre[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, mod)
+        BERpre[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, M, 'qam')
         #print('BER = %.2e'%BERpre[indSNR, ii])
 
         # soft-demodulation
@@ -205,12 +201,24 @@ BERpost[BERpost==0] = np.nan
 
 plt.figure(figsize=(10,6))
 for ii, M in enumerate(qamOrder):
-    plt.plot(EbN0dB_, np.log10(BERpre[:,ii]),'o-', label=str(M)+'QAM monte carlo [pre]')
+    plt.plot(
+        EbN0dB_,
+        np.log10(BERpre[:, ii]),
+        'o-',
+        label=f'{str(M)}QAM monte carlo [pre]',
+    )
+
 
 #plt.gca().set_prop_cycle(None)
 
 for ii, M in enumerate(qamOrder):
-    plt.plot(EbN0dB_, np.log10(BERpost[:,ii]),'kx-', label=str(M)+'QAM monte carlo [post]')
+    plt.plot(
+        EbN0dB_,
+        np.log10(BERpost[:, ii]),
+        'kx-',
+        label=f'{str(M)}QAM monte carlo [post]',
+    )
+
 
 plt.xlim(min(EbN0dB_), max(EbN0dB_))
 plt.ylim(-6, 0)

@@ -3,12 +3,13 @@ import numpy as np
 import scipy.constants as const
 from cupy.random import normal
 from cupyx.scipy.fft import fft, fftfreq, ifft
+from cupy.linalg import norm
 from tqdm.notebook import tqdm
 
 from optic.metrics import signal_power
 
 
-def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
+def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12, prec=cp.complex128):
     """
     Simple EDFA model
 
@@ -31,11 +32,18 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     noise = normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * normal(
         0, np.sqrt(p_noise / 2), Ei.shape
     )
-    noise = cp.array(noise).astype(cp.complex64)
+    noise = cp.array(noise).astype(prec)
     return Ei * cp.sqrt(G_lin) + noise
 
 
-def manakovSSF(Ei, Fs, paramCh):
+def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
+
+    return cp.sqrt(
+        norm(Ex_fd - Ex_conv) ** 2 + norm(Ey_fd - Ey_conv) ** 2
+    ) / cp.sqrt(norm(Ex_conv) ** 2 + norm(Ey_conv) ** 2)
+
+
+def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     """
     Manakov model split-step Fourier (symmetric, dual-pol.)
 
@@ -65,6 +73,9 @@ def manakovSSF(Ei, Fs, paramCh):
     paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
     paramCh.amp = getattr(paramCh, "amp", "edfa")
     paramCh.NF = getattr(paramCh, "NF", 4.5)
+    paramCh.maxIter = getattr(paramCh, "maxIter", 10)
+    paramCh.tol = getattr(paramCh, "tol", 1e-5)
+    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
 
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
@@ -75,9 +86,12 @@ def manakovSSF(Ei, Fs, paramCh):
     Fc = paramCh.Fc
     amp = paramCh.amp
     NF = paramCh.NF
+    maxIter = paramCh.maxIter
+    tol = paramCh.tol
+    prgsBar = paramCh.prgsBar
 
     # fft in CuPy uses only complex64
-    prec = cp.complex64
+    # prec = cp.complex64
 
     Nspans = int(np.floor(Ltotal / Lspan))
     Nsteps = int(np.floor(Lspan / hz))
@@ -86,7 +100,7 @@ def manakovSSF(Ei, Fs, paramCh):
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
     λ = c_kms / Fc
     α = alpha / (10 * np.log10(np.exp(1)))
-    β2 = -(D * λ ** 2) / (2 * np.pi * c_kms)
+    β2 = -(D * λ**2) / (2 * np.pi * c_kms)
     γ = gamma
 
     c_kms = cp.asarray(c_kms, dtype=prec)  # speed of light (vacuum) in km/s
@@ -108,7 +122,7 @@ def manakovSSF(Ei, Fs, paramCh):
 
     # define linear operator
     linOperator = cp.array(
-        cp.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω ** 2) * (hz / 2))
+        cp.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2))
     ).astype(prec)
 
     if Ech_x.shape[0] > 1:
@@ -116,37 +130,59 @@ def manakovSSF(Ei, Fs, paramCh):
     else:
         linOperator = linOperator.reshape(1, -1)
 
-    for spanN in tqdm(range(1, Nspans + 1)):
-        Ech_x = fft(Ech_x)  # polarization x field
-        Ech_y = fft(Ech_y)  # polarization y field
+    for _ in tqdm(range(1, Nspans + 1), disable=not(prgsBar)):
+        Ex_conv = Ech_x.copy()
+        Ey_conv = Ech_y.copy()
 
         # fiber propagation step
-        for stepN in range(1, Nsteps + 1):
+        for _ in range(1, Nsteps + 1):
             # First linear step (frequency domain)
-            Ech_x = Ech_x * linOperator
-            Ech_y = Ech_y * linOperator
+            Ex_hd = ifft(fft(Ech_x) * linOperator)
+            Ey_hd = ifft(fft(Ech_y) * linOperator)
 
             # Nonlinear step (time domain)
-            Ex = ifft(Ech_x)
-            Ey = ifft(Ech_y)
-            Ech_x = Ex * cp.exp(
-                1j * (8 / 9) * γ * (Ex * cp.conj(Ex) + Ey * cp.conj(Ey)) * hz
-            )
-            Ech_y = Ey * cp.exp(
-                1j * (8 / 9) * γ * (Ex * cp.conj(Ex) + Ey * cp.conj(Ey)) * hz
-            )
+            for nIter in range(maxIter):
 
-            # Second linear step (frequency domain)
-            Ech_x = fft(Ech_x)
-            Ech_y = fft(Ech_y)
+                phiRot = (
+                    (8 / 9)
+                    * γ
+                    * (
+                        Ech_x * cp.conj(Ech_x)
+                        + Ech_y * cp.conj(Ech_y)
+                        + Ex_conv * cp.conj(Ex_conv)
+                        + Ey_conv * cp.conj(Ey_conv)
+                    )
+                    * hz
+                    / 2
+                )
 
-            Ech_x = Ech_x * linOperator
-            Ech_y = Ech_y * linOperator
+                Ech_x_fd = Ex_hd * cp.exp(1j * phiRot)
+                Ech_y_fd = Ey_hd * cp.exp(1j * phiRot)
+
+                # Second linear step (frequency domain)
+                Ech_x_fd = ifft(fft(Ech_x_fd) * linOperator)
+                Ech_y_fd = ifft(fft(Ech_y_fd) * linOperator)
+
+                # check convergence o trapezoidal integration in phiRot
+                lim = convergenceCondition(
+                    Ech_x_fd, Ech_y_fd, Ex_conv, Ey_conv
+                )
+
+                Ex_conv = Ech_x_fd.copy()
+                Ey_conv = Ech_y_fd.copy()
+
+                if lim < tol:
+                    break
+                elif nIter == maxIter - 1:
+                    print(
+                        f"Warning: target SSFM error tolerance was not achieved in {maxIter} iterations"
+                    )
+
+
+            Ech_x = Ech_x_fd.copy()
+            Ech_y = Ech_y_fd.copy()
 
         # amplification step
-        Ech_x = ifft(Ech_x)
-        Ech_y = ifft(Ech_y)
-
         if amp == "edfa":
             Ech_x = edfa(Ech_x, Fs, alpha * Lspan, NF, Fc)
             Ech_y = edfa(Ech_y, Fs, alpha * Lspan, NF, Fc)
@@ -179,13 +215,13 @@ def setPowerforParSSFM(sig, powers):
     powers_lin = powers_lin.repeat(2) / 2
 
     for i in np.arange(0, sig.shape[1], 2):
-        for k in range(0, 2):
+        for k in range(2):
             sig[:, i + k] = (
-                np.sqrt(powers_lin[i] / signal_power(sig[:, i + k])) * sig[:, i + k]
+                np.sqrt(powers_lin[i] / signal_power(sig[:, i + k]))
+                * sig[:, i + k]
             )
             print(
                 "power mode %d: %.2f dBm"
                 % (i + k, 10 * np.log10(signal_power(sig[:, i + k]) / 1e-3))
             )
-
     return sig

@@ -1,6 +1,7 @@
 import numpy as np
 from numba import njit
 from scipy.special import erf
+from optic.modulation import demodulateGray, GrayMapping
 
 
 @njit
@@ -32,14 +33,13 @@ def hardDecision(rxSymb, constSymb, bitMap):
 
     decBits = np.zeros(len(rxSymb) * b)
 
-    for i in range(0, len(rxSymb)):
+    for i in range(len(rxSymb)):
         indSymb = np.argmin(np.abs(rxSymb[i] - constSymb))
-        decBits[i * b: i * b + b] = bitMap[indSymb, :]
-
+        decBits[i * b : i * b + b] = bitMap[indSymb, :]
     return decBits
 
 
-def fastBERcalc(rx, tx, mod):
+def fastBERcalc(rx, tx, M, constType):
     """
     BER calculation
 
@@ -52,9 +52,8 @@ def fastBERcalc(rx, tx, mod):
     :return SNR: estimated SNR
     """
     # constellation parameters
-    constSymb = mod.constellation
-    M = mod.m
-    Es = mod.Es
+    constSymb = GrayMapping(M, constType)
+    Es = np.mean(np.abs(constSymb) ** 2)
 
     # We want all the signal sequences to be disposed in columns:
     try:
@@ -62,24 +61,23 @@ def fastBERcalc(rx, tx, mod):
             rx = rx.T
     except IndexError:
         rx = rx.reshape(len(rx), 1)
-
     try:
         if tx.shape[1] > tx.shape[0]:
             tx = tx.T
     except IndexError:
         tx = tx.reshape(len(tx), 1)
-
     nModes = int(tx.shape[1])  # number of sinal modes
     SNR = np.zeros(nModes)
     BER = np.zeros(nModes)
     SER = np.zeros(nModes)
-    b = int(np.log2(M))
 
-    bitMap = mod.demodulate(constSymb, demod_type="hard")
+    # get bit mapping
+    b = int(np.log2(M))
+    bitMap = demodulateGray(constSymb, M, constType)
     bitMap = bitMap.reshape(-1, b)
 
     # pre-processing
-    for k in range(0, nModes):
+    for k in range(nModes):
         # symbol normalization
         rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
         tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
@@ -92,8 +90,7 @@ def fastBERcalc(rx, tx, mod):
         SNR[k] = 10 * np.log10(
             signal_power(tx[:, k]) / signal_power(rx[:, k] - tx[:, k])
         )
-
-    for k in range(0, nModes):
+    for k in range(nModes):
         # hard decision demodulation of the received symbols
         brx = hardDecision(np.sqrt(Es) * rx[:, k], constSymb, bitMap)
         btx = hardDecision(np.sqrt(Es) * tx[:, k], constSymb, bitMap)
@@ -101,7 +98,6 @@ def fastBERcalc(rx, tx, mod):
         err = np.logical_xor(brx, btx)
         BER[k] = np.mean(err)
         SER[k] = np.mean(np.sum(err.reshape(-1, b), axis=1) > 0)
-
     return BER, SER, SNR
 
 
@@ -122,19 +118,18 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap):
 
     LLRs = np.zeros(len(rxSymb) * b)
 
-    for i in range(0, len(rxSymb)):
+    for i in range(len(rxSymb)):
         prob = np.exp((-np.abs(rxSymb[i] - constSymb) ** 2) / σ2)
 
-        for indBit in range(0, b):
+        for indBit in range(b):
             p0 = np.sum(prob[bitMap[:, indBit] == 0])
             p1 = np.sum(prob[bitMap[:, indBit] == 1])
 
             LLRs[i * b + indBit] = np.log(p0) - np.log(p1)
-
     return LLRs
 
 
-def monteCarloGMI(rx, tx, mod):
+def monteCarloGMI(rx, tx, M, constType):
     """
     GMI estimation
 
@@ -145,9 +140,8 @@ def monteCarloGMI(rx, tx, mod):
     :return: estimated GMI
     """
     # constellation parameters
-    constSymb = mod.constellation
-    M = mod.m
-    Es = mod.Es
+    constSymb = GrayMapping(M, constType)
+    Es = np.mean(np.abs(constSymb) ** 2)
 
     # We want all the signal sequences to be disposed in columns:
     try:
@@ -155,31 +149,30 @@ def monteCarloGMI(rx, tx, mod):
             rx = rx.T
     except IndexError:
         rx = rx.reshape(len(rx), 1)
-
     try:
         if tx.shape[1] > tx.shape[0]:
             tx = tx.T
     except IndexError:
         tx = tx.reshape(len(tx), 1)
-
     nModes = int(tx.shape[1])  # number of sinal modes
     GMI = np.zeros(nModes)
 
     noiseVar = np.var(rx - tx, axis=0)
 
-    bitMap = mod.demodulate(constSymb, demod_type="hard")
-    bitMap = bitMap.reshape(-1, int(np.log2(M)))
+    # get bit mapping
+    b = int(np.log2(M))
+    bitMap = demodulateGray(constSymb, M, constType)
+    bitMap = bitMap.reshape(-1, b)
 
     # symbol normalization
-    for k in range(0, nModes):
+    for k in range(nModes):
         rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
         tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
 
         # correct (possible) phase ambiguity
         rot = np.mean(tx[:, k] / rx[:, k])
         rx[:, k] = rot * rx[:, k]
-
-    for k in range(0, nModes):
+    for k in range(nModes):
         # set the noise variance
         σ2 = noiseVar[k]
 
@@ -198,17 +191,15 @@ def monteCarloGMI(rx, tx, mod):
 
         MIperBitPosition = np.zeros(b)
 
-        for n in range(0, b):
+        for n in range(b):
             MIperBitPosition[n] = 1 - np.mean(
                 np.log2(1 + np.exp((2 * btx[n::b] - 1) * LLRs[n::b]))
             )
-
         GMI[k] = np.sum(MIperBitPosition)
-
     return GMI, MIperBitPosition
 
 
-def monteCarloMI(rx, tx, mod, px=[]):
+def monteCarloMI(rx, tx, M, constType, px=[]):
     """
     MI estimation
 
@@ -219,11 +210,13 @@ def monteCarloMI(rx, tx, mod, px=[]):
 
     :return: estimated MI
     """
+    if len(px) == 0:  # if px is not defined
+        px = 1 / M * np.ones(M)  # assume uniform distribution
 
     # constellation parameters
-    M = mod.m
-    Es = mod.Es
-    constSymb = mod.constellation / np.sqrt(Es)
+    constSymb = GrayMapping(M, constType)
+    Es = np.sum(np.abs(constSymb) ** 2 * px)
+    constSymb = constSymb / np.sqrt(Es)
 
     # We want all the signal sequences to be disposed in columns:
     try:
@@ -231,30 +224,24 @@ def monteCarloMI(rx, tx, mod, px=[]):
             rx = rx.T
     except IndexError:
         rx = rx.reshape(len(rx), 1)
-
     try:
         if tx.shape[1] > tx.shape[0]:
             tx = tx.T
     except IndexError:
         tx = tx.reshape(len(tx), 1)
-
     nModes = int(rx.shape[1])  # number of sinal modes
     MI = np.zeros(nModes)
 
-    for k in range(0, nModes):
+    for k in range(nModes):
         rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
         tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
-
     # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
-    if len(px) == 0:  # if px is not defined
-        px = 1 / M * np.ones(M)  # assume uniform distribution
 
-    for k in range(0, nModes):
+    for k in range(nModes):
         σ2 = noiseVar[k]
         MI[k] = calcMI(rx[:, k], tx[:, k], σ2, constSymb, px)
-
     return MI
 
 
@@ -275,19 +262,21 @@ def calcMI(rx, tx, σ2, constSymb, pX):
     H_XgY = np.zeros(1, dtype=np.float64)
     H_X = np.sum(-pX * np.log2(pX))
 
-    for k in range(0, N):
+    for k in range(N):
         indSymb = np.argmin(np.abs(tx[k] - constSymb))
 
-        pYgX = np.exp(-(1 / σ2) * np.abs(rx[k] - tx[k]) ** 2)  # p(Y|X)
+        log2_pYgX = -(1 / σ2) * np.abs(rx[k] - tx[k]) ** 2 * np.log2(np.exp(1))  # log2 p(Y|X)
+        #print('pYgX:', pYgX)
         pXY = (
             np.exp(-(1 / σ2) * np.abs(rx[k] - constSymb) ** 2) * pX
         )  # p(Y,X) = p(Y|X)*p(X)
-
+        #print('pXY:', pXY)
         # p(X|Y) = p(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
 
         pY = np.sum(pXY)
 
-        H_XgY -= np.log2((pYgX * pX[indSymb]) / pY)
+        #print('pY:', pY)
+        H_XgY -= log2_pYgX + np.log2(pX[indSymb]) - np.log2(pY)
 
     H_XgY = H_XgY / N
 
@@ -320,9 +309,7 @@ def theoryBER(M, EbN0, constType):
             / np.log2(L)
             * Qfunc(np.sqrt(3 * np.log2(L) / (L ** 2 - 1) * (2 * EbN0lin)))
         )
-
     elif constType == "psk":
         Ps = 2 * Qfunc(np.sqrt(2 * k * EbN0lin) * np.sin(np.pi / M))
         Pb = Ps / k
-
     return Pb

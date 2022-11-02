@@ -3,7 +3,6 @@ import numpy as np
 from commpy.filters import rcosfilter, rrcosfilter
 from commpy.utilities import upsample
 from scipy import signal
-from scipy.signal import lfilter
 
 
 def firFilter(h, x):
@@ -17,12 +16,10 @@ def firFilter(h, x):
         Coefficients of the FIR filter.
     x : ndarray
         Input signal.
-
     Returns
     -------
     y : ndarray
         Output (filtered) signal.
-
     '''
 
     try:
@@ -32,19 +29,14 @@ def firFilter(h, x):
 
     y = x.copy()
     nModes = x.shape[1]
-    N = h.size
 
-    for n in range(0, nModes):
-        x_ = x[:, n]
-        x_ = np.pad(x_, (0, int(N / 2)), "constant")
-        y_ = lfilter(h, 1, x_)
-        y[:, n] = y_[int(N / 2): y_.size]
+    for n in range(nModes):
+        y[:, n] = np.convolve(x[:, n], h, mode='same')
 
     if y.shape[1] == 1:
         y = y[:, 0]
 
     return y
-
 
 def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     '''
@@ -108,7 +100,7 @@ def sincInterp(x, fa):
     plt.plot(t, y.real, "ko", label="x[k]")
 
     x_sum = 0
-    for k in range(0, x.size):
+    for k in range(x.size):
         xk_interp = x[k] * np.sinc((t - k * Ta) / Ta)
         x_sum += xk_interp
         plt.plot(t, xk_interp)
@@ -186,16 +178,16 @@ def decimate(Ei, param):
 
     # finds best sampling instant
     # (maximum variance sampling time)
-    for k in range(0, Ei.shape[1]):
+    for k in range(Ei.shape[1]):
         a = Ei[:, k].reshape(Ei.shape[0], 1)
         varVector = np.var(a.reshape(-1, param.SpS_in), axis=0)
-        sampDelay[k] = np.where(varVector == np.amax(varVector))[0][0]
+        sampDelay[k] = np.where(varVector == np.amax(varVector))[0][0]    
 
     # downsampling
-    Eo = Ei[::decFactor, :]
+    Eo = Ei[::decFactor, :].copy()
 
-    for k in range(0, Ei.shape[1]):
-        Ei[:, k] = np.roll(Ei[:, k], int(sampDelay[k]))
+    for k in range(Ei.shape[1]):
+        Ei[:, k] = np.roll(Ei[:, k], -int(sampDelay[k]))
         Eo[:, k] = Ei[0::decFactor, k]
 
     return Eo
@@ -225,7 +217,7 @@ def resample(Ei, param):
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
-    
+
     nModes = Ei.shape[1]
     inFs = param.SpS_in*param.Rs
     outFs = param.SpS_out*param.Rs
@@ -241,11 +233,11 @@ def resample(Ei, param):
     ho = lowPassFIR(outFs/2, outFs, N, typeF="rect")
 
     Ei = firFilter(hi, Ei)
-    
+
     if nModes == 1:
         Ei = Ei.reshape(len(Ei), 1)        
-    
-    for k in range(0, nModes):
+
+    for k in range(nModes):
         Eo[:,k] = np.interp(tout, tin, Ei[:,k])
 
     Eo = firFilter(ho, Eo)
@@ -281,8 +273,8 @@ def symbolSync(rx, tx, SpS):
 
     corrMatrix = np.zeros((nModes, nModes))
 
-    for n in range(0, nModes):
-        for m in range(0, nModes):
+    for n in range(nModes):
+        for m in range(nModes):
             corrMatrix[m, n] = np.max(
                 np.abs(signal.correlate(np.abs(tx[:, m]), np.abs(rx[:, n])))
             )
@@ -291,7 +283,7 @@ def symbolSync(rx, tx, SpS):
 
     tx = tx[:, swap]
 
-    for k in range(0, nModes):
+    for k in range(nModes):
         delay[k] = finddelay(np.abs(tx[:, k]), np.abs(rx[:, k]))
 
     # compensate time delay
@@ -319,6 +311,4 @@ def finddelay(x, y):
 
     '''
 
-    d = np.argmax(signal.correlate(x, y)) - x.shape[0]+1
-
-    return d
+    return np.argmax(signal.correlate(x, y)) - x.shape[0]+1

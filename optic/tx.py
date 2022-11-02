@@ -1,11 +1,17 @@
 import numpy as np
-from commpy.modulation import QAMModem
 from commpy.utilities import upsample
 
-from optic.dsp import firFilter, pulseShape
+from optic.dsp import pulseShape
 from optic.metrics import signal_power
 from optic.models import iqm
+from optic.modulation import GrayMapping, modulateGray
 
+try:
+    from optic.dspGPU import firFilter
+except:
+    from optic.dsp import firFilter
+
+import logging as logg
 
 def simpleWDMTx(param):
     """
@@ -14,7 +20,8 @@ def simpleWDMTx(param):
     Generates a complex baseband waveform representing a WDM signal with
     arbitrary number of carriers
 
-    :param.M: QAM order [default: 16]
+    :param.M: modulation order [default: 16]
+    :param.constType: 'qam' or 'psk' [default: 'qam']
     :param.Rs: carrier baud rate [baud][default: 32e9]
     :param.SpS: samples per symbol [default: 16]
     :param.Nbits: total number of bits per carrier [default: 60000]
@@ -30,6 +37,7 @@ def simpleWDMTx(param):
     """
     # check input parameters
     param.M = getattr(param, "M", 16)
+    param.constType = getattr(param,'constType','qam')
     param.Rs = getattr(param, "Rs", 32e9)
     param.SpS = getattr(param, "SpS", 16)
     param.Nbits = getattr(param, "Nbits", 60000)
@@ -78,14 +86,15 @@ def simpleWDMTx(param):
     # allocate array
     sigTxWDM = np.zeros((len(t), param.Nmodes), dtype="complex")
     symbTxWDM = np.zeros(
-        (int(len(t) / param.SpS), param.Nmodes, param.Nch), dtype="complex"
+        (len(t) // param.SpS, param.Nmodes, param.Nch), dtype="complex"
     )
+
 
     Psig = 0
 
-    # map bits to constellation symbols
-    mod = QAMModem(m=param.M)
-    Es = mod.Es
+    # constellation symbols info
+    const = GrayMapping(param.M, param.constType)
+    Es = np.mean(np.abs(const)**2)    
 
     # pulse shaping filter
     if param.pulse == "nrz":
@@ -95,15 +104,15 @@ def simpleWDMTx(param):
 
     pulse = pulse / np.max(np.abs(pulse))
 
-    for indCh in range(0, param.Nch):
+    for indCh in range(param.Nch):
 
-        print(
+        logg.info(
             "channel %d\t fc : %3.4f THz" % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
         )
 
         Pmode = 0
-        for indMode in range(0, param.Nmodes):
-            print(
+        for indMode in range(param.Nmodes):
+            logg.info(
                 "  mode #%d\t power: %.2f dBm"
                 % (indMode, 10 * np.log10((Pch[indCh] / param.Nmodes) / 1e-3))
             )
@@ -111,8 +120,8 @@ def simpleWDMTx(param):
             # generate random bits
             bitsTx = np.random.randint(2, size=param.Nbits)
 
-            # map bits to constellation symbols
-            symbTx = mod.modulate(bitsTx)
+            # map bits to constellation symbols            
+            symbTx = modulateGray(bitsTx, param.M, param.constType)
 
             # normalize symbols energy to 1
             symbTx = symbTx / np.sqrt(Es)
@@ -141,9 +150,9 @@ def simpleWDMTx(param):
 
         Psig += Pmode
 
-        print("channel %d\t power: %.2f dBm\n" % (indCh, 10 * np.log10(Pmode / 1e-3)))
+        logg.info("channel %d\t power: %.2f dBm\n" % (indCh, 10 * np.log10(Pmode / 1e-3)))
 
-    print("total WDM signal power: %.2f dBm" % (10 * np.log10(Psig / 1e-3)))
+    logg.info("total WDM signal power: %.2f dBm" % (10 * np.log10(Psig / 1e-3)))
 
     param.freqGrid = freqGrid
 

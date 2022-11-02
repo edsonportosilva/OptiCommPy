@@ -4,57 +4,99 @@ from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from numpy.random import normal
 from tqdm.notebook import tqdm
+from optic.metrics import signal_power
+from optic.dsp import lowPassFIR
+
+try:
+    from optic.dspGPU import firFilter
+except:
+    from optic.dsp import firFilter
 
 
-def mzm(Ai, Vπ, u, Vb):
+def mzm(Ai, u, Vπ, Vb):
     """
-    MZM modulator
+    Optical Mach-Zehnder Modulator (MZM).
 
-    :param Vπ: Vπ-voltage
-    :param Vb: bias voltage
-    :param u:  modulator's driving signal (real-valued)
-    :param Ai: amplitude of the input CW carrier
+    Parameters
+    ----------
+    Ai : scalar or np.array
+        Amplitude of the optical field at the input of the MZM.
+    u : np.array
+        Electrical driving signal.
+    Vπ : scalar
+        MZM's Vπ voltage.
+    Vb : scalar
+        MZM's bias voltage.
 
-    :return Ao: output optical signal
+    Returns
+    -------
+    Ao : np.array
+        Modulated optical field at the output of the MZM.
+
     """
+    try:
+        assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
+    except AttributeError:
+        Ai = Ai * np.ones(u.shape)
+
     π = np.pi
-    Ao = Ai * np.cos(0.5 / Vπ * (u + Vb) * π)
-
-    return Ao
+    return Ai * np.cos(0.5 / Vπ * (u + Vb) * π)
 
 
 def iqm(Ai, u, Vπ, VbI, VbQ):
     """
-    IQ modulator
+    Optical In-Phase/Quadrature Modulator (IQM).
 
-    :param Vπ: MZM Vπ-voltage
-    :param VbI: in-phase MZM bias voltage
-    :param VbQ: quadrature MZM bias voltage
-    :param u:  modulator's driving signal (complex-valued baseband)
-    :param Ai: amplitude of the input CW carrier
+    Parameters
+    ----------
+    Ai : scalar or np.array
+        Amplitude of the optical field at the input of the IQM.
+    u : complex-valued np.array
+        Modulator's driving signal (complex-valued baseband).
+    Vπ : scalar
+        MZM Vπ-voltage.
+    VbI : scalar
+        I-MZM's bias voltage.
+    VbQ : scalar
+        Q-MZM's bias voltage.
 
-    :return Ao: output optical signal
+    Returns
+    -------
+    Ao : complex-valued np.array
+        Modulated optical field at the output of the IQM.
+
     """
-    Ao = mzm(Ai / np.sqrt(2), Vπ, u.real, VbI) + 1j * mzm(
-        Ai / np.sqrt(2), Vπ, u.imag, VbQ
-    )
+    try:
+        assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
+    except AttributeError:
+        Ai = Ai * np.ones(u.shape)
 
-    return Ao
+    return mzm(Ai / np.sqrt(2), u.real, Vπ, VbI) + 1j * mzm(
+        Ai / np.sqrt(2), u.imag, Vπ, VbQ
+    )
 
 
 def pbs(E, θ=0):
     """
-    Polarization beam splitter (pbs)
+    Polarization beam splitter (PBS).
 
-    :param E: input pol. multiplexed field [2d nparray]
-    :param θ: rotation angle of input field [rad][default: 0 rad]
+    Parameters
+    ----------
+    E : (N,2) np.array
+        Input pol. multiplexed optical field.
+    θ : scalar, optional
+        Rotation angle of input field in radians. The default is 0.
 
-    :return: Ex output single pol. field [1d nparray]
-    :return: Ey output single pol. field [1d nparray]
-    
+    Returns
+    -------
+    Ex : (N,) np.array
+        Ex output single pol. field.
+    Ey : (N,) np.array
+        Ey output single pol. field.
+
     """
     try:
-        assert E.shape[1] == 2, "E need to be a N-by-2 2d nparray or a 1d nparray"
+        assert E.shape[1] == 2, "E need to be a (N,2) or a (N,) np.array"
     except IndexError:
         E = np.repeat(E, 2).reshape(-1, 2)
         E[:, 1] = 0
@@ -71,7 +113,7 @@ def pbs(E, θ=0):
 
 def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     """
-    Linear fiber channel w/ loss and chromatic dispersion
+    Linear fiber channel w/ loss and chromatic dispersion.
 
     :param Ei: optical signal at the input of the fiber
     :param L: fiber length [km]
@@ -86,7 +128,7 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     c_kms = const.c / 1e3
     λ = c_kms / Fc
     α = alpha / (10 * np.log10(np.exp(1)))
-    β2 = -(D * λ ** 2) / (2 * np.pi * c_kms)
+    β2 = -(D * λ**2) / (2 * np.pi * c_kms)
 
     Nfft = len(Ei)
 
@@ -100,43 +142,134 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
         Ei = Ei.reshape(Ei.size, Nmodes)
 
     ω = np.tile(ω, (1, Nmodes))
-    Eo = ifft(fft(Ei, axis=0) * np.exp(-α * L + 1j * (β2 / 2) * (ω ** 2) * L), axis=0)
+    Eo = ifft(
+        fft(Ei, axis=0) * np.exp(-α * L + 1j * (β2 / 2) * (ω**2) * L), axis=0
+    )
 
     if Nmodes == 1:
-        Eo = Eo.reshape(Eo.size,)
+        Eo = Eo.reshape(
+            Eo.size,
+        )
 
     return Eo
 
 
+def photodiode(E, paramPD=[]):
+    """
+    Pin photodiode (PD).
+
+    Parameters
+    ----------
+    E : np.array
+        Input optical field.
+    paramPD : struct, optional
+
+    paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
+    paramPD.Tc: temperature [°C][default: 25°C]
+    paramPD.Id: dark current [A][default: 5e-9 A]
+    paramPD.RL: impedance load [Ω] [default: 50Ω]
+    paramPD.B bandwidth [Hz][default: 30e9 Hz]
+    paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
+    paramPD.fType: frequency response type [default: 'rect']
+    paramPD.N: number of the frequency resp. filter taps. [default: 8001]
+    paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
+
+    Returns
+    -------
+    ipd : np.array
+          photocurrent.
+
+    """
+    kB = const.value("Boltzmann constant")
+    q = const.value("elementary charge")
+
+    # check input parameters
+    R = getattr(paramPD, "R", 1)
+    Tc = getattr(paramPD, "Tc", 25)
+    Id = getattr(paramPD, "Id", 5e-9)
+    RL = getattr(paramPD, "RL", 50)
+    B = getattr(paramPD, "B", 30e9)
+    Fs = getattr(paramPD, "Fs", 60e9)
+    N = getattr(paramPD, "N", 8000)
+    fType = getattr(paramPD, "fType", "rect")
+    ideal = getattr(paramPD, "ideal", True)
+
+    assert R > 0, "PD responsivity should be a positive scalar"
+    assert Fs >= 2*B, "Sampling frequency Fs needs to be at least twice of B."
+
+    ipd = R * E * np.conj(E)  # ideal fotodetected current
+
+    if not (ideal):
+
+        Pin = (np.abs(E) ** 2).mean()
+
+        # shot noise
+        σ2_s = 2 * q * (R * Pin + Id) * B  # shot noise variance
+
+        # thermal noise
+        T = Tc + 273.15  # temperature in Kelvin
+        σ2_T = 4 * kB * T * B / RL  # thermal noise variance
+
+        # add noise sources to the p-i-n receiver
+        Is = normal(0, np.sqrt(Fs * (σ2_s / (2 * B))), ipd.size)
+        It = normal(0, np.sqrt(Fs * (σ2_T / (2 * B))), ipd.size)
+
+        ipd += Is + It
+
+        # lowpass filtering
+        h = lowPassFIR(B, Fs, N, typeF=fType)
+        ipd = firFilter(h, ipd)
+
+    return ipd.real
+
+
 def balancedPD(E1, E2, R=1):
     """
-    Balanced photodetector (BPD)
+    Balanced photodiode (BPD).
 
-    :param E1: input field [nparray]
-    :param E2: input field [nparray]
-    :param R: photodiode responsivity [A/W][scalar, default: 1 A/W]
+    Parameters
+    ----------
+    E1 : np.array
+        Input optical field.
+    E2 : np.array
+        Input optical field.
+    R : scalar, optional
+        Photodiode responsivity in A/W. The default is 1.
 
-    :return: balanced photocurrent
+    Returns
+    -------
+    ibpd : np.array
+           Balanced photocurrent.
+
     """
     assert R > 0, "PD responsivity should be a positive scalar"
-    assert E1.size == E2.size, "E1 and E2 need to have the same size"
+    assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
     i1 = R * E1 * np.conj(E1)
     i2 = R * E2 * np.conj(E2)
-
     return i1 - i2
 
 
-def hybrid_2x4_90deg(E1, E2):
+def hybrid_2x4_90deg(Es, Elo):
     """
-    Optical 2 x 4 90° hybrid
+    Optical 2 x 4 90° hybrid.
 
-    :param E1: input signal field [nparray]
-    :param E2: input LO field [nparray]
+    Parameters
+    ----------
+    Es : np.array
+        Input signal optical field.
+    Elo : np.array
+        Input LO optical field.
 
-    :return: hybrid outputs
+    Returns
+    -------
+    Eo : np.array
+        Optical hybrid outputs.
+
     """
-    assert E1.size == E2.size, "E1 and E2 need to have the same size"
+    assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
+    assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
+    assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
 
     # optical hybrid transfer matrix
     T = np.array(
@@ -148,25 +281,34 @@ def hybrid_2x4_90deg(E1, E2):
         ]
     )
 
-    Ei = np.array([E1, np.zeros((E1.size,)), np.zeros((E1.size,)), E2])
+    Ei = np.array([Es, np.zeros((Es.size,)), np.zeros((Es.size,)), Elo])
 
-    Eo = T @ Ei
-
-    return Eo
+    return T @ Ei
 
 
 def coherentReceiver(Es, Elo, Rd=1):
     """
-    Single polarization coherent optical front-end
+    Single polarization coherent optical front-end.
 
-    :param Es: input signal field [nparray]
-    :param Elo: input LO field [nparray]
-    :param Rd: photodiode resposivity [scalar]
+    Parameters
+    ----------
+    Es : np.array
+        Input signal optical field.
+    Elo : np.array
+        Input LO optical field.
+    Rd : scalar, optional
+        Photodiodes responsivity in A/W. The default is 1.
 
-    :return: downconverted signal after balanced detection
+    Returns
+    -------
+    s : np.array
+        Downconverted signal after balanced detection.
+
     """
     assert Rd > 0, "PD responsivity should be a positive scalar"
-    assert Es.size == Elo.size, "Es and Elo need to have the same size"
+    assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
+    assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
+    assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
 
     # optical 2 x 4 90° hybrid
     Eo = hybrid_2x4_90deg(Es, Elo)
@@ -180,42 +322,61 @@ def coherentReceiver(Es, Elo, Rd=1):
 
 def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
     """
-    Polarization multiplexed coherent optical front-end
+    Polarization multiplexed coherent optical front-end.
 
-    :param Es: input signal field [2d nparray]
-    :param Elo: input LO field [nparray]
-    :param θsig: polarization rotation angle [rad][default: 0]
-    :param Rdx: photodiode resposivity pol.X [scalar]
-    :param Rdy: photodiode resposivity pol.Y [scalar]
+    Parameters
+    ----------
+    Es : np.array
+        Input signal optical field.
+    Elo : np.array
+        Input LO optical field.
+    θsig : scalar, optional
+        Input polarization rotation angle in rad. The default is 0.
+    Rdx : scalar, optional
+        Photodiode resposivity pol.X in A/W. The default is 1.
+    Rdy : scalar, optional
+        Photodiode resposivity pol.Y in A/W. The default is 1.
 
-    :return: downconverted signal after balanced detection
+    Returns
+    -------
+    S : np.array
+        Downconverted signal after balanced detection.
+
     """
     assert Rdx > 0 and Rdy > 0, "PD responsivity should be a positive scalar"
-    assert len(Es) == len(Elo), "Es and Elo need to have the same number of samples"
+    assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
-    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orthogonal polarizations
-    Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orthogonal polarizations
+    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
+    Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orth. polarizations
 
     Sx = coherentReceiver(Esx, Elox, Rd=Rdx)  # coherent detection of pol.X
     Sy = coherentReceiver(Esy, Eloy, Rd=Rdy)  # coherent detection of pol.Y
 
-    Sx = Sx.reshape(len(Sx), 1)
-    Sy = Sy.reshape(len(Sy), 1)
-
-    return np.concatenate((Sx, Sy), axis=1)
+    return np.array([Sx, Sy]).T
 
 
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     """
-    Simple EDFA model
+    Implement simple EDFA model.
 
-    :param Ei: input signal field [nparray]
-    :param Fs: sampling frequency [Hz][scalar]
-    :param G: gain [dB][scalar, default: 20 dB]
-    :param NF: EDFA noise figure [dB][scalar, default: 4.5 dB]
-    :param Fc: optical center frequency [Hz][scalar, default: 193.1e12 Hz]
+    Parameters
+    ----------
+    Ei : np.array
+        Input signal field .
+    Fs : scalar
+        Sampling frequency in Hz.
+    G : scalar, optional
+        Amplifier gain in dB. The default is 20.
+    NF : scalar, optional
+        EDFA noise figure in dB. The default is 4.5.
+    Fc : scalar, optional
+        Central optical frequency. The default is 193.1e12.
 
-    :return: amplified noisy optical signal [nparray]
+    Returns
+    -------
+    Eo : np.array
+        Amplified noisy optical signal.
+
     """
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
@@ -233,7 +394,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
 
 def ssfm(Ei, Fs, paramCh):
     """
-    Split-step Fourier method (symmetric, single-pol.)
+    Split-step Fourier method (symmetric, single-pol.).
 
     :param Ei: input signal
     :param Fs: sampling frequency of Ei [Hz]
@@ -261,6 +422,7 @@ def ssfm(Ei, Fs, paramCh):
     paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
     paramCh.amp = getattr(paramCh, "amp", "edfa")
     paramCh.NF = getattr(paramCh, "NF", 4.5)
+    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
 
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
@@ -271,12 +433,13 @@ def ssfm(Ei, Fs, paramCh):
     Fc = paramCh.Fc
     amp = paramCh.amp
     NF = paramCh.NF
+    prgsBar = paramCh.prgsBar
 
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
     λ = c_kms / Fc
     α = alpha / (10 * np.log10(np.exp(1)))
-    β2 = -(D * λ ** 2) / (2 * np.pi * c_kms)
+    β2 = -(D * λ**2) / (2 * np.pi * c_kms)
     γ = gamma
 
     # generate frequency axis
@@ -286,16 +449,20 @@ def ssfm(Ei, Fs, paramCh):
     Nspans = int(np.floor(Ltotal / Lspan))
     Nsteps = int(np.floor(Lspan / hz))
 
-    Ech = Ei.reshape(len(Ei),)
+    Ech = Ei.reshape(
+        len(Ei),
+    )
 
     # define linear operator
-    linOperator = np.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω ** 2) * (hz / 2))
+    linOperator = np.exp(
+        -(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2)
+    )
 
-    for spanN in tqdm(range(1, Nspans + 1)):
+    for _ in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
         Ech = fft(Ech)  # single-polarization field
 
         # fiber propagation step
-        for stepN in range(1, Nsteps + 1):
+        for _ in range(1, Nsteps + 1):
             # First linear step (frequency domain)
             Ech = Ech * linOperator
 
@@ -316,12 +483,17 @@ def ssfm(Ei, Fs, paramCh):
         elif amp is None:
             Ech = Ech * np.exp(0)
 
-    return Ech.reshape(len(Ech),), paramCh
+    return (
+        Ech.reshape(
+            len(Ech),
+        ),
+        paramCh,
+    )
 
 
 def manakovSSF(Ei, Fs, paramCh):
     """
-    Manakov model split-step Fourier (symmetric, dual-pol.)
+    Manakov split-step Fourier model (symmetric, dual-pol.).
 
     :param Ei: input signal
     :param Fs: sampling frequency of Ei [Hz]
@@ -349,6 +521,7 @@ def manakovSSF(Ei, Fs, paramCh):
     paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
     paramCh.amp = getattr(paramCh, "amp", "edfa")
     paramCh.NF = getattr(paramCh, "NF", 4.5)
+    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
 
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
@@ -359,12 +532,13 @@ def manakovSSF(Ei, Fs, paramCh):
     Fc = paramCh.Fc
     amp = paramCh.amp
     NF = paramCh.NF
+    prgsBar = paramCh.prgsBar
 
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
     λ = c_kms / Fc
     α = alpha / (10 * np.log10(np.exp(1)))
-    β2 = -(D * λ ** 2) / (2 * np.pi * c_kms)
+    β2 = -(D * λ**2) / (2 * np.pi * c_kms)
     γ = gamma
 
     # generate frequency axis
@@ -374,18 +548,24 @@ def manakovSSF(Ei, Fs, paramCh):
     Nspans = int(np.floor(Ltotal / Lspan))
     Nsteps = int(np.floor(Lspan / hz))
 
-    Ech_x = Ei[:, 0].reshape(len(Ei),)
-    Ech_y = Ei[:, 1].reshape(len(Ei),)
+    Ech_x = Ei[:, 0].reshape(
+        len(Ei),
+    )
+    Ech_y = Ei[:, 1].reshape(
+        len(Ei),
+    )
 
     # define linear operator
-    linOperator = np.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω ** 2) * (hz / 2))
+    linOperator = np.exp(
+        -(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2)
+    )
 
-    for spanN in tqdm(range(1, Nspans + 1)):
+    for _ in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
         Ech_x = fft(Ech_x)  # polarization x field
         Ech_y = fft(Ech_y)  # polarization y field
 
         # fiber propagation step
-        for stepN in range(1, Nsteps + 1):
+        for _ in range(1, Nsteps + 1):
             # First linear step (frequency domain)
             Ech_x = Ech_x * linOperator
             Ech_y = Ech_y * linOperator
@@ -421,18 +601,77 @@ def manakovSSF(Ei, Fs, paramCh):
             Ech_x = Ech_x * np.exp(0)
             Ech_y = Ech_y * np.exp(0)
 
-    Ech = np.array([Ech_x.reshape(len(Ei),), Ech_y.reshape(len(Ei),)]).T
+    Ech = np.array(
+        [
+            Ech_x.reshape(
+                len(Ei),
+            ),
+            Ech_y.reshape(
+                len(Ei),
+            ),
+        ]
+    ).T
 
     return Ech, paramCh
 
 
 @njit
 def phaseNoise(lw, Nsamples, Ts):
+    """
+    Generate realization of a random-walk phase-noise process.
 
+    Parameters
+    ----------
+    lw : scalar
+        laser linewidth.
+    Nsamples : scalar
+        number of samples to be draw.
+    Ts : scalar
+        sampling period.
+
+    Returns
+    -------
+    phi : np.array
+        realization of the phase noise process.
+
+    """
     σ2 = 2 * np.pi * lw * Ts
     phi = np.zeros(Nsamples)
 
-    for ind in range(0, Nsamples - 1):
+    for ind in range(Nsamples - 1):
         phi[ind + 1] = phi[ind] + normal(0, np.sqrt(σ2))
 
     return phi
+
+
+@njit
+def awgn(sig, snr, Fs=1, B=1):
+    """
+    Implement an AWGN channel.
+
+    Parameters
+    ----------
+    sig : np.array
+        input signal.
+    snr : scalar
+        signal-to-noise ratio in dB.
+    Fs : scalar
+        sampling frequency. The default is 1.
+    B : scalar
+        signal bandwidth. The default is 1.
+
+    Returns
+    -------
+    sigNoisy : np.array
+        input signal plus noise.
+
+    """
+    snr_lin = 10 ** (snr / 10)
+    noiseVar = signal_power(sig) / snr_lin
+    σ = np.sqrt((Fs / B) * noiseVar)
+    noise = normal(0, σ, sig.size) + 1j * normal(
+        0, σ, sig.size
+    )
+    noise = 1 / np.sqrt(2) * noise
+
+    return sig + noise
