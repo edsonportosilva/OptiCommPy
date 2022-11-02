@@ -33,6 +33,7 @@ from optic.plot import eyediagram
 import matplotlib.pyplot as plt
 from scipy.special import erfc
 from tqdm.notebook import tqdm
+import scipy as sp
 
 # +
 from IPython.core.display import HTML
@@ -62,7 +63,7 @@ Tsymb = 1/Rs # Symbol period in seconds
 Fs = 1/(Tsymb/SpS) # Signal sampling frequency (samples/second)
 Ts = 1/Fs # Sampling period
 
-Pi_dBm = -19 # optical signal power at modulator input in dBm
+Pi_dBm = -16 # optical signal power at modulator input in dBm
 
 # MZM parameters
 Vπ = 2
@@ -137,13 +138,15 @@ I_Rx_ideal = photodiode(sigTxo.real, paramPD)
 # noisy photodiode (thermal noise + shot noise + bandwidth limitation)
 paramPD = parameters()
 paramPD.ideal = False
-paramPD.B = 10e9
+paramPD.B = Rs
 paramPD.Fs = Fs
 
 I_Rx = photodiode(sigTxo.real, paramPD)
 
-eyediagram(I_Rx_ideal.copy(), I_Rx.size, SpS, plotlabel='signal at Tx')
-eyediagram(I_Rx.copy(), I_Rx.size, SpS, plotlabel='signal at Rx')
+discard = 100
+
+eyediagram(I_Rx_ideal[discard:-discard].copy(), I_Rx.size-2*discard, SpS, plotlabel='signal at Tx', ptype='fancy')
+eyediagram(I_Rx[discard:-discard].copy(), I_Rx.size-2*discard, SpS, plotlabel='signal at Rx', ptype='fancy')
 
 # +
 I_Rx = I_Rx/np.std(I_Rx)
