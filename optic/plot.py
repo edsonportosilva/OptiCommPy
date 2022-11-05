@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.stats.kde import gaussian_kde
+from scipy.interpolate import interp1d
 
 from optic.metrics import signal_power
 
 
 def pconst(x, lim=False, R=1.5):
     """
-    Plots signal constellations
+    Plot signal constellations.
 
     :param x: complex signals or list of complex signals
 
@@ -81,7 +81,6 @@ def pconst(x, lim=False, R=1.5):
             plt.xlim(-radius, radius)
             plt.ylim(-radius, radius)
 
-
     plt.show()
 
     return None
@@ -89,7 +88,7 @@ def pconst(x, lim=False, R=1.5):
 
 def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     """
-    Plots the eye diagram of a modulated signal waveform
+    Plot the eye diagram of a modulated signal waveform.
 
     :param Nsamples: number os samples to be plotted
     :param SpS: samples per symbol
@@ -97,10 +96,12 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     :param type: 'fast' or 'fancy'
     :param plotlabel: label for the plot legend
     """
-
     if np.iscomplex(sig).any():
         d = 1
-        plotlabel_ = f"{plotlabel} [real]"
+        if not (plotlabel):
+            plotlabel_ = "[real]"
+        else:
+            plotlabel_ = f"{plotlabel} [real]"
     else:
         d = 0
         plotlabel_ = plotlabel
@@ -111,23 +112,43 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             x = np.arange(0, y.size, 1) % (n * SpS)
         else:
             y = sig[:Nsamples].imag
-            plotlabel_ = f"{plotlabel} [imag]"
+
+            if not (plotlabel):
+                plotlabel_ = "[imag]"
+            else:
+                plotlabel_ = f"{plotlabel} [imag]"
 
         plt.figure()
         if ptype == "fancy":
-            k = gaussian_kde(np.vstack([x, y]))
-            k.set_bandwidth(bw_method=k.factor / 5)
+            f = interp1d(np.arange(y.size), y, kind="cubic")
 
-            xi, yi = (
-                1.1
-                * np.mgrid[
-                    x.min(): x.max(): x.size ** 0.5 * 1j,
-                    y.min(): y.max(): y.size ** 0.5 * 1j,
+            Nup = 10*SpS
+            tnew = np.arange(y.size) * (1 / Nup)
+            y_ = f(tnew)
+
+            taxis = (np.arange(y.size) % (n * SpS * Nup)) * (1 / Nup)
+            imRange = np.array(
+                [
+                    [min(taxis), max(taxis)],
+                    [min(y) - 0.1 * np.mean(y), 1.1 * max(y)],
                 ]
             )
-            zi = k(np.vstack([xi.flatten(), yi.flatten()]))
-            plt.pcolormesh(xi, yi, zi.reshape(xi.shape), alpha=1, shading="auto")
-            plt.show()
+
+            H, xedges, yedges = np.histogram2d(
+                taxis, y_, bins=100, range=imRange
+            )
+
+            H = H.T
+
+            # plt.figure(figsize=(10, 3))
+            plt.imshow(
+                H,
+                origin="lower",
+                aspect="auto",
+                extent=[0, n, yedges[0], yedges[-1]],
+            )
+            plt.xlabel("symbol period (Ts)")
+            plt.ylabel("amplitude")
         elif ptype == "fast":
             y[x == n * SpS] = np.nan
             y[x == 0] = np.nan
