@@ -59,7 +59,7 @@ bits = np.random.randint(2, size = 6*2**14)
 # Map bits to constellation symbols
 symbTx = modulateGray(bits, M, constType)
 
-# Normalize symbols energy to 1
+# normalize symbols energy to 1
 symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
 # AWGN    
