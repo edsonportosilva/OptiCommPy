@@ -19,35 +19,24 @@
 # +
 from optic.modulation import modulateGray, demodulateGray, GrayMapping
 from optic.metrics import signal_power, fastBERcalc
+from optic.models import awgn
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm.notebook import tqdm
 from numba import njit
 
 import os.path as path
-
-
 # -
 
 # %load_ext autoreload
 # %autoreload 2
 
-@njit
-def awgn(tx, noiseVar):
-    
-    σ        = np.sqrt(noiseVar)
-    noise    = np.random.normal(0,σ, tx.size) + 1j*np.random.normal(0,σ, tx.size)
-    noise    = 1/np.sqrt(2)*noise
-
-    return tx + noise
-
-
 # ## Define modulation, modulate and demodulate data
 
 # +
 # Run AWGN simulation 
-EbN0dB = 15
-M      = 16
+EbN0dB = 15 # SNR per bit
+M      = 16 # order of the modulation format
 constType = 'qam' # 'qam' or 'psk'
 
 # modulation parameters
@@ -66,14 +55,13 @@ symbTx = modulateGray(bits, M, constType)
 symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
 # AWGN    
-snrdB    = EbN0dB + 10*np.log10(np.log2(M))
-noiseVar = 1/(10**(snrdB/10))
-
-symbRx = awgn(symbTx, noiseVar)
+snrdB  = EbN0dB + 10*np.log10(np.log2(M))
+symbRx = awgn(symbTx, snrdB)
 
 # BER calculation (hard demodulation)
-BER, _, _ = fastBERcalc(symbRx, symbTx, M, constType)
-print('BER = %.2e'%BER[0])
+BER, _, SNRest = fastBERcalc(symbRx, symbTx, M, constType)
+print('BER = %.2e'%BER)
+print('SNR(est) = %.2f'%SNRest)
 
 plt.figure(figsize=(4,4))
 plt.plot(symbRx.real, symbRx.imag,'.', label='Rx')
