@@ -669,8 +669,8 @@ def awgn(sig, snr, Fs=1, B=1):
     snr_lin = 10 ** (snr / 10)
     noiseVar = signal_power(sig) / snr_lin
     σ = np.sqrt((Fs / B) * noiseVar)
-    noise = normal(0, σ, sig.size) + 1j * normal(
-        0, σ, sig.size
+    noise = normal(0, σ, sig.shape) + 1j * normal(
+        0, σ, sig.shape
     )
     noise = 1 / np.sqrt(2) * noise
 
