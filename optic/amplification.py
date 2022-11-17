@@ -1,13 +1,20 @@
 import os
+
 import numpy as np
-from scipy.special import jv, kv
 import matplotlib.pyplot as plt
 import matplotlib.mlab   as mlab
-from numpy.fft import fft, fftfreq
-from scipy.constants import c, Planck
-import logging as logg
 
+from scipy import interpolate
+from numpy.fft import fft, ifft, fftfreq
 from scipy.integrate import solve_ivp
+
+from scipy.constants import c, Planck
+from scipy.special import jv, kv
+
+import logging as logg
+import copy
+
+from numba import njit
 
 def edfaSM(Ei, Fs, Fc, param_edfa):
     # Verify arguments
@@ -45,10 +52,6 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     if (param_edfa.algo not in ("Giles_spatial", "Giles_spectrum", "Saleh", "Jopson", "Inhomogeneous")):
         raise TypeError('edfaSM.algo invalid argument')
 
-    # Logitudinal step
-    param_edfa.dr = param_edfa.a / param_edfa.longSteps
-    param_edfa.r  = np.arange(0,param_edfa.a, param_edfa.dr)
-
     fileT = np.loadtxt(param_edfa.file)
     # Verify file frequency unit
     if param_edfa.fileunit == "nm":
@@ -61,6 +64,10 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
         lbFl = c/fileT[:,0] * 1e-12
     else:
         raise TypeError('edfaSM.fileunit invalid argument - [nm - m - Hz - THz].')
+
+    # Logitudinal step
+    param_edfa.dr = param_edfa.a / param_edfa.longSteps
+    param_edfa.r  = np.arange(0,param_edfa.a, param_edfa.dr)
 
     # Define field profile
     V = (2 * np.pi / lbFl) * param_edfa.a * param_edfa.na
@@ -132,18 +139,18 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
 
     #plt.plot(1e9*c/(freqSgn + Fc), 10*np.log10(1000*np.abs(fft(Ei)/lenFqSg)**2))
 
-    # Define o vetor de frequência utilizada.
+    # Define the frequency vector used in simulation.
     # SIGNALX + SIGNALY + FASEX + FASEY + FORPUMP
     param_edfa.freq = np.concatenate([freqSgn, freqSgn, freqASE, freqASE, freqPmpFor])
-    param_edfa.ASE  = np.concatenate([np.zeros(len(Ei)), np.ones(2*lenASE), np.zeros(lenPmpFor)])
+    param_edfa.ASE  = np.concatenate([np.zeros(isy*len(Ei)), np.ones(isy*lenASE), np.zeros(lenPmpFor)])
+    param_edfa.uk   = np.ones(np.size(param_edfa.freq))
     # BCKPUMP + BASEX + BASEY
     freqAdd  = np.concatenate([freqPmpBck, freqASE, freqASE])
-    ASEAdd   = np.concatenate([np.zeros(lenPmpBck), np.ones(2*lenASE)])
-    ukAdd    = np.concatenate([ np.ones(lenPmpBck), np.ones(2*lenASE)])
-    pInitAdd = np.concatenate([pumpPmpBck, np.zeros(2*lenASE)])
+    ASEAdd   = np.concatenate([np.zeros(lenPmpBck), np.ones(isy*lenASE)])
+    ukAdd    = np.concatenate([ np.ones(lenPmpBck), np.ones(isy*lenASE)])
+    pInitAdd = np.concatenate([pumpPmpBck, np.zeros(isy*lenASE)])
 
-    # Determina os parâmetros ópticos para os componentes de frequência especificados  para  o  algoritmo  de 
-    # espectral Giles (consideração inicial).
+    # Defines the optical paramters for each frequency to be used in spectral Giles algorithm.
     # SIGNALX + SIGNALY + FASEX + FASEY + FORPUMP
     param_edfa.absCoef  = np.interp(c / param_edfa.freq, lbFl,  absCoef)
     param_edfa.gainCoef = np.interp(c / param_edfa.freq, lbFl, gainCoef)
@@ -159,146 +166,169 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     param_edfa.const3 = (param_edfa.absCoef + param_edfa.gainCoef)
     param_edfa.const4 = (param_edfa.absCoef + param_edfa.lossS)
     param_edfa.const5 = (param_edfa.gainCoef * Planck * param_edfa.freq * param_edfa.noiseBand)
+
     # String para avaliação.
-    evalStr = "solve_ivp(gilesSpectrum, zSpan, pInit, method='RK45', args=param_edfa)"
+    evalStr = "solve_ivp(gilesSpectrum, zSpan, pInit, method='DOP853', args=(param_edfa,))"
+    #evalStr = "odeint(gilesSpectrum, pInit, zSpan, args=(param_edfa,))"
+    #evalStr = "solve_ivp(gilesSpectrum_f, zSpan, pInit, method='RK45', args=(param_edfa.const1, param_edfa.const2, param_edfa.const3, param_edfa.const4, param_edfa.const5, param_edfa.uk, param_edfa.ASE,))"
+    #evalStr = "nbkode.RungeKutta45(gilesSpectrum, zSpan, pInit)"
+    #evalStr = "lsoda(gilesSpectrum.address, zSpan, pInit, method='RK45', args=(param_edfa,))"
+    
 
     ## Declara o sinal de potência do sinal.
-    Psgl = np.reshape(np.abs(fft(Ei, axis = 0)/lenFqSg)**2, (isy*lenFqSg), order='F')
+    EiFt  = fft(Ei, axis = 0)
+    Psgl  = np.reshape(np.abs(EiFt/lenFqSg)**2, (isy*lenFqSg), order='F')
     zSpan = np.array([0, param_edfa.lngth])
+    #zSpan = np.linspace(0, param_edfa.lngth, 50)
     pInit = np.concatenate([Psgl, np.zeros(isy*lenASE), pumpPmpFor])
-    param_edfa.uk = np.ones(np.size(pInit))
 
     # Propagação 0 -> L sem considerar BCKPUMP + BASE.
-    eval(evalStr)
-    #zSpan = rot90(rot90(zSpan));
-    ''''
-    switch properties.algorithm
-        case {'Giles_spatial', 'Giles_spectrum'}
-            %% Algoritmo de Giles espacial ou Giles espectral.
-            % Determina os parâmetros do algoritmo RK-4 ordem.
-            % SIGNAL + FASE + FORPUMP
-            zSpan = [0 properties.length];
-            pInit = [Psgl zeros(1, lenASE * isy) pumpPmpFor];
-            properties.uk = ones(size(pInit))';
-            
-            % Propagação 0 -> L sem considerar BCKPUMP + BASE.
-            [~, Pout] = eval(evalStr);
-            zSpan = rot90(rot90(zSpan));
+    sol = eval(evalStr)
+    Pout = sol['y']
+    zSpan = np.flip(zSpan)
 
-            % Considera a ASE BACK e atualiza os parâmetros interpolados.
-            % BCKPUMP + BASE
-            pInit               = [pInit(end, :)          pInitAdd];
-            properties.freq     = [properties.freq         freqAdd];
-            properties.ASE      = [properties.ASE           ASEAdd];
-            properties.uk       = [properties.uk'           -ukAdd]';
-            properties.absCoef  = [properties.absCoef   absCoefAdd];
-            properties.gainCoef = [properties.gainCoef gainCoefAdd];
-            
-            % Libera recursos.
-            clear pInitAdd freqAdd ASEAdd ukAdd absCoefAdd gainCoefAdd
-            
-            % Índices para atualização.
-            idxPS  = 1:lenFqSg * isy;
-            idxPAF = idxPS(end)  + 1: idxPS(end)  + lenASE * isy;
-            idxPPF = idxPAF(end) + 1: idxPAF(end) + lenPmpFor;
-            idxPPB = idxPPF(end) + 1: idxPPF(end) + lenPmpBck;
-            idxPAB = idxPPB(end) + 1: idxPPB(end) + lenASE * isy;
-            
-            % Libera recursos.
-            clear lenPmpBck lenPmpFor idxPS
-            
-            % Considerando o algoritmo de Giles espacial, atualiza os demais parâmetros. 
-            if strcmp(properties.algorithm, 'Giles_spatial')
-                properties.absCross = [properties.absCross absCrossAdd];
-                properties.emiCross = [properties.emiCross emiCrossAdd];
-                properties.gamma    = [properties.gamma       gammaAdd];
-                properties.i_k      = [properties.i_k;           ikAdd];
-                % Libera recursos.
-                clear absCrossAdd emiCrossAdd gammaAdd ikAdd
-            else
-                % Constante utilizada para resolução das equações de taxa e propagação. Atualização.
-                properties.const1 = (1 ./ (SimVar.CONST.Planck .* xi)) .* (properties.absCoef ./ properties.freq);
-                properties.const2 = (1 ./ (SimVar.CONST.Planck .* xi)) .* (properties.absCoef + properties.gainCoef) ./ properties.freq;
-                properties.const3 = (properties.absCoef + properties.gainCoef);
-                properties.const4 = (properties.absCoef + properties.lossS);
-                properties.const5 = (properties.gainCoef .* SimVar.CONST.Planck .* properties.freq .* properties.noiseBand);            
-                % Libera recursos.
-                clear xi
-                properties = rmfield(properties, {'absCoef' 'gainCoef' 'freq'});
-            end
-            
-            % Controle de tentativas.
-            tryLoop   = 0;
-            errorCvg  = 1;
-            
-            while ((mean(abs(errorCvg)) > properties.tol) && (tryLoop < MaxTry))
-                % Propagação L -> 0.
-                [~, Pin] = eval(evalStr);
-                zSpan = rot90(rot90(zSpan));
-                pInit = Pin(end, :);
-                
-                % Reinicia os valores de SIGNAL + FASE + FORPUMP.
-                pInit(1:lenFqSg * isy) = Psgl;
-                pInit(idxPAF) = zeros(1, lenASE * isy);
-                pInit(idxPPF) = pumpPmpFor;
+    #plt.plot(1e9*c/freqSgn, 10*np.log10(1000*Eout[0:3200000,0]));plt.plot(1e9*c/freqSgn, 10*np.log10(1000*Eout[0:3200000,2]), alpha = 0.5)
+    # Considera a ASE BACK e atualiza os parâmetros interpolados.
+    # BCKPUMP + BASE
+    pInit               = np.concatenate([pInit,                  pInitAdd])
+    param_edfa.freq     = np.concatenate([param_edfa.freq,         freqAdd])
+    param_edfa.ASE      = np.concatenate([param_edfa.ASE,           ASEAdd])
+    param_edfa.uk       = np.concatenate([param_edfa.uk,            -ukAdd])
+    param_edfa.absCoef  = np.concatenate([param_edfa.absCoef,   absCoefAdd])
+    param_edfa.gainCoef = np.concatenate([param_edfa.gainCoef, gainCoefAdd])
 
-                % Propagação 0 -> L.
-                [~, Pout] = eval(evalStr);
-                pInit = Pout(end, :);
-                zSpan = rot90(rot90(zSpan));
-                
-                % Reinicia os valores de BASE + BCKPUMP.
-                pInit(idxPAB) = zeros(1, lenASE * isy);
-                pInit(idxPPB) = pumpPmpBck;
-                
-                % Verifica o critério de convergência. Considera os bombeios.
-                if eq(pumpPmpFor, 0)
-                    errorCvg = (1 - Pout(end, idxPPB) ./ pumpPmpBck);
-                elseif eq(pumpPmpBck, 0)
-                    errorCvg = (1 - Pin(end, idxPPF) ./ pumpPmpFor);
-                else
-                    errorCvg = (1 - [Pout(end, idxPPB) Pin(end, idxPPF)] ./ [pumpPmpBck pumpPmpFor]);
-                end
-                fprintf('EDFA: Laço %2d\n', tryLoop + 1);
-                fprintf('Convergência: %5.3f%%.\n', 100 * errorCvg);
-                
-                % Caso não tenha convergido, determina o ponto médio e busca por passo.
-                tryLoop = tryLoop + 1;
-            end
-            
-            % Libera recursos.
-            clear Pin pInit Psgl pumpPmpBck pumpPmpFor tryLoop zSpan MaxTry evalStr lenFqSg errorCvg
-            % Libera recursos.
-            if strcmp(properties.algorithm, 'Giles_spatial')
-                properties = rmfield(properties, {'absCoef' 'gainCoef' 'absCross' 'emiCross' 'ASE' 'gamma' 'i_k' 'uk' 'freq'});
-            else
-                properties = rmfield(properties, {'const1' 'const2' 'const3' 'const4' 'const5' 'ASE' 'uk'});
-            end
-        case 'Saleh'
-            disp('Não desenvolvido.');
-        case 'Jopson'
-            disp('Não desenvolvido.');
-        case 'Inhomogeneous'
-            disp('Não desenvolvido.');
-        otherwise
-            error('Error:EDFA', ['Algoritmo de resolução inválido PROPERTIES.ALGORITHM. Alternativa:' ...
-                'Giles_spatial - Giles_spectrum - Saleh - Jopson - Inhomogeneous']);
-    end 
-    '''
-    eval(evalStr)
+    # Índices para atualização.
+    idxPS  = np.arange(0,lenFqSg*isy)
+    idxPAF = np.arange(idxPS[-1] +1, idxPS[-1]  + lenASE * isy + 1)
+    idxPPF = np.arange(idxPAF[-1]+1, idxPAF[-1] + lenPmpFor + 1)
+    idxPPB = np.arange(idxPPF[-1]+1, idxPPF[-1] + lenPmpBck + 1)
+    idxPAB = np.arange(idxPPB[-1]+1, idxPPB[-1] + lenASE * isy + 1)
 
-    return Ei, param_edfa
+    # Constante utilizada para resolução das equações de taxa e propagação. Atualização.
+    param_edfa.const1 = (1 / (Planck * xi)) * (param_edfa.absCoef / param_edfa.freq)
+    param_edfa.const2 = (1 / (Planck * xi)) * (param_edfa.absCoef + param_edfa.gainCoef) / param_edfa.freq
+    param_edfa.const3 = (param_edfa.absCoef + param_edfa.gainCoef)
+    param_edfa.const4 = (param_edfa.absCoef + param_edfa.lossS)
+    param_edfa.const5 = (param_edfa.gainCoef * Planck * param_edfa.freq * param_edfa.noiseBand) 
+
+    # Controle de tentativas.
+    tryLoop   = 0
+    errorCvg  = 1
+    MaxTry    = 15
+
+    pInit[idxPS]  = Pout[idxPS,-1]
+    pInit[idxPAF] = Pout[idxPAF,-1]
+    pInit[idxPPF] = Pout[idxPPF,-1]
+
+    while ((np.mean(np.abs(errorCvg)) > param_edfa.tol) and (tryLoop < MaxTry)):
+        # Propagação L -> 0.
+        sol = eval(evalStr)
+        Pin = sol['y']
+        zSpan = np.flip(zSpan)
+        pInit = copy.deepcopy(Pin[:,-1])
+
+        # Reinicia os valores de SIGNAL + FASE + FORPUMP.
+        pInit[idxPS] = Psgl
+        pInit[idxPAF] = np.zeros(lenASE*isy)
+        pInit[idxPPF] = pumpPmpFor
+
+        # Propagação 0 -> L.
+        sol = eval(evalStr)
+        Pout = sol['y']
+        zSpan = np.flip(zSpan)
+        pInit = copy.deepcopy(Pout[:,-1])
+            
+        # Reinicia os valores de BASE + BCKPUMP.
+        pInit[idxPAB] = np.zeros(lenASE*isy)
+        pInit[idxPPB] = pumpPmpBck
+            
+        # Verifica o critério de convergência. Considera os bombeios.
+        if pumpPmpFor==0:
+            errorCvg = 1 - Pout[idxPPB,-1] / pumpPmpBck
+        elif pumpPmpBck==0:
+            errorCvg = 1 - Pin[idxPPF,-1]  / pumpPmpFor
+        else:
+            errorCvg = 1 - (np.array([Pout[idxPPB,-1], Pin[idxPPF,-1]])) / np.array([pumpPmpBck, pumpPmpFor])
+        print('EDFA: Laço %2d\n' %(tryLoop + 1))
+        print('Convergência: %5.3f%%.\n' %(100 * np.mean(errorCvg)))
+            
+        # Caso não tenha convergido, determina o ponto médio e busca por passo.
+        tryLoop = tryLoop + 1
+
+    # Atualiza o sinal de saída.
+    PpumpB = Pout[idxPPB, 0]
+    PpumpF = Pout[idxPPF, -1]
+
+    # Cria variáveis para ajustar o nível do ruído óptico.
+    freqStep = Fs / lenFqSg
+    resolutionOffSet  = param_edfa.noiseBand / freqStep
+
+    # Atualiza o ruído óptico, independente da resolução do ruído gerado no EDFA.
+    noiseB = Pout[idxPAB, 0]  / resolutionOffSet
+    noiseF = Pout[idxPAF, -1] / resolutionOffSet
+
+    # Interpola os valores do ruído óptico e adiciona a fase com distribuição  normal. É  necessário  dividir
+    # por sqrt(2) os termos de ruído, pois na adição da fase, a amplitude deve ser unitária.
+
+    f1_noiseb = interpolate.interp1d(freqASE, noiseB[0:lenASE], kind = 'linear', fill_value="extrapolate")
+    f1_noisef = interpolate.interp1d(freqASE, noiseF[0:lenASE], kind = 'linear', fill_value="extrapolate")
+    f2_noiseb = interpolate.interp1d(freqASE, noiseB[lenASE:],  kind = 'linear', fill_value="extrapolate")
+    f2_noisef = interpolate.interp1d(freqASE, noiseF[lenASE:],  kind = 'linear', fill_value="extrapolate")
+    
+    noiseb = np.concatenate([np.sqrt(f1_noiseb(freqSgn), dtype = np.complex), np.sqrt(f2_noiseb(freqSgn), dtype = np.complex)])
+    noisef = np.concatenate([np.sqrt(f1_noisef(freqSgn), dtype = np.complex), np.sqrt(f2_noisef(freqSgn), dtype = np.complex)])
+    noiseF = noisef * (np.random.randn(lenFqSg*isy) + 1j * np.random.randn(lenFqSg*isy)) / np.sqrt(2)
+
+    # Atualiza o sinal óptico e adiciona o ruído.
+    # Atualiza o sinal óptico.
+    Eout = np.reshape(np.sqrt(Pout[0:lenFqSg*isy, -1], dtype = np.complex), (lenFqSg, isy), order='F')
+    Eout = Eout * np.exp(1j * np.angle(EiFt)) + np.reshape(noiseF, (lenFqSg, isy), order='F')
+    Eout = ifft(Eout * lenFqSg, axis = 0)
+
+    return Eout
 
 def gilesSpectrum(z, P, properties):
     # Determina o número de portadores no nível metaestável.
-    n2_normT1 = np.sum(P * properties.const1)
-    n2_normT2 = np.sum(P * properties.const2) + 1
+    n2_normT1 = np.sum(P*properties.const1)
+    n2_normT2 = np.sum(P*properties.const2) + 1
     n2_norm   = n2_normT1 / n2_normT2
     # Determina as matrices de termo de potência de sinal e potência de ASE.
     xi_k   = n2_norm * properties.const3 - properties.const4
     tauASE = n2_norm * properties.const5
     # Atualiza a variação de potência.
-    return properties.uk * (P * xi_k +  properties.ASE * tauASE)
+    return properties.uk * (P * xi_k + properties.ASE * tauASE)
+
+#def gilesSpectrum(z, P, properties):
+#    # Determina o número de portadores no nível metaestável.
+#    n2_normT1 = dots(P,properties.const1)
+#    n2_normT2 = dots(P,properties.const2) + 1
+#    n2_norm   = n2_normT1 / n2_normT2
+#    # Determina as matrices de termo de potência de sinal e potência de ASE.
+#    xi_k   = n2_norm * properties.const3 - properties.const4
+#    tauASE = n2_norm * properties.const5
+#    # Atualiza a variação de potência.
+#    return properties.uk * (P * xi_k + properties.ASE * tauASE)
+
+@njit
+def dots(x, y):
+    s = 0
+    for i in range(len(x)):
+        s += x[i]*y[i]
+    return s
+
+@njit
+def gilesSpectrum_f(z, P, const1, const2, const3, const4, const5, uk, ASE):
+    # Determina o número de portadores no nível metaestável.
+    n2_normT1 = np.sum(np.dot(P,const1))
+    n2_normT2 = np.sum(np.dot(P,const2)) + 1
+    n2_norm   = n2_normT1 / n2_normT2
+    # Determina as matrices de termo de potência de sinal e potência de ASE.
+    xi_k   = np.dot(n2_norm,const3) - const4
+    tauASE = np.dot(n2_norm,const5)
+    # Atualiza a variação de potência.
+    temp1 = np.dot(P,xi_k)
+    temp2 = np.dot(ASE,tauASE)
+    return np.dot(uk,temp1 + temp2)
 
 def fieldIntLP01(param_edfa, V):
     # u and v calculation

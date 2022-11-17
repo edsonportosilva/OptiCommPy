@@ -10,9 +10,10 @@ def signal_power(x):
     Computes the average power of x
 
     :param x: input signal [np array]
-
+    
     :return: P = mean(abs(x)**2)
     """
+    ## não seria np.sum(np.mean(x * np.conj(x), axis = 0).real)?
     return np.mean(x * np.conj(x)).real
 
 
