@@ -7,21 +7,22 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.0
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
 
-# +
-# Uncomment and run the code below to run this notebook in Colab
-#
-# from os import chdir as cd
-# # ! git clone https://github.com/edsonportosilva/OptiCommPy-public
-# cd('/content/OptiCommPy-public')
-# # !pip install .
-# # !pip install numba --upgrade
+# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/jupyter/test_carrierPhaseRecovery.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+# # Test carrier phase recovery algorithms for coherent receivers
+
+if 'google.colab' in str(get_ipython()):    
+    # ! git clone -b main https://github.com/edsonportosilva/OptiCommPy
+    from os import chdir as cd
+    cd('/content/OptiCommPy/')
+    # ! pip install . 
 
 # +
 import matplotlib.pyplot as plt
@@ -30,7 +31,7 @@ import numpy as np
 from commpy.modulation import QAMModem
 
 from optic.dsp import pulseShape, firFilter, decimate, symbolSync
-from optic.models import phaseNoise, pdmCoherentReceiver
+from optic.models import awgn, phaseNoise, pdmCoherentReceiver
 from optic.carrierRecovery import cpr
 from optic.tx import simpleWDMTx
 from optic.core import parameters
@@ -55,26 +56,13 @@ HTML("""
 """)
 # -
 
-# %matplotlib inline
-#figsize(7, 2.5)
 figsize(10, 3)
 
-
-# %load_ext autoreload
-# %autoreload 2
+# +
+# #%load_ext autoreload
+# #%autoreload 2
 # #%load_ext line_profiler
-
-@njit
-def awgn(tx, noiseVar):
-    
-    σ        = np.sqrt(noiseVar)
-    noise    = np.random.normal(0,σ, tx.shape) + 1j*np.random.normal(0,σ, tx.shape)
-    noise    = 1/np.sqrt(2)*noise
-
-    return tx + noise
-
-
-# # Simulation of coherent transmission
+# -
 
 #
 # ## Transmitter
@@ -99,14 +87,11 @@ paramTx.Nmodes = 2         # number of signal modes [2 for polarization multiple
 
 # generate WDM signal
 sigTx, symbTx_, paramTx = simpleWDMTx(paramTx)
-# +
-SNR = 18
 
-SNRlin = 10**(SNR/10)/paramTx.SpS
-noiseVar = signal_power(sigTx)/SNRlin
-
-sigTx = awgn(sigTx, noiseVar)
+Fs = paramTx.Rs*paramTx.SpS # sampling frequency
 # -
+SNR = 25
+sigCh = awgn(sigTx, SNR, Fs, paramTx.Rs)
 
 # ###  coherent detection and demodulation
 
@@ -119,8 +104,6 @@ plotPSD  = True
 
 Fc = paramTx.Fc
 Ts = 1/(paramTx.SpS*paramTx.Rs)
-
-mod = QAMModem(m=paramTx.M)
 
 freqGrid = paramTx.freqGrid
 print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
@@ -146,7 +129,7 @@ t       = np.arange(0, len(sigTx))*Ts
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
 # polarization multiplexed coherent optical receiver
-sigRx = pdmCoherentReceiver(sigTx, sigLO, θsig = 0, Rdx=1, Rdy=1)
+sigRx = pdmCoherentReceiver(sigCh, sigLO, θsig = 0, Rdx=1, Rdy=1)
 
 # plot constellation
 pconst(sigRx[0::paramTx.SpS,:])
