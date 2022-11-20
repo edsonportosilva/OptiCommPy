@@ -113,16 +113,28 @@ def pbs(E, θ=0):
 
 def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     """
-    Linear fiber channel w/ loss and chromatic dispersion.
+    Simulate signal propagation through a linear fiber channel.
 
-    :param Ei: optical signal at the input of the fiber
-    :param L: fiber length [km]
-    :param alpha: loss coeficient [dB/km]
-    :param D: chromatic dispersion parameter [ps/nm/km]
-    :param Fc: carrier frequency [Hz]
-    :param Fs: sampling frequency [Hz]
+    Parameters
+    ----------
+    Ei : np.array
+        Input optical field.
+    L : real scalar
+        Length of the fiber.
+    alpha : real scalar
+        Fiber's attenuation coefficient in dB/km.
+    D : real scalar
+        Fiber's chromatic dispersion (2nd order) coefficient in ps/nm/km.
+    Fc : real scalar
+        Optical carrier frequency in Hz.
+    Fs : real scalar
+        Sampling rate of the simulation.
 
-    :return Eo: optical signal at the output of the fiber
+    Returns
+    -------
+    Eo : np.array
+        Optical field at the output of the fiber.
+
     """
     # c  = 299792458   # speed of light [m/s](vacuum)
     c_kms = const.c / 1e3
@@ -362,7 +374,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     Parameters
     ----------
     Ei : np.array
-        Input signal field .
+        Input signal field.
     Fs : scalar
         Sampling frequency in Hz.
     G : scalar, optional
@@ -493,23 +505,35 @@ def ssfm(Ei, Fs, paramCh):
 
 def manakovSSF(Ei, Fs, paramCh):
     """
-    Manakov split-step Fourier model (symmetric, dual-pol.).
+    Run the Manakov split-step Fourier model (symmetric, dual-pol.).
 
-    :param Ei: input signal
-    :param Fs: sampling frequency of Ei [Hz]
-    :param paramCh: object with physical parameters of the optical channel
+    Parameters
+    ----------
+    Ei : np.array
+        Input optical signal field.
+    Fs : scalar
+        Sampling frequency in Hz.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters of the optical channel.
 
-    :paramCh.Ltotal: total fiber length [km][default: 400 km]
-    :paramCh.Lspan: span length [km][default: 80 km]
-    :paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-    :paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-    :paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-    :paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-    :paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-    :paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-    :paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+    paramCh.Ltotal: total fiber length [km][default: 400 km]
+    paramCh.Lspan: span length [km][default: 80 km]
+    paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+    paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+    paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+    paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+    paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+    paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+    paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+    paramCh.prgsBar: display progress bar? bolean variable [default:True]
+    
+    Returns
+    -------
+    Ech : np.array
+        Optical signal after nonlinear propagation.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters used in the split-step alg.
 
-    :return Ech: propagated signal
     """
     # check input parameters
     paramCh.Ltotal = getattr(paramCh, "Ltotal", 400)
