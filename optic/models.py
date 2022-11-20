@@ -174,7 +174,8 @@ def photodiode(E, paramPD=[]):
     ----------
     E : np.array
         Input optical field.
-    paramPD : struct, optional
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiode.
 
     paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
     paramPD.Tc: temperature [°C][default: 25°C]
@@ -207,7 +208,9 @@ def photodiode(E, paramPD=[]):
     ideal = getattr(paramPD, "ideal", True)
 
     assert R > 0, "PD responsivity should be a positive scalar"
-    assert Fs >= 2*B, "Sampling frequency Fs needs to be at least twice of B."
+    assert (
+        Fs >= 2 * B
+    ), "Sampling frequency Fs needs to be at least twice of B."
 
     ipd = R * E * np.conj(E)  # ideal fotodetected current
 
@@ -235,7 +238,7 @@ def photodiode(E, paramPD=[]):
     return ipd.real
 
 
-def balancedPD(E1, E2, R=1):
+def balancedPD(E1, E2, paramPD=[]):
     """
     Balanced photodiode (BPD).
 
@@ -245,8 +248,18 @@ def balancedPD(E1, E2, R=1):
         Input optical field.
     E2 : np.array
         Input optical field.
-    R : scalar, optional
-        Photodiode responsivity in A/W. The default is 1.
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiodes.
+
+    paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
+    paramPD.Tc: temperature [°C][default: 25°C]
+    paramPD.Id: dark current [A][default: 5e-9 A]
+    paramPD.RL: impedance load [Ω] [default: 50Ω]
+    paramPD.B bandwidth [Hz][default: 30e9 Hz]
+    paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
+    paramPD.fType: frequency response type [default: 'rect']
+    paramPD.N: number of the frequency resp. filter taps. [default: 8001]
+    paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
 
     Returns
     -------
@@ -254,11 +267,10 @@ def balancedPD(E1, E2, R=1):
            Balanced photocurrent.
 
     """
-    assert R > 0, "PD responsivity should be a positive scalar"
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
-    i1 = R * E1 * np.conj(E1)
-    i2 = R * E2 * np.conj(E2)
+    i1 = photodiode(E1, paramPD)
+    i2 = photodiode(E2, paramPD)
     return i1 - i2
 
 
@@ -298,7 +310,7 @@ def hybrid_2x4_90deg(Es, Elo):
     return T @ Ei
 
 
-def coherentReceiver(Es, Elo, Rd=1):
+def coherentReceiver(Es, Elo, paramPD=[]):
     """
     Single polarization coherent optical front-end.
 
@@ -308,16 +320,15 @@ def coherentReceiver(Es, Elo, Rd=1):
         Input signal optical field.
     Elo : np.array
         Input LO optical field.
-    Rd : scalar, optional
-        Photodiodes responsivity in A/W. The default is 1.
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiodes.
 
     Returns
     -------
     s : np.array
         Downconverted signal after balanced detection.
 
-    """
-    assert Rd > 0, "PD responsivity should be a positive scalar"
+    """    
     assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
     assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
@@ -326,13 +337,13 @@ def coherentReceiver(Es, Elo, Rd=1):
     Eo = hybrid_2x4_90deg(Es, Elo)
 
     # balanced photodetection
-    sI = balancedPD(Eo[1, :], Eo[0, :], Rd)
-    sQ = balancedPD(Eo[2, :], Eo[3, :], Rd)
+    sI = balancedPD(Eo[1, :], Eo[0, :], paramPD)
+    sQ = balancedPD(Eo[2, :], Eo[3, :], paramPD)
 
     return sI + 1j * sQ
 
 
-def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
+def pdmCoherentReceiver(Es, Elo, θsig=0, paramPD=[]):
     """
     Polarization multiplexed coherent optical front-end.
 
@@ -344,25 +355,22 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
         Input LO optical field.
     θsig : scalar, optional
         Input polarization rotation angle in rad. The default is 0.
-    Rdx : scalar, optional
-        Photodiode resposivity pol.X in A/W. The default is 1.
-    Rdy : scalar, optional
-        Photodiode resposivity pol.Y in A/W. The default is 1.
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiodes.
 
     Returns
     -------
     S : np.array
         Downconverted signal after balanced detection.
 
-    """
-    assert Rdx > 0 and Rdy > 0, "PD responsivity should be a positive scalar"
+    """    
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
     Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
     Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orth. polarizations
 
-    Sx = coherentReceiver(Esx, Elox, Rd=Rdx)  # coherent detection of pol.X
-    Sy = coherentReceiver(Esy, Eloy, Rd=Rdy)  # coherent detection of pol.Y
+    Sx = coherentReceiver(Esx, Elox, paramPD)  # coherent detection of pol.X
+    Sy = coherentReceiver(Esy, Eloy, paramPD)  # coherent detection of pol.Y
 
     return np.array([Sx, Sy]).T
 
@@ -693,9 +701,7 @@ def awgn(sig, snr, Fs=1, B=1):
     snr_lin = 10 ** (snr / 10)
     noiseVar = signal_power(sig) / snr_lin
     σ = np.sqrt((Fs / B) * noiseVar)
-    noise = normal(0, σ, sig.shape) + 1j * normal(
-        0, σ, sig.shape
-    )
+    noise = normal(0, σ, sig.shape) + 1j * normal(0, σ, sig.shape)
     noise = 1 / np.sqrt(2) * noise
 
     return sig + noise
