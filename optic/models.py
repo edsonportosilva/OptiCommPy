@@ -526,7 +526,7 @@ def manakovSSF(Ei, Fs, paramCh):
     paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
     paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
     paramCh.prgsBar: display progress bar? bolean variable [default:True]
-    
+
     Returns
     -------
     Ech : np.array
