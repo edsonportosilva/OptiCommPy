@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -170,9 +170,17 @@ t       = np.arange(0, len(sigWDM))*Ts
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
 # polarization multiplexed coherent optical receiver
-sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig = π/3, Rdx=1, Rdy=1)
 
-# plot constellations
+# photodiodes parameters
+paramPD = parameters()
+paramPD.B = paramTx.Rs
+paramPD.Fs = Fs    
+paramPD.ideal = True
+
+θsig = π/3 # polarization rotation angle
+sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig, paramPD)
+
+# plot received constellations
 pconst(sigRx[0::paramTx.SpS,:], lim=True, R=3)
 
 # + [markdown] id="1cbf39db"
