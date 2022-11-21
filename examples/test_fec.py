@@ -14,6 +14,14 @@
 #     name: python3
 # ---
 
+# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/jupyter/test_FEC.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+if 'google.colab' in str(get_ipython()):    
+    # ! git clone -b main https://github.com/edsonportosilva/OptiCommPy
+    from os import chdir as cd
+    cd('/content/OptiCommPy/')
+    # ! pip install . 
+
 # +
 from optic.modulation import modulateGray, demodulateGray, GrayMapping
 from optic.metrics import signal_power, calcLLR, fastBERcalc
@@ -36,17 +44,6 @@ from commpy.channelcoding.interleavers import RandInterlv
 
 # %load_ext autoreload
 # %autoreload 2
-
-# +
-# @njit
-# def awgn(tx, noiseVar):
-    
-#     σ        = np.sqrt(noiseVar)
-#     noise    = np.random.normal(0,σ, tx.size) + 1j*np.random.normal(0,σ, tx.size)
-#     noise    = 1/np.sqrt(2)*noise
-
-#     return tx + noise
-# -
 
 # ## Create LDPCparam files
 
