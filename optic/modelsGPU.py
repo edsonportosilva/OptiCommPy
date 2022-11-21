@@ -56,23 +56,35 @@ def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
 
 def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     """
-    Manakov model split-step Fourier (symmetric, dual-pol.)
+    Run the Manakov split-step Fourier model (symmetric, dual-pol.).
 
-    :param Ei: input signal
-    :param Fs: sampling frequency of Ei [Hz]
-    :param paramCh: object with physical parameters of the optical channel
+    Parameters
+    ----------
+    Ei : np.array
+        Input optical signal field.
+    Fs : scalar
+        Sampling frequency in Hz.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters of the optical channel.
 
-    :paramCh.Ltotal: total fiber length [km][default: 400 km]
-    :paramCh.Lspan: span length [km][default: 80 km]
-    :paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-    :paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-    :paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-    :paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-    :paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-    :paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-    :paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+    paramCh.Ltotal: total fiber length [km][default: 400 km]
+    paramCh.Lspan: span length [km][default: 80 km]
+    paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+    paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+    paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+    paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+    paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+    paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+    paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+    paramCh.prgsBar: display progress bar? bolean variable [default:True]
 
-    :return Ech: propagated signal
+    Returns
+    -------
+    Ech : np.array
+        Optical signal after nonlinear propagation.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters used in the split-step alg.
+
     """
     # check input parameters
     paramCh.Ltotal = getattr(paramCh, "Ltotal", 400)
