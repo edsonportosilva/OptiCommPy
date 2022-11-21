@@ -11,15 +11,26 @@ from optic.metrics import signal_power
 
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12, prec=cp.complex128):
     """
-    Simple EDFA model
+    Implement simple EDFA model.
 
-    :param Ei: input signal field [nparray]
-    :param Fs: sampling frequency [Hz][scalar]
-    :param G: gain [dB][scalar, default: 20 dB]
-    :param NF: EDFA noise figure [dB][scalar, default: 4.5 dB]
-    :param Fc: optical center frequency [Hz][scalar, default: 193.1e12 Hz]
+    Parameters
+    ----------
+    Ei : np.array
+        Input signal field.
+    Fs : scalar
+        Sampling frequency in Hz.
+    G : scalar, optional
+        Amplifier gain in dB. The default is 20.
+    NF : scalar, optional
+        EDFA noise figure in dB. The default is 4.5.
+    Fc : scalar, optional
+        Central optical frequency. The default is 193.1e12.
 
-    :return: amplified noisy optical signal [nparray]
+    Returns
+    -------
+    Eo : np.array
+        Amplified noisy optical signal.
+
     """
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
