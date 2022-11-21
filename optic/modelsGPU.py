@@ -113,6 +113,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     NF = paramCh.NF
     maxIter = paramCh.maxIter
     tol = paramCh.tol
+    prgsBar = paramCh.prgsBar
     recordSpans = paramCh.recordSpans
     toBeRecorded = paramCh.toBeRecorded
 
@@ -157,7 +158,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
             prec
         )
         indRecSpan = 0
-    for spanN in tqdm(range(1, Nspans + 1)):
+    for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
 
         Ex_conv = Ech_x.copy()
         Ey_conv = Ech_y.copy()
