@@ -1,5 +1,6 @@
 import numpy as np
 from commpy.utilities import upsample
+from tqdm.notebook import tqdm
 
 from optic.dsp import pulseShape
 from optic.metrics import signal_power
@@ -37,7 +38,7 @@ def simpleWDMTx(param):
     """
     # check input parameters
     param.M = getattr(param, "M", 16)
-    param.constType = getattr(param,'constType','qam')
+    param.constType = getattr(param, 'constType', 'qam')
     param.Rs = getattr(param, "Rs", 32e9)
     param.SpS = getattr(param, "SpS", 16)
     param.Nbits = getattr(param, "Nbits", 60000)
@@ -49,6 +50,7 @@ def simpleWDMTx(param):
     param.Fc = getattr(param, "Fc", 193.1e12)
     param.freqSpac = getattr(param, "freqSpac", 50e9)
     param.Nmodes = getattr(param, "Nmodes", 1)
+    param.prgsBar = getattr(param, "prgsBar", True)
 
     # transmitter parameters
     Ts = 1 / param.Rs  # symbol period [s]
@@ -104,7 +106,7 @@ def simpleWDMTx(param):
 
     pulse = pulse / np.max(np.abs(pulse))
 
-    for indCh in range(param.Nch):
+    for indCh in tqdm(range(param.Nch), disable=not(param.prgsBar)):
 
         logg.info(
             "channel %d\t fc : %3.4f THz" % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
