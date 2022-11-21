@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -25,7 +25,7 @@ if 'google.colab' in str(get_ipython()):
 
 import numpy as np
 from commpy.utilities  import upsample
-from optic.models import mzm, photodiode
+from optic.models import mzm, photodiode, linFiberCh, edfa
 from optic.metrics import signal_power
 from optic.dsp import firFilter, pulseShape, lowPassFIR
 from optic.core import parameters
@@ -63,7 +63,7 @@ Tsymb = 1/Rs # Symbol period in seconds
 Fs = 1/(Tsymb/SpS) # Signal sampling frequency (samples/second)
 Ts = 1/Fs # Sampling period
 
-Pi_dBm = -16 # optical signal power at modulator input in dBm
+Pi_dBm = 0 # optical signal power at modulator input in dBm
 
 # MZM parameters
 Vπ = 2
@@ -127,6 +127,23 @@ axs[1].legend(loc='upper left')
 axs[1].grid()
 # -
 
+# ### Linear fiber channel model
+
+# +
+# linear optical channel
+L = 60 # total link distance [km]
+α = 0.2 # fiber loss parameter [dB/km]
+D = 16  # fiber dispersion parameter [ps/nm/km]
+Fc = 193.1e12  # central optical frequency [Hz]
+
+sigCh = linFiberCh(sigTxo, L, α, D, Fc, Fs)
+
+# receiver pre-amplifier
+G = α*L
+NF = 4.5
+sigCh = edfa(sigCh, Fs, G, NF, Fc)
+# -
+
 # ### Direct-detection (DD) pin receiver model
 
 # +
@@ -141,7 +158,7 @@ paramPD.ideal = False
 paramPD.B = Rs
 paramPD.Fs = Fs
 
-I_Rx = photodiode(sigTxo.real, paramPD)
+I_Rx = photodiode(sigCh, paramPD)
 
 discard = 100
 
