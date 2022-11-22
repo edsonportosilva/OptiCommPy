@@ -1,3 +1,4 @@
+"""Functions from models.py adapted to run with GPU (CuPy) processing."""
 import cupy as cp
 import numpy as np
 import scipy.constants as const
