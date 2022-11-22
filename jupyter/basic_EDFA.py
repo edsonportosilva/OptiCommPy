@@ -1,35 +1,28 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.special import erfc
-from tqdm.notebook import tqdm
-import matplotlib.mlab as mlab
-import scipy as sp
 
-from commpy.utilities  import upsample
-from optic.models import mzm, photodiode
-from optic.metrics import signal_power
-from optic.dsp import firFilter, pulseShape, lowPassFIR
 from optic.core import parameters
-from optic.plot import eyediagram
+from optic.tx import simpleWDMTx
 from optic.amplification import edfaSM, OSA
 
-from optic.tx import simpleWDMTx
-from scipy.constants import c, Planck
+from scipy.constants import c
 from numpy.fft import fft,fftfreq
 
-import timeit
+import logging as logg
+logg.getLogger().setLevel(logg.INFO)
+logg.basicConfig(format='%(message)s')
 
 # EDFA parameters
 param_edfa = parameters()
-param_edfa.type  = "AGC"
-param_edfa.value = 20
-param_edfa.nf    = 5
-param_edfa.forPump = {'pump_signal': np.array([200e-3]), 'pump_lambda': np.array([980e-9])}
-param_edfa.bckPump = {'pump_signal': np.array([000e-3]), 'pump_lambda': np.array([980e-9])}
-param_edfa.type = 'AGC'
-param_edfa.file = 'C:\\Users\\Adolfo\\Documents\\GitHub\\OptiCommPy\\jupyter\\giles_MP980.dat'
+param_edfa.type     = "AGC"
+param_edfa.value    = 20 #dB
+param_edfa.forPump  = {'pump_signal': np.array([100e-3]), 'pump_lambda': np.array([980e-9])}
+param_edfa.bckPump  = {'pump_signal': np.array([000e-3]), 'pump_lambda': np.array([980e-9])}
+param_edfa.file     = 'C:\\Users\\Adolfo\\Documents\\GitHub\\OptiCommPy\\jupyter\\giles_MP980.dat'
 param_edfa.fileunit = 'nm'
-param_edfa.gmtc = 'Bessel'
+param_edfa.gmtc     = 'Bessel'
+param_edfa.tol      = 0.05
+param_edfa.tolCtrl  = 0.5
 
 # Transmitter parameters:
 paramTx = parameters()
@@ -49,30 +42,47 @@ paramTx.Nmodes = 2          # number of signal modes [2 for polarization multipl
 # generate WDM signal
 sigWDM_Tx, symbTx_, paramTx = simpleWDMTx(paramTx)
 
+lenFrqSg,isy = np.shape(sigWDM_Tx)
 Fs = paramTx.Rs*paramTx.SpS
-Tw = 1/Fs * (paramTx.Nbits / np.log2(paramTx.M)) * paramTx.SpS
+#Tw = 1/Fs * (paramTx.Nbits / np.log2(paramTx.M)) * paramTx.SpS
 simOpticalBand = (Fs*(c/paramTx.Fc)**2)/c
 
+# information TX
 print('Sample rate [THz]: %5.3f' %(1e-12*Fs))
-print('Time window [ns]:  %5.3f' %(1e9*Tw))
-
+print('Time window [ns]:  %5.3f' %(1e9*lenFrqSg/Fs))
 print('Central wavelength [nm]: %6.2f' %(1e9*c/paramTx.Fc))
 print('Simulation window  [nm]: %f - [%6.2f nm - %6.2f nm]' 
       %(1e9*simOpticalBand, 1e9*(c/paramTx.Fc-simOpticalBand/2), 1e9*(c/paramTx.Fc+simOpticalBand/2)))
-print('Distância entre pontos [GHz]: %f' %(1e-9/Tw))
-print('Number of points: %d' %(Fs*Tw))
+print('Distância entre pontos [GHz]: %f' %(1e-9*Fs/lenFrqSg))
+print('Number of points: %d' %(lenFrqSg))
 print('Number of modes: %d' %(paramTx.Nmodes))
 print('Average power - TX [mW] : %.3f mW' %(1000*np.sum(np.mean(sigWDM_Tx * np.conj(sigWDM_Tx), axis = 0).real)))
 print('Average power - TX [dBm] : %.3f dBm' %(10*np.log10(np.sum(1000*np.mean(sigWDM_Tx * np.conj(sigWDM_Tx), axis = 0).real))))
 
-start = timeit.timeit()
-Eout  = edfaSM(sigWDM_Tx, Fs, paramTx.Fc, param_edfa)
-end = timeit.timeit()
-print(end - start)
+# amplification
+Eout, PumpF, PumpB = edfaSM(sigWDM_Tx, Fs, paramTx.Fc, param_edfa)
 
-#lenFrqSg, isy = np.shape(Eout)
-#freqSgn = Fs * fftfreq(lenFrqSg) + paramTx.Fc
-#EinFFT  = fft(sigWDM_Tx, axis = 0)/lenFrqSg
-#EoutFFT = fft(Eout, axis = 0)/lenFrqSg
-#plt.plot(1e6*c/freqSgn, 10*np.log10(1000*np.abs(EoutFFT)**2))
-#plt.plot(1e6*c/freqSgn, 10*np.log10(1000*np.abs(EinFFT)**2))
+# information amp
+print('Average power - RX amp [mW] : %.3f mW' %(1000*np.sum(np.mean(sigWDM_Tx * np.conj(Eout), axis = 0).real)))
+print('Average power - RX amp [dBm] : %.3f dBm' %(10*np.log10(np.sum(1000*np.mean(Eout * np.conj(Eout), axis = 0).real))))
+
+# plot signal
+lenFrqSg, isy = np.shape(Eout)
+freqSgn = Fs * fftfreq(lenFrqSg) + paramTx.Fc
+
+EinFFT  = fft(sigWDM_Tx, axis = 0)/lenFrqSg
+EoutFFT = fft(Eout, axis = 0)/lenFrqSg
+
+plt.plot(1e9*c/freqSgn, 10*np.log10(1000*np.abs(EinFFT)**2))
+plt.xlabel('Wavelength [nm]')
+plt.ylabel('Optical power [dBm]')
+plt.xlim([1515,1585])
+plt.ylim([-100,0])
+plt.grid()
+
+plt.plot(1e9*c/freqSgn, 10*np.log10(1000*np.abs(EoutFFT)**2))
+plt.xlabel('Wavelength [nm]')
+plt.ylabel('Optical power [dBm]')
+plt.xlim([1515,1585])
+plt.ylim([-100,0])
+plt.grid()
