@@ -1,3 +1,4 @@
+"""Digital signal processing utilities."""
 import matplotlib.pyplot as plt
 import numpy as np
 from commpy.filters import rcosfilter, rrcosfilter
