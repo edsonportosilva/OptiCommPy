@@ -1,3 +1,4 @@
+"""Basic physical models for optical devices and optical channels."""
 import numpy as np
 import scipy.constants as const
 from numba import njit
