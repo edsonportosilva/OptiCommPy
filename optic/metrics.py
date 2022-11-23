@@ -8,7 +8,7 @@ from optic.modulation import demodulateGray, GrayMapping
 @njit
 def signal_power(x):
     """
-    Calculate average power of x.
+    Calculate the average power of x.
 
     Parameters
     ----------
