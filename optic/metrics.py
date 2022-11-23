@@ -18,7 +18,7 @@ def signal_power(x):
     Returns
     -------
     scalar
-        Average signal power P = mean(abs(x)**2).
+        Average signal power of x: P = mean(abs(x)**2).
 
     """
     return np.mean(x * np.conj(x)).real
