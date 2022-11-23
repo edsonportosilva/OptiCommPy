@@ -21,6 +21,7 @@ param_edfa.bckPump  = {'pump_signal': np.array([000e-3]), 'pump_lambda': np.arra
 param_edfa.file     = 'C:\\Users\\Adolfo\\Documents\\GitHub\\OptiCommPy\\jupyter\\giles_MP980.dat'
 param_edfa.fileunit = 'nm'
 param_edfa.gmtc     = 'Bessel'
+param_edfa.algo     = 'Giles_spatial'
 param_edfa.tol      = 0.05
 param_edfa.tolCtrl  = 0.5
 

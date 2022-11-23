@@ -15,6 +15,8 @@ from simple_pid import PID
 import logging as logg
 import copy
 
+from optic.core import parameters
+
 from numba import njit
 
 def edfaSM(Ei, Fs, Fc, param_edfa):
@@ -84,8 +86,9 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     param_edfa.dr = param_edfa.a / param_edfa.longSteps
     param_edfa.r  = np.arange(0,param_edfa.a, param_edfa.dr)
 
-    # Get EDF cross-sections and coeficients parameters
-    absCross, emiCross, absCoef, gainCoef = edfParams(param_edfa, lbFl, fileT)
+    # Get EDF cross-sections and coeficients parameters from giles parameters file.
+    # absCross, emiCross, absCoef, gainCoef = edfParams(param_edfa, lbFl, fileT)
+    param_edf = edfParams(param_edfa, lbFl, fileT)
 
     ## Format input signal
     # Create second pol, if not exists
@@ -108,14 +111,14 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     param_edfa.freq = np.concatenate([freqSgn, freqSgn, freqASE, freqASE, freqPmpFor])
     param_edfa.ASE  = np.concatenate([np.zeros(isy*lenFqSg), np.ones(isy*lenASE), np.zeros(lenPmpFor)])
     param_edfa.uk   = np.ones(np.size(param_edfa.freq))
-    param_edfa.absCoef  = np.interp(c / param_edfa.freq, lbFl,  absCoef)
-    param_edfa.gainCoef = np.interp(c / param_edfa.freq, lbFl, gainCoef)
+    param_edfa.absCoef  = np.interp(c / param_edfa.freq, lbFl, param_edf.absCoef)
+    param_edfa.gainCoef = np.interp(c / param_edfa.freq, lbFl, param_edf.gainCoef)
     # BCKPUMP + BASEX + BASEY
     freqAdd  = np.concatenate([freqPmpBck, freqASE, freqASE])
     ASEAdd   = np.concatenate([np.zeros(lenPmpBck), np.ones(isy*lenASE)])
     ukAdd    = np.concatenate([ np.ones(lenPmpBck), np.ones(isy*lenASE)])
-    absCoefAdd  = np.interp(c / freqAdd, lbFl,  absCoef)
-    gainCoefAdd = np.interp(c / freqAdd, lbFl, gainCoef)
+    absCoefAdd  = np.interp(c / freqAdd, lbFl, param_edf.absCoef)
+    gainCoefAdd = np.interp(c / freqAdd, lbFl, param_edf.gainCoef)
 
     # Indexes of each signal class (signal, ase for, pump for, ase back, pump back)
     idxPS  = np.arange(0,isy*lenFqSg)
@@ -125,11 +128,24 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     idxPAB = np.arange(idxPPB[-1]+1, idxPPB[-1] + lenASE * isy + 1)
 
     ## Create variables used in edo solution method
-    # Eval string
-    evalStr = "solve_ivp(gilesSpectrum, zSpan, pInit, method='DOP853', rtol = 5e-4, atol = 5e-7, args=(param_edfa,))"
-
-    # Update some constants used in rate and propagation equations
-    param_edfa = updtCnst(param_edfa)
+    if (param_edfa.algo == 'Giles_spatial'):        
+        # SIGNALX + SIGNALY + FASEX + FASEY + FORPUMP
+        param_edfa.absCross = np.interp(c / param_edfa.freq, lbFl, param_edf.absCross)
+        param_edfa.emiCross = np.interp(c / param_edfa.freq, lbFl, param_edf.emiCross)
+        param_edfa.gamma    = np.interp(c / param_edfa.freq, lbFl, param_edf.gamma)
+        param_edfa.i_k      = interpolate.interp2d(lbFl, param_edfa.r, param_edf.i_k, kind='cubic')(c/param_edfa.freq, param_edfa.r)
+        # BCKPUMP + BASEX + BASEY
+        absCrossAdd = np.interp(c / freqAdd, lbFl,  param_edf.absCross)
+        emiCrossAdd = np.interp(c / freqAdd, lbFl,  param_edf.emiCross)
+        gammaAdd    = np.interp(c / freqAdd, lbFl,  param_edf.gamma)
+        i_kAdd = interpolate.interp2d(lbFl, param_edfa.r, param_edf.i_k, kind='cubic')(c/freqAdd, param_edfa.r)
+        # Eval string
+        evalStr = "solve_ivp(gilesSpatial, zSpan, pInit, method='DOP853', rtol = 5e-4, atol = 5e-7, args=(param_edfa,))"
+    elif (param_edfa.algo == 'Giles_spectrum'):
+        # Eval string
+        evalStr = "solve_ivp(gilesSpectrum, zSpan, pInit, method='DOP853', rtol = 5e-4, atol = 5e-7, args=(param_edfa,))"
+        # Update some constants used in rate and propagation equations
+        param_edfa = updtCnst(param_edfa)
 
     # Signal power vector and EDF length vector
     EiFt  = fft(Ei, axis = 0)
@@ -294,52 +310,54 @@ def fieldIntLP01(param_edfa, V):
     return gamma, ik
 
 def edfParams(param_edfa, lmbd, data):
+    param_edf = parameters()
     # Define field profile
     V = (2 * np.pi / lmbd) * param_edfa.a * param_edfa.na
     # u and v calculation for LP01 and Bessel profiles
     u = ((1 + np.sqrt(2)) * V) / (1 + (4 + V ** 4) ** 0.25)
     v = np.sqrt(V ** 2 - u ** 2)
 
-    if param_edfa.gmtc == 'LP01':
+    if (param_edfa.gmtc == 'LP01'):
         gamma = (((v * param_edfa.b) / (param_edfa.a * V * jv(1, u))) ** 2) * (jv(0, u * param_edfa.b / param_edfa.a) ** 2 + jv(1, u * param_edfa.b / param_edfa.a) ** 2)
-        if param_edfa.algo == "Giles_spatial":
-            print('Algo - gs')
-            ##ik = 1 / np.pi * (v / (param_edfa.a * V) * jv(0, u * param_edfa.r / param_edfa.a) / jv(1, u)) ** 2
+        if (param_edfa.algo == "Giles_spatial"):
+            param_edf.gamma = gamma
+            ik = lambda r: 1 / np.pi * (v / (param_edfa.a * V) * jv(0, u * param_edfa.r / param_edfa.a) / jv(1, u)) ** 2
+            param_edf.i_k = [i_k(x) for x in param_edfa.r]
     else:
-        if param_edfa.gmtc   == 'Bessel':
+        if (param_edfa.gmtc   == 'Bessel'):
             w_gauss = param_edfa.a * V / u * kv(1, v) / kv(0, v) *  jv(0, u)
-        elif param_edfa.gmtc == 'Marcuse':
+        elif (param_edfa.gmtc == 'Marcuse'):
             w_gauss = param_edfa.a * (0.650 + 1.619 / V ** 1.5 + 2.879 / V ** 6)
-        elif param_edfa.gmtc == 'Whitley':
+        elif (param_edfa.gmtc == 'Whitley'):
             w_gauss = param_edfa.a * (0.616 + 1.660 / V ** 1.5 + 0.987 / V ** 6)
-        elif param_edfa.gmtc == 'Desurvire':
+        elif (param_edfa.gmtc == 'Desurvire'):
             w_gauss = param_edfa.a * (0.759 + 1.289 / V ** 1.5 + 1.041 / V ** 6)
-        elif param_edfa.gmtc == 'Myslinski':
+        elif (param_edfa.gmtc == 'Myslinski'):
             w_gauss = param_edfa.a * (0.761 + 1.237 / V ** 1.5 + 1.429 / V ** 6)
         else:
             raise TypeError('edfaSM.gmtc invalid argument - [LP01 - Marcuse - Whitley - Desurvire - Myslinski - Bessel].')
         gamma = 1 - np.exp(-2 * (param_edfa.b / w_gauss) ** 2)
-        if param_edfa.algo == "Giles_spatial":
-            print('Algo - gs')
-            ##i_k = @(r) 2 ./ (pi .* w_gauss .^ 2) .* exp(-2 .* (r ./ w_gauss) .^ 2)
-            ##i_k = cell2mat(arrayfun(@(x) i_k(x), properties.r, 'UniformOutput', false))
+        if (param_edfa.algo == "Giles_spatial"):
+            param_edf.gamma = gamma
+            i_k = lambda r: 2 / (np.pi * w_gauss ** 2) * np.exp(-2 * (r / w_gauss) ** 2)
+            param_edf.i_k = [i_k(x) for x in param_edfa.r]
 
     if (np.sum(data[:,1]) > 1):
         logg.info("\nEDF absorption and gain coeficients. Calculating absorption and emission cross-section ...")
-        absCoef  = 0.1 * np.log(10) * data[:,1]
-        gainCoef = 0.1 * np.log(10) * data[:,2]
+        param_edf.absCoef  = 0.1 * np.log(10) * data[:,1]
+        param_edf.gainCoef = 0.1 * np.log(10) * data[:,2]
         # Doping profile is uniform with density RHO.
-        absCross = absCoef  / param_edfa.rho / gamma
-        emiCross = gainCoef / param_edfa.rho / gamma
+        param_edf.absCross = param_edf.absCoef  / param_edfa.rho / gamma
+        param_edf.emiCross = param_edf.gainCoef / param_edfa.rho / gamma
     else:
         logg.info("\nEDF absorption and emission cross-section. Calculating absorption and gain coeficients ...")
-        absCross = data[:,1]
-        emiCross = data[:,2]
+        param_edf.absCross = data[:,1]
+        param_edf.emiCross = data[:,2]
         # Doping profile is uniform with density RHO.
-        absCoef  = param_edfa.absCross * param_edfa.rho * gamma
-        gainCoef = param_edfa.emiCross * param_edfa.rho * gamma
+        param_edf.absCoef  = param_edfa.absCross * param_edfa.rho * gamma
+        param_edf.gainCoef = param_edfa.emiCross * param_edfa.rho * gamma
 
-    return absCross, emiCross, absCoef, gainCoef
+    return param_edf
 
 def updtCnst(param):
     xi = np.pi * param.b ** 2 * param.rho / param.tal
