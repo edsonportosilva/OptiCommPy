@@ -1,3 +1,4 @@
+"""Digital modulation utilities."""
 import numpy as np
 from numpy.matlib import repmat
 from commpy.utilities import bitarray2dec, dec2bitarray

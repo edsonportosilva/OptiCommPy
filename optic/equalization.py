@@ -1,3 +1,4 @@
+"""Functions for adaptive and static equalization."""
 import numpy as np
 import scipy.constants as const
 from commpy.modulation import QAMModem

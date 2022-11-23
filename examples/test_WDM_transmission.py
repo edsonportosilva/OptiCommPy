@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -15,7 +15,7 @@
 # ---
 
 # + [markdown] id="view-in-github" colab_type="text"
-# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/jupyter/test_WDM_transmission.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_WDM_transmission.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # + [markdown] id="0270b2b0"
 # # Simulation of coherent WDM transmission
@@ -87,7 +87,6 @@ paramTx = parameters()
 paramTx.M   = 16           # order of the modulation format
 paramTx.Rs  = 32e9         # symbol rate [baud]
 paramTx.SpS = 16           # samples per symbol
-paramTx.Nbits = 400000     # total number of bits per polarization
 paramTx.pulse = 'rrc'      # pulse shaping filter
 paramTx.Ntaps = 1024       # number of pulse shaping filter coefficients
 paramTx.alphaRRC = 0.01    # RRC rolloff
@@ -96,6 +95,7 @@ paramTx.Nch     = 11       # number of WDM channels
 paramTx.Fc      = 193.1e12 # central optical frequency of the WDM spectrum
 paramTx.freqSpac = 37.5e9  # WDM grid spacing
 paramTx.Nmodes = 2         # number of signal modes [2 for polarization multiplexed signals]
+paramTx.Nbits = int(np.log2(paramTx.M)*1e5) # total number of bits per polarization
 
 # generate WDM signal
 sigWDM_Tx, symbTx_, paramTx = simpleWDMTx(paramTx)
@@ -114,7 +114,7 @@ paramCh.Fc = paramTx.Fc  # central optical frequency of the WDM spectrum
 paramCh.hz = 1           # step-size of the split-step Fourier method [km]
 paramCh.maxIter = 5      # maximum number of convergence iterations per step
 paramCh.tol = 1e-5       # error tolerance per step
-paramCh.prgsBar = False   # show progress bar?
+paramCh.prgsBar = True   # show progress bar?
 
 Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
@@ -170,9 +170,17 @@ t       = np.arange(0, len(sigWDM))*Ts
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
 # polarization multiplexed coherent optical receiver
-sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig = π/3, Rdx=1, Rdy=1)
 
-# plot constellations
+# photodiodes parameters
+paramPD = parameters()
+paramPD.B = paramTx.Rs
+paramPD.Fs = Fs    
+paramPD.ideal = True
+
+θsig = π/3 # polarization rotation angle
+sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig, paramPD)
+
+# plot received constellations
 pconst(sigRx[0::paramTx.SpS,:], lim=True, R=3)
 
 # + [markdown] id="1cbf39db"
@@ -228,15 +236,20 @@ d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
 # adaptive equalization parameters
 paramEq = parameters()
 paramEq.nTaps = 15
-paramEq.SpS   = 2
-paramEq.mu    = [5e-3, 2e-3]
+paramEq.SpS = paramDec.SpS_out
 paramEq.numIter = 5
 paramEq.storeCoeff = False
-paramEq.alg   = ['da-rde','rde']
-paramEq.M     = paramTx.M
-paramEq.L = [20000, 80000]
+paramEq.M = paramTx.M
+paramEq.L = [int(0.2*d.shape[0]), int(0.8*d.shape[0])]
 paramEq.prgsBar = False
 
+if paramTx.M == 4:
+    paramEq.alg = ['nlms','cma'] # QPSK
+    paramEq.mu = [5e-3, 1e-3] 
+else:
+    paramEq.alg = ['da-rde','rde'] # M-QAM
+    paramEq.mu = [5e-3, 2e-4] 
+    
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
 #plot constellations after adaptive equalization

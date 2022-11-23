@@ -1,3 +1,4 @@
+"""Metrics for signal and performance characterization."""
 import numpy as np
 from numba import njit
 from scipy.special import erf
@@ -7,11 +8,18 @@ from optic.modulation import demodulateGray, GrayMapping
 @njit
 def signal_power(x):
     """
-    Computes the average power of x
+    Calculate average power of x.
 
-    :param x: input signal [np array]
-    
-    :return: P = mean(abs(x)**2)
+    Parameters
+    ----------
+    x : np.array
+        Signal.
+
+    Returns
+    -------
+    scalar
+        Average signal power P = mean(abs(x)**2).
+
     """
     return np.mean(x * np.conj(x)).real
 
@@ -19,15 +27,23 @@ def signal_power(x):
 @njit
 def hardDecision(rxSymb, constSymb, bitMap):
     """
-    Euclidean distance based symbol decision
+    Minimum Euclidean distance based symbol decision.
 
-    :param rxSymb: received symbol sequence
-    :param constSymb: constellation symbols [M x 1 array]
-    :param bitMap: bit mapping [M x log2(M) array]
+    Parameters
+    ----------
+    rxSymb : TYPE
+        received symbol sequence.
+    constSymb : (M, 1) np.array
+        Constellation symbols.
+    bitMap : (M, log2(M)) np.array
+        bit-to-symbol mapping.
 
-    :return: sequence of bits decided
+    Returns
+    -------
+    decBits : np.array
+        Sequence of decided bits.
+
     """
-
     M = len(constSymb)
     b = int(np.log2(M))
 
@@ -35,21 +51,34 @@ def hardDecision(rxSymb, constSymb, bitMap):
 
     for i in range(len(rxSymb)):
         indSymb = np.argmin(np.abs(rxSymb[i] - constSymb))
-        decBits[i * b : i * b + b] = bitMap[indSymb, :]
+        decBits[i * b: i * b + b] = bitMap[indSymb, :]
     return decBits
 
 
 def fastBERcalc(rx, tx, M, constType):
     """
-    BER calculation
+    Monte Carlo BER/SER/SNR calculation.
 
-    :param rx: received symbol sequence
-    :param tx: transmitted symbol sequence
-    :param mod: commpy modem object
+    Parameters
+    ----------
+    rx : np.array
+        Received symbol sequence.
+    tx : np.array
+        Transmitted symbol sequence.
+    M : int
+        Modulation order.
+    constType : string
+        Modulation type: 'qam' or 'psk'.
 
-    :return BER: bit-error-rate
-    :return SER: symbol-error-rate
-    :return SNR: estimated SNR
+    Returns
+    -------
+    BER : np.array
+        Bit-error-rate.
+    SER : np.array
+        Symbol-error-rate.
+    SNR : np.array
+        Estimated SNR from the received constellation.
+
     """
     # constellation parameters
     constSymb = GrayMapping(M, constType)
@@ -104,14 +133,24 @@ def fastBERcalc(rx, tx, M, constType):
 @njit
 def calcLLR(rxSymb, σ2, constSymb, bitMap):
     """
-    LLR calculation (circular AGWN channel)
+    LLR calculation (circular AGWN channel).
 
-    :param rxSymb: received symbol sequence
-    :param σ2: noise variance
-    :param constSymb: constellation symbols [M x 1 array]
-    :param bitMap: bit mapping [M x log2(M)]
+    Parameters
+    ----------
+    rxSymb : np.array
+        Received symbol sequence.
+    σ2 : scalar
+        Noise variance.
+    constSymb : (M, 1) np.array
+        Constellation symbols.
+    bitMap : (M, log2(M)) np.array
+        Bit-to-symbol mapping.
 
-    :return: sequence of calculated LLRs
+    Returns
+    -------
+    LLRs : np.array
+        sequence of calculated LLRs.
+
     """
     M = len(constSymb)
     b = int(np.log2(M))
@@ -131,13 +170,26 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap):
 
 def monteCarloGMI(rx, tx, M, constType):
     """
-    GMI estimation
+    Monte Carlo based generalized mutual information (GMI) estimation.
 
-    :param rx: received symbol sequence
-    :param tx: transmitted symbol sequence
-    :param mod: commpy modem object
+    Parameters
+    ----------
+    rx : np.array
+        Received symbol sequence.
+    tx : np.array
+        Transmitted symbol sequence.
+    M : int
+        Modulation order.
+    constType : string
+        Modulation type: 'qam' or 'psk'
 
-    :return: estimated GMI
+    Returns
+    -------
+    GMI : np.array
+        Generalized mutual information values.
+    MIperBitPosition : np.array
+        Mutual information per bit position.
+
     """
     # constellation parameters
     constSymb = GrayMapping(M, constType)
@@ -201,18 +253,29 @@ def monteCarloGMI(rx, tx, M, constType):
 
 def monteCarloMI(rx, tx, M, constType, px=[]):
     """
-    MI estimation
+    Monte Carlo based mutual information (MI) estimation.
 
-    :param rx: received symbol sequence
-    :param tx: transmitted symbol sequence
-    :param mod: commpy modem object
-    :param px: probability mass function of constellation symbols
+    Parameters
+    ----------
+    rx : np.array
+        Received symbol sequence.
+    tx : np.array
+        Transmitted symbol sequence.
+    M : int
+        Modulation order.
+    constType : string
+        Modulation type: 'qam' or 'psk'
+    pX : (M, 1) np.array
+        p.m.f. of the constellation symbols. The default is [].
 
-    :return: estimated MI
+    Returns
+    -------
+    MI : np.array
+        Estimated MI values.
+
     """
     if len(px) == 0:  # if px is not defined
         px = 1 / M * np.ones(M)  # assume uniform distribution
-
     # constellation parameters
     constSymb = GrayMapping(M, constType)
     Es = np.sum(np.abs(constSymb) ** 2 * px)
@@ -238,7 +301,6 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
     # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
-
     for k in range(nModes):
         σ2 = noiseVar[k]
         MI[k] = calcMI(rx[:, k], tx[:, k], σ2, constSymb, px)
@@ -248,15 +310,26 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
 @njit
 def calcMI(rx, tx, σ2, constSymb, pX):
     """
-    Mutual information (MI) calculation (circular AGWN channel)
+    Mutual information (MI) calculation (circular AGWN channel).
 
-    :param rx: received symbol sequence
-    :param tx: transmitted symbol sequence
-    :param σ2: noise variance
-    :param constSymb: constellation symbols [M x 1 array]
-    :param pX: prob. mass function (pmf) of constSymb [M x 1 array]
+    Parameters
+    ----------
+    rx : np.array
+        Received symbol sequence.
+    tx : np.array
+        Transmitted symbol sequence.
+    σ2 : scalar
+        Noise variance.
+    constSymb : (M, 1) np.array
+        Constellation symbols.
+    pX : (M, 1) np.array
+        prob. mass function (p.m.f.) of the constellation symbols.
 
-    :return: estimated MI
+    Returns
+    -------
+    scalar
+        Estimated mutual information.
+
     """
     N = len(rx)
     H_XgY = np.zeros(1, dtype=np.float64)
@@ -265,19 +338,20 @@ def calcMI(rx, tx, σ2, constSymb, pX):
     for k in range(N):
         indSymb = np.argmin(np.abs(tx[k] - constSymb))
 
-        log2_pYgX = -(1 / σ2) * np.abs(rx[k] - tx[k]) ** 2 * np.log2(np.exp(1))  # log2 p(Y|X)
-        #print('pYgX:', pYgX)
+        log2_pYgX = (
+            -(1 / σ2) * np.abs(rx[k] - tx[k]) ** 2 * np.log2(np.exp(1))
+        )  # log2 p(Y|X)
+        # print('pYgX:', pYgX)
         pXY = (
             np.exp(-(1 / σ2) * np.abs(rx[k] - constSymb) ** 2) * pX
         )  # p(Y,X) = p(Y|X)*p(X)
-        #print('pXY:', pXY)
+        # print('pXY:', pXY)
         # p(X|Y) = p(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
 
         pY = np.sum(pXY)
 
-        #print('pY:', pY)
+        # print('pY:', pY)
         H_XgY -= log2_pYgX + np.log2(pX[indSymb]) - np.log2(pY)
-
     H_XgY = H_XgY / N
 
     return H_X - H_XgY
@@ -289,14 +363,22 @@ def Qfunc(x):
 
 def theoryBER(M, EbN0, constType):
     """
-    Theoretical bit error probability for QAM/PSK equiprobable constellations
-    in AWGN channel (approximated calculation)
+    Theoretical (approx.) bit error probability for QAM/PSK in AWGN channel.
 
-    :param M: order of the modulation
-    :param EbN0: signal-to-noise ratio per bit [dB]
-    :param constType: 'qam','psk'
+    Parameters
+    ----------
+    M : int
+        Modulation order.
+    EbN0 : scalar
+        Signal-to-noise ratio (SNR) per bit in dB.
+    constType : string
+        Modulation type: 'qam' or 'psk'
 
-    :return: estimated probability of error (Pb)
+    Returns
+    -------
+    Pb : scalar
+        Theoretical probability of bit error.
+
     """
     EbN0lin = 10 ** (EbN0 / 10)
     k = np.log2(M)

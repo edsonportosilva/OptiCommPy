@@ -7,17 +7,26 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
 
+# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_fec.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+if 'google.colab' in str(get_ipython()):    
+    # ! git clone -b main https://github.com/edsonportosilva/OptiCommPy
+    from os import chdir as cd
+    cd('/content/OptiCommPy/')
+    # ! pip install . 
+
 # +
 from optic.modulation import modulateGray, demodulateGray, GrayMapping
 from optic.metrics import signal_power, calcLLR, fastBERcalc
 from optic.fec import ldpcEncode, ldpcDecode
+from optic.models import awgn
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -33,19 +42,8 @@ from commpy.channelcoding.ldpc import triang_ldpc_systematic_encode as encodeLDP
 from commpy.channelcoding.ldpc import ldpc_bp_decode as decodeLDPC
 from commpy.channelcoding.interleavers import RandInterlv
 
-
 # %load_ext autoreload
 # %autoreload 2
-
-@njit
-def awgn(tx, noiseVar):
-    
-    σ        = np.sqrt(noiseVar)
-    noise    = np.random.normal(0,σ, tx.size) + 1j*np.random.normal(0,σ, tx.size)
-    noise    = 1/np.sqrt(2)*noise
-
-    return tx + noise
-
 
 # ## Create LDPCparam files
 
@@ -82,7 +80,7 @@ filePath
 # Run AWGN simulation 
 EbN0dB = 10
 M      = 64
-Nwords = 16
+Nwords = 10
 nIter  = 10
 
 # FEC parameters
@@ -92,7 +90,7 @@ K = LDPCparams['n_vnodes'] - LDPCparams['n_cnodes']
 LDPCparams['filename'] = filename
 
 # modulation parameters
-constSymb = GrayMapping(M,'qam')[:,0]        # constellation
+constSymb = GrayMapping(M,'qam')        # constellation
 bitMap = demodulateGray(constSymb, M, 'qam') # bit mapping
 bitMap = bitMap.reshape(-1, int(np.log2(M)))
 Es = signal_power(constSymb)                 # mean symbol energy
@@ -110,16 +108,15 @@ symbTx = modulateGray(bitsTx, M, 'qam')
 symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
 # AWGN    
-snrdB    = EbN0dB + 10*np.log10(np.log2(M))
-noiseVar = 1/(10**(snrdB/10))
-
-symbRx = awgn(symbTx, noiseVar)
+snrdB  = EbN0dB + 10*np.log10(np.log2(M))
+symbRx = awgn(symbTx, snrdB)
 
 # pre-FEC BER calculation (hard demodulation)
 BER, _, _ = fastBERcalc(symbRx, symbTx, M, 'qam')
 print('BER = %.2e'%BER[0])
 
 # soft-demodulation
+noiseVar = 1/10**(snrdB/10)
 llr = calcLLR(symbRx, noiseVar, constSymb/np.sqrt(Es), bitMap)
 
 # soft-FEC decoding
@@ -131,7 +128,7 @@ BERpost = np.mean(np.logical_xor(bits, decodedBits[0:K,:]))
 print('BERpostFEC = %.2e'%BERpost)
 print('Number of bits = ', decodedBits.size)
 # +
-Nwords = 16
+Nwords = 10
 nIter  = 50
 
 # FEC parameters
@@ -153,7 +150,7 @@ for ii, M in enumerate(qamOrder):
     print('run sim: M = ', M)
 
     # modulation parameters
-    constSymb = GrayMapping(M,'qam')[:,0]        # constellation
+    constSymb = GrayMapping(M,'qam')        # constellation
     bitMap = demodulateGray(constSymb, M, 'qam') # bit mapping
     bitMap = bitMap.reshape(-1, int(np.log2(M)))
     Es = signal_power(constSymb) # mean symbol energy
@@ -175,16 +172,15 @@ for ii, M in enumerate(qamOrder):
         symbTx = symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN    
-        snrdB    = EbN0dB + 10*np.log10(np.log2(M))
-        noiseVar = 1/(10**(snrdB/10))
-
-        symbRx = awgn(symbTx, noiseVar)
+        snrdB = EbN0dB + 10*np.log10(np.log2(M))
+        symbRx = awgn(symbTx, snrdB)
 
         # pre-FEC BER calculation (hard demodulation)
         BERpre[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, M, 'qam')
         #print('BER = %.2e'%BERpre[indSNR, ii])
 
         # soft-demodulation
+        noiseVar = 1/10**(snrdB/10)
         llr = calcLLR(symbRx, noiseVar, constSymb/np.sqrt(Es), bitMap)
 
         # soft-FEC decoding
@@ -226,6 +222,3 @@ plt.legend();
 plt.xlabel('EbN0 [dB]');
 plt.ylabel('log10(BER)');
 plt.grid()
-# -
-
-
