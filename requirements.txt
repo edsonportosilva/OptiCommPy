@@ -4,5 +4,5 @@ matplotlib>=1.4.3
 scikit-commpy>=0.7.0
 xeus-python>=0.12.5
 numba>=0.54.1
-tqdm
-
+tqdm>=4.64.1
+simple-pid>=1.0.1
