@@ -141,11 +141,11 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
         i_kAdd = interpolate.interp2d(lbFl, param_edfa.r, param_edf.i_k, kind='cubic')(c/freqAdd, param_edfa.r)
         # Eval string
         evalStr = "solve_ivp(gilesSpatial, zSpan, pInit, method='DOP853', rtol = 5e-4, atol = 5e-7, args=(param_edfa,))"
-    elif (param_edfa.algo == 'Giles_spectrum'):
-        # Eval string
-        evalStr = "solve_ivp(gilesSpectrum, zSpan, pInit, method='DOP853', rtol = 5e-4, atol = 5e-7, args=(param_edfa,))"
+    elif (param_edfa.algo == 'Giles_spectrum'):        
         # Update some constants used in rate and propagation equations
         param_edfa = updtCnst(param_edfa)
+        # Eval string
+        evalStr = "solve_ivp(gilesSpectrum, zSpan, pInit, method='DOP853', rtol = 5e-4, atol = 5e-7, args=(param_edfa,))"
 
     # Signal power vector and EDF length vector
     EiFt  = fft(Ei, axis = 0)
@@ -173,8 +173,14 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     param_edfa.absCoef  = np.concatenate([param_edfa.absCoef,   absCoefAdd])
     param_edfa.gainCoef = np.concatenate([param_edfa.gainCoef, gainCoefAdd])
 
-    # Update somes constants used in rate and propagation equations
-    param_edfa = updtCnst(param_edfa)
+    if (param_edfa.algo == 'Giles_spatial'):
+        param_edfa.absCross = np.concatenate([param_edfa.absCross, absCrossAdd])
+        param_edfa.emiCross = np.concatenate([param_edfa.emiCross, emiCrossAdd])
+        param_edfa.gamma    = np.concatenate([param_edfa.gamma,       gammaAdd])
+        param_edfa.i_k      = np.concatenate([param_edfa.i_k,           i_kAdd], axis = 1)
+    elif (param_edfa.algo == 'Giles_spectrum'): 
+        # Update somes constants used in rate and propagation equations
+        param_edfa = updtCnst(param_edfa)
 
     # update pInit signal with Pout SIGNAL + FASE + FORPUMP values
     pInit[idxPS]  = Pout[idxPS,-1]
@@ -281,15 +287,32 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     return Eout, PpumpF, PpumpB
 
 def gilesSpectrum(z, P, properties):
-    # Determina o número de portadores no nível metaestável.
-    n2_normT1 = dots(P,properties.const1)
-    n2_normT2 = dots(P,properties.const2) + 1
+    # Determines the number of carriers at the metastable level
+    n2_normT1 = dots(P, properties.const1)
+    n2_normT2 = dots(P, properties.const2) + 1
     n2_norm   = n2_normT1 / n2_normT2
-    # Determina as matrices de termo de potência de sinal e potência de ASE.
+    # Determine matrices according to signal power and ASE power
     xi_k   = n2_norm * properties.const3 - properties.const4
     tauASE = n2_norm * properties.const5
-    # Atualiza a variação de potência.
+    # Updates the power variation
     return properties.uk * (P * xi_k + properties.ASE * tauASE)
+
+def gilesSpatial(z, P, properties):
+    # Determines the number of carriers at the metastable level
+    n2_normT1 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * properties.absCross / properties.freq))
+    n2_normT2 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * (properties.absCross + properties.emiCross) / properties.freq)) + 1
+    n2_norm   = n2_normT1 / n2_normT2
+    # Determines the overlap integral between the field envelope and the doping profile.
+    intOL = trapzN(np.matlib.repmat(2 * np.pi * properties.r * n2_norm, np.shape(properties.i_k)[1], 1) * np.transpose(properties.i_k) * properties.dr)
+    # Determine matrices according to signal power and ASE power
+    xi_k   = intOL * (properties.absCoef + properties.gainCoef) / properties.gamma - (properties.absCoef + properties.lossS)
+    tauASE = intOL * (properties.gainCoef / properties.gamma) * Planck * properties.freq * properties.noiseBand
+    # Updates the power variation
+    return properties.uk * (P * xi_k + properties.ASE * tauASE)
+
+@njit
+def trapzN(x):
+    return np.trapz(x,dx = 1.0)
 
 @njit
 def dots(x, y):

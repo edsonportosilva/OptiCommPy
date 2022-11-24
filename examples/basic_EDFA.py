@@ -14,11 +14,11 @@ logg.basicConfig(format='%(message)s')
 
 # EDFA parameters
 param_edfa = parameters()
-param_edfa.type     = "AGC"
+param_edfa.type     = "none"
 param_edfa.value    = 20 #dB
 param_edfa.forPump  = {'pump_signal': np.array([100e-3]), 'pump_lambda': np.array([980e-9])}
 param_edfa.bckPump  = {'pump_signal': np.array([000e-3]), 'pump_lambda': np.array([980e-9])}
-param_edfa.file     = 'C:\\Users\\Adolfo\\Documents\\GitHub\\OptiCommPy\\jupyter\\giles_MP980.dat'
+param_edfa.file     = 'C:\\Users\\Adolfo\\Documents\\GitHub\\OptiCommPy\\examples\\giles_MP980.dat'
 param_edfa.fileunit = 'nm'
 param_edfa.gmtc     = 'Bessel'
 param_edfa.algo     = 'Giles_spatial'
