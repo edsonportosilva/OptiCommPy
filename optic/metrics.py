@@ -3,6 +3,7 @@ import numpy as np
 from numba import njit
 from scipy.special import erf
 from optic.modulation import demodulateGray, GrayMapping
+from optic.dsp import pnorm
 
 
 @njit
@@ -108,8 +109,8 @@ def fastBERcalc(rx, tx, M, constType):
     # pre-processing
     for k in range(nModes):
         # symbol normalization
-        rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
-        tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
+        rx[:, k] = pnorm(rx[:, k])  # / np.sqrt(signal_power(rx[:, k]))
+        tx[:, k] = pnorm(tx[:, k])  # / np.sqrt(signal_power(tx[:, k]))
 
         # correct (possible) phase ambiguity
         rot = np.mean(tx[:, k] / rx[:, k])
@@ -218,8 +219,9 @@ def monteCarloGMI(rx, tx, M, constType):
 
     # symbol normalization
     for k in range(nModes):
-        rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
-        tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
+        # symbol normalization
+        rx[:, k] = pnorm(rx[:, k])  # / np.sqrt(signal_power(rx[:, k]))
+        tx[:, k] = pnorm(tx[:, k])  # / np.sqrt(signal_power(tx[:, k]))
 
         # correct (possible) phase ambiguity
         rot = np.mean(tx[:, k] / rx[:, k])
@@ -296,8 +298,10 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
     MI = np.zeros(nModes)
 
     for k in range(nModes):
-        rx[:, k] = rx[:, k] / np.sqrt(signal_power(rx[:, k]))
-        tx[:, k] = tx[:, k] / np.sqrt(signal_power(tx[:, k]))
+        # symbol normalization
+        rx[:, k] = pnorm(rx[:, k])  # / np.sqrt(signal_power(rx[:, k]))
+        tx[:, k] = pnorm(tx[:, k])  # / np.sqrt(signal_power(tx[:, k]))
+
     # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
