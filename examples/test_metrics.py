@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -29,6 +29,7 @@ if 'google.colab' in str(get_ipython()):
 from optic.modulation import modulateGray, GrayMapping
 from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER
 from optic.models import awgn
+from optic.dsp import pnorm
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -65,7 +66,7 @@ for ii, M in enumerate(qamOrder):
         symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN channel  
         snrdB  = EbN0dB + 10*np.log10(np.log2(M))
@@ -125,7 +126,7 @@ for ii, M in enumerate(pskOrder):
         symbTx = modulateGray(bitsTx, M, 'psk')
 
         # Normalize symbols energy to 1
-        symbTx = symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN channel  
         snrdB  = EbN0dB + 10*np.log10(np.log2(M))
@@ -185,7 +186,7 @@ for ii, M in enumerate(qamOrder):
         symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN channel       
         symbRx = awgn(symbTx, snrdB)
@@ -233,7 +234,7 @@ for ii, M in enumerate(pskOrder):
         symbTx = modulateGray(bitsTx, M, 'psk')
 
         # Normalize symbols energy to 1
-        symbTx = symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN channel       
         symbRx = awgn(symbTx, snrdB)
@@ -284,7 +285,7 @@ for ii, M in enumerate(qamOrder):
         symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
 
         # AWGN channel        
         symbRx = awgn(symbTx, snrdB)
