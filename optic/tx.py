@@ -2,7 +2,7 @@ import numpy as np
 from commpy.utilities import upsample
 from tqdm.notebook import tqdm
 
-from optic.dsp import pulseShape
+from optic.dsp import pulseShape, pnorm
 from optic.metrics import signal_power
 from optic.models import iqm
 from optic.modulation import GrayMapping, modulateGray
@@ -140,8 +140,7 @@ def simpleWDMTx(param):
             sigTxCh = iqm(Ai, 0.5 * sigTx, Vπ, Vb, Vb)
             sigTxCh = (
                 np.sqrt(Pch[indCh] / param.Nmodes)
-                * sigTxCh
-                / np.sqrt(signal_power(sigTxCh))
+                * pnorm(sigTxCh)
             )
 
             sigTxWDM[:, indMode] += sigTxCh * np.exp(
