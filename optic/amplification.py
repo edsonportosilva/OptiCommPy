@@ -18,8 +18,7 @@ import copy
 
 from optic.core import parameters
 
-from numba import njit,prange
-
+from numba import njit
 
 def edfaSM(Ei, Fs, Fc, param_edfa):
     ## Verify arguments
@@ -140,17 +139,17 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
         param_edfa.emiCross = np.interp(c / param_edfa.freq, param_edf.lbFl, param_edf.emiCross)
         param_edfa.gamma = np.interp(c / param_edfa.freq, param_edf.lbFl, param_edf.gamma)
         param_edfa.i_k = interpolate.interp2d(
-            param_edf.lbFl, param_edfa.r, param_edf.i_k, kind="cubic"
-        )(c / param_edfa.freq, param_edfa.r)
+            param_edf.lbFl, param_edf.r, param_edf.i_k, kind="cubic"
+        )(c / param_edfa.freq, param_edf.r)
         # BCKPUMP + BASEX + BASEY
         absCrossAdd = np.interp(c / freqAdd, param_edf.lbFl, param_edf.absCross)
         emiCrossAdd = np.interp(c / freqAdd, param_edf.lbFl, param_edf.emiCross)
         gammaAdd = np.interp(c / freqAdd, param_edf.lbFl, param_edf.gamma)
-        i_kAdd = interpolate.interp2d(param_edf.lbFl, param_edfa.r, param_edf.i_k, kind="cubic")(
-            c / freqAdd, param_edfa.r
+        i_kAdd = interpolate.interp2d(param_edf.lbFl, param_edf.r, param_edf.i_k, kind="cubic")(
+            c / freqAdd, param_edf.r
         )
         # Eval string
-        evalStr = "solve_ivp(gilesSpatial, zSpan, pInit, method='DOP853', rtol = 5e-4, atol = 5e-7, args=(param_edfa,))"
+        evalStr = "solve_ivp(gilesSpatial, zSpan, pInit, method='DOP853', rtol = 5e-4, atol = 5e-7, args=(param_edfa,param_edf))"
     elif (param_edfa.algo == 'Giles_spectrum'):        
         # Update some constants used in rate and propagation equations
         param_edfa = updtCnst(param_edfa)
@@ -341,40 +340,22 @@ def gilesSpectrum(z, P, properties):
     # Updates the power variation
     return properties.uk * (P * xi_k + properties.ASE * tauASE)
 
-def gilesSpatial(z, P, properties):
+"""GPU-based digital signal processing utilities."""
+import cupy as cp
+
+def gilesSpatial(z, P, properties, param_edf):
     # Determines the number of carriers at the metastable level
     n2_normT1 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * properties.absCross / properties.freq))
     n2_normT2 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * (properties.absCross + properties.emiCross) / properties.freq)) + 1
     n2_norm   = n2_normT1 / n2_normT2
     # Determines the overlap integral between the field envelope and the doping profile.
-    temp = npmat.repmat(2 * np.pi * properties.r * n2_norm, np.shape(properties.i_k)[1], 1)
-    intOL = np.trapz(temp * np.transpose(properties.i_k) * properties.dr)
+    temp = npmat.repmat(2 * np.pi * param_edf.r * n2_norm, np.shape(properties.i_k)[1], 1)
+    intOL = np.trapz(temp * np.transpose(properties.i_k) * param_edf.dr)
     # Determine matrices according to signal power and ASE power
     xi_k   = intOL * (properties.absCoef + properties.gainCoef) / properties.gamma - (properties.absCoef + properties.lossS)
     tauASE = intOL * (properties.gainCoef / properties.gamma) * Planck * properties.freq * properties.noiseBand
     # Updates the power variation
     return properties.uk * (P * xi_k + properties.ASE * tauASE)
-
-def gilesSpatialN(z, P, properties):
-    # Determines the number of carriers at the metastable level
-    n2_normT1 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * properties.absCross / properties.freq))
-    n2_normT2 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * (properties.absCross + properties.emiCross) / properties.freq)) + 1
-    n2_norm   = n2_normT1 / n2_normT2
-    # Determines the overlap integral between the field envelope and the doping profile.
-    temp = npmat.repmat(2 * np.pi * properties.r * n2_norm, np.shape(properties.i_k)[1], 1)
-    intOL = trapzN(temp * np.transpose(properties.i_k) * properties.dr)
-    # Determine matrices according to signal power and ASE power
-    xi_k   = intOL * (properties.absCoef + properties.gainCoef) / properties.gamma - (properties.absCoef + properties.lossS)
-    tauASE = intOL * (properties.gainCoef / properties.gamma) * Planck * properties.freq * properties.noiseBand
-    # Updates the power variation
-    return properties.uk * (P * xi_k + properties.ASE * tauASE)
-
-@njit(parallel=True)
-def trapzN(x):
-    s = np.zeros(len(x))
-    for i in prange(len(x)):
-        s[i] = np.trapz(x[i,:],dx = 1.0)
-    return s
 
 @njit
 def dots(x, y):
@@ -383,10 +364,8 @@ def dots(x, y):
         s += x[i] * y[i]
     return s
 
-
 def power_meter(x):
     return np.sum(np.mean(x * np.conj(x), axis=0).real)
-
 
 def fieldIntLP01(param_edfa, V):
     # u and v calculation
@@ -424,7 +403,7 @@ def edfParams(param_edfa):
         raise TypeError('edfaSM.fileunit invalid argument - [nm - m - Hz - THz].')
     # Logitudinal step
     param_edf.dr = param_edfa.a / param_edfa.longSteps
-    param_edf.r  = np.arange(0,param_edfa.a, param_edfa.dr)
+    param_edf.r  = np.arange(0,param_edfa.a, param_edf.dr)
     # Define field profile
     V = (2 * np.pi / param_edf.lbFl) * param_edfa.a * param_edfa.na
     # u and v calculation for LP01 and Bessel profiles
@@ -466,7 +445,7 @@ def edfParams(param_edfa):
         if param_edfa.algo == "Giles_spatial":
             param_edf.gamma = gamma
             i_k = lambda r: 2 / (np.pi * w_gauss ** 2) * np.exp(-2 * (r / w_gauss) ** 2)
-            param_edf.i_k = [i_k(x) for x in param_edfa.r]
+            param_edf.i_k = [i_k(x) for x in param_edf.r]
     # absorption and emission cross-section (or
     # absorption and gain coeficients) calculation
     if (np.sum(fileT[:,1]) > 1):
