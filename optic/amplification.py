@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import numpy.matlib as npmat
 import matplotlib.pyplot as plt
 import matplotlib.mlab   as mlab
 
@@ -17,7 +18,7 @@ import copy
 
 from optic.core import parameters
 
-from numba import njit
+from numba import njit,prange
 
 def edfaSM(Ei, Fs, Fc, param_edfa):
     ## Verify arguments
@@ -69,26 +70,9 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     lenPmpBck  = np.size(freqPmpBck)
 
     ## Load Giles file
-    fileT = np.loadtxt(param_edfa.file)
-    # Verify file frequency unit
-    if param_edfa.fileunit == "nm":
-        lbFl = fileT[:,0] * 1e-9
-    elif param_edfa.fileunit == "m":
-        lbFl = fileT[:,0]
-    elif param_edfa.fileunit == "Hz'":
-        lbFl = c/fileT[:,0]
-    elif param_edfa.fileunit == "THz":
-        lbFl = c/fileT[:,0] * 1e-12
-    else:
-        raise TypeError('edfaSM.fileunit invalid argument - [nm - m - Hz - THz].')
-
-    # Logitudinal step
-    param_edfa.dr = param_edfa.a / param_edfa.longSteps
-    param_edfa.r  = np.arange(0,param_edfa.a, param_edfa.dr)
-
     # Get EDF cross-sections and coeficients parameters from giles parameters file.
     # absCross, emiCross, absCoef, gainCoef = edfParams(param_edfa, lbFl, fileT)
-    param_edf = edfParams(param_edfa, lbFl, fileT)
+    param_edf = edfParams(param_edfa)
 
     ## Format input signal
     # Create second pol, if not exists
@@ -303,16 +287,34 @@ def gilesSpatial(z, P, properties):
     n2_normT2 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * (properties.absCross + properties.emiCross) / properties.freq)) + 1
     n2_norm   = n2_normT1 / n2_normT2
     # Determines the overlap integral between the field envelope and the doping profile.
-    intOL = trapzN(np.matlib.repmat(2 * np.pi * properties.r * n2_norm, np.shape(properties.i_k)[1], 1) * np.transpose(properties.i_k) * properties.dr)
+    temp = npmat.repmat(2 * np.pi * properties.r * n2_norm, np.shape(properties.i_k)[1], 1)
+    intOL = np.trapz(temp * np.transpose(properties.i_k) * properties.dr)
     # Determine matrices according to signal power and ASE power
     xi_k   = intOL * (properties.absCoef + properties.gainCoef) / properties.gamma - (properties.absCoef + properties.lossS)
     tauASE = intOL * (properties.gainCoef / properties.gamma) * Planck * properties.freq * properties.noiseBand
     # Updates the power variation
     return properties.uk * (P * xi_k + properties.ASE * tauASE)
 
-@njit
+def gilesSpatialN(z, P, properties):
+    # Determines the number of carriers at the metastable level
+    n2_normT1 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * properties.absCross / properties.freq))
+    n2_normT2 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * (properties.absCross + properties.emiCross) / properties.freq)) + 1
+    n2_norm   = n2_normT1 / n2_normT2
+    # Determines the overlap integral between the field envelope and the doping profile.
+    temp = npmat.repmat(2 * np.pi * properties.r * n2_norm, np.shape(properties.i_k)[1], 1)
+    intOL = trapzN(temp * np.transpose(properties.i_k) * properties.dr)
+    # Determine matrices according to signal power and ASE power
+    xi_k   = intOL * (properties.absCoef + properties.gainCoef) / properties.gamma - (properties.absCoef + properties.lossS)
+    tauASE = intOL * (properties.gainCoef / properties.gamma) * Planck * properties.freq * properties.noiseBand
+    # Updates the power variation
+    return properties.uk * (P * xi_k + properties.ASE * tauASE)
+
+@njit(parallel=True)
 def trapzN(x):
-    return np.trapz(x,dx = 1.0)
+    s = np.zeros(len(x))
+    for i in prange(len(x)):
+        s[i] = np.trapz(x[i,:],dx = 1.0)
+    return s
 
 @njit
 def dots(x, y):
@@ -332,14 +334,33 @@ def fieldIntLP01(param_edfa, V):
     ik    = 1 / np.pi * (v / (param_edfa.a * V) * jv(0, u * param_edfa.r / param_edfa.a) / jv(1, u)) ** 2 
     return gamma, ik
 
-def edfParams(param_edfa, lmbd, data):
+# Calculates gamma, field profile (ik), absorption and emission cross-section (or
+# absorption and gain coeficients)
+def edfParams(param_edfa):
+    # Create EDF struct
     param_edf = parameters()
+    # Load Gile's file
+    fileT = np.loadtxt(param_edfa.file)
+    # Verify file frequency unit
+    if param_edfa.fileunit == "nm":
+        param_edf.lbFl = fileT[:,0] * 1e-9
+    elif param_edfa.fileunit == "m":
+        param_edf.lbFl = fileT[:,0]
+    elif param_edfa.fileunit == "Hz'":
+        param_edf.lbFl = c/fileT[:,0]
+    elif param_edfa.fileunit == "THz":
+        param_edf.lbFl = c/fileT[:,0] * 1e-12
+    else:
+        raise TypeError('edfaSM.fileunit invalid argument - [nm - m - Hz - THz].')
+    # Logitudinal step
+    param_edf.dr = param_edfa.a / param_edfa.longSteps
+    param_edf.r  = np.arange(0,param_edfa.a, param_edfa.dr)
     # Define field profile
-    V = (2 * np.pi / lmbd) * param_edfa.a * param_edfa.na
+    V = (2 * np.pi / param_edf.lbFl) * param_edfa.a * param_edfa.na
     # u and v calculation for LP01 and Bessel profiles
     u = ((1 + np.sqrt(2)) * V) / (1 + (4 + V ** 4) ** 0.25)
     v = np.sqrt(V ** 2 - u ** 2)
-
+    # Gamma and field profile calculation
     if (param_edfa.gmtc == 'LP01'):
         gamma = (((v * param_edfa.b) / (param_edfa.a * V * jv(1, u))) ** 2) * (jv(0, u * param_edfa.b / param_edfa.a) ** 2 + jv(1, u * param_edfa.b / param_edfa.a) ** 2)
         if (param_edfa.algo == "Giles_spatial"):
@@ -364,7 +385,8 @@ def edfParams(param_edfa, lmbd, data):
             param_edf.gamma = gamma
             i_k = lambda r: 2 / (np.pi * w_gauss ** 2) * np.exp(-2 * (r / w_gauss) ** 2)
             param_edf.i_k = [i_k(x) for x in param_edfa.r]
-
+    # absorption and emission cross-section (or
+    # absorption and gain coeficients) calculation
     if (np.sum(data[:,1]) > 1):
         logg.info("\nEDF absorption and gain coeficients. Calculating absorption and emission cross-section ...")
         param_edf.absCoef  = 0.1 * np.log(10) * data[:,1]
