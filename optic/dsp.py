@@ -4,44 +4,44 @@ import numpy as np
 from commpy.filters import rcosfilter, rrcosfilter
 from commpy.utilities import upsample
 from scipy import signal
+from numba import njit
 
 
 def firFilter(h, x):
-    '''
-    Performs FIR filtering and compensates for filter delay
-    (assuming the impulse response is symmetric)
-    
+    """
+    Perform FIR filtering and compensate for filter delay.
+
     Parameters
     ----------
     h : ndarray
-        Coefficients of the FIR filter.
+        Coefficients of the FIR filter (impulse response, symmetric).
     x : ndarray
         Input signal.
+    prec: cp.dtype
+        Size of the complex representation.
+
     Returns
     -------
     y : ndarray
         Output (filtered) signal.
-    '''
-
+    """
     try:
         x.shape[1]
     except IndexError:
         x = x.reshape(len(x), 1)
-
     y = x.copy()
     nModes = x.shape[1]
 
     for n in range(nModes):
-        y[:, n] = np.convolve(x[:, n], h, mode='same')
-
+        y[:, n] = np.convolve(x[:, n], h, mode="same")
     if y.shape[1] == 1:
         y = y[:, 0]
-
     return y
 
+
 def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
-    '''
-    Generates a pulse shaping filter
+    """
+    Generate a pulse shaping filter.
 
     Parameters
     ----------
@@ -61,8 +61,7 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     filterCoeffs : nparray
         Array of filter coefficients (normalized).
 
-    '''
-
+    """
     fa = (1 / Ts) * SpS
 
     t = np.linspace(-2, 2, SpS)
@@ -82,9 +81,8 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
         tindex, filterCoeffs = rrcosfilter(N, alpha, Ts, fa)
     elif pulseType == "rc":
         tindex, filterCoeffs = rcosfilter(N, alpha, Ts, fa)
-    
     filterCoeffs = filterCoeffs / np.sqrt(np.sum(filterCoeffs ** 2))
-    
+
     return filterCoeffs
 
 
@@ -105,7 +103,6 @@ def sincInterp(x, fa):
         xk_interp = x[k] * np.sinc((t - k * Ta) / Ta)
         x_sum += xk_interp
         plt.plot(t, xk_interp)
-
     plt.legend(loc="upper right")
     plt.xlim(min(t), max(t))
     plt.grid()
@@ -114,8 +111,8 @@ def sincInterp(x, fa):
 
 
 def lowPassFIR(fc, fa, N, typeF="rect"):
-    '''
-    Calculate FIR coefficients of a lowpass filter
+    """
+    Calculate FIR coefficients of a lowpass filter.
 
     Parameters
     ----------
@@ -133,8 +130,7 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
     h : ndarray
         Filter coefficients.
 
-    '''
-   
+    """
     fu = fc / fa
     d = (N - 1) / 2
     n = np.arange(0, N)
@@ -148,20 +144,19 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
             * fu
             * np.exp(-(2 / np.log(2)) * (np.pi * fu * (n - d)) ** 2)
         )
-
     return h
 
 
 def decimate(Ei, param):
-    '''
-    Decimate signal
+    """
+    Decimate signal.
 
     Parameters
     ----------
     Ei : ndarray
         Input signal.
     param : core.parameter
-        Decimation parameters:            
+    Decimation parameters:
             param.SpS_in  : samples per symbol of the input signal.
             param.SpS_out : samples per symbol of the output signal.
 
@@ -170,8 +165,7 @@ def decimate(Ei, param):
     Eo : ndarray
         Decimated signal.
 
-    '''
-    
+    """
     decFactor = int(param.SpS_in / param.SpS_out)
 
     # simple timing recovery
@@ -182,21 +176,19 @@ def decimate(Ei, param):
     for k in range(Ei.shape[1]):
         a = Ei[:, k].reshape(Ei.shape[0], 1)
         varVector = np.var(a.reshape(-1, param.SpS_in), axis=0)
-        sampDelay[k] = np.where(varVector == np.amax(varVector))[0][0]    
-
+        sampDelay[k] = np.where(varVector == np.amax(varVector))[0][0]
     # downsampling
     Eo = Ei[::decFactor, :].copy()
 
     for k in range(Ei.shape[1]):
         Ei[:, k] = np.roll(Ei[:, k], -int(sampDelay[k]))
         Eo[:, k] = Ei[0::decFactor, k]
-
     return Eo
 
 
 def resample(Ei, param):
-    '''
-    Resample signal to a given sampling rate
+    """
+    Resample signal to a given sampling rate.
 
     Parameters
     ----------
@@ -213,42 +205,39 @@ def resample(Ei, param):
     Eo : ndarray
         Resampled signal.
 
-    '''
+    """
     try:
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
-
     nModes = Ei.shape[1]
-    inFs = param.SpS_in*param.Rs
-    outFs = param.SpS_out*param.Rs
+    inFs = param.SpS_in * param.Rs
+    outFs = param.SpS_out * param.Rs
 
-    tin = np.arange(0, Ei.shape[0])*(1/inFs)
-    tout = np.arange(0, Ei.shape[0]*(1/inFs), 1/outFs)
+    tin = np.arange(0, Ei.shape[0]) * (1 / inFs)
+    tout = np.arange(0, Ei.shape[0] * (1 / inFs), 1 / outFs)
 
-    Eo = np.zeros((len(tout), Ei.shape[1]), dtype='complex')
+    Eo = np.zeros((len(tout), Ei.shape[1]), dtype="complex")
 
     # Anti-aliasing filters:
     N = 2048
-    hi = lowPassFIR(inFs/2, inFs, N, typeF="rect")
-    ho = lowPassFIR(outFs/2, outFs, N, typeF="rect")
+    hi = lowPassFIR(inFs / 2, inFs, N, typeF="rect")
+    ho = lowPassFIR(outFs / 2, outFs, N, typeF="rect")
 
     Ei = firFilter(hi, Ei)
 
     if nModes == 1:
-        Ei = Ei.reshape(len(Ei), 1)        
-
+        Ei = Ei.reshape(len(Ei), 1)
     for k in range(nModes):
-        Eo[:,k] = np.interp(tout, tin, Ei[:,k])
-
+        Eo[:, k] = np.interp(tout, tin, Ei[:, k])
     Eo = firFilter(ho, Eo)
 
     return Eo
 
 
 def symbolSync(rx, tx, SpS):
-    '''
-    Symbol synchronizer
+    """
+    Symbol synchronizer.
 
     Parameters
     ----------
@@ -264,7 +253,7 @@ def symbolSync(rx, tx, SpS):
     tx : ndarray
         Transmitted sequence synchronized to rx.
 
-    '''
+    """
     nModes = rx.shape[1]
 
     rx = rx[0::SpS, :]
@@ -279,37 +268,52 @@ def symbolSync(rx, tx, SpS):
             corrMatrix[m, n] = np.max(
                 np.abs(signal.correlate(np.abs(tx[:, m]), np.abs(rx[:, n])))
             )
-
     swap = np.argmax(corrMatrix, axis=0)
 
     tx = tx[:, swap]
 
     for k in range(nModes):
         delay[k] = finddelay(np.abs(tx[:, k]), np.abs(rx[:, k]))
-
     # compensate time delay
     for k in range(nModes):
         tx[:, k] = np.roll(tx[:, k], -int(delay[k]))
-
     return tx
 
 
 def finddelay(x, y):
-    '''
-    Find delay between x and y
+    """
+    Find delay between x and y.
 
     Parameters
     ----------
-    x : ndarray
-        signal 1.
-    y : ndarray
-        signal 2.
+    x : np.array
+        Signal 1.
+    y : np.array
+        Signal 2.
 
     Returns
     -------
     d : int
         Delay between x and y, in samples.
 
-    '''
+    """
+    return np.argmax(signal.correlate(x, y)) - x.shape[0] + 1
 
-    return np.argmax(signal.correlate(x, y)) - x.shape[0]+1
+
+@njit
+def pnorm(x):
+    """
+    Normalize the average power of x.
+
+    Parameters
+    ----------
+    x : np.array
+        Signal.
+
+    Returns
+    -------
+    np.array
+        Signal x with normalized power.
+
+    """
+    return x / np.sqrt(np.mean(x * np.conj(x)).real)

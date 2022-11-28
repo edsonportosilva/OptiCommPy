@@ -14,7 +14,7 @@
 #     name: python3
 # ---
 
-# + [markdown] id="view-in-github" colab_type="text"
+# + [markdown] colab_type="text" id="view-in-github"
 # <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_WDM_transmission.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # + [markdown] id="0270b2b0"
