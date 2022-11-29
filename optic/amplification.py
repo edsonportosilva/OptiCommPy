@@ -20,6 +20,85 @@ from optic.core import parameters
 
 from numba import njit
 
+@njit
+def dots(x, y):
+    """
+    Calculate the dot product between x and y.
+
+    Parameters
+    ----------
+    x : np.array
+    y : np.array
+
+    Returns
+    -------
+    scalar
+        Dot product between x and y: dot(x,y).
+
+    """
+    return sum(x[i] * y[i] for i in range(len(x)))
+
+@njit
+def power_meter(x):
+    """
+    Calculate the total power of x.
+
+    Parameters
+    ----------
+    x : np.array
+        Signal.
+
+    Returns
+    -------
+    scalar
+        Average signal power of x: P = sum(abs(x)**2).
+
+    """
+    return np.sum(np.mean(x * np.conj(x), axis=0).real)
+
+def OSA(x, Fs, Fc=193.1e12):
+    """
+    Calculates the optical spectrum of the signal in X and Y polarizations.
+
+    Parameters
+    ----------
+    x : np.array
+        Signal
+    Fs : scalar
+        Sampling frequency in Hz.
+    Fc : scalar, optional
+        Central optical frequency. The default is 193.1e12.
+
+    Returns
+    -------
+    plot
+
+    """
+    lenFqSg, isy = np.shape(x)
+    specX, freqs = mlab.magnitude_spectrum(
+        x[:, 0], Fs=Fs, window=mlab.window_none, sides="twosided"
+    )
+    freqs += Fc
+    ZX = 10 * np.log10(1000 * (specX ** 2))
+    fig = plt.figure()
+    (lineX,) = plt.plot(1e9 * c / freqs, ZX, label="X Pol.")
+    maxY = ZX.max()
+    minY = -70
+    if isy == 2:
+        specY, freqs = mlab.magnitude_spectrum(
+            x[:, 1], Fs=Fs, window=mlab.window_none, sides="twosided"
+        )
+        ZY = 10 * np.log10(1000 * (specY ** 2))
+        freqs += Fc
+        (lineY,) = plt.plot(1e9 * c / freqs, ZY, label="Y Pol.", alpha=0.5)
+        maxY = np.array([maxY, ZY.max()]).max()
+    plt.xlabel("Frequency [nm]")
+    plt.ylabel("Magnitude [dBm]")
+    plt.grid()
+    plt.legend()
+    plt.ylim([minY, maxY + 10])
+    return
+
 def edfaSM(Ei, Fs, Fc, param_edfa):
     ## Verify arguments
     param_edfa.type = getattr(param_edfa, "type", "AGC")
@@ -340,9 +419,6 @@ def gilesSpectrum(z, P, properties):
     # Updates the power variation
     return properties.uk * (P * xi_k + properties.ASE * tauASE)
 
-"""GPU-based digital signal processing utilities."""
-import cupy as cp
-
 def gilesSpatial(z, P, properties, param_edf):
     # Determines the number of carriers at the metastable level
     n2_normT1 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * properties.absCross / properties.freq))
@@ -356,16 +432,6 @@ def gilesSpatial(z, P, properties, param_edf):
     tauASE = intOL * (properties.gainCoef / properties.gamma) * Planck * properties.freq * properties.noiseBand
     # Updates the power variation
     return properties.uk * (P * xi_k + properties.ASE * tauASE)
-
-@njit
-def dots(x, y):
-    s = 0
-    for i in range(len(x)):
-        s += x[i] * y[i]
-    return s
-
-def power_meter(x):
-    return np.sum(np.mean(x * np.conj(x), axis=0).real)
 
 def fieldIntLP01(param_edfa, V):
     # u and v calculation
@@ -477,28 +543,4 @@ def updtCnst(param):
     return param
 
 
-def OSA(x, Fs, Fc):
-    lenFqSg, isy = np.shape(x)
-    specX, freqs = mlab.magnitude_spectrum(
-        x[:, 0], Fs=Fs, window=mlab.window_none, sides="twosided"
-    )
-    freqs += Fc
-    ZX = 10 * np.log10(1000 * (specX ** 2))
-    fig = plt.figure()
-    (lineX,) = plt.plot(1e9 * c / freqs, ZX, label="X Pol.")
-    maxY = ZX.max()
-    minY = -70
-    if isy == 2:
-        specY, freqs = mlab.magnitude_spectrum(
-            x[:, 1], Fs=Fs, window=mlab.window_none, sides="twosided"
-        )
-        ZY = 10 * np.log10(1000 * (specY ** 2))
-        freqs += Fc
-        (lineY,) = plt.plot(1e9 * c / freqs, ZY, label="Y Pol.", alpha=0.5)
-        maxY = np.array([maxY, ZY.max()]).max()
-    plt.xlabel("Frequency [nm]")
-    plt.ylabel("Magnitude [dBm]")
-    plt.grid()
-    plt.legend()
-    plt.ylim([minY, maxY + 10])
-    return
+
