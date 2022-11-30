@@ -75,15 +75,16 @@ def OSA(x, Fs, Fc=193.1e12):
 
     """
     ZX, freqs = getSpectrum(x[:,0], Fs, Fc)
+    lmbd = 1e9 * c / freqs
     plt.figure()
-    plt.plot(1e9 * c / freqs, ZX, label="X Pol.")
+    plt.plot(lmbd, ZX, label="X Pol.")
     plt.xlabel("Frequency [nm]")
     plt.ylabel("Magnitude [dBm]")
     plt.grid(True)
     plt.ylim([-70, ZX.max() + 10])
     if (np.shape(x)[1] == 2):
         ZY, freqs = getSpectrum(x[:,1], Fs, Fc)
-        plt.plot(1e9 * c / freqs, ZY, label="Y Pol.", alpha=0.5)
+        plt.plot(lmbd, ZY, label="Y Pol.", alpha=0.5)
         plt.legend()
         plt.ylim([-70, np.array([ZX.max(), ZY.max()]).max() + 10])   
     
