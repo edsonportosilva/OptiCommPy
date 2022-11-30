@@ -1,25 +1,38 @@
 """Functions for adaptive and static equalization."""
 import numpy as np
 import scipy.constants as const
-from commpy.modulation import QAMModem
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
 from optic.models import linFiberCh
+from optic.modulation import GrayMapping
+from optic.dsp import pnorm
 import logging as logg
+
 
 def edc(Ei, L, D, Fc, Fs):
     """
-    Electronic chromatic dispersion compensation (EDC)
+    Electronic chromatic dispersion compensation (EDC).
 
-    :param Ei: dispersed signal
-    :param L: fiber length [km]
-    :param D: chromatic dispersion parameter [ps/nm/km]
-    :param Fc: carrier frequency [Hz]
-    :param Fs: sampling frequency [Hz]
+    Parameters
+    ----------
+    Ei : np.array
+        Dispersed signal.
+    L : real scalar
+        Fiber length [km].
+    D : real scalar
+        Chromatic dispersion parameter [ps/nm/km].
+    Fc : real scalar
+        Carrier frequency [Hz].
+    Fs : real scalar
+        Sampling frequency [Hz].
 
-    :return Eo: CD compensated signal
+    Returns
+    -------
+    np.array
+        CD compensated signal.
+
     """
     return linFiberCh(Ei, L, 0, -D, Fc, Fs)
 
@@ -40,6 +53,7 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
     Hiter      = getattr(paramEq, 'Hiter', [])
     storeCoeff = getattr(paramEq, 'storeCoeff', False)
     alg        = getattr(paramEq, 'alg', ['nlms'])
+    constType  = getattr(paramEq, 'constType', 'qam')
     M          = getattr(paramEq, 'M', 4)
     prgsBar    = getattr(paramEq, "prgsBar", True)
 
@@ -65,10 +79,10 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
     zeroPad = np.zeros((Lpad, nModes), dtype='complex')
     x = np.concatenate((zeroPad, x, zeroPad)) # pad start and end of the signal with zeros
 
-    # Defining training parameters:
-    mod = QAMModem(m=M) # commpy QAM constellation modem object
-    constSymb = mod.constellation/np.sqrt(mod.Es) # complex-valued constellation symbols
-
+    # Defining training parameters:    
+    constSymb = GrayMapping(M, constType) # constellation           
+    constSymb = pnorm(constSymb) # normalized constellation symbols
+    
     totalNumSymb = int(np.fix((len(x)-nTaps)/SpS+1))
 
     if not L: # if L is not defined
