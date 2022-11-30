@@ -78,11 +78,11 @@ def OSA(x, Fs, Fc=193.1e12):
     yMin = -70
     yMax = ZX.max() + 10
     plt.plot( freqs, ZX, label="X Pol.")
-    plt.ylim([yMin, yMax])
     if (np.shape(x)[1] == 2):
         ZY, freqs = getSpectrum(x[:,1], Fs, Fc)
         plt.plot( freqs, ZY, label="Y Pol.", alpha=0.5)
-        plt.ylim([yMin, np.array([ZX.max(), ZY.max()]).max() + 10])   
+        yMax = np.array([ZX.max(), ZY.max()]).max() + 10
+    plt.ylim([yMin, yMax])   
     plt.xlabel("Frequency [nm]")
     plt.ylabel("Magnitude [dBm]")
     plt.grid(True)
