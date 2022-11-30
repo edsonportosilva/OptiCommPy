@@ -18,27 +18,6 @@ import copy
 
 from optic.core import parameters
 
-from numba import njit
-
-@njit
-def dots(x, y):
-    """
-    Calculate the dot product between x and y.
-
-    Parameters
-    ----------
-    x : np.array
-    y : np.array
-
-    Returns
-    -------
-    scalar
-        Dot product between x and y: dot(x,y).
-
-    """
-    return sum(x[i] * y[i] for i in range(len(x)))
-
-@njit
 def power_meter(x):
     """
     Calculate the total power of x.
@@ -87,7 +66,7 @@ def OSA(x, Fs, Fc=193.1e12):
     plt.ylabel("Magnitude [dBm]")
     plt.grid(True)
     
-    return
+    return None
 
 def getSpectrum(x, Fs, Fc, window=mlab.window_none, sides="twosided"):
     """
@@ -135,9 +114,7 @@ def gilesSpectrum(z, P, properties):
         Increment of the amplified optical signal.
 
     """
-    n2_normT1 = dots(P, properties.const1)
-    n2_normT2 = dots(P, properties.const2) + 1
-    n2_norm   = n2_normT1 / n2_normT2
+    n2_norm = getN2Pop(P, properties)
     xi_k   = n2_norm * properties.const3 - properties.const4
     tauASE = n2_norm * properties.const5
     return properties.uk * (P * xi_k + properties.ASE * tauASE)
@@ -161,18 +138,66 @@ def gilesSpatial(z, P, properties, param_edf):
         Increment of the amplified optical signal.
 
     """
-    # Determines the number of carriers at the metastable level
-    n2_normT1 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * properties.absCross / properties.freq))
-    n2_normT2 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * (properties.absCross + properties.emiCross) / properties.freq)) + 1
-    n2_norm   = n2_normT1 / n2_normT2
-    # Determines the overlap integral between the field envelope and the doping profile.
-    temp = npmat.repmat(2 * np.pi * param_edf.r * n2_norm, np.shape(properties.i_k)[1], 1)
-    intOL = np.trapz(temp * np.transpose(properties.i_k) * param_edf.dr)
-    # Determine matrices according to signal power and ASE power
-    xi_k   = intOL * (properties.absCoef + properties.gainCoef) / properties.gamma - (properties.absCoef + properties.lossS)
+    n2_norm = getN2Pop(P, properties)
+    intOL = getOverlapInt(n2_norm, properties, param_edf)
+    xi_k = intOL * (properties.absCoef + properties.gainCoef) / properties.gamma - (properties.absCoef + properties.lossS)
     tauASE = intOL * (properties.gainCoef / properties.gamma) * Planck * properties.freq * properties.noiseBand
-    # Updates the power variation
     return properties.uk * (P * xi_k + properties.ASE * tauASE)
+
+def getN2Pop(P, properties):
+    """
+    Determines the number of carriers at the metastable level, considering the spectral and spatial Giles algorithm.
+
+    Parameters
+    ----------
+    P : np.array
+        Signal power (signal + pump + ASE).
+    properties : object with constants and edfa parameters.
+
+    Returns
+    -------
+    norm2 : np.array
+        Number of carriers at the metastable level.
+
+    """
+    if (properties.algo == "Giles_spectrum"):
+        n2_normT1 = np.dot(P, properties.const1)
+        n2_normT2 = np.dot(P, properties.const2) + 1
+    elif (properties.algo == "Giles_spatial"):
+        n2_normT1 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * properties.absCross / properties.freq))
+        n2_normT2 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * (properties.absCross + properties.emiCross) / properties.freq)) + 1
+    return n2_normT1 / n2_normT2
+
+def getOverlapInt(n2_norm, properties, param_edf):
+    """
+    Determines the overlap integral between the field envelope and the doping profile.
+
+    Parameters
+    ----------
+    n2_norm : np.array
+        Number of carriers at the metastable level.
+    properties : object 
+        With constants and edfa parameters.
+    param_edf  : object 
+        With edf parameters.
+
+    Returns
+    -------
+    overlapIntegral : np.array
+        Overlap integral between the field envelope and the doping profile.
+
+    """     
+    dopPrf = npmat.repmat(2 * np.pi * param_edf.r * n2_norm, np.shape(properties.i_k)[1], 1) * param_edf.dr
+    return np.trapz(np.transpose(properties.i_k) * dopPrf)
+
+def updtCnst(param):
+    xi = np.pi * param.b ** 2 * param.rho / param.tal
+    param.const1 = (1 / (Planck * xi)) * (param.absCoef / param.freq)
+    param.const2 = (1 / (Planck * xi)) * (param.absCoef + param.gainCoef) / param.freq
+    param.const3 = param.absCoef + param.gainCoef
+    param.const4 = param.absCoef + param.lossS
+    param.const5 = param.gainCoef * Planck * param.freq * param.noiseBand
+    return param
 
 def edfaSM(Ei, Fs, Fc, param_edfa):
     ## Verify arguments
@@ -482,25 +507,6 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
 
     return Eout, PpumpF, PpumpB
 
-
-
-
-def fieldIntLP01(param_edfa, V):
-    # u and v calculation
-    u = ((1 + np.sqrt(2)) * V) / (1 + (4 + V ** 4) ** 0.25)
-    v = np.sqrt(V ** 2 - u ** 2)
-    gamma = (((v * param_edfa.b) / (param_edfa.a * V * jv(1, u))) ** 2) * (
-        jv(0, u * param_edfa.b / param_edfa.a) ** 2
-        + jv(1, u * param_edfa.b / param_edfa.a) ** 2
-    )
-    ik = (
-        1
-        / np.pi
-        * (v / (param_edfa.a * V) * jv(0, u * param_edfa.r / param_edfa.a) / jv(1, u))
-        ** 2
-    )
-    return gamma, ik
-
 # Calculates gamma, field profile (ik), absorption and emission cross-section (or
 # absorption and gain coeficients)
 def edfParams(param_edfa):
@@ -545,20 +551,7 @@ def edfParams(param_edfa):
             )
             param_edf.i_k = [i_k(x) for x in param_edfa.r]
     else:
-        if param_edfa.gmtc == "Bessel":
-            w_gauss = param_edfa.a * V / u * kv(1, v) / kv(0, v) * jv(0, u)
-        elif param_edfa.gmtc == "Marcuse":
-            w_gauss = param_edfa.a * (0.650 + 1.619 / V ** 1.5 + 2.879 / V ** 6)
-        elif param_edfa.gmtc == "Whitley":
-            w_gauss = param_edfa.a * (0.616 + 1.660 / V ** 1.5 + 0.987 / V ** 6)
-        elif param_edfa.gmtc == "Desurvire":
-            w_gauss = param_edfa.a * (0.759 + 1.289 / V ** 1.5 + 1.041 / V ** 6)
-        elif param_edfa.gmtc == "Myslinski":
-            w_gauss = param_edfa.a * (0.761 + 1.237 / V ** 1.5 + 1.429 / V ** 6)
-        else:
-            raise TypeError(
-                "edfaSM.gmtc invalid argument - [LP01 - Marcuse - Whitley - Desurvire - Myslinski - Bessel]."
-            )
+        w_gauss = getModeRadius(param_edfa, V, v, u)
         gamma = 1 - np.exp(-2 * (param_edfa.b / w_gauss) ** 2)
         if param_edfa.algo == "Giles_spatial":
             param_edf.gamma = gamma
@@ -584,12 +577,19 @@ def edfParams(param_edfa):
         param_edf.gainCoef = param_edfa.emiCross * param_edfa.rho * gamma
     return param_edf
 
-
-def updtCnst(param):
-    xi = np.pi * param.b ** 2 * param.rho / param.tal
-    param.const1 = (1 / (Planck * xi)) * (param.absCoef / param.freq)
-    param.const2 = (1 / (Planck * xi)) * (param.absCoef + param.gainCoef) / param.freq
-    param.const3 = param.absCoef + param.gainCoef
-    param.const4 = param.absCoef + param.lossS
-    param.const5 = param.gainCoef * Planck * param.freq * param.noiseBand
-    return param
+def getModeRadius(param_edfa, V, v, u):
+    if param_edfa.gmtc == "Bessel":
+        w_gauss = param_edfa.a * V / u * kv(1, v) / kv(0, v) * jv(0, u)
+    elif param_edfa.gmtc == "Marcuse":
+        w_gauss = param_edfa.a * (0.650 + 1.619 / V ** 1.5 + 2.879 / V ** 6)
+    elif param_edfa.gmtc == "Whitley":
+        w_gauss = param_edfa.a * (0.616 + 1.660 / V ** 1.5 + 0.987 / V ** 6)
+    elif param_edfa.gmtc == "Desurvire":
+        w_gauss = param_edfa.a * (0.759 + 1.289 / V ** 1.5 + 1.041 / V ** 6)
+    elif param_edfa.gmtc == "Myslinski":
+        w_gauss = param_edfa.a * (0.761 + 1.237 / V ** 1.5 + 1.429 / V ** 6)
+    else:
+        raise TypeError(
+        "edfaSM.gmtc invalid argument - [LP01 - Marcuse - Whitley - Desurvire - Myslinski - Bessel]."
+        )
+    return w_gauss
