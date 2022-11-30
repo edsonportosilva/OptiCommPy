@@ -51,14 +51,14 @@ def power_meter(x):
     Returns
     -------
     scalar
-        Average signal power of x: P = sum(abs(x)**2).
+        Total signal power of x: P = sum(abs(x)**2).
 
     """
     return np.sum(np.mean(x * np.conj(x), axis=0).real)
 
 def OSA(x, Fs, Fc=193.1e12):
     """
-    Calculates the optical spectrum of the signal in X and Y polarizations.
+    Plot the optical spectrum of the signal in X and Y polarizations.
 
     Parameters
     ----------
@@ -74,30 +74,106 @@ def OSA(x, Fs, Fc=193.1e12):
     plot
 
     """
-    lenFqSg, isy = np.shape(x)
-    specX, freqs = mlab.magnitude_spectrum(
-        x[:, 0], Fs=Fs, window=mlab.window_none, sides="twosided"
-    )
-    freqs += Fc
-    ZX = 10 * np.log10(1000 * (specX ** 2))
-    fig = plt.figure()
-    (lineX,) = plt.plot(1e9 * c / freqs, ZX, label="X Pol.")
+    ZX, freqs = getSpectrum(x[:,0], Fs, Fc)
+    plt.figure()
+    plt.plot(1e9 * c / freqs, ZX, label="X Pol.")
     maxY = ZX.max()
     minY = -70
-    if isy == 2:
-        specY, freqs = mlab.magnitude_spectrum(
-            x[:, 1], Fs=Fs, window=mlab.window_none, sides="twosided"
-        )
-        ZY = 10 * np.log10(1000 * (specY ** 2))
-        freqs += Fc
-        (lineY,) = plt.plot(1e9 * c / freqs, ZY, label="Y Pol.", alpha=0.5)
+    if (np.shape(x)[1] == 2):
+        ZY, freqs = getSpectrum(x[:,1], Fs, Fc)
+        plt.plot(1e9 * c / freqs, ZY, label="Y Pol.", alpha=0.5)
         maxY = np.array([maxY, ZY.max()]).max()
     plt.xlabel("Frequency [nm]")
     plt.ylabel("Magnitude [dBm]")
-    plt.grid()
+    plt.grid(True)
     plt.legend()
     plt.ylim([minY, maxY + 10])
     return
+
+def getSpectrum(x, Fs, Fc, window=mlab.window_none, sides="twosided"):
+    """
+    Calculates the optical spectrum of the signal.
+
+    Parameters
+    ----------
+    x : np.array
+        Signal
+    Fs : scalar
+        Sampling frequency in Hz.
+    Fc : scalar, optional
+        Central optical frequency. The default is 193.1e12.
+
+    Returns
+    -------
+    X : np.array
+        Signal's FFT
+    freqs: np.array
+        Frequency array @ Fc.
+
+    """
+    specX, freqs = mlab.magnitude_spectrum(
+        x, Fs=Fs, window=window, sides=sides
+    )
+    freqs += Fc
+    X = 10 * np.log10(1000 * (specX ** 2))
+    return X, freqs
+
+def gilesSpectrum(z, P, properties):
+    """
+    Routine used to solve the EDFA rate and propagation equations, considering the spectral Giles algorithm.
+
+    Parameters
+    ----------
+    P : np.array
+        Signal power (signal + pump + ASE).
+    z : scalar (float)
+        Position - erbium doped fiber [0 - edf length].
+    properties : object with constants and edfa parameters.
+
+    Returns
+    -------
+    Eo : np.array
+        Increment of the amplified optical signal.
+
+    """
+    n2_normT1 = dots(P, properties.const1)
+    n2_normT2 = dots(P, properties.const2) + 1
+    n2_norm   = n2_normT1 / n2_normT2
+    xi_k   = n2_norm * properties.const3 - properties.const4
+    tauASE = n2_norm * properties.const5
+    return properties.uk * (P * xi_k + properties.ASE * tauASE)
+
+def gilesSpatial(z, P, properties, param_edf):
+    """
+    Routine used to solve the EDFA rate and propagation equations, considering the spatial Giles algorithm.
+
+    Parameters
+    ----------
+    P : np.array
+        Signal power (signal + pump + ASE).
+    z : scalar (float)
+        Position - erbium doped fiber [0 - edf length].
+    properties : object with constants and edfa parameters.
+    param_edf  : object with constants and edf parameters.
+
+    Returns
+    -------
+    Eo : np.array
+        Increment of the amplified optical signal.
+
+    """
+    # Determines the number of carriers at the metastable level
+    n2_normT1 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * properties.absCross / properties.freq))
+    n2_normT2 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * (properties.absCross + properties.emiCross) / properties.freq)) + 1
+    n2_norm   = n2_normT1 / n2_normT2
+    # Determines the overlap integral between the field envelope and the doping profile.
+    temp = npmat.repmat(2 * np.pi * param_edf.r * n2_norm, np.shape(properties.i_k)[1], 1)
+    intOL = np.trapz(temp * np.transpose(properties.i_k) * param_edf.dr)
+    # Determine matrices according to signal power and ASE power
+    xi_k   = intOL * (properties.absCoef + properties.gainCoef) / properties.gamma - (properties.absCoef + properties.lossS)
+    tauASE = intOL * (properties.gainCoef / properties.gamma) * Planck * properties.freq * properties.noiseBand
+    # Updates the power variation
+    return properties.uk * (P * xi_k + properties.ASE * tauASE)
 
 def edfaSM(Ei, Fs, Fc, param_edfa):
     ## Verify arguments
@@ -408,30 +484,7 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     return Eout, PpumpF, PpumpB
 
 
-def gilesSpectrum(z, P, properties):
-    # Determines the number of carriers at the metastable level
-    n2_normT1 = dots(P, properties.const1)
-    n2_normT2 = dots(P, properties.const2) + 1
-    n2_norm   = n2_normT1 / n2_normT2
-    # Determine matrices according to signal power and ASE power
-    xi_k   = n2_norm * properties.const3 - properties.const4
-    tauASE = n2_norm * properties.const5
-    # Updates the power variation
-    return properties.uk * (P * xi_k + properties.ASE * tauASE)
 
-def gilesSpatial(z, P, properties, param_edf):
-    # Determines the number of carriers at the metastable level
-    n2_normT1 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * properties.absCross / properties.freq))
-    n2_normT2 = (properties.tal / Planck) * (properties.i_k @ np.transpose(P * (properties.absCross + properties.emiCross) / properties.freq)) + 1
-    n2_norm   = n2_normT1 / n2_normT2
-    # Determines the overlap integral between the field envelope and the doping profile.
-    temp = npmat.repmat(2 * np.pi * param_edf.r * n2_norm, np.shape(properties.i_k)[1], 1)
-    intOL = np.trapz(temp * np.transpose(properties.i_k) * param_edf.dr)
-    # Determine matrices according to signal power and ASE power
-    xi_k   = intOL * (properties.absCoef + properties.gainCoef) / properties.gamma - (properties.absCoef + properties.lossS)
-    tauASE = intOL * (properties.gainCoef / properties.gamma) * Planck * properties.freq * properties.noiseBand
-    # Updates the power variation
-    return properties.uk * (P * xi_k + properties.ASE * tauASE)
 
 def fieldIntLP01(param_edfa, V):
     # u and v calculation
@@ -541,6 +594,3 @@ def updtCnst(param):
     param.const4 = param.absCoef + param.lossS
     param.const5 = param.gainCoef * Planck * param.freq * param.noiseBand
     return param
-
-
-
