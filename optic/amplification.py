@@ -65,7 +65,7 @@ def OSA(x, Fs, Fc=193.1e12):
     plt.xlabel("Frequency [nm]")
     plt.ylabel("Magnitude [dBm]")
     plt.grid(True)
-    
+
     return None
 
 def getSpectrum(x, Fs, Fc, window=mlab.window_none, sides="twosided"):
