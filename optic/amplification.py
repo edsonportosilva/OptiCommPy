@@ -74,19 +74,18 @@ def OSA(x, Fs, Fc=193.1e12):
     plot
 
     """
-    if (np.shape(x)[1] == 1):    # plot X
-        ZX, freqs = getSpectrum(x[:,0], Fs, Fc)
-        plt.plot( 1e9 * c / freqs, ZX, label="X Pol.")
-        yMin = -70
-        plt.ylim([yMin, ZX.max() + 10])
-    elif (np.shape(x)[1] == 2):  # plot Y
+    ZX, freqs = getSpectrum(x[:,0], Fs, Fc)
+    yMin = -70
+    yMax = ZX.max() + 10
+    plt.plot( freqs, ZX, label="X Pol.")
+    plt.ylim([yMin, yMax])
+    if (np.shape(x)[1] == 2):
         ZY, freqs = getSpectrum(x[:,1], Fs, Fc)
-        plt.plot( 1e9 * c / freqs, ZY, label="Y Pol.", alpha=0.5)
-        plt.ylim([yMin, np.array([ZX.max(), ZY.max()]).max() + 10])
+        plt.plot( freqs, ZY, label="Y Pol.", alpha=0.5)
+        plt.ylim([yMin, np.array([ZX.max(), ZY.max()]).max() + 10])   
     plt.xlabel("Frequency [nm]")
     plt.ylabel("Magnitude [dBm]")
     plt.grid(True)
-    plt.legend()
     
     return
 
@@ -108,7 +107,7 @@ def getSpectrum(x, Fs, Fc, window=mlab.window_none, sides="twosided"):
     X : np.array
         Signal's FFT
     freqs: np.array
-        Frequency array @ Fc.
+        Frequency array @ Fc [nm].
 
     """
     specX, freqs = mlab.magnitude_spectrum(
@@ -116,7 +115,7 @@ def getSpectrum(x, Fs, Fc, window=mlab.window_none, sides="twosided"):
     )
     freqs += Fc
     X = 10 * np.log10(1000 * (specX ** 2))
-    return X, freqs
+    return X, 1e9*c/freqs
 
 def gilesSpectrum(z, P, properties):
     """
