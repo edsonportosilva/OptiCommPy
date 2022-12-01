@@ -4,7 +4,7 @@ from numba import njit
 from scipy.special import erf
 from optic.modulation import demodulateGray, GrayMapping
 from optic.dsp import pnorm
-
+import logging as logg
 
 @njit
 def signal_power(x):
@@ -69,7 +69,7 @@ def fastBERcalc(rx, tx, M, constType):
     M : int
         Modulation order.
     constType : string
-        Modulation type: 'qam' or 'psk'.
+        Modulation type: 'qam', 'psk', 'pam' or 'ook'.
 
     Returns
     -------
@@ -81,6 +81,10 @@ def fastBERcalc(rx, tx, M, constType):
         Estimated SNR from the received constellation.
 
     """
+    if M != 2 and constType == 'ook':
+        logg.warn('OOK has only 2 symbols, but M != 2. Changing M to 2.')
+        M = 2
+        
     # constellation parameters
     constSymb = GrayMapping(M, constType)
     Es = np.mean(np.abs(constSymb) ** 2)
