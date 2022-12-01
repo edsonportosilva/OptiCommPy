@@ -276,7 +276,7 @@ for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
 # -
 
 plt.figure()
-plt.plot(powerValues, np.log10(Pb),'--',label='Pb (theory)')
+#plt.plot(powerValues, np.log10(Pb),'--',label='Pb (theory)')
 plt.plot(powerValues, np.log10(BER),'o',label='BER')
 plt.grid()
 plt.ylabel('log10(BER)')
