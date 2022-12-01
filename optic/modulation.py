@@ -3,7 +3,7 @@ import numpy as np
 from numpy.matlib import repmat
 from commpy.utilities import bitarray2dec, dec2bitarray
 from numba import njit
-
+import logging as logg
 
 def GrayCode(n):
     """
@@ -53,10 +53,12 @@ def GrayMapping(M, constType):
         Gray bit sequence as integer decimal).
 
     """
-    if M == 2:
-        L = 1
-    elif constType == 'pam':
-        L = int(np.sqrt(M)+1)
+    if M != 2 and constType == 'ook':
+        logg.warn('OOK has only 2 symbols, but M != 2. Changing M to 2.')
+        M = 2
+    
+    if constType == 'pam' or constType == 'ook':
+        L = int(M-1)
     else:
         L = int(np.sqrt(M)-1)
 
@@ -140,6 +142,10 @@ def modulateGray(bits, M, constType):
         bits modulated to complex constellation symbols.
 
     """
+    if M != 2 and constType == 'ook':
+        logg.warn('OOK has only 2 symbols, but M != 2. Changing M to 2.')
+        M = 2
+
     bitsSymb = int(np.log2(M))
     const = GrayMapping(M, constType)
 
@@ -170,6 +176,10 @@ def demodulateGray(symb, M, constType):
         sequence of demodulated bits.
 
     """
+    if M != 2 and constType == 'ook':
+        logg.warn('OOK has only 2 symbols, but M != 2. Changing M to 2.')
+        M = 2
+
     const = GrayMapping(M, constType)
 
     minEuclid_vec = np.vectorize(minEuclid, excluded=[1])
