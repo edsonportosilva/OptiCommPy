@@ -26,8 +26,9 @@ if 'google.colab' in str(get_ipython()):
 import numpy as np
 from commpy.utilities  import upsample
 from optic.models import mzm, photodiode, linFiberCh, edfa
+from optic.modulation import GrayMapping, modulateGray
 from optic.metrics import signal_power
-from optic.dsp import firFilter, pulseShape, lowPassFIR
+from optic.dsp import firFilter, pulseShape, lowPassFIR, pnorm
 from optic.core import parameters
 from optic.plot import eyediagram
 import matplotlib.pyplot as plt
@@ -56,27 +57,25 @@ figsize(10, 3)
 
 # +
 # simulation parameters
-SpS = 16
-
+SpS = 16 # samples per symbol
+M = 2 # order of the modulation format
 Rs = 10e9 # Symbol rate (for OOK case Rs = Rb)
 Tsymb = 1/Rs # Symbol period in seconds
 Fs = 1/(Tsymb/SpS) # Signal sampling frequency (samples/second)
 Ts = 1/Fs # Sampling period
 
-Pi_dBm = 0 # optical signal power at modulator input in dBm
-
 # MZM parameters
 Vπ = 2
 Vb = -Vπ/2
-Pi = 10**(Pi_dBm/10)*1e-3 # optical signal power in W at the MZM input
+Pi_dBm = 0 # laser optical power at the input of the MZM in dBm
+Pi = 10**(Pi_dBm/10)*1e-3 # convert from dBm to W
 
 # generate pseudo-random bit sequence
 bitsTx = np.random.randint(2, size=100000)
-n = np.arange(0, bitsTx.size)
 
-# map bits to electrical pulses
-symbTx = 2*bitsTx-1
-symbTx = symbTx/np.sqrt(signal_power(symbTx))
+# generate ook modulated symbol sequence
+symbTx = modulateGray(bitsTx, M, 'ook')    
+symbTx = pnorm(symbTx) # power normalization
 
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
@@ -85,7 +84,7 @@ symbolsUp = upsample(symbTx, SpS)
 pulse = pulseShape('nrz', SpS)
 pulse = pulse/max(abs(pulse))
 
-# pulse formatting
+# pulse shaping
 sigTx = firFilter(pulse, symbolsUp)
 
 # optical modulation
@@ -220,6 +219,7 @@ plt.xlim(0,err.size);
 # +
 # simulation parameters
 SpS = 16            # Samples per symbol
+M = 2               # order of the modulation format
 Rs = 40e9           # Symbol rate (for the OOK case, Rs = Rb)
 Tsymb = 1/Rs        # Symbol period in seconds
 Fs = 1/(Tsymb/SpS)  # Signal sampling frequency (samples/second)
@@ -246,9 +246,9 @@ for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
     bitsTx = np.random.randint(2, size=10**6)
     n = np.arange(0, bitsTx.size)
 
-    # map bits to electrical pulses
-    symbTx = 2*bitsTx-1
-    symbTx = symbTx/np.sqrt(signal_power(symbTx))
+    # generate ook modulated symbol sequence
+    symbTx = modulateGray(bitsTx, M, 'ook')    
+    symbTx = pnorm(symbTx) # power normalization
 
     # upsampling
     symbolsUp = upsample(symbTx, SpS)
@@ -303,3 +303,5 @@ plt.title('Bit-error performance vs input power at the pin receiver')
 plt.legend();
 plt.ylim(-10,0);
 plt.xlim(min(powerValues), max(powerValues));
+
+
