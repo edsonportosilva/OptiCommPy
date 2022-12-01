@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -43,9 +43,9 @@ import os.path as path
 
 # +
 # Run AWGN simulation 
-EbN0dB = 15 # SNR per bit
-M      = 16 # order of the modulation format
-constType = 'qam' # 'qam' or 'psk'
+EbN0dB = 20 # SNR per bit
+M      = 16  # order of the modulation format
+constType = 'qam' # 'qam', 'psk', 'pam' or 'ook'
 
 # modulation parameters
 constSymb = GrayMapping(M, constType)             # Gray constellation mapping
