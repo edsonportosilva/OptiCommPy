@@ -126,20 +126,20 @@ axs[1].legend(loc='upper left')
 axs[1].grid()
 # -
 
-# ### Linear fiber channel model
+# ### Linear fiber channel model (fiber + EDFA opt. amplifier)
 
 # +
 # linear optical channel
-L = 60 # total link distance [km]
-α = 0.2 # fiber loss parameter [dB/km]
-D = 16  # fiber dispersion parameter [ps/nm/km]
+L = 50         # total link distance [km]
+α = 0.2        # fiber loss parameter [dB/km]
+D = 16         # fiber dispersion parameter [ps/nm/km]
 Fc = 193.1e12  # central optical frequency [Hz]
 
 sigCh = linFiberCh(sigTxo, L, α, D, Fc, Fs)
 
 # receiver pre-amplifier
-G = α*L
-NF = 4.5
+G = α*L    # edfa gain
+NF = 4.5   # edfa noise figure
 sigCh = edfa(sigCh, Fs, G, NF, Fc)
 # -
 
@@ -161,8 +161,8 @@ I_Rx = photodiode(sigCh, paramPD)
 
 discard = 100
 
-eyediagram(I_Rx_ideal[discard:-discard].copy(), I_Rx.size-2*discard, SpS, plotlabel='signal at Tx', ptype='fancy')
-eyediagram(I_Rx[discard:-discard].copy(), I_Rx.size-2*discard, SpS, plotlabel='signal at Rx', ptype='fancy')
+eyediagram(I_Rx_ideal[discard:-discard], I_Rx.size-2*discard, SpS, plotlabel='signal at Tx', ptype='fancy')
+eyediagram(I_Rx[discard:-discard], I_Rx.size-2*discard, SpS, plotlabel='signal at Rx', ptype='fancy')
 
 # +
 I_Rx = I_Rx/np.std(I_Rx)
@@ -303,5 +303,3 @@ plt.title('Bit-error performance vs input power at the pin receiver')
 plt.legend();
 plt.ylim(-10,0);
 plt.xlim(min(powerValues), max(powerValues));
-
-
