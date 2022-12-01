@@ -137,7 +137,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             )
 
             H, xedges, yedges = np.histogram2d(
-                taxis, y_, bins=100, range=imRange
+                taxis, y_, bins=250, range=imRange
             )
 
             H = H.T
