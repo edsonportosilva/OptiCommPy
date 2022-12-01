@@ -57,12 +57,12 @@ figsize(10, 3)
 
 # +
 # simulation parameters
-SpS = 16 # samples per symbol
-M = 4 # order of the modulation format
-Rs = 10e9 # Symbol rate (for OOK case Rs = Rb)
-Tsymb = 1/Rs # Symbol period in seconds
+SpS = 16           # samples per symbol
+M = 4              # order of the modulation format
+Rs = 10e9          # Symbol rate (for OOK case Rs = Rb)
+Tsymb = 1/Rs       # Symbol period in seconds
 Fs = 1/(Tsymb/SpS) # Signal sampling frequency (samples/second)
-Ts = 1/Fs # Sampling period
+Ts = 1/Fs          # Sampling period
 
 # MZM parameters
 Vπ = 2
@@ -71,7 +71,7 @@ Pi_dBm = 0 # laser optical power at the input of the MZM in dBm
 Pi = 10**(Pi_dBm/10)*1e-3 # convert from dBm to W
 
 # generate pseudo-random bit sequence
-bitsTx = np.random.randint(2, size=int(np.log2(M)*100000))
+bitsTx = np.random.randint(2, size=int(np.log2(M)*1e5))
 
 # generate ook modulated symbol sequence
 symbTx = modulateGray(bitsTx, M, 'pam')    
