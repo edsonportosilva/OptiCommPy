@@ -28,6 +28,7 @@ if 'google.colab' in str(get_ipython()):
 from optic.modulation import modulateGray, demodulateGray, GrayMapping
 from optic.metrics import signal_power, fastBERcalc
 from optic.models import awgn
+from optic.dsp import pnorm
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm.notebook import tqdm
@@ -60,7 +61,7 @@ bits = np.random.randint(2, size = 6*2**14)
 symbTx = modulateGray(bits, M, constType)
 
 # normalize symbols energy to 1
-symbTx = symbTx/np.sqrt(signal_power(symbTx))
+symbTx = pnorm(symbTx)
 
 # AWGN    
 snrdB  = EbN0dB + 10*np.log10(np.log2(M))
