@@ -51,6 +51,9 @@ HTML("""
 """)
 # -
 
+# %load_ext autoreload
+# %autoreload 2
+
 figsize(10, 3)
 
 # ### Intensity modulation (IM) with Pulse Amplitude Modulation (PAM)
@@ -71,7 +74,7 @@ Pi_dBm = 0 # laser optical power at the input of the MZM in dBm
 Pi = 10**(Pi_dBm/10)*1e-3 # convert from dBm to W
 
 # generate pseudo-random bit sequence
-bitsTx = np.random.randint(2, size=100000)
+bitsTx = np.random.randint(2, size=int(np.log2(M)*100000))
 
 # generate ook modulated symbol sequence
 symbTx = modulateGray(bitsTx, M, 'pam')    
@@ -114,7 +117,7 @@ axs[1].grid()
 fig, axs = plt.subplots(1, 2, figsize=(16,3))
 # plot psd
 axs[0].set_xlim(-3*Rs,3*Rs);
-axs[0].set_ylim(-270,-170);
+axs[0].set_ylim(-255,-155);
 axs[0].psd(np.abs(sigTxo)**2, Fs=Fs, NFFT = 16*1024, sides='twosided', label = 'Optical signal spectrum')
 axs[0].legend(loc='upper left');
 
@@ -126,20 +129,20 @@ axs[1].legend(loc='upper left')
 axs[1].grid()
 # -
 
-# ### Linear fiber channel model
+# ### Linear fiber channel model (fiber + EDFA opt. amplifier)
 
 # +
 # linear optical channel
-L = 50 # total link distance [km]
-α = 0.2 # fiber loss parameter [dB/km]
-D = 16  # fiber dispersion parameter [ps/nm/km]
+L = 40         # total link distance [km]
+α = 0.2        # fiber loss parameter [dB/km]
+D = 16         # fiber dispersion parameter [ps/nm/km]
 Fc = 193.1e12  # central optical frequency [Hz]
 
 sigCh = linFiberCh(sigTxo, L, α, D, Fc, Fs)
 
 # receiver pre-amplifier
-G = α*L
-NF = 4.5
+G = α*L    # edfa gain
+NF = 4.5   # edfa noise figure
 sigCh = edfa(sigCh, Fs, G, NF, Fc)
 # -
 
@@ -161,8 +164,8 @@ I_Rx = photodiode(sigCh, paramPD)
 
 discard = 100
 
-eyediagram(I_Rx_ideal[discard:-discard].copy(), I_Rx.size-2*discard, SpS, plotlabel='signal at Tx', ptype='fancy')
-eyediagram(I_Rx[discard:-discard].copy(), I_Rx.size-2*discard, SpS, plotlabel='signal at Rx', ptype='fancy')
+eyediagram(I_Rx_ideal[discard:-discard], I_Rx.size-2*discard, SpS, plotlabel='signal at Tx', ptype='fancy')
+eyediagram(I_Rx[discard:-discard], I_Rx.size-2*discard, SpS, plotlabel='signal at Rx', ptype='fancy')
 
 # +
 I_Rx = I_Rx/np.std(I_Rx)
