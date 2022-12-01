@@ -44,7 +44,7 @@ import os.path as path
 
 # +
 # Run AWGN simulation 
-EbN0dB = 20 # SNR per bit
+EbN0dB = 25 # SNR per bit
 M      = 16  # order of the modulation format
 constType = 'qam' # 'qam', 'psk', 'pam' or 'ook'
 
@@ -84,3 +84,6 @@ plt.grid()
 for ind, symb in enumerate(constSymb/np.sqrt(Es)):
     bitMap[ind,:]
     plt.annotate(str(bitMap[ind,:])[1:-1:2], xy = (symb.real, symb.imag))
+# -
+
+
