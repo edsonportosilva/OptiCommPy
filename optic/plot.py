@@ -86,7 +86,7 @@ def pconst(x, lim=False, R=1.5):
     return None
 
 
-def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
+def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     """
     Plot the eye diagram of a modulated signal waveform.
 
@@ -96,6 +96,8 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     :param type: 'fast' or 'fancy'
     :param plotlabel: label for the plot legend
     """
+    sig = sigIn.copy()
+    
     if np.iscomplex(sig).any():
         d = 1
         if not (plotlabel):
@@ -122,7 +124,7 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
         if ptype == "fancy":
             f = interp1d(np.arange(y.size), y, kind="cubic")
 
-            Nup = 10*SpS
+            Nup = 20*SpS
             tnew = np.arange(y.size) * (1 / Nup)
             y_ = f(tnew)
 
@@ -143,6 +145,7 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             # plt.figure(figsize=(10, 3))
             plt.imshow(
                 H,
+                cmap='turbo',
                 origin="lower",
                 aspect="auto",
                 extent=[0, n, yedges[0], yedges[-1]],
