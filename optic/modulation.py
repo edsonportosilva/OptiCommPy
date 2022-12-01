@@ -43,7 +43,7 @@ def GrayMapping(M, constType):
     ----------
     M : int
         modulation order
-    constType : 'qam' or 'psk'
+    constType : 'qam', 'psk', 'pam' or 'ook'.
         type of constellation.
 
     Returns
@@ -53,12 +53,20 @@ def GrayMapping(M, constType):
         Gray bit sequence as integer decimal).
 
     """
-    L = int(np.sqrt(M)-1)
+    if M == 2:
+        L = 1
+    elif constType == 'pam':
+        L = int(np.sqrt(M)+1)
+    else:
+        L = int(np.sqrt(M)-1)
+
     bitsSymb = int(np.log2(M))
 
     code = GrayCode(bitsSymb)
+    if constType == 'pam' or constType == 'ook':
+        const = np.arange(-L, L+1, 2)
 
-    if constType == 'qam':
+    elif constType == 'qam':
         PAM = np.arange(-L, L+1, 2)
         PAM = np.array([PAM])
 
@@ -124,7 +132,7 @@ def modulateGray(bits, M, constType):
     M : int
         order of the modulation format.
     constType : string
-        'qam' or 'psk'.
+        'qam', 'psk', 'pam' or 'ook'.
 
     Returns
     -------
@@ -154,7 +162,7 @@ def demodulateGray(symb, M, constType):
     M : int
         order of the modulation format.
     constType : string
-        'qam' or 'psk'.
+        'qam', 'psk', 'pam' or 'ook'.
 
     Returns
     -------
