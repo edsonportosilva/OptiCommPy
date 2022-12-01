@@ -35,10 +35,11 @@ from tqdm.notebook import tqdm
 from numba import njit
 
 import os.path as path
-# -
 
-# %load_ext autoreload
-# %autoreload 2
+# +
+# #%load_ext autoreload
+# #%autoreload 2
+# -
 
 # ## Define modulation, modulate and demodulate data
 
