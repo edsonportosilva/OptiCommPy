@@ -51,9 +51,6 @@ HTML("""
 """)
 # -
 
-# %load_ext autoreload
-# %autoreload 2
-
 figsize(10, 3)
 
 # ### Intensity modulation (IM) with Pulse Amplitude Modulation (PAM)
@@ -288,5 +285,3 @@ plt.title('Bit-error performance vs input power at the pin receiver')
 plt.legend();
 plt.ylim(-10,0);
 plt.xlim(min(powerValues), max(powerValues));
-
-
