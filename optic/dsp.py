@@ -13,16 +13,16 @@ def firFilter(h, x):
 
     Parameters
     ----------
-    h : ndarray
+    h : np.array
         Coefficients of the FIR filter (impulse response, symmetric).
-    x : ndarray
+    x : np.array
         Input signal.
     prec: cp.dtype
         Size of the complex representation.
 
     Returns
     -------
-    y : ndarray
+    y : np.array
         Output (filtered) signal.
     """
     try:
@@ -58,7 +58,7 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
 
     Returns
     -------
-    filterCoeffs : nparray
+    filterCoeffs : np.array
         Array of filter coefficients (normalized).
 
     """
@@ -127,7 +127,7 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
 
     Returns
     -------
-    h : ndarray
+    h : np.array
         Filter coefficients.
 
     """
@@ -153,7 +153,7 @@ def decimate(Ei, param):
 
     Parameters
     ----------
-    Ei : ndarray
+    Ei : np.array
         Input signal.
     param : core.parameter
     Decimation parameters:
@@ -162,7 +162,7 @@ def decimate(Ei, param):
 
     Returns
     -------
-    Eo : ndarray
+    Eo : np.array
         Decimated signal.
 
     """
@@ -241,9 +241,9 @@ def symbolSync(rx, tx, SpS):
 
     Parameters
     ----------
-    rx : ndarray
+    rx : np.array
         Received symbol sequence.
-    tx : ndarray
+    tx : np.array
         Transmitted symbol sequence.
     SpS : int
         Samples per symbol of input signals.
