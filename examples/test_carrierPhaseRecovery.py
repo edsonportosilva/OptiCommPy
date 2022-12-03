@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.3
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -56,11 +56,9 @@ HTML("""
 
 figsize(10, 3)
 
-# +
-# #%load_ext autoreload
-# #%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 # #%load_ext line_profiler
-# -
 
 #
 # ## Transmitter
@@ -70,11 +68,11 @@ figsize(10, 3)
 # +
 # Transmitter parameters:
 paramTx = parameters()
-paramTx.M   = 8           # order of the modulation format
-paramTx.constType = 'psk'
+paramTx.M   = 64           # order of the modulation format
+paramTx.constType = 'qam'  # constellation type
 paramTx.Rs  = 32e9         # symbol rate [baud]
 paramTx.SpS = 8            # samples per symbol
-paramTx.Nbits = 120000      # total number of bits per polarization
+paramTx.Nbits = 120000     # total number of bits per polarization
 paramTx.pulse = 'rrc'      # pulse shaping filter
 paramTx.Ntaps = 1024       # number of pulse shaping filter coefficients
 paramTx.alphaRRC = 0.01    # RRC rolloff
@@ -92,7 +90,7 @@ Fs = paramTx.Rs*paramTx.SpS # sampling frequency
 SNR = 25
 sigCh = awgn(sigTx, SNR, Fs, paramTx.Rs)
 
-# ###  coherent detection and demodulation
+# ###  Coherent detection and demodulation
 
 # +
 # Receiver
@@ -111,7 +109,7 @@ print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 0*64e6                # frequency offset
+FO      = 150e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
 lw      = 200e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
@@ -152,7 +150,7 @@ sigRx = firFilter(pulse, sigRx)
 pconst(sigRx[0::paramTx.SpS,:])
 # -
 
-# ### Downsample to 1 sample/symbol and re-synchronization with transmitted sequences
+# ### Downsample to 1 sample/symbol and power normalization
 
 # +
 # decimation
@@ -176,7 +174,7 @@ paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
 paramCPR.constType = paramTx.constType
 paramCPR.N   = 85
-paramCPR.B   = 128
+paramCPR.B   = 64
        
 y_CPR, θ = cpr(sigRx, paramCPR=paramCPR)
 
@@ -201,7 +199,7 @@ for k in range(y_CPR.shape[1]):
     rot = np.mean(d[:,k]/y_CPR[:,k])
     y_CPR[:,k] = rot*y_CPR[:,k]
 
-y_CPR = pnorm(y_CPR) #/np.sqrt(signal_power(y_CPR))
+y_CPR = pnorm(y_CPR)
 
 ind = np.arange(discard, d.shape[0]-discard)
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
