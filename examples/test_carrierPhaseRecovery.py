@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.11.3
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -28,9 +28,7 @@ if 'google.colab' in str(get_ipython()):
 import matplotlib.pyplot as plt
 import numpy as np
 
-from commpy.modulation import QAMModem
-
-from optic.dsp import pulseShape, firFilter, decimate, symbolSync
+from optic.dsp import pulseShape, firFilter, decimate, symbolSync, pnorm
 from optic.models import awgn, phaseNoise, pdmCoherentReceiver
 from optic.carrierRecovery import cpr
 from optic.tx import simpleWDMTx
@@ -72,7 +70,8 @@ figsize(10, 3)
 # +
 # Transmitter parameters:
 paramTx = parameters()
-paramTx.M   = 64           # order of the modulation format
+paramTx.M   = 8           # order of the modulation format
+paramTx.constType = 'psk'
 paramTx.Rs  = 32e9         # symbol rate [baud]
 paramTx.SpS = 8            # samples per symbol
 paramTx.Nbits = 120000      # total number of bits per polarization
@@ -129,7 +128,7 @@ t       = np.arange(0, len(sigTx))*Ts
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
 # polarization multiplexed coherent optical receiver
-sigRx = pdmCoherentReceiver(sigCh, sigLO, θsig = 0, Rdx=1, Rdy=1)
+sigRx = pdmCoherentReceiver(sigCh, sigLO, θsig = 0)
 
 # plot constellation
 pconst(sigRx[0::paramTx.SpS,:])
@@ -162,16 +161,9 @@ paramDec.SpS_in  = paramTx.SpS
 paramDec.SpS_out = 1
 sigRx = decimate(sigRx, paramDec)
 
-d = symbolSync(sigRx, symbTx, 1)
-
-# correct (possible) phase ambiguity w.r.t transmitted symbols
-for k in range(sigRx.shape[1]):
-    rot = np.mean(d[:,k]/sigRx[:,k])
-    sigRx[:,k] = rot*sigRx[:,k]
-
 # power normalization
-sigRx = sigRx/np.sqrt(signal_power(sigRx))
-d = d/np.sqrt(signal_power(d))
+sigRx = pnorm(sigRx) 
+d = pnorm(symbTx)
 
 pconst(sigRx)
 # -
@@ -182,12 +174,13 @@ pconst(sigRx)
 paramCPR = parameters()
 paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
+paramCPR.constType = paramTx.constType
 paramCPR.N   = 85
-paramCPR.B   = 64
+paramCPR.B   = 128
        
 y_CPR, θ = cpr(sigRx, paramCPR=paramCPR)
 
-y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+y_CPR = pnorm(y_CPR)
 
 plt.figure()
 plt.title('CPR estimated phase')
@@ -208,12 +201,12 @@ for k in range(y_CPR.shape[1]):
     rot = np.mean(d[:,k]/y_CPR[:,k])
     y_CPR[:,k] = rot*y_CPR[:,k]
 
-y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+y_CPR = pnorm(y_CPR) #/np.sqrt(signal_power(y_CPR))
 
 ind = np.arange(discard, d.shape[0]-discard)
-BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
 
 print('     pol.X     pol.Y      ')
 print('SER: %.2e, %.2e'%(SER[0], SER[1]))
@@ -229,6 +222,7 @@ print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 paramCPR = parameters()
 paramCPR.alg = 'ddpll'
 paramCPR.M   = paramTx.M
+paramCPR.constType = paramTx.constType
 paramCPR.tau1 = 1/(2*np.pi*10e3)
 paramCPR.tau2 = 1/(2*np.pi*10e3)
 paramCPR.Kv  = 0.1
@@ -260,9 +254,9 @@ for k in range(y_CPR.shape[1]):
 y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
 
 ind = np.arange(discard, d.shape[0]-discard)
-BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
 
 print('     pol.X     pol.Y      ')
 print('SER: %.2e, %.2e'%(SER[0], SER[1]))
@@ -270,3 +264,6 @@ print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+# -
+
+
