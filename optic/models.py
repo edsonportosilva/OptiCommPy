@@ -5,8 +5,9 @@ from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from numpy.random import normal
 from tqdm.notebook import tqdm
-from optic.metrics import signal_power
+
 from optic.dsp import lowPassFIR
+from optic.metrics import signal_power
 
 try:
     from optic.dspGPU import firFilter

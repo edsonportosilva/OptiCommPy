@@ -1,14 +1,16 @@
 """Functions from models.py adapted to run with GPU (CuPy) processing."""
+import logging as logg
+
 import cupy as cp
 import numpy as np
 import scipy.constants as const
+from cupy.linalg import norm
 from cupy.random import normal
 from cupyx.scipy.fft import fft, fftfreq, ifft
-from cupy.linalg import norm
 from tqdm.notebook import tqdm
 
 from optic.metrics import signal_power
-import logging as logg
+
 
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12, prec=cp.complex128):
     """

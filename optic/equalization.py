@@ -1,4 +1,6 @@
 """Functions for adaptive and static equalization."""
+import logging as logg
+
 import numpy as np
 import scipy.constants as const
 from commpy.modulation import QAMModem
@@ -7,7 +9,7 @@ from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
 from optic.models import linFiberCh
-import logging as logg
+
 
 def edc(Ei, L, D, Fc, Fs):
     """

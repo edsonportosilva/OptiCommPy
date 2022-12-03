@@ -1,9 +1,11 @@
 """Digital modulation utilities."""
+import logging as logg
+
 import numpy as np
-from numpy.matlib import repmat
 from commpy.utilities import bitarray2dec, dec2bitarray
 from numba import njit
-import logging as logg
+from numpy.matlib import repmat
+
 
 def GrayCode(n):
     """

@@ -1,10 +1,13 @@
 """Metrics for signal and performance characterization."""
+import logging as logg
+
 import numpy as np
 from numba import njit
 from scipy.special import erf
-from optic.modulation import demodulateGray, GrayMapping
+
 from optic.dsp import pnorm
-import logging as logg
+from optic.modulation import GrayMapping, demodulateGray
+
 
 @njit
 def signal_power(x):

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
-from commpy.channelcoding.ldpc import triang_ldpc_systematic_encode as enc
-from commpy.channelcoding.ldpc import ldpc_bp_decode as dec
 import re
+
+import numpy as np
+from commpy.channelcoding.ldpc import ldpc_bp_decode as dec
+from commpy.channelcoding.ldpc import triang_ldpc_systematic_encode as enc
+
 
 def ldpcEncode(b, LDPCparams):
     """

@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from commpy.filters import rcosfilter, rrcosfilter
 from commpy.utilities import upsample
-from scipy import signal
 from numba import njit
+from scipy import signal
 
 
 def firFilter(h, x):
