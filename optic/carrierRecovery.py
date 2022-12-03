@@ -47,7 +47,6 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
         Time-varying estimated phase-shifts.
 
     """
-
     # check input parameters
     alg = getattr(paramCPR, "alg", "bps")
     M = getattr(paramCPR, "M", 4)
@@ -104,7 +103,6 @@ def bps(Ei, N, constSymb, B):
         Time-varying estimated phase-shifts.
 
     """
-
     nModes = Ei.shape[1]
 
     ϕ_test = np.arange(0, B) * (np.pi / 2) / B  # test phases
@@ -214,12 +212,25 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     return θ
 
 
-def fourthPowerFOE(Ei, Ts, plotSpec=False):
+def fourthPowerFOE(Ei, Fs, plotSpec=False):
     """
-    4th power frequency offset estimator (FOE)
-    """
+    4th power frequency offset estimator (FOE).
 
-    Fs = 1 / Ts
+    Parameters
+    ----------
+    Ei : np.array
+        Input signal.
+    Fs : real scalar
+        Sampling frequency.
+    plotSpec : bolean, optional
+        Plot spectrum. The default is False.
+
+    Returns
+    -------
+    Real scalar
+        Estimated frequency offset.
+
+    """
     Nfft = len(Ei)
 
     f = Fs * fftfreq(Nfft)
