@@ -64,10 +64,13 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
-        
+
     # constellation parameters
     constSymb = GrayMapping(M, constType)
     constSymb = pnorm(constSymb)
+    
+    # 4th power frequency offset estimation/compensation
+    Ei, _ = fourthPowerFOE(Ei, 1/Ts)
 
     if alg == "ddpll":
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
@@ -235,13 +238,20 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):
         Estimated frequency offset.
 
     """
-    Nfft = len(Ei)
+    Nfft = Ei.shape[0]
 
     f = Fs * fftfreq(Nfft)
     f = fftshift(f)
 
-    f4 = 10 * np.log10(np.abs(fftshift(fft(Ei ** 4))))
-    indFO = np.argmax(f4)
+    nModes = Ei.shape[1]
+    Eo = Ei.copy()
+    t = np.arange(0, Eo.shape[0])*1/Fs
+
+    for n in range(nModes):
+        f4 = 10 * np.log10(np.abs(fftshift(fft(Ei[:, n] ** 4))))
+        indFO = np.argmax(f4)
+        fo = f[indFO] / 4
+        Eo[:, n] = Ei[:, n] * np.exp(-1j * 2 * np.pi * fo * t)
 
     if plotSpec:
         plt.figure()
@@ -250,4 +260,4 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):
         plt.legend()
         plt.xlim(min(f), max(f))
         plt.grid()
-    return f[indFO] / 4
+    return Eo, f[indFO] / 4
