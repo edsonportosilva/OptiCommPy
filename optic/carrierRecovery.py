@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from commpy.modulation import QAMModem
+from optic.modulation import GrayMapping
+from optic.dsp import pnorm
 from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
 
@@ -50,6 +51,7 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     # check input parameters
     alg = getattr(paramCPR, "alg", "bps")
     M = getattr(paramCPR, "M", 4)
+    constType = getattr(paramCPR, 'constType','qam')
     B = getattr(paramCPR, "B", 64)
     N = getattr(paramCPR, "N", 35)
     Kv = getattr(paramCPR, "Kv", 0.1)
@@ -62,8 +64,10 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
-    mod = QAMModem(m=M)
-    constSymb = mod.constellation / np.sqrt(mod.Es)
+        
+    # constellation parameters
+    constSymb = GrayMapping(M, constType)
+    constSymb = pnorm(constSymb)
 
     if alg == "ddpll":
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
