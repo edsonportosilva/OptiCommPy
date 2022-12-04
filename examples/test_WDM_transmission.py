@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -31,7 +31,7 @@ if 'google.colab' in str(get_ipython()):
 import matplotlib.pyplot as plt
 import numpy as np
 
-from optic.dsp import pulseShape, firFilter, decimate, symbolSync
+from optic.dsp import pulseShape, firFilter, decimate, symbolSync, pnorm
 from optic.models import phaseNoise, pdmCoherentReceiver
 
 try:
@@ -153,7 +153,7 @@ print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 0*64e6                # frequency offset
+FO      = 150e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
 lw      = 200e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
@@ -181,7 +181,7 @@ paramPD.ideal = True
 sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig, paramPD)
 
 # plot received constellations
-pconst(sigRx[0::paramTx.SpS,:], lim=True, R=3)
+pconst(sigRx[0::paramTx.SpS,:], R=3)
 
 # + [markdown] id="1cbf39db"
 # ### Matched filtering and CD compensation
@@ -199,13 +199,13 @@ pulse = pulse/np.max(np.abs(pulse))
 sigRx = firFilter(pulse, sigRx)
 
 # plot constellations after matched filtering
-pconst(sigRx[0::paramTx.SpS,:], lim=True, R=3)
+pconst(sigRx[0::paramTx.SpS,:], R=3)
 
 # CD compensation
 sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
 
 # plot constellations after CD compensation
-pconst(sigRx[0::paramTx.SpS,:], lim=True, R=3)
+pconst(sigRx[0::paramTx.SpS,:], R=3)
 
 # + [markdown] id="901da914"
 # ### Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences
@@ -223,11 +223,8 @@ symbRx = symbolSync(sigRx, symbTx, 2)
 # ### Power normalization
 
 # + id="e6af9d14"
-x = sigRx
-d = symbRx
-
-x = x.reshape(len(x),2)/np.sqrt(signal_power(x))
-d = d.reshape(len(d),2)/np.sqrt(signal_power(d))
+x = pnorm(sigRx)
+d = pnorm(symbRx)
 
 # + [markdown] id="f9c25025"
 # ### Adaptive equalization
@@ -254,7 +251,7 @@ y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
 #plot constellations after adaptive equalization
 discard = 5000
-pconst([y_EQ[discard:-discard,:], d], lim=True)
+pconst(y_EQ[discard:-discard,:])
 
 # + [markdown] id="aaf0f85c"
 # ### Carrier phase recovery
@@ -269,7 +266,7 @@ paramCPR.pilotInd = np.arange(0, len(y_EQ), 20)
 
 y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
 
-y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+y_CPR = pnorm(y_CPR)
 
 plt.figure(figsize=(10, 3))
 plt.title('CPR estimated phase')
@@ -280,7 +277,8 @@ plt.grid();
 discard = 5000
 
 #plot constellations after CPR
-pconst([y_CPR[discard:-discard,:], d], lim=True)
+pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
+pconst(y_CPR[discard:-discard,:])
 
 # + [markdown] id="e9e07048"
 # ### Evaluate transmission metrics
@@ -291,7 +289,7 @@ for k in range(y_CPR.shape[1]):
     rot = np.mean(d[:,k]/y_CPR[:,k])
     y_CPR[:,k] = rot*y_CPR[:,k]
 
-y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+y_CPR = pnorm(y_CPR)
 
 
 ind = np.arange(discard, d.shape[0]-discard)
