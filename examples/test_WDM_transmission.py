@@ -70,8 +70,8 @@ HTML("""
 figsize(10, 3)
 
 # + id="fc09c144"
-# %load_ext autoreload
-# %autoreload 2
+# # %load_ext autoreload
+# # %autoreload 2
 # #%load_ext line_profiler
 
 # + [markdown] id="e22e32db"
@@ -90,7 +90,7 @@ paramTx.SpS = 16           # samples per symbol
 paramTx.pulse = 'rrc'      # pulse shaping filter
 paramTx.Ntaps = 1024       # number of pulse shaping filter coefficients
 paramTx.alphaRRC = 0.01    # RRC rolloff
-paramTx.Pch_dBm = 1        # power per WDM channel [dBm]
+paramTx.Pch_dBm = 2        # power per WDM channel [dBm]
 paramTx.Nch     = 11       # number of WDM channels
 paramTx.Fc      = 193.1e12 # central optical frequency of the WDM spectrum
 paramTx.freqSpac = 37.5e9  # WDM grid spacing
@@ -276,6 +276,7 @@ plt.grid();
 
 discard = 5000
 
+# + colab={"base_uri": "https://localhost:8080/", "height": 435} id="4f6650fe" outputId="c5e97918-3305-4e71-8017-8b3432ff1e38"
 #plot constellations after CPR
 pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
 pconst(y_CPR[discard:-discard,:])
@@ -303,3 +304,6 @@ print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+# -
+
+
