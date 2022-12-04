@@ -68,11 +68,11 @@ figsize(10, 3)
 # +
 # Transmitter parameters:
 paramTx = parameters()
-paramTx.M   = 64           # order of the modulation format
+paramTx.M   = 256           # order of the modulation format
 paramTx.constType = 'qam'  # constellation type
 paramTx.Rs  = 32e9         # symbol rate [baud]
 paramTx.SpS = 8            # samples per symbol
-paramTx.Nbits = 120000     # total number of bits per polarization
+paramTx.Nbits = int(np.log2(paramTx.M)*1e5)   # total number of bits per polarization
 paramTx.pulse = 'rrc'      # pulse shaping filter
 paramTx.Ntaps = 1024       # number of pulse shaping filter coefficients
 paramTx.alphaRRC = 0.01    # RRC rolloff
@@ -87,10 +87,12 @@ sigTx, symbTx_, paramTx = simpleWDMTx(paramTx)
 
 Fs = paramTx.Rs*paramTx.SpS # sampling frequency
 # -
+# ### Add noise to fix the SNR
+
 SNR = 25
 sigCh = awgn(sigTx, SNR, Fs, paramTx.Rs)
 
-# ###  Coherent detection and demodulation
+# ###  Simulate a coherent receiver frontend subject to laser phase noise and frequency offset
 
 # +
 # Receiver
@@ -147,7 +149,7 @@ pulse = pulse/np.max(np.abs(pulse))
 sigRx = firFilter(pulse, sigRx)
 
 # plot constellation
-pconst(sigRx[0::paramTx.SpS,:])
+pconst(sigRx[0::paramTx.SpS,:], R=1.75)
 # -
 
 # ### Downsample to 1 sample/symbol and power normalization
@@ -163,7 +165,7 @@ sigRx = decimate(sigRx, paramDec)
 sigRx = pnorm(sigRx) 
 d = pnorm(symbTx)
 
-pconst(sigRx)
+pconst(sigRx, R=1.75)
 # -
 
 # ### Carrier phase recovery with blind phase search (BPS)
@@ -189,8 +191,8 @@ plt.grid();
 discard = 1000
 
 # plot constellations
-pconst([y_CPR[discard:-discard,:],\
-            d[discard:-discard,:]])
+pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
+pconst(y_CPR[discard:-discard,:])
 
 ## Performance metrics
 
@@ -228,7 +230,7 @@ paramCPR.pilotInd = np.arange(0, len(sigRx), 25)
 
 y_CPR, θ = cpr(sigRx, symbTx=d, paramCPR=paramCPR)
 
-y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+y_CPR = pnorm(y_CPR)
 
 plt.figure()
 plt.title('CPR estimated phase')
@@ -239,8 +241,8 @@ plt.grid();
 discard = 1000
 
 # plot constellations
-pconst([y_CPR[discard:-discard,:],\
-            d[discard:-discard,:]])
+pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
+pconst(y_CPR[discard:-discard,:])
 
 ## Performance metrics
 
@@ -249,7 +251,7 @@ for k in range(y_CPR.shape[1]):
     rot = np.mean(d[:,k]/y_CPR[:,k])
     y_CPR[:,k] = rot*y_CPR[:,k]
 
-y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+y_CPR = pnorm(y_CPR)
 
 ind = np.arange(discard, d.shape[0]-discard)
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
@@ -262,6 +264,3 @@ print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
-# -
-
-
