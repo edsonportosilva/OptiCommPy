@@ -2,11 +2,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
+from optic.dsp import pnorm
 
 from optic.metrics import signal_power
 
 
-def pconst(x, lim=False, R=1.5):
+def pconst(x, lim=False, R=1.5, pType='fancy'):
     """
     Plot signal constellations.
 
@@ -14,6 +15,8 @@ def pconst(x, lim=False, R=1.5):
 
     """
     if type(x) == list:
+        for ind, _ in enumerate(x):
+            x[ind] = pnorm(x[ind])
         try:
             x[0].shape[1]
         except IndexError:
@@ -22,6 +25,7 @@ def pconst(x, lim=False, R=1.5):
         nSubPts = x[0].shape[1]
         radius = R * np.sqrt(signal_power(x[0]))
     else:
+        x = pnorm(x)
         try:
             x.shape[1]
         except IndexError:
@@ -48,10 +52,14 @@ def pconst(x, lim=False, R=1.5):
                 ax = fig.add_subplot(nRows, nCols, Position[k])
 
                 for ind in range(len(x)):
-                    ax.plot(x[ind][:, k].real, x[ind][:, k].imag, ".")
+                    if pType == 'fancy':
+                        ax = constHist(x[ind][:, k].real,
+                                       x[ind][:, k].imag, ax, radius)
+                    elif pType == 'fast':
+                        ax.plot(x[ind][:, k].real, x[ind][:, k].imag, ".")
 
                 ax.axis("square")
-                ax.grid()
+                #ax.grid()
                 ax.set_title(f"mode {str(Position[k] - 1)}")
 
                 if lim:
@@ -60,9 +68,14 @@ def pconst(x, lim=False, R=1.5):
         else:
             for k in range(nSubPts):
                 ax = fig.add_subplot(nRows, nCols, Position[k])
-                ax.plot(x[:, k].real, x[:, k].imag, ".")
+                if pType == 'fancy':
+                    ax = constHist(x[:, k].real,
+                                   x[:, k].imag, ax, radius)
+                elif pType == 'fast':
+                    ax.plot(x[:, k].real, x[:, k].imag, ".")
+
                 ax.axis("square")
-                ax.grid()
+                #ax.grid()
                 ax.set_title(f"mode {str(Position[k] - 1)}")
 
                 if lim:
@@ -73,9 +86,15 @@ def pconst(x, lim=False, R=1.5):
 
     elif nSubPts == 1:
         plt.figure()
-        plt.plot(x.real, x.imag, ".")
+        ax = plt.gca()
+        if pType == 'fancy':
+            ax = constHist(x.real, x.imag, ax, radius)
+        elif pType == 'fast':
+            ax.plot(x.real, x.imag, ".")
+
+       # plt.plot(x.real, x.imag, ".")
         plt.axis("square")
-        plt.grid()
+        #plt.grid()
 
         if lim:
             plt.xlim(-radius, radius)
@@ -85,6 +104,40 @@ def pconst(x, lim=False, R=1.5):
 
     return None
 
+def constHist(I, Q, ax, radius):
+    """
+    Generate histogram-based constellation plot.
+
+    Parameters
+    ----------
+    I : TYPE
+        DESCRIPTION.
+    Q : TYPE
+        DESCRIPTION.
+    ax : TYPE
+        DESCRIPTION.
+    radius : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    ax : TYPE
+        DESCRIPTION.
+
+    """
+    irange = radius*np.sqrt(signal_power(I+1j*Q))
+    imRange = np.array([[-irange, irange], [-irange, irange]])
+
+    H, xedges, yedges = np.histogram2d(
+        I, Q, bins=250, range=imRange
+    )
+
+    H = H.T
+    ax.imshow(H, cmap='turbo', origin="lower", aspect="auto",
+              extent=[-irange, irange, -irange, irange],
+    )
+    
+    return ax
 
 def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     """
