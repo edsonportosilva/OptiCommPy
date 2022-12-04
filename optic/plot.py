@@ -53,8 +53,7 @@ def pconst(x, lim=False, R=1.5, pType='fancy'):
 
                 for ind in range(len(x)):
                     if pType == 'fancy':
-                        ax = constHist(x[ind][:, k].real,
-                                       x[ind][:, k].imag, ax, radius)
+                        ax = constHist(x[ind][:, k], ax, radius)
                     elif pType == 'fast':
                         ax.plot(x[ind][:, k].real, x[ind][:, k].imag, ".")
 
@@ -69,8 +68,7 @@ def pconst(x, lim=False, R=1.5, pType='fancy'):
             for k in range(nSubPts):
                 ax = fig.add_subplot(nRows, nCols, Position[k])
                 if pType == 'fancy':
-                    ax = constHist(x[:, k].real,
-                                   x[:, k].imag, ax, radius)
+                    ax = constHist(x[:, k], ax, radius)
                 elif pType == 'fast':
                     ax.plot(x[:, k].real, x[:, k].imag, ".")
 
@@ -88,7 +86,7 @@ def pconst(x, lim=False, R=1.5, pType='fancy'):
         plt.figure()
         ax = plt.gca()
         if pType == 'fancy':
-            ax = constHist(x.real, x.imag, ax, radius)
+            ax = constHist(x, ax, radius)
         elif pType == 'fast':
             ax.plot(x.real, x.imag, ".")
 
@@ -104,7 +102,7 @@ def pconst(x, lim=False, R=1.5, pType='fancy'):
 
     return None
 
-def constHist(I, Q, ax, radius):
+def constHist(symb, ax, radius):
     """
     Generate histogram-based constellation plot.
 
@@ -125,11 +123,11 @@ def constHist(I, Q, ax, radius):
         DESCRIPTION.
 
     """
-    irange = radius*np.sqrt(signal_power(I+1j*Q))
+    irange = radius*np.sqrt(signal_power(symb))
     imRange = np.array([[-irange, irange], [-irange, irange]])
 
     H, xedges, yedges = np.histogram2d(
-        I, Q, bins=250, range=imRange
+        symb.real, symb.imag, bins=250, range=imRange
     )
 
     H = H.T
