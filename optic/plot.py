@@ -87,7 +87,7 @@ def pconst(x, lim=False, R=1.5, pType='fancy'):
         plt.figure()
         ax = plt.gca()
         if pType == 'fancy':
-            ax = constHist(x, ax, radius)
+            ax = constHist(x[:,0], ax, radius)
         elif pType == 'fast':
             ax.plot(x.real, x.imag, ".")
 
