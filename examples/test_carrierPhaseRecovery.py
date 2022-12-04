@@ -91,7 +91,7 @@ Fs = paramTx.Rs*paramTx.SpS # sampling frequency
 # -
 # ### Add noise to fix the SNR
 
-SNR = 25
+SNR = 35
 sigCh = awgn(sigTx, SNR, Fs, paramTx.Rs)
 
 # ###  Simulate a coherent receiver frontend subject to laser phase noise and frequency offset
