@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
+from scipy.ndimage.filters import gaussian_filter
 from optic.dsp import pnorm
 
 from optic.metrics import signal_power
@@ -126,10 +127,12 @@ def constHist(symb, ax, radius):
     imRange = np.array([[-irange, irange], [-irange, irange]])
 
     H, xedges, yedges = np.histogram2d(
-        symb.real, symb.imag, bins=250, range=imRange
+        symb.real, symb.imag, bins=500, range=imRange
     )
 
     H = H.T
+    
+    H = gaussian_filter(H, sigma=8)
     ax.imshow(H, cmap='turbo', origin="lower", aspect="auto",
               extent=[-irange, irange, -irange, irange],
     )
