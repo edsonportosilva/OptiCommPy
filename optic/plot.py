@@ -102,25 +102,24 @@ def pconst(x, lim=False, R=1.5, pType='fancy'):
 
     return None
 
+
 def constHist(symb, ax, radius):
     """
     Generate histogram-based constellation plot.
 
     Parameters
     ----------
-    I : TYPE
-        DESCRIPTION.
-    Q : TYPE
-        DESCRIPTION.
-    ax : TYPE
-        DESCRIPTION.
-    radius : TYPE
-        DESCRIPTION.
+    symb : np.array
+        Complex-valued constellation symbols.
+    ax : axis object handle
+        axis of the plot.
+    radius : real scalar
+        Parameter to adjust the x,y-range of the plot.
 
     Returns
     -------
-    ax : TYPE
-        DESCRIPTION.
+    ax : axis object handle
+        axis of the plot.
 
     """
     irange = radius*np.sqrt(signal_power(symb))
