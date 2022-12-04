@@ -56,9 +56,11 @@ HTML("""
 
 figsize(10, 3)
 
-# %load_ext autoreload
-# %autoreload 2
+# +
+# # %load_ext autoreload
+# # %autoreload 2
 # #%load_ext line_profiler
+# -
 
 #
 # ## Transmitter
@@ -68,7 +70,7 @@ figsize(10, 3)
 # +
 # Transmitter parameters:
 paramTx = parameters()
-paramTx.M   = 256           # order of the modulation format
+paramTx.M   = 64           # order of the modulation format
 paramTx.constType = 'qam'  # constellation type
 paramTx.Rs  = 32e9         # symbol rate [baud]
 paramTx.SpS = 8            # samples per symbol
