@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -30,6 +30,7 @@ from optic.modulation import modulateGray, GrayMapping
 from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER
 from optic.models import awgn
 from optic.dsp import pnorm
+from optic.plot import pconst
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -363,8 +364,7 @@ for ii, M in enumerate(qamOrder):
         MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam', probSymb)       
 
         if indSNR == len(SNR)-10:
-            plt.figure()
-            plt.hist2d(symbRx.real,symbRx.imag, bins=256, density=True);
+            pconst(symbRx, R=2);
 
 # +
 plt.figure(figsize=(10,6))
