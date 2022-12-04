@@ -194,7 +194,8 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             )
 
             H = H.T
-
+            H = gaussian_filter(H, sigma=0.9)
+            
             # plt.figure(figsize=(10, 3))
             plt.imshow(
                 H,
