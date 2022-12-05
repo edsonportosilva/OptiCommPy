@@ -89,9 +89,7 @@ def pconst(x, lim=False, R=1.5, pType='fancy'):
         if pType == 'fancy':
             ax = constHist(x[:,0], ax, radius)
         elif pType == 'fast':
-            ax.plot(x.real, x.imag, ".")
-
-       # plt.plot(x.real, x.imag, ".")
+            ax.plot(x.real, x.imag, ".")       
         plt.axis("square")
         #plt.grid()
 
@@ -131,13 +129,13 @@ def constHist(symb, ax, radius):
     )
 
     H = H.T
-    
+
     H = gaussian_filter(H, sigma=5)
     ax.imshow(H, cmap='turbo', origin="lower", aspect="auto",
-              extent=[-irange, irange, -irange, irange],
-    )
-    
+              extent=[-irange, irange, -irange, irange])
+
     return ax
+
 
 def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     """
@@ -150,7 +148,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     :param plotlabel: label for the plot legend
     """
     sig = sigIn.copy()
-    
+
     if np.iscomplex(sig).any():
         d = 1
         if not (plotlabel):
@@ -195,7 +193,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
 
             H = H.T
             H = gaussian_filter(H, sigma=0.9)
-            
+
             # plt.figure(figsize=(10, 3))
             plt.imshow(
                 H,
