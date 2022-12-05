@@ -2,11 +2,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
+from scipy.ndimage.filters import gaussian_filter
+from optic.dsp import pnorm
 
 from optic.metrics import signal_power
 
 
-def pconst(x, lim=False, R=1.5):
+def pconst(x, lim=False, R=1.5, pType='fancy'):
     """
     Plot signal constellations.
 
@@ -14,6 +16,8 @@ def pconst(x, lim=False, R=1.5):
 
     """
     if type(x) == list:
+        for ind, _ in enumerate(x):
+            x[ind] = pnorm(x[ind])
         try:
             x[0].shape[1]
         except IndexError:
@@ -22,6 +26,7 @@ def pconst(x, lim=False, R=1.5):
         nSubPts = x[0].shape[1]
         radius = R * np.sqrt(signal_power(x[0]))
     else:
+        x = pnorm(x)
         try:
             x.shape[1]
         except IndexError:
@@ -48,10 +53,13 @@ def pconst(x, lim=False, R=1.5):
                 ax = fig.add_subplot(nRows, nCols, Position[k])
 
                 for ind in range(len(x)):
-                    ax.plot(x[ind][:, k].real, x[ind][:, k].imag, ".")
+                    if pType == 'fancy':
+                        ax = constHist(x[ind][:, k], ax, radius)
+                    elif pType == 'fast':
+                        ax.plot(x[ind][:, k].real, x[ind][:, k].imag, ".")
 
                 ax.axis("square")
-                ax.grid()
+                #ax.grid()
                 ax.set_title(f"mode {str(Position[k] - 1)}")
 
                 if lim:
@@ -60,9 +68,13 @@ def pconst(x, lim=False, R=1.5):
         else:
             for k in range(nSubPts):
                 ax = fig.add_subplot(nRows, nCols, Position[k])
-                ax.plot(x[:, k].real, x[:, k].imag, ".")
+                if pType == 'fancy':
+                    ax = constHist(x[:, k], ax, radius)
+                elif pType == 'fast':
+                    ax.plot(x[:, k].real, x[:, k].imag, ".")
+
                 ax.axis("square")
-                ax.grid()
+                #ax.grid()
                 ax.set_title(f"mode {str(Position[k] - 1)}")
 
                 if lim:
@@ -73,9 +85,13 @@ def pconst(x, lim=False, R=1.5):
 
     elif nSubPts == 1:
         plt.figure()
-        plt.plot(x.real, x.imag, ".")
+        ax = plt.gca()
+        if pType == 'fancy':
+            ax = constHist(x[:,0], ax, radius)
+        elif pType == 'fast':
+            ax.plot(x.real, x.imag, ".")       
         plt.axis("square")
-        plt.grid()
+        #plt.grid()
 
         if lim:
             plt.xlim(-radius, radius)
@@ -86,7 +102,42 @@ def pconst(x, lim=False, R=1.5):
     return None
 
 
-def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
+def constHist(symb, ax, radius):
+    """
+    Generate histogram-based constellation plot.
+
+    Parameters
+    ----------
+    symb : np.array
+        Complex-valued constellation symbols.
+    ax : axis object handle
+        axis of the plot.
+    radius : real scalar
+        Parameter to adjust the x,y-range of the plot.
+
+    Returns
+    -------
+    ax : axis object handle
+        axis of the plot.
+
+    """
+    irange = radius*np.sqrt(signal_power(symb))
+    imRange = np.array([[-irange, irange], [-irange, irange]])
+
+    H, xedges, yedges = np.histogram2d(
+        symb.real, symb.imag, bins=500, range=imRange
+    )
+
+    H = H.T
+
+    H = gaussian_filter(H, sigma=5)
+    ax.imshow(H, cmap='turbo', origin="lower", aspect="auto",
+              extent=[-irange, irange, -irange, irange])
+
+    return ax
+
+
+def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     """
     Plot the eye diagram of a modulated signal waveform.
 
@@ -96,6 +147,8 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     :param type: 'fast' or 'fancy'
     :param plotlabel: label for the plot legend
     """
+    sig = sigIn.copy()
+
     if np.iscomplex(sig).any():
         d = 1
         if not (plotlabel):
@@ -122,7 +175,7 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
         if ptype == "fancy":
             f = interp1d(np.arange(y.size), y, kind="cubic")
 
-            Nup = 10*SpS
+            Nup = 20*SpS
             tnew = np.arange(y.size) * (1 / Nup)
             y_ = f(tnew)
 
@@ -135,14 +188,16 @@ def eyediagram(sig, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             )
 
             H, xedges, yedges = np.histogram2d(
-                taxis, y_, bins=100, range=imRange
+                taxis, y_, bins=350, range=imRange
             )
 
             H = H.T
+            H = gaussian_filter(H, sigma=0.9)
 
             # plt.figure(figsize=(10, 3))
             plt.imshow(
                 H,
+                cmap='turbo',
                 origin="lower",
                 aspect="auto",
                 extent=[0, n, yedges[0], yedges[-1]],

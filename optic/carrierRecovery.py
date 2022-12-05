@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from commpy.modulation import QAMModem
+from optic.modulation import GrayMapping
+from optic.dsp import pnorm
 from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
 
@@ -47,10 +48,10 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
         Time-varying estimated phase-shifts.
 
     """
-
     # check input parameters
     alg = getattr(paramCPR, "alg", "bps")
     M = getattr(paramCPR, "M", 4)
+    constType = getattr(paramCPR, 'constType','qam')
     B = getattr(paramCPR, "B", 64)
     N = getattr(paramCPR, "N", 35)
     Kv = getattr(paramCPR, "Kv", 0.1)
@@ -63,8 +64,13 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
-    mod = QAMModem(m=M)
-    constSymb = mod.constellation / np.sqrt(mod.Es)
+
+    # constellation parameters
+    constSymb = GrayMapping(M, constType)
+    constSymb = pnorm(constSymb)
+    
+    # 4th power frequency offset estimation/compensation
+    Ei, _ = fourthPowerFOE(Ei, 1/Ts)
 
     if alg == "ddpll":
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
@@ -104,7 +110,6 @@ def bps(Ei, N, constSymb, B):
         Time-varying estimated phase-shifts.
 
     """
-
     nModes = Ei.shape[1]
 
     ϕ_test = np.arange(0, B) * (np.pi / 2) / B  # test phases
@@ -214,19 +219,39 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     return θ
 
 
-def fourthPowerFOE(Ei, Ts, plotSpec=False):
+def fourthPowerFOE(Ei, Fs, plotSpec=False):
     """
-    4th power frequency offset estimator (FOE)
-    """
+    4th power frequency offset estimator (FOE).
 
-    Fs = 1 / Ts
-    Nfft = len(Ei)
+    Parameters
+    ----------
+    Ei : np.array
+        Input signal.
+    Fs : real scalar
+        Sampling frequency.
+    plotSpec : bolean, optional
+        Plot spectrum. The default is False.
+
+    Returns
+    -------
+    Real scalar
+        Estimated frequency offset.
+
+    """
+    Nfft = Ei.shape[0]
 
     f = Fs * fftfreq(Nfft)
     f = fftshift(f)
 
-    f4 = 10 * np.log10(np.abs(fftshift(fft(Ei ** 4))))
-    indFO = np.argmax(f4)
+    nModes = Ei.shape[1]
+    Eo = Ei.copy()
+    t = np.arange(0, Eo.shape[0])*1/Fs
+
+    for n in range(nModes):
+        f4 = 10 * np.log10(np.abs(fftshift(fft(Ei[:, n] ** 4))))
+        indFO = np.argmax(f4)
+        fo = f[indFO] / 4
+        Eo[:, n] = Ei[:, n] * np.exp(-1j * 2 * np.pi * fo * t)
 
     if plotSpec:
         plt.figure()
@@ -235,4 +260,4 @@ def fourthPowerFOE(Ei, Ts, plotSpec=False):
         plt.legend()
         plt.xlim(min(f), max(f))
         plt.grid()
-    return f[indFO] / 4
+    return Eo, f[indFO] / 4

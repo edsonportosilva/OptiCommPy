@@ -1,8 +1,10 @@
 """Digital modulation utilities."""
+import logging as logg
+
 import numpy as np
-from numpy.matlib import repmat
 from commpy.utilities import bitarray2dec, dec2bitarray
 from numba import njit
+from numpy.matlib import repmat
 
 
 def GrayCode(n):
@@ -43,7 +45,7 @@ def GrayMapping(M, constType):
     ----------
     M : int
         modulation order
-    constType : 'qam' or 'psk'
+    constType : 'qam', 'psk', 'pam' or 'ook'.
         type of constellation.
 
     Returns
@@ -53,12 +55,22 @@ def GrayMapping(M, constType):
         Gray bit sequence as integer decimal).
 
     """
-    L = int(np.sqrt(M)-1)
+    if M != 2 and constType == 'ook':
+        logg.warn('OOK has only 2 symbols, but M != 2. Changing M to 2.')
+        M = 2
+    
+    if constType == 'pam' or constType == 'ook':
+        L = int(M-1)
+    else:
+        L = int(np.sqrt(M)-1)
+
     bitsSymb = int(np.log2(M))
 
     code = GrayCode(bitsSymb)
+    if constType == 'pam' or constType == 'ook':
+        const = np.arange(-L, L+1, 2)
 
-    if constType == 'qam':
+    elif constType == 'qam':
         PAM = np.arange(-L, L+1, 2)
         PAM = np.array([PAM])
 
@@ -124,7 +136,7 @@ def modulateGray(bits, M, constType):
     M : int
         order of the modulation format.
     constType : string
-        'qam' or 'psk'.
+        'qam', 'psk', 'pam' or 'ook'.
 
     Returns
     -------
@@ -132,6 +144,10 @@ def modulateGray(bits, M, constType):
         bits modulated to complex constellation symbols.
 
     """
+    if M != 2 and constType == 'ook':
+        logg.warn('OOK has only 2 symbols, but M != 2. Changing M to 2.')
+        M = 2
+
     bitsSymb = int(np.log2(M))
     const = GrayMapping(M, constType)
 
@@ -154,7 +170,7 @@ def demodulateGray(symb, M, constType):
     M : int
         order of the modulation format.
     constType : string
-        'qam' or 'psk'.
+        'qam', 'psk', 'pam' or 'ook'.
 
     Returns
     -------
@@ -162,6 +178,10 @@ def demodulateGray(symb, M, constType):
         sequence of demodulated bits.
 
     """
+    if M != 2 and constType == 'ook':
+        logg.warn('OOK has only 2 symbols, but M != 2. Changing M to 2.')
+        M = 2
+
     const = GrayMapping(M, constType)
 
     minEuclid_vec = np.vectorize(minEuclid, excluded=[1])

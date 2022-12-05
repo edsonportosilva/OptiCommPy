@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -28,24 +28,26 @@ if 'google.colab' in str(get_ipython()):
 from optic.modulation import modulateGray, demodulateGray, GrayMapping
 from optic.metrics import signal_power, fastBERcalc
 from optic.models import awgn
+from optic.dsp import pnorm
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm.notebook import tqdm
 from numba import njit
 
 import os.path as path
-# -
 
-# %load_ext autoreload
-# %autoreload 2
+# +
+# #%load_ext autoreload
+# #%autoreload 2
+# -
 
 # ## Define modulation, modulate and demodulate data
 
 # +
 # Run AWGN simulation 
-EbN0dB = 15 # SNR per bit
-M      = 16 # order of the modulation format
-constType = 'qam' # 'qam' or 'psk'
+EbN0dB = 25 # SNR per bit
+M      = 16  # order of the modulation format
+constType = 'qam' # 'qam', 'psk', 'pam' or 'ook'
 
 # modulation parameters
 constSymb = GrayMapping(M, constType)             # Gray constellation mapping
@@ -60,7 +62,7 @@ bits = np.random.randint(2, size = 6*2**14)
 symbTx = modulateGray(bits, M, constType)
 
 # normalize symbols energy to 1
-symbTx = symbTx/np.sqrt(signal_power(symbTx))
+symbTx = pnorm(symbTx)
 
 # AWGN    
 snrdB  = EbN0dB + 10*np.log10(np.log2(M))
@@ -83,3 +85,6 @@ plt.grid()
 for ind, symb in enumerate(constSymb/np.sqrt(Es)):
     bitMap[ind,:]
     plt.annotate(str(bitMap[ind,:])[1:-1:2], xy = (symb.real, symb.imag))
+# -
+
+

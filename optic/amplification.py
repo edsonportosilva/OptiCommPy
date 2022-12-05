@@ -1,23 +1,19 @@
+import copy
+import logging as logg
 import os
 
-import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
-
+import matplotlib.pyplot as plt
+import numpy as np
+from numba import njit
+from numpy.fft import fft, fftfreq, ifft
 from scipy import interpolate
-from numpy.fft import fft, ifft, fftfreq
+from scipy.constants import Planck, c
 from scipy.integrate import solve_ivp
-
-from scipy.constants import c, Planck
 from scipy.special import jv, kv
-
 from simple_pid import PID
-import logging as logg
-import copy
 
 from optic.core import parameters
-
-from numba import njit
 
 
 def edfaSM(Ei, Fs, Fc, param_edfa):

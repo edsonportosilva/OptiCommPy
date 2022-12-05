@@ -2,7 +2,7 @@ import numpy as np
 from commpy.utilities import upsample
 from tqdm.notebook import tqdm
 
-from optic.dsp import pulseShape, pnorm
+from optic.dsp import pnorm, pulseShape
 from optic.metrics import signal_power
 from optic.models import iqm
 from optic.modulation import GrayMapping, modulateGray
@@ -13,6 +13,7 @@ except:
     from optic.dsp import firFilter
 
 import logging as logg
+
 
 def simpleWDMTx(param):
     """

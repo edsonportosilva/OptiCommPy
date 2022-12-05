@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from commpy.filters import rcosfilter, rrcosfilter
 from commpy.utilities import upsample
-from scipy import signal
 from numba import njit
+from scipy import signal
 
 
 def firFilter(h, x):
@@ -13,16 +13,16 @@ def firFilter(h, x):
 
     Parameters
     ----------
-    h : ndarray
+    h : np.array
         Coefficients of the FIR filter (impulse response, symmetric).
-    x : ndarray
+    x : np.array
         Input signal.
     prec: cp.dtype
         Size of the complex representation.
 
     Returns
     -------
-    y : ndarray
+    y : np.array
         Output (filtered) signal.
     """
     try:
@@ -58,7 +58,7 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
 
     Returns
     -------
-    filterCoeffs : nparray
+    filterCoeffs : np.array
         Array of filter coefficients (normalized).
 
     """
@@ -127,7 +127,7 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
 
     Returns
     -------
-    h : ndarray
+    h : np.array
         Filter coefficients.
 
     """
@@ -153,7 +153,7 @@ def decimate(Ei, param):
 
     Parameters
     ----------
-    Ei : ndarray
+    Ei : np.array
         Input signal.
     param : core.parameter
     Decimation parameters:
@@ -162,7 +162,7 @@ def decimate(Ei, param):
 
     Returns
     -------
-    Eo : ndarray
+    Eo : np.array
         Decimated signal.
 
     """
@@ -235,15 +235,15 @@ def resample(Ei, param):
     return Eo
 
 
-def symbolSync(rx, tx, SpS):
+def symbolSync(rx, tx, SpS, mode='amp'):
     """
     Symbol synchronizer.
 
     Parameters
     ----------
-    rx : ndarray
+    rx : np.array
         Received symbol sequence.
-    tx : ndarray
+    tx : np.array
         Transmitted symbol sequence.
     SpS : int
         Samples per symbol of input signals.
@@ -262,18 +262,33 @@ def symbolSync(rx, tx, SpS):
     delay = np.zeros(nModes)
 
     corrMatrix = np.zeros((nModes, nModes))
-
-    for n in range(nModes):
-        for m in range(nModes):
-            corrMatrix[m, n] = np.max(
-                np.abs(signal.correlate(np.abs(tx[:, m]), np.abs(rx[:, n])))
-            )
-    swap = np.argmax(corrMatrix, axis=0)
-
-    tx = tx[:, swap]
-
-    for k in range(nModes):
-        delay[k] = finddelay(np.abs(tx[:, k]), np.abs(rx[:, k]))
+    
+    if mode == 'amp':
+        for n in range(nModes):
+            for m in range(nModes):
+                corrMatrix[m, n] = np.max(
+                    np.abs(signal.correlate(np.abs(tx[:, m]), np.abs(rx[:, n])))
+                )
+        swap = np.argmax(corrMatrix, axis=0)
+    
+        tx = tx[:, swap]
+    
+        for k in range(nModes):
+            delay[k] = finddelay(np.abs(tx[:, k]), np.abs(rx[:, k]))
+    elif mode == 'real':
+        for n in range(nModes):
+            for m in range(nModes):
+                corrMatrix[m, n] = np.max(
+                    np.abs(signal.correlate(np.real(tx[:, m]), np.real(rx[:, n])))
+                )
+        swap = np.argmax(corrMatrix, axis=0)
+    
+        tx = tx[:, swap]
+    
+        for k in range(nModes):
+            delay[k] = finddelay(np.real(tx[:, k]), np.real(rx[:, k]))
+        
+        
     # compensate time delay
     for k in range(nModes):
         tx[:, k] = np.roll(tx[:, k], -int(delay[k]))
