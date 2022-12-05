@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from optic.modulation import GrayMapping
-from optic.dsp import pnorm
 from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
+
+from optic.dsp import pnorm
+from optic.modulation import GrayMapping
 
 
 def cpr(Ei, symbTx=[], paramCPR=[]):
