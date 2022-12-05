@@ -132,7 +132,7 @@ def constHist(symb, ax, radius):
 
     H = H.T
     
-    H = gaussian_filter(H, sigma=8)
+    H = gaussian_filter(H, sigma=5)
     ax.imshow(H, cmap='turbo', origin="lower", aspect="auto",
               extent=[-irange, irange, -irange, irange],
     )
