@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -62,6 +62,8 @@ figsize(10, 3)
 # #%load_ext line_profiler
 # -
 
+constCMAP = 'turbo'
+
 #
 # ## Transmitter
 
@@ -70,7 +72,7 @@ figsize(10, 3)
 # +
 # Transmitter parameters:
 paramTx = parameters()
-paramTx.M   = 64           # order of the modulation format
+paramTx.M   = 16           # order of the modulation format
 paramTx.constType = 'qam'  # constellation type
 paramTx.Rs  = 32e9         # symbol rate [baud]
 paramTx.SpS = 8            # samples per symbol
@@ -133,7 +135,7 @@ sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 sigRx = pdmCoherentReceiver(sigCh, sigLO, θsig = 0)
 
 # plot constellation
-pconst(sigRx[0::paramTx.SpS,:])
+pconst(sigRx[0::paramTx.SpS,:],R =1.5, cmap=constCMAP);
 # -
 
 # ### Matched filtering
@@ -151,7 +153,7 @@ pulse = pulse/np.max(np.abs(pulse))
 sigRx = firFilter(pulse, sigRx)
 
 # plot constellation
-pconst(sigRx[0::paramTx.SpS,:], R=1.75)
+pconst(sigRx[0::paramTx.SpS,:], R=1.75, cmap=constCMAP);
 # -
 
 # ### Downsample to 1 sample/symbol and power normalization
@@ -167,7 +169,7 @@ sigRx = decimate(sigRx, paramDec)
 sigRx = pnorm(sigRx) 
 d = pnorm(symbTx)
 
-pconst(sigRx, R=1.75)
+pconst(sigRx, R=1.75, cmap=constCMAP);
 # -
 
 # ### Carrier phase recovery with blind phase search (BPS)
@@ -194,7 +196,7 @@ discard = 1000
 
 # plot constellations
 pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
-pconst(y_CPR[discard:-discard,:])
+pconst(y_CPR[discard:-discard,:], cmap=constCMAP)
 
 ## Performance metrics
 
@@ -244,7 +246,7 @@ discard = 1000
 
 # plot constellations
 pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
-pconst(y_CPR[discard:-discard,:])
+pconst(y_CPR[discard:-discard,:], cmap=constCMAP)
 
 ## Performance metrics
 
@@ -266,3 +268,6 @@ print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
 print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+# -
+
+
