@@ -72,8 +72,8 @@ constCMAP = 'turbo' # configure colormap for constellation plots
 # +
 # Transmitter parameters:
 paramTx = parameters()
-paramTx.M   = 16           # order of the modulation format
-paramTx.constType = 'qam'  # constellation type
+paramTx.M   = 8           # order of the modulation format
+paramTx.constType = 'psk'  # constellation type
 paramTx.Rs  = 32e9         # symbol rate [baud]
 paramTx.SpS = 8            # samples per symbol
 paramTx.Nbits = int(np.log2(paramTx.M)*1e5)   # total number of bits per polarization
@@ -115,9 +115,9 @@ print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 150e6                # frequency offset
+FO      = 0*150e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 200e3                 # linewidth
+lw      = 0*200e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
