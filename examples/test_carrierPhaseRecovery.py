@@ -62,7 +62,7 @@ figsize(10, 3)
 # #%load_ext line_profiler
 # -
 
-constCMAP = 'turbo'
+constCMAP = 'turbo' # configure colormap for constellation plots
 
 #
 # ## Transmitter
