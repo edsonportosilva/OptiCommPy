@@ -59,6 +59,8 @@ def pconst(x, lim=False, R=1.5, pType='fancy', cmap = 'turbo'):
                         ax.plot(x[ind][:, k].real, x[ind][:, k].imag, ".")
 
                 ax.axis("square")
+                ax.set_xlabel('In-Phase (I)')
+                ax.set_ylabel('Quadrature (Q)')
                 #ax.grid()
                 ax.set_title(f"mode {str(Position[k] - 1)}")
 
@@ -74,6 +76,8 @@ def pconst(x, lim=False, R=1.5, pType='fancy', cmap = 'turbo'):
                     ax.plot(x[:, k].real, x[:, k].imag, ".")
 
                 ax.axis("square")
+                ax.set_xlabel('In-Phase (I)')
+                ax.set_ylabel('Quadrature (Q)')
                 #ax.grid()
                 ax.set_title(f"mode {str(Position[k] - 1)}")
 
@@ -91,6 +95,8 @@ def pconst(x, lim=False, R=1.5, pType='fancy', cmap = 'turbo'):
         elif pType == 'fast':
             ax.plot(x.real, x.imag, ".")       
         plt.axis("square")
+        ax.set_xlabel('In-Phase (I)')
+        ax.set_ylabel('Quadrature (Q)')
         #plt.grid()
 
         if lim:
@@ -129,20 +135,12 @@ def constHist(symb, ax, radius, cmap='turbo'):
     )
 
     H = H.T
-<<<<<<< Updated upstream
-
-    H = gaussian_filter(H, sigma=5)
-    ax.imshow(H, cmap='turbo', origin="lower", aspect="auto",
-              extent=[-irange, irange, -irange, irange])
-
-=======
     
     H = gaussian_filter(H, sigma=8)
     ax.imshow(H, cmap=cmap, origin="lower", aspect="auto",
               extent=[-irange, irange, -irange, irange],
     )
     
->>>>>>> Stashed changes
     return ax
 
 
