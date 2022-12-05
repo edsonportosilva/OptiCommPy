@@ -8,7 +8,7 @@ from optic.dsp import pnorm
 from optic.metrics import signal_power
 
 
-def pconst(x, lim=False, R=1.5, pType='fancy'):
+def pconst(x, lim=False, R=1.5, pType='fancy', cmap = 'turbo'):
     """
     Plot signal constellations.
 
@@ -54,7 +54,7 @@ def pconst(x, lim=False, R=1.5, pType='fancy'):
 
                 for ind in range(len(x)):
                     if pType == 'fancy':
-                        ax = constHist(x[ind][:, k], ax, radius)
+                        ax = constHist(x[ind][:, k], ax, radius, cmap)
                     elif pType == 'fast':
                         ax.plot(x[ind][:, k].real, x[ind][:, k].imag, ".")
 
@@ -69,7 +69,7 @@ def pconst(x, lim=False, R=1.5, pType='fancy'):
             for k in range(nSubPts):
                 ax = fig.add_subplot(nRows, nCols, Position[k])
                 if pType == 'fancy':
-                    ax = constHist(x[:, k], ax, radius)
+                    ax = constHist(x[:, k], ax, radius, cmap)
                 elif pType == 'fast':
                     ax.plot(x[:, k].real, x[:, k].imag, ".")
 
@@ -84,10 +84,10 @@ def pconst(x, lim=False, R=1.5, pType='fancy'):
         fig.tight_layout()
 
     elif nSubPts == 1:
-        plt.figure()
+        fig = plt.figure()
         ax = plt.gca()
         if pType == 'fancy':
-            ax = constHist(x[:,0], ax, radius)
+            ax = constHist(x[:,0], ax, radius, cmap)
         elif pType == 'fast':
             ax.plot(x.real, x.imag, ".")       
         plt.axis("square")
@@ -99,10 +99,10 @@ def pconst(x, lim=False, R=1.5, pType='fancy'):
 
     plt.show()
 
-    return None
+    return fig, ax
 
 
-def constHist(symb, ax, radius):
+def constHist(symb, ax, radius, cmap='turbo'):
     """
     Generate histogram-based constellation plot.
 
@@ -129,11 +129,20 @@ def constHist(symb, ax, radius):
     )
 
     H = H.T
+<<<<<<< Updated upstream
 
     H = gaussian_filter(H, sigma=5)
     ax.imshow(H, cmap='turbo', origin="lower", aspect="auto",
               extent=[-irange, irange, -irange, irange])
 
+=======
+    
+    H = gaussian_filter(H, sigma=8)
+    ax.imshow(H, cmap=cmap, origin="lower", aspect="auto",
+              extent=[-irange, irange, -irange, irange],
+    )
+    
+>>>>>>> Stashed changes
     return ax
 
 
