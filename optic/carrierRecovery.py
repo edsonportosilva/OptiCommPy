@@ -72,7 +72,8 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     
     # 4th power frequency offset estimation/compensation
     Ei, _ = fourthPowerFOE(Ei, 1/Ts)
-
+    Ei = pnorm(Ei)
+    
     if alg == "ddpll":
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
