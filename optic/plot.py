@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.ndimage.filters import gaussian_filter
-from optic.dsp import pnorm
 
+from optic.dsp import pnorm
 from optic.metrics import signal_power
 
 
