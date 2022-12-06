@@ -6,7 +6,7 @@ from numba import njit
 from scipy.special import erf
 
 from optic.dsp import pnorm
-from optic.modulation import GrayMapping, demodulateGray
+from optic.modulation import GrayMapping, demodulateGray, minEuclid
 
 
 @njit
@@ -384,6 +384,31 @@ def Qfunc(x):
 
     """
     return 0.5 - 0.5 * erf(x / np.sqrt(2))
+
+
+def calcEVM(symb, M, constType, px=None):
+    
+    symb = pnorm(symb)
+    
+    if len(px) == 0:  # if px is not defined
+        px = 1 / M * np.ones(M)  # assume uniform distribution
+        
+    # constellation parameters
+    constSymb = GrayMapping(M, constType)
+    Es = np.sum(np.abs(constSymb) ** 2 * px)
+    constSymb = constSymb / np.sqrt(Es)
+    
+    Pxy = M*np.mean(np.abs(constSymb))
+    EVM = np.zeros((symb.shape[1], 1))
+    
+    for ii in range(symb.shape[1]):
+        ind = minEuclid(symb, constSymb)
+    
+        decided = constSymb[ind]      
+    
+        EVM[ii] = np.sqrt((symb-decided)*(symb-decided)/symb.shape[0])/np.sqrt(np.sum(Pxy)/M)
+    
+    return EVM
 
 
 def theoryBER(M, EbN0, constType):
