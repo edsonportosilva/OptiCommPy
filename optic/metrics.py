@@ -87,7 +87,7 @@ def fastBERcalc(rx, tx, M, constType):
     if M != 2 and constType == 'ook':
         logg.warn('OOK has only 2 symbols, but M != 2. Changing M to 2.')
         M = 2
-        
+
     # constellation parameters
     constSymb = GrayMapping(M, constType)
     Es = np.mean(np.abs(constSymb) ** 2)
@@ -369,6 +369,20 @@ def calcMI(rx, tx, σ2, constSymb, pX):
 
 
 def Qfunc(x):
+    """
+    Calculate function Q(x).
+
+    Parameters
+    ----------
+    x : scalar
+        function input.
+
+    Returns
+    -------
+    scalar
+        value of Q(x).
+
+    """
     return 0.5 - 0.5 * erf(x / np.sqrt(2))
 
 
