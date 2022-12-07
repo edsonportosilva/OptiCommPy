@@ -156,6 +156,7 @@ def demap(indSymb, bitMap):
         decBits[i * b: i * b + b] = bitMap[indSymb[i], :]
     return decBits
 
+
 def modulateGray(bits, M, constType):
     """
     Modulate bit sequences to constellation symbol sequences (w/ Gray mapping).
