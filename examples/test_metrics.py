@@ -24,7 +24,7 @@ if 'google.colab' in str(get_ipython()):
     # ! git clone -b main https://github.com/edsonportosilva/OptiCommPy
     from os import chdir as cd
     cd('/content/OptiCommPy/')
-    # ! pip install 
+    # ! pip install .
 
 from optic.modulation import modulateGray, GrayMapping
 from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM
