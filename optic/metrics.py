@@ -197,15 +197,15 @@ def monteCarloGMI(rx, tx, M, constType, px=[]):
     nModes = int(tx.shape[1])  # number of sinal modes
     GMI = np.zeros(nModes)
     NGMI = np.zeros(nModes)
-    
+
     noiseVar = np.var(rx - tx, axis=0)
 
     if len(px) == 0:  # if px is not defined, assume uniform distribution
         px = 1 / M * np.ones(constSymb.shape)
-    # calculate shaping factor
-    constSymb = pnorm(constSymb)
-    shapF = np.mean(np.abs(constSymb) ** 2) / np.sum(np.abs(constSymb) ** 2 * px)
-    shapF = np.sqrt(shapF)
+
+    # Normalize constellation
+    Es = np.sum(np.abs(constSymb) ** 2 * px)
+    constSymb = constSymb / np.sqrt(Es)
 
     # Calculate source entropy
     H = np.sum(-px * np.log2(px))
@@ -224,13 +224,13 @@ def monteCarloGMI(rx, tx, M, constType, px=[]):
         σ2 = noiseVar[k]
 
         # hard decision demodulation of the transmitted symbols
-        indtx = minEuclid(tx[:, k], shapF * constSymb)
+        indtx = minEuclid(tx[:, k], constSymb)
 
         # symbols to bits demapping
         btx = demap(indtx, bitMap)
 
         # soft demodulation of the received symbols
-        LLRs = calcLLR(rx[:, k], σ2, shapF * constSymb, bitMap, px)
+        LLRs = calcLLR(rx[:, k], σ2, constSymb, bitMap, px)
 
         # LLR clipping
         LLRs[LLRs == np.inf] = 500
@@ -247,7 +247,7 @@ def monteCarloGMI(rx, tx, M, constType, px=[]):
             )
         GMI[k] = np.sum(MIperBitPosition)
         NGMI[k] = GMI[k]/H
-        
+
     return GMI, NGMI
 
 
@@ -276,6 +276,7 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
     """
     if len(px) == 0:  # if px is not defined
         px = 1 / M * np.ones(M)  # assume uniform distribution
+
     # constellation parameters
     constSymb = GrayMapping(M, constType)
     Es = np.sum(np.abs(constSymb) ** 2 * px)
@@ -297,8 +298,8 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
 
     for k in range(nModes):
         # symbol normalization
-        rx[:, k] = pnorm(rx[:, k])  # / np.sqrt(signal_power(rx[:, k]))
-        tx[:, k] = pnorm(tx[:, k])  # / np.sqrt(signal_power(tx[:, k]))
+        rx[:, k] = pnorm(rx[:, k])
+        tx[:, k] = pnorm(tx[:, k])
     # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
