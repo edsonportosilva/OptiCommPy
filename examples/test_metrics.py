@@ -418,7 +418,7 @@ for ii, M in enumerate(qamOrder):
         # AWGN channel        
         symbRx = awgn(symbTx, snrdB)
 
-        # MI estimation
+        # EVM estimation
         EVM_dataAided[indSNR, ii] = calcEVM(symbRx, M, 'qam', symbTx=symbTx)
         EVM_decisions[indSNR, ii] = calcEVM(symbRx, M, 'qam')
 
