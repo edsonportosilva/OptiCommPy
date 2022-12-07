@@ -61,13 +61,13 @@ for ii, M in enumerate(qamOrder):
         EbN0dB = EbN0dB_[indSNR]
 
         # generate random bits
-        bitsTx = np.random.randint(2, size=2*3*5*2**15)    
+        bitsTx = np.random.randint(2, size=int(np.log2(M)*1e5))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) 
 
         # AWGN channel  
         snrdB  = EbN0dB + 10*np.log10(np.log2(M))
@@ -121,13 +121,13 @@ for ii, M in enumerate(pskOrder):
         EbN0dB = EbN0dB_[indSNR]
 
         # generate random bits
-        bitsTx = np.random.randint(2, size=2*3*5*2**15)    
+        bitsTx = np.random.randint(2, size=int(np.log2(M)*1e5))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'psk')
 
         # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) 
 
         # AWGN channel  
         snrdB  = EbN0dB + 10*np.log10(np.log2(M))
@@ -181,13 +181,13 @@ for ii, M in enumerate(qamOrder):
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2*3*5*2**14)    
+        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e4))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) 
 
         # AWGN channel       
         symbRx = awgn(symbTx, snrdB)
@@ -229,13 +229,13 @@ for ii, M in enumerate(pskOrder):
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2*3*5*2**14)    
+        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e4))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'psk')
 
         # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) 
 
         # AWGN channel       
         symbRx = awgn(symbTx, snrdB)
@@ -280,13 +280,13 @@ for ii, M in enumerate(qamOrder):
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2*3*5*2**14)    
+        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e4))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) 
 
         # AWGN channel        
         symbRx = awgn(symbTx, snrdB)
@@ -404,13 +404,13 @@ for ii, M in enumerate(qamOrder):
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2*3*5*2**14)    
+        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e5))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) 
 
         # AWGN channel        
         symbRx = awgn(symbTx, snrdB)
@@ -432,3 +432,6 @@ plt.legend();
 plt.xlabel('SNR [dB]');
 plt.ylabel('EVM [dB]');
 plt.grid()
+# -
+
+
