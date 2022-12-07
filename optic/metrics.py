@@ -6,7 +6,7 @@ from numba import njit
 from scipy.special import erf
 
 from optic.dsp import pnorm
-from optic.modulation import GrayMapping, demodulateGray, minEuclid
+from optic.modulation import GrayMapping, demodulateGray, minEuclid, demap
 
 
 @njit
@@ -26,38 +26,6 @@ def signal_power(x):
 
     """
     return np.mean(x * np.conj(x)).real
-
-
-@njit
-def hardDecision(rxSymb, constSymb, bitMap):
-    """
-    Minimum Euclidean distance based symbol decision.
-
-    Parameters
-    ----------
-    rxSymb : TYPE
-        received symbol sequence.
-    constSymb : (M, 1) np.array
-        Constellation symbols.
-    bitMap : (M, log2(M)) np.array
-        bit-to-symbol mapping.
-
-    Returns
-    -------
-    decBits : np.array
-        Sequence of decided bits.
-
-    """
-    M = len(constSymb)
-    b = int(np.log2(M))
-
-    decBits = np.zeros(len(rxSymb) * b)
-
-    for i in range(len(rxSymb)):
-        indSymb = np.argmin(np.abs(rxSymb[i] - constSymb))
-        decBits[i * b : i * b + b] = bitMap[indSymb, :]
-    return decBits
-
 
 def fastBERcalc(rx, tx, M, constType):
     """
@@ -128,8 +96,12 @@ def fastBERcalc(rx, tx, M, constType):
         )
     for k in range(nModes):
         # hard decision demodulation of the received symbols
-        brx = hardDecision(np.sqrt(Es) * rx[:, k], constSymb, bitMap)
-        btx = hardDecision(np.sqrt(Es) * tx[:, k], constSymb, bitMap)
+        indrx = minEuclid(np.sqrt(Es) * rx[:, k], constSymb)
+        indtx = minEuclid(np.sqrt(Es) * tx[:, k], constSymb)
+
+        # symbols to bits demapping
+        brx = demap(indrx, bitMap)
+        btx = demap(indtx, bitMap)
 
         err = np.logical_xor(brx, btx)
         BER[k] = np.mean(err)
@@ -429,10 +401,8 @@ def calcEVM(symb, M, constType, symbTx=[]):
     for ii in range(symb.shape[1]):
         if not len(symbTx):
             decided = np.zeros(symb.shape[0], dtype="complex")
-
-            for kk in range(symb.shape[0]):
-                ind = minEuclid(symb[kk, ii], constSymb)
-                decided[kk] = constSymb[ind]
+            ind = minEuclid(symb[:, ii], constSymb)  # min. dist. decision
+            decided = constSymb[ind]
         else:
             decided = symbTx[:, ii]
         EVM[ii] = np.mean(np.abs(symb[:, ii] - decided) ** 2) / np.mean(
