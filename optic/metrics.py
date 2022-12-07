@@ -55,7 +55,7 @@ def hardDecision(rxSymb, constSymb, bitMap):
 
     for i in range(len(rxSymb)):
         indSymb = np.argmin(np.abs(rxSymb[i] - constSymb))
-        decBits[i * b: i * b + b] = bitMap[indSymb, :]
+        decBits[i * b : i * b + b] = bitMap[indSymb, :]
     return decBits
 
 
@@ -84,10 +84,9 @@ def fastBERcalc(rx, tx, M, constType):
         Estimated SNR from the received constellation.
 
     """
-    if M != 2 and constType == 'ook':
-        logg.warn('OOK has only 2 symbols, but M != 2. Changing M to 2.')
+    if M != 2 and constType == "ook":
+        logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
-
     # constellation parameters
     constSymb = GrayMapping(M, constType)
     Es = np.mean(np.abs(constSymb) ** 2)
@@ -308,7 +307,6 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
         # symbol normalization
         rx[:, k] = pnorm(rx[:, k])  # / np.sqrt(signal_power(rx[:, k]))
         tx[:, k] = pnorm(tx[:, k])  # / np.sqrt(signal_power(tx[:, k]))
-
     # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
@@ -386,49 +384,60 @@ def Qfunc(x):
     return 0.5 - 0.5 * erf(x / np.sqrt(2))
 
 
-def calcEVM(symb, M, constType, symbTx=[], px=[]):
-    
+def calcEVM(symb, M, constType, symbTx=[]):
+    """
+    Calculate error vector magnitude (EVM) metrics.
+
+    Parameters
+    ----------
+    symb : np.array
+        Sequence of noisy symbols.
+    M : int
+        Constellation order.
+    constType : TYPE
+        DESCRIPTION.
+    symbTx : np.array, optional
+        Sequence of transmitted symbols (noiseless). The default is [].
+
+    Returns
+    -------
+    EVM : np.array
+        Error vector magnitude (EVM) per signal dimension.
+
+    """
     symb = pnorm(symb)
-    
+
     # We want all the signal sequences to be disposed in columns:
     try:
         if symb.shape[1] > symb.shape[0]:
             symb = symb.T
     except IndexError:
         symb = symb.reshape(len(symb), 1)
-        
-    if not len(px):  # if px is not defined
-        px = 1 / M * np.ones(M)  # assume uniform distribution
-        
     if len(symbTx):  # if symbTx is provided
         try:
             if symbTx.shape[1] > symbTx.shape[0]:
                 symbTx = symbTx.T
         except IndexError:
             symbTx = symbTx.reshape(len(symbTx), 1)
-        
-        symbTx = pnorm(symbTx)         
-
+        symbTx = pnorm(symbTx)
     # constellation parameters
     constSymb = GrayMapping(M, constType)
-    Es = np.sum(np.abs(constSymb) ** 2 * px)
-    constSymb = constSymb / np.sqrt(Es)
-    
-    Pxy = np.mean(np.abs(constSymb)**2)
+    constSymb = pnorm(constSymb)
+
     EVM = np.zeros((symb.shape[1], 1))
-    
+
     for ii in range(symb.shape[1]):
         if not len(symbTx):
-            decided = np.zeros(symb.shape[0],dtype='complex')
-            
+            decided = np.zeros(symb.shape[0], dtype="complex")
+
             for kk in range(symb.shape[0]):
-                ind = minEuclid(symb[kk, ii], constSymb)   
-                decided[kk] = constSymb[ind]        
+                ind = minEuclid(symb[kk, ii], constSymb)
+                decided[kk] = constSymb[ind]
         else:
-            decided = symbTx[:,ii]
-            
-        EVM[ii] = np.mean(np.abs(symb[:,ii]-decided)**2)/np.mean(np.abs(decided)**2)
-    
+            decided = symbTx[:, ii]
+        EVM[ii] = np.mean(np.abs(symb[:, ii] - decided) ** 2) / np.mean(
+            np.abs(decided) ** 2
+        )
     return EVM
 
 
