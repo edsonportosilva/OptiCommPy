@@ -111,10 +111,10 @@ def minEuclid(symb, const):
 
     Parameters
     ----------
-    symb : complex-valued symbol (or array)
-        complex-valued received constellation symbol.
-    const : complex-valued array
-        reference complex-valued constellation.
+    symb : np.array
+        Received constellation symbols.
+    const : np.array
+        Reference constellation.
 
     Returns
     -------
@@ -215,7 +215,6 @@ def demodulateGray(symb, M, constType):
         M = 2
 
     const = GrayMapping(M, constType)
-
-   # minEuclid_vec = np.vectorize(minEuclid, excluded=[1])
     index_list = minEuclid(symb, const)
+    
     return dec2bitarray(index_list, int(np.log2(M)))
