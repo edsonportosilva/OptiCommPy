@@ -58,7 +58,7 @@ def GrayMapping(M, constType):
     if M != 2 and constType == 'ook':
         logg.warn('OOK has only 2 symbols, but M != 2. Changing M to 2.')
         M = 2
-    
+
     if constType == 'pam' or constType == 'ook':
         L = int(M-1)
     else:
@@ -125,7 +125,7 @@ def minEuclid(symb, const):
     ind = np.zeros(symb.shape, dtype=np.int64)
     for ii in prange(len(symb)):
         ind[ii] = np.abs(symb[ii] - const).argmin()
-        
+
     return ind
 
 
