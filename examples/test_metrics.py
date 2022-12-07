@@ -181,7 +181,7 @@ for ii, M in enumerate(qamOrder):
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e4))    
+        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e5))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'qam')
