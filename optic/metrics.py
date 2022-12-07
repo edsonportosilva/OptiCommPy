@@ -386,27 +386,48 @@ def Qfunc(x):
     return 0.5 - 0.5 * erf(x / np.sqrt(2))
 
 
-def calcEVM(symb, M, constType, px=None):
+def calcEVM(symb, M, constType, symbTx=[], px=[]):
     
     symb = pnorm(symb)
     
-    if len(px) == 0:  # if px is not defined
+    # We want all the signal sequences to be disposed in columns:
+    try:
+        if symb.shape[1] > symb.shape[0]:
+            symb = symb.T
+    except IndexError:
+        symb = symb.reshape(len(symb), 1)
+        
+    if not len(px):  # if px is not defined
         px = 1 / M * np.ones(M)  # assume uniform distribution
         
+    if len(symbTx):  # if symbTx is provided
+        try:
+            if symbTx.shape[1] > symbTx.shape[0]:
+                symbTx = symbTx.T
+        except IndexError:
+            symbTx = symbTx.reshape(len(symbTx), 1)
+        
+        symbTx = pnorm(symbTx)         
+
     # constellation parameters
     constSymb = GrayMapping(M, constType)
     Es = np.sum(np.abs(constSymb) ** 2 * px)
     constSymb = constSymb / np.sqrt(Es)
     
-    Pxy = M*np.mean(np.abs(constSymb))
+    Pxy = np.mean(np.abs(constSymb)**2)
     EVM = np.zeros((symb.shape[1], 1))
     
     for ii in range(symb.shape[1]):
-        ind = minEuclid(symb, constSymb)
-    
-        decided = constSymb[ind]      
-    
-        EVM[ii] = np.sqrt((symb-decided)*(symb-decided)/symb.shape[0])/np.sqrt(np.sum(Pxy)/M)
+        if not len(symbTx):
+            decided = np.zeros(symb.shape[0],dtype='complex')
+            
+            for kk in range(symb.shape[0]):
+                ind = minEuclid(symb[kk, ii], constSymb)   
+                decided[kk] = constSymb[ind]        
+        else:
+            decided = symbTx[:,ii]
+            
+        EVM[ii] = np.mean(np.abs(symb[:,ii]-decided)**2)/np.mean(np.abs(decided)**2)
     
     return EVM
 
