@@ -311,7 +311,7 @@ plt.xlabel('SNR [dB]');
 plt.ylabel('MI [bits/symbol]');
 plt.grid()
 # -
-# ## Test mutual information (MI) versus signal-to-noise ratio (SNR) with probabilistically shaped QAM constellation
+# ## Test MI/GMI versus signal-to-noise ratio (SNR) with probabilistically shaped QAM constellation
 
 # +
 from numpy.random import choice
@@ -331,10 +331,11 @@ def maxwellBolt(λ, const):
 # +
 # Run MI vs SNR Monte Carlo simulation 
 
-qamOrder  = [64, 64]  # Modulation order
+qamOrder  = [256, 256]  # Modulation order
 
 SNR  = np.arange(-2, 34, 1)
-MI  = np.zeros((len(SNR),len(qamOrder)))
+MI = np.zeros((len(SNR),len(qamOrder)))
+GMI = np.zeros((len(SNR),len(qamOrder)))
 Nsymbols = 80000
 
 PS = 0
@@ -361,7 +362,8 @@ for ii, M in enumerate(qamOrder):
         symbRx = awgn(symbTx, snrdB)      
 
         # MI estimation
-        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam', probSymb)       
+        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam', probSymb)  
+        GMI[indSNR, ii], _ = monteCarloGMI(symbRx, symbTx, M, 'qam', probSymb)
 
         if indSNR == len(SNR)-10:
             pconst(symbRx, R=2);
@@ -371,7 +373,8 @@ plt.figure(figsize=(10,6))
 
 for ii, M in enumerate(qamOrder):
     pltLabel = 'QAM uniform' if ii == 0 else 'QAM shaped'
-    plt.plot(SNR, MI[:,ii],'-', label=str(M)+pltLabel,linewidth=2)
+    plt.plot(SNR, MI[:,ii],'-', label='MI '+str(M)+pltLabel,linewidth=2)
+    plt.plot(SNR, GMI[:,ii],'-', label='GMI '+str(M)+pltLabel,linewidth=2)
 
 # plot theoretical AWGN channel capacity    
 C = np.log2(1 + 10**(SNR/10))
