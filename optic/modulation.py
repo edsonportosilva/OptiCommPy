@@ -216,5 +216,5 @@ def demodulateGray(symb, M, constType):
 
     const = GrayMapping(M, constType)
     index_list = minEuclid(symb, const)
-    
+
     return dec2bitarray(index_list, int(np.log2(M)))
