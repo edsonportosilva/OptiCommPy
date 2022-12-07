@@ -2,7 +2,7 @@
 import logging as logg
 
 import numpy as np
-from numba import njit
+from numba import njit, prange
 from scipy.special import erf
 
 from optic.dsp import pnorm
@@ -26,6 +26,7 @@ def signal_power(x):
 
     """
     return np.mean(x * np.conj(x)).real
+
 
 def fastBERcalc(rx, tx, M, constType):
     """
@@ -83,8 +84,8 @@ def fastBERcalc(rx, tx, M, constType):
     # pre-processing
     for k in range(nModes):
         # symbol normalization
-        rx[:, k] = pnorm(rx[:, k])  
-        tx[:, k] = pnorm(tx[:, k])  
+        rx[:, k] = pnorm(rx[:, k])
+        tx[:, k] = pnorm(tx[:, k])
 
         # correct (possible) phase ambiguity
         rot = np.mean(tx[:, k] / rx[:, k])
@@ -109,8 +110,8 @@ def fastBERcalc(rx, tx, M, constType):
     return BER, SER, SNR
 
 
-@njit
-def calcLLR(rxSymb, σ2, constSymb, bitMap):
+@njit(parallel=True)
+def calcLLR(rxSymb, σ2, constSymb, bitMap, px):
     """
     LLR calculation (circular AGWN channel).
 
@@ -122,6 +123,8 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap):
         Noise variance.
     constSymb : (M, 1) np.array
         Constellation symbols.
+    px : (M, 1) np.array
+        Prior symbol probabilities.
     bitMap : (M, log2(M)) np.array
         Bit-to-symbol mapping.
 
@@ -136,8 +139,8 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap):
 
     LLRs = np.zeros(len(rxSymb) * b)
 
-    for i in range(len(rxSymb)):
-        prob = np.exp((-np.abs(rxSymb[i] - constSymb) ** 2) / σ2)
+    for i in prange(len(rxSymb)):
+        prob = np.exp((-np.abs(rxSymb[i] - constSymb) ** 2) / σ2) * px
 
         for indBit in range(b):
             p0 = np.sum(prob[bitMap[:, indBit] == 0])
@@ -147,7 +150,7 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap):
     return LLRs
 
 
-def monteCarloGMI(rx, tx, M, constType):
+def monteCarloGMI(rx, tx, M, constType, px=[]):
     """
     Monte Carlo based generalized mutual information (GMI) estimation.
 
@@ -161,6 +164,8 @@ def monteCarloGMI(rx, tx, M, constType):
         Modulation order.
     constType : string
         Modulation type: 'qam' or 'psk'
+    px : (M, 1) np.array
+        Prior symbol probabilities. The default is [].
 
     Returns
     -------
@@ -172,7 +177,11 @@ def monteCarloGMI(rx, tx, M, constType):
     """
     # constellation parameters
     constSymb = GrayMapping(M, constType)
-    Es = np.mean(np.abs(constSymb) ** 2)
+
+    # get bit mapping
+    b = int(np.log2(M))
+    bitMap = demodulateGray(constSymb, M, constType)
+    bitMap = bitMap.reshape(-1, b)
 
     # We want all the signal sequences to be disposed in columns:
     try:
@@ -190,16 +199,21 @@ def monteCarloGMI(rx, tx, M, constType):
 
     noiseVar = np.var(rx - tx, axis=0)
 
-    # get bit mapping
-    b = int(np.log2(M))
-    bitMap = demodulateGray(constSymb, M, constType)
-    bitMap = bitMap.reshape(-1, b)
+    if len(px) == 0:  # if px is not defined, assume uniform distribution
+        px = 1 / M * np.ones(constSymb.shape)
+    # calculate shaping factor
+    constSymb = pnorm(constSymb)
+    shapF = np.mean(np.abs(constSymb) ** 2) / np.sum(np.abs(constSymb) ** 2 * px)
+    shapF = np.sqrt(shapF)
+
+    # Calculate source entropy
+    H = np.sum(-px * np.log2(px))
 
     # symbol normalization
     for k in range(nModes):
         # symbol normalization
-        rx[:, k] = pnorm(rx[:, k])  
-        tx[:, k] = pnorm(tx[:, k])  
+        rx[:, k] = pnorm(rx[:, k])
+        tx[:, k] = pnorm(tx[:, k])
 
         # correct (possible) phase ambiguity
         rot = np.mean(tx[:, k] / rx[:, k])
@@ -208,14 +222,14 @@ def monteCarloGMI(rx, tx, M, constType):
         # set the noise variance
         σ2 = noiseVar[k]
 
-        # hard decision demodulation of the received symbols        
-        indtx = minEuclid(np.sqrt(Es) * tx[:, k], constSymb)
-        
+        # hard decision demodulation of the transmitted symbols
+        indtx = minEuclid(tx[:, k], shapF * constSymb)
+
         # symbols to bits demapping
         btx = demap(indtx, bitMap)
 
         # soft demodulation of the received symbols
-        LLRs = calcLLR(rx[:, k], σ2, constSymb / np.sqrt(Es), bitMap)
+        LLRs = calcLLR(rx[:, k], σ2, shapF * constSymb, bitMap, px)
 
         # LLR clipping
         LLRs[LLRs == np.inf] = 500
@@ -227,7 +241,7 @@ def monteCarloGMI(rx, tx, M, constType):
         MIperBitPosition = np.zeros(b)
 
         for n in range(b):
-            MIperBitPosition[n] = 1 - np.mean(
+            MIperBitPosition[n] = H / b - np.mean(
                 np.log2(1 + np.exp((2 * btx[n::b] - 1) * LLRs[n::b]))
             )
         GMI[k] = np.sum(MIperBitPosition)
