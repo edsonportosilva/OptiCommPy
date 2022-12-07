@@ -196,7 +196,8 @@ def monteCarloGMI(rx, tx, M, constType, px=[]):
         tx = tx.reshape(len(tx), 1)
     nModes = int(tx.shape[1])  # number of sinal modes
     GMI = np.zeros(nModes)
-
+    NGMI = np.zeros(nModes)
+    
     noiseVar = np.var(rx - tx, axis=0)
 
     if len(px) == 0:  # if px is not defined, assume uniform distribution
@@ -245,7 +246,9 @@ def monteCarloGMI(rx, tx, M, constType, px=[]):
                 np.log2(1 + np.exp((2 * btx[n::b] - 1) * LLRs[n::b]))
             )
         GMI[k] = np.sum(MIperBitPosition)
-    return GMI, MIperBitPosition
+        NGMI[k] = GMI[k]/H
+        
+    return GMI, NGMI
 
 
 def monteCarloMI(rx, tx, M, constType, px=[]):
