@@ -3,7 +3,7 @@ import logging as logg
 
 import numpy as np
 from commpy.utilities import bitarray2dec, dec2bitarray
-from numba import njit
+from numba import njit, prange
 from numpy.matlib import repmat
 
 
@@ -101,7 +101,7 @@ def GrayMapping(M, constType):
     return const
 
 
-@njit
+@njit(parallel=True)
 def minEuclid(symb, const):
     """
     Find minimum Euclidean distance.
@@ -122,8 +122,39 @@ def minEuclid(symb, const):
         indexes of the closest constellation symbols.
 
     """
-    return np.abs(symb - const).argmin()
+    ind = np.zeros(symb.shape, dtype=np.int64)
+    for ii in prange(len(symb)):
+        ind[ii] = np.abs(symb[ii] - const).argmin()
+        
+    return ind
 
+
+@njit(parallel=True)
+def demap(indSymb, bitMap):
+    """
+    Contellation symbol index to bit sequence demapping.
+
+    Parameters
+    ----------
+    indSymb : np.array of ints
+        Indexes of received symbol sequence.
+    bitMap : (M, log2(M)) np.array
+        bit-to-symbol mapping.
+
+    Returns
+    -------
+    decBits : np.array
+        Sequence of demapped bits.
+
+    """
+    M = bitMap.shape[0]
+    b = int(np.log2(M))
+
+    decBits = np.zeros(len(indSymb) * b)
+
+    for i in prange(len(indSymb)):
+        decBits[i * b: i * b + b] = bitMap[indSymb[i], :]
+    return decBits
 
 def modulateGray(bits, M, constType):
     """
@@ -184,6 +215,6 @@ def demodulateGray(symb, M, constType):
 
     const = GrayMapping(M, constType)
 
-    minEuclid_vec = np.vectorize(minEuclid, excluded=[1])
-    index_list = minEuclid_vec(symb, const)
+   # minEuclid_vec = np.vectorize(minEuclid, excluded=[1])
+    index_list = minEuclid(symb, const)
     return dec2bitarray(index_list, int(np.log2(M)))
