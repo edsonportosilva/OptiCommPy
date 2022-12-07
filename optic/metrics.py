@@ -83,8 +83,8 @@ def fastBERcalc(rx, tx, M, constType):
     # pre-processing
     for k in range(nModes):
         # symbol normalization
-        rx[:, k] = pnorm(rx[:, k])  # / np.sqrt(signal_power(rx[:, k]))
-        tx[:, k] = pnorm(tx[:, k])  # / np.sqrt(signal_power(tx[:, k]))
+        rx[:, k] = pnorm(rx[:, k])  
+        tx[:, k] = pnorm(tx[:, k])  
 
         # correct (possible) phase ambiguity
         rot = np.mean(tx[:, k] / rx[:, k])
@@ -198,8 +198,8 @@ def monteCarloGMI(rx, tx, M, constType):
     # symbol normalization
     for k in range(nModes):
         # symbol normalization
-        rx[:, k] = pnorm(rx[:, k])  # / np.sqrt(signal_power(rx[:, k]))
-        tx[:, k] = pnorm(tx[:, k])  # / np.sqrt(signal_power(tx[:, k]))
+        rx[:, k] = pnorm(rx[:, k])  
+        tx[:, k] = pnorm(tx[:, k])  
 
         # correct (possible) phase ambiguity
         rot = np.mean(tx[:, k] / rx[:, k])
@@ -208,8 +208,11 @@ def monteCarloGMI(rx, tx, M, constType):
         # set the noise variance
         σ2 = noiseVar[k]
 
-        # hard decision demodulation of the transmitted symbols
-        btx = hardDecision(np.sqrt(Es) * tx[:, k], constSymb, bitMap)
+        # hard decision demodulation of the received symbols        
+        indtx = minEuclid(np.sqrt(Es) * tx[:, k], constSymb)
+        
+        # symbols to bits demapping
+        btx = demap(indtx, bitMap)
 
         # soft demodulation of the received symbols
         LLRs = calcLLR(rx[:, k], σ2, constSymb / np.sqrt(Es), bitMap)
