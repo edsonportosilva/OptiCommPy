@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -43,7 +43,7 @@ from optic.tx import simpleWDMTx
 from optic.core import parameters
 from optic.equalization import edc, mimoAdaptEqualizer
 from optic.carrierRecovery import cpr
-from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power
+from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power, calcEVM
 from optic.plot import pconst
 
 import scipy.constants as const
@@ -181,7 +181,7 @@ paramPD.ideal = True
 sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig, paramPD)
 
 # plot received constellations
-pconst(sigRx[0::paramTx.SpS,:], R=3)
+pconst(sigRx[0::paramTx.SpS,:], R=3);
 
 # + [markdown] id="1cbf39db"
 # ### Matched filtering and CD compensation
@@ -251,7 +251,7 @@ y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
 #plot constellations after adaptive equalization
 discard = 5000
-pconst(y_EQ[discard:-discard,:])
+pconst(y_EQ[discard:-discard,:]);
 
 # + [markdown] id="aaf0f85c"
 # ### Carrier phase recovery
@@ -279,7 +279,7 @@ discard = 5000
 # + colab={"base_uri": "https://localhost:8080/", "height": 435} id="4f6650fe" outputId="c5e97918-3305-4e71-8017-8b3432ff1e38"
 #plot constellations after CPR
 pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
-pconst(y_CPR[discard:-discard,:])
+pconst(y_CPR[discard:-discard,:]);
 
 # + [markdown] id="e9e07048"
 # ### Evaluate transmission metrics
@@ -295,12 +295,15 @@ y_CPR = pnorm(y_CPR)
 
 ind = np.arange(discard, d.shape[0]-discard)
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+GMI, NGMI = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+EVM      = calcEVM(y_CPR[ind,:], paramTx.M, 'qam', d[ind,:])
 
 print('     pol.X     pol.Y      ')
 print('SER: %.2e, %.2e'%(SER[0], SER[1]))
 print('BER: %.2e, %.2e'%(BER[0], BER[1]))
 print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
+print('EVM: %.2f %%, %.2f %%'%(EVM[0]*100, EVM[1]*100))
 print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+print('NGMI: %.2f, %.2f'%(NGMI[0], NGMI[1]))
