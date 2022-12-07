@@ -432,6 +432,3 @@ plt.legend();
 plt.xlabel('SNR [dB]');
 plt.ylabel('EVM [dB]');
 plt.grid()
-# -
-
-
