@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -27,7 +27,7 @@ if 'google.colab' in str(get_ipython()):
     # ! pip install 
 
 from optic.modulation import modulateGray, GrayMapping
-from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER
+from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM
 from optic.models import awgn
 from optic.dsp import pnorm
 from optic.plot import pconst
@@ -382,4 +382,53 @@ plt.xlim(min(SNR), max(SNR))
 plt.legend();
 plt.xlabel('SNR [dB]');
 plt.ylabel('MI [bits/symbol]');
+plt.grid()
+# -
+
+# ## Test error vector magnitude (EVM) versus signal-to-noise ratio (SNR)
+
+# +
+# Run EVM vs SNR Monte Carlo simulation 
+
+qamOrder  = [4, 16, 64, 256, 1024]  # Modulation order
+
+SNR  = np.arange(-2, 35, 1)
+EVM_dataAided  = np.zeros((len(SNR),len(qamOrder)))
+EVM_decisions  = np.zeros((len(SNR),len(qamOrder)))
+
+for ii, M in enumerate(qamOrder):
+    print('run sim: M = ', M)         
+
+    for indSNR in tqdm(range(SNR.size)):
+
+        snrdB = SNR[indSNR]
+
+        # generate random bits
+        bitsTx   = np.random.randint(2, size=2*3*5*2**14)    
+
+        # Map bits to constellation symbols
+        symbTx = modulateGray(bitsTx, M, 'qam')
+
+        # Normalize symbols energy to 1
+        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+
+        # AWGN channel        
+        symbRx = awgn(symbTx, snrdB)
+
+        # MI estimation
+        EVM_dataAided[indSNR, ii] = calcEVM(symbRx, M, 'qam', symbTx=symbTx)
+        EVM_decisions[indSNR, ii] = calcEVM(symbRx, M, 'qam')
+
+# +
+plt.figure(figsize=(10,6))
+
+for ii, M in enumerate(qamOrder):
+    plt.plot(SNR, 10*np.log10(EVM_dataAided[:,ii]), '--', color='black', label=f'{str(M)}QAM (data aided)', linewidth=2)
+    plt.plot(SNR, 10*np.log10(EVM_decisions[:,ii]), '-o', label=f'{str(M)}QAM (decisions)', linewidth=2)
+
+
+plt.xlim(min(SNR), max(SNR))
+plt.legend();
+plt.xlabel('SNR [dB]');
+plt.ylabel('EVM [dB]');
 plt.grid()
