@@ -25,7 +25,7 @@ def signal_power(x):
         Average signal power of x: P = mean(abs(x)**2).
 
     """
-    return np.mean(x * np.conj(x)).real
+    return np.mean(np.abs(x)**2)
 
 
 def fastBERcalc(rx, tx, M, constType):
@@ -87,9 +87,10 @@ def fastBERcalc(rx, tx, M, constType):
         rx[:, k] = pnorm(rx[:, k])
         tx[:, k] = pnorm(tx[:, k])
 
-        # correct (possible) phase ambiguity
-        rot = np.mean(tx[:, k] / rx[:, k])
-        rx[:, k] = rot * rx[:, k]
+        if constType == "qam" or constType == "psk":
+            # correct (possible) phase ambiguity
+            rot = np.mean(tx[:, k] / rx[:, k])
+            rx[:, k] = rot * rx[:, k]
 
         # estimate SNR of the received constellation
         SNR[k] = 10 * np.log10(
@@ -465,4 +466,8 @@ def theoryBER(M, EbN0, constType):
     elif constType == "psk":
         Ps = 2 * Qfunc(np.sqrt(2 * k * EbN0lin) * np.sin(np.pi / M))
         Pb = Ps / k
+    elif constType == 'pam':
+        Ps = (2*(M-1)/M)*Qfunc(np.sqrt(6*np.log2(M)/(M**2-1)*EbN0lin))
+        Pb = Ps / k
+
     return Pb
