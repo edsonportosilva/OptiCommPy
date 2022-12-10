@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -26,7 +26,7 @@ if 'google.colab' in str(get_ipython()):
 
 # +
 from optic.modulation import modulateGray, demodulateGray, GrayMapping
-from optic.metrics import signal_power, fastBERcalc
+from optic.metrics import signal_power, fastBERcalc, theoryBER
 from optic.models import awgn
 from optic.dsp import pnorm
 import matplotlib.pyplot as plt
@@ -37,15 +37,15 @@ from numba import njit
 import os.path as path
 
 # +
-# #%load_ext autoreload
-# #%autoreload 2
+# # %load_ext autoreload
+# # %autoreload 2
 # -
 
 # ## Define modulation, modulate and demodulate data
 
 # +
 # Run AWGN simulation 
-EbN0dB = 25 # SNR per bit
+SNRdB = 25 # SNR 
 M      = 16  # order of the modulation format
 constType = 'qam' # 'qam', 'psk', 'pam' or 'ook'
 
@@ -56,7 +56,7 @@ bitMap = bitMap.reshape(-1, int(np.log2(M)))
 Es = signal_power(constSymb)                      # mean symbol energy
 
 # generate random bits
-bits = np.random.randint(2, size = 6*2**14)
+bits = np.random.randint(2, size = int(np.log2(M)*1e6))
 
 # Map bits to constellation symbols
 symbTx = modulateGray(bits, M, constType)
@@ -65,13 +65,16 @@ symbTx = modulateGray(bits, M, constType)
 symbTx = pnorm(symbTx)
 
 # AWGN    
-snrdB  = EbN0dB + 10*np.log10(np.log2(M))
-symbRx = awgn(symbTx, snrdB)
+EbN0dB = SNRdB - 10*np.log10(np.log2(M))
+symbRx = awgn(symbTx, SNRdB)
 
+    
 # BER calculation (hard demodulation)
 BER, _, SNRest = fastBERcalc(symbRx, symbTx, M, constType)
 print('BER = %.2e'%BER)
-print('SNR(est) = %.2f'%SNRest)
+print('SNR = %.2f dB'%SNRdB)
+print('SNR(est) = %.2f dB'%SNRest)
+print('BER(theory) = %.2e'%theoryBER(M, EbN0dB, constType))
 
 plt.figure(figsize=(4,4))
 plt.plot(symbRx.real, symbRx.imag,'.', label='Rx')
@@ -85,6 +88,3 @@ plt.grid()
 for ind, symb in enumerate(constSymb/np.sqrt(Es)):
     bitMap[ind,:]
     plt.annotate(str(bitMap[ind,:])[1:-1:2], xy = (symb.real, symb.imag))
-# -
-
-
