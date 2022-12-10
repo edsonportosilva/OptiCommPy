@@ -97,7 +97,10 @@ def GrayMapping(M, constType):
     # sort complex symbols column according to their mapped bit sequence (as integer decimal)                 
     const = const_[const_[:, 1].real.argsort()]
     const = const[:, 0]
-
+    
+    if constType == 'pam' or constType == 'ook':
+       const = const.real
+       
     return const
 
 
