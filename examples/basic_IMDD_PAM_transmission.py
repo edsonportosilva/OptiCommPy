@@ -6,14 +6,14 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
 
-# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/basic_OOK_transmission.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/basic_IMDD_PAM_transmission.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # # Simulate a basic IM-DD PAM transmission system
 
@@ -27,10 +27,10 @@ import numpy as np
 from commpy.utilities  import upsample
 from optic.models import mzm, photodiode, linFiberCh, edfa
 from optic.modulation import GrayMapping, modulateGray, demodulateGray
-from optic.metrics import signal_power
+from optic.metrics import signal_power, theoryBER
 from optic.dsp import firFilter, pulseShape, lowPassFIR, pnorm
 from optic.core import parameters
-from optic.plot import eyediagram
+from optic.plot import eyediagram, pconst
 import matplotlib.pyplot as plt
 from scipy.special import erfc
 from tqdm.notebook import tqdm
@@ -53,8 +53,10 @@ HTML("""
 
 figsize(10, 3)
 
-# %load_ext autoreload
-# %autoreload 2
+# +
+# # %load_ext autoreload
+# # %autoreload 2
+# -
 
 # ### Intensity modulation (IM) with Pulse Amplitude Modulation (PAM)
 
@@ -209,8 +211,8 @@ plt.xlim(0,err.size);
 
 # +
 # simulation parameters
-SpS = 16            # Samples per symbol
-M = 4               # order of the modulation format
+SpS = 16             # Samples per symbol
+M = 8               # order of the modulation format
 Rs = 40e9           # Symbol rate (for the OOK case, Rs = Rb)
 Tsymb = 1/Rs        # Symbol period in seconds
 Fs = 1/(Tsymb/SpS)  # Signal sampling frequency (samples/second)
@@ -237,7 +239,7 @@ for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
     Pi = 10**((Pi_dBm+3)/10)*1e-3 # optical signal power in W at the MZM input
 
     # generate pseudo-random bit sequence
-    bitsTx = np.random.randint(2, size=10**6)
+    bitsTx = np.random.randint(2, size=int(np.log2(M)*1e5))
     n = np.arange(0, bitsTx.size)
 
     # generate ook modulated symbol sequence
@@ -257,7 +259,7 @@ for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
     # pin receiver
     paramPD = parameters()
     paramPD.ideal = False
-    paramPD.B = 1.1*Rs
+    paramPD.B = Rs
     paramPD.Fs = Fs
 
     I_Rx = photodiode(sigTxo.real, paramPD)
@@ -269,17 +271,20 @@ for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
     # subtract DC level and normalize power
     symbRx = symbRx - symbRx.mean()
     symbRx = pnorm(symbRx)
-
+    
+    snr = signal_power(symbRx)/(2*signal_power(symbRx-symbTx))
+    EbN0 = 10*np.log10(snr/np.log2(M))
+    
     # demodulate symbols to bits with minimum Euclidean distance 
     bitsRx = demodulateGray(np.sqrt(Es)*symbRx, M, 'pam')
 
     err = np.logical_xor(bitsRx[discard:bitsRx.size-discard], bitsTx[discard:bitsTx.size-discard])
     BER[indPi] = np.mean(err)
-    #Pb[indPi] = 0.5*erfc(Q/np.sqrt(2)) # probability of bit error (theory)
+    Pb[indPi] = theoryBER(M, EbN0, 'pam') # probability of bit error (theory)
 # -
 
 plt.figure()
-#plt.plot(powerValues, np.log10(Pb),'--',label='Pb (theory)')
+plt.plot(powerValues, np.log10(Pb),'--',label='Pb (theory)')
 plt.plot(powerValues, np.log10(BER),'o',label='BER')
 plt.grid()
 plt.ylabel('log10(BER)')
