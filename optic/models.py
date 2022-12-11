@@ -11,7 +11,7 @@ from optic.metrics import signal_power
 
 try:
     from optic.dspGPU import firFilter
-except:
+except ImportError:
     from optic.dsp import firFilter
 
 
@@ -686,18 +686,18 @@ def awgn(sig, snr, Fs=1, B=1):
     Parameters
     ----------
     sig : np.array
-        input signal.
+        Input signal.
     snr : scalar
-        signal-to-noise ratio in dB.
-    Fs : scalar
-        sampling frequency. The default is 1.
-    B : scalar
-        signal bandwidth. The default is 1.
+        Signal-to-noise ratio in dB.
+    Fs : real scalar
+        Sampling frequency. The default is 1.
+    B : real scalar
+        Signal bandwidth. The default is 1.
 
     Returns
     -------
-    sigNoisy : np.array
-        input signal plus noise.
+    np.array
+        Input signal plus noise.
 
     """
     snr_lin = 10 ** (snr / 10)
