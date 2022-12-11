@@ -58,6 +58,6 @@ $ pip install .
 
 ## Citing this repository
 
-Edson Porto da Silva, & Adolfo Herbster. (2021). edsonportosilva/OptiCommpy: First release (alpha version) (v0.1.0-alpha).
+Edson Porto da Silva, Adolfo Herbster, & Joaquin Matres. (2022). edsonportosilva/OptiCommPy: v0.2.0-alpha (v0.2.0-alpha). https://doi.org/10.5281/zenodo.7425071
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5668218.svg)](https://doi.org/10.5281/zenodo.5668218)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7425071.svg)](https://doi.org/10.5281/zenodo.7425071)
