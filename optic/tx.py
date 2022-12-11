@@ -9,7 +9,7 @@ from optic.modulation import GrayMapping, modulateGray
 
 try:
     from optic.dspGPU import firFilter
-except:
+except ImportError:
     from optic.dsp import firFilter
 
 import logging as logg
