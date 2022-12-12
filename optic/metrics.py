@@ -87,7 +87,7 @@ def fastBERcalc(rx, tx, M, constType):
         rx[:, k] = pnorm(rx[:, k])
         tx[:, k] = pnorm(tx[:, k])
 
-        if constType == "qam" or constType == "psk":
+        if constType in ["qam", "psk"]:
             # correct (possible) phase ambiguity
             rot = np.mean(tx[:, k] / rx[:, k])
             rx[:, k] = rot * rx[:, k]

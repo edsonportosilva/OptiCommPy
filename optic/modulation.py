@@ -59,15 +59,11 @@ def GrayMapping(M, constType):
         logg.warn('OOK has only 2 symbols, but M != 2. Changing M to 2.')
         M = 2
 
-    if constType == 'pam' or constType == 'ook':
-        L = int(M-1)
-    else:
-        L = int(np.sqrt(M)-1)
-
+    L = int(M-1) if constType in ['pam', 'ook'] else int(np.sqrt(M)-1)
     bitsSymb = int(np.log2(M))
 
     code = GrayCode(bitsSymb)
-    if constType == 'pam' or constType == 'ook':
+    if constType in ['pam', 'ook']:
         const = np.arange(-L, L+1, 2)
 
     elif constType == 'qam':
@@ -97,10 +93,10 @@ def GrayMapping(M, constType):
     # sort complex symbols column according to their mapped bit sequence (as integer decimal)                 
     const = const_[const_[:, 1].real.argsort()]
     const = const[:, 0]
-    
-    if constType == 'pam' or constType == 'ook':
-       const = const.real
-       
+
+    if constType in ['pam', 'ook']:
+        const = const.real
+
     return const
 
 
