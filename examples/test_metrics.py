@@ -373,8 +373,8 @@ plt.figure(figsize=(10,6))
 
 for ii, M in enumerate(qamOrder):
     pltLabel = 'QAM uniform' if ii == 0 else 'QAM shaped'
-    plt.plot(SNR, MI[:,ii],'-', label='MI '+str(M)+pltLabel,linewidth=2)
-    plt.plot(SNR, GMI[:,ii],'-', label='GMI '+str(M)+pltLabel,linewidth=2)
+    plt.plot(SNR, MI[:,ii], '-', label=f'MI {str(M)}{pltLabel}', linewidth=2)
+    plt.plot(SNR, GMI[:,ii], '-', label=f'GMI {str(M)}{pltLabel}', linewidth=2)
 
 # plot theoretical AWGN channel capacity    
 C = np.log2(1 + 10**(SNR/10))

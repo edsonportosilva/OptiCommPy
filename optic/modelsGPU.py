@@ -167,8 +167,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
         Ey_conv = Ech_y.copy()
 
         # fiber propagation step
-        for stepN in range(1, Nsteps + 1):
-
+        for _ in range(1, Nsteps + 1):
             # First linear step (frequency domain)
             Ex_hd = ifft(fft(Ech_x) * linOperator)
             Ey_hd = ifft(fft(Ech_y) * linOperator)
@@ -203,10 +202,10 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
                     break
                 elif nIter == maxIter - 1:
                     logg.warning( f"Warning: target SSFM error tolerance was not achieved in {maxIter} iterations")
-                    
+
             Ech_x = Ech_x_fd.copy()
             Ech_y = Ech_y_fd.copy()
-            
+
         # amplification step
         if amp == "edfa":
             Ech_x = edfa(Ech_x, Fs, alpha * Lspan, NF, Fc)
@@ -221,7 +220,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
             Ech_spans[:, 2 * indRecSpan: 2 * indRecSpan + 1] = Ech_x.T
             Ech_spans[:, 2 * indRecSpan + 1: 2 * indRecSpan + 2] = Ech_y.T
             indRecSpan += 1
-            
+
     if recordSpans:
         Ech = cp.asnumpy(Ech_spans)
     else:
@@ -231,7 +230,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
         Ech = Ei.copy()
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
-        
+
     return Ech, paramCh
 
 

@@ -158,10 +158,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
 
     if np.iscomplex(sig).any():
         d = 1
-        if not (plotlabel):
-            plotlabel_ = "[real]"
-        else:
-            plotlabel_ = f"{plotlabel} [real]"
+        plotlabel_ = f"{plotlabel} [real]" if plotlabel else "[real]"
     else:
         d = 0
         plotlabel_ = plotlabel
@@ -173,11 +170,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
         else:
             y = sig[:Nsamples].imag
 
-            if not (plotlabel):
-                plotlabel_ = "[imag]"
-            else:
-                plotlabel_ = f"{plotlabel} [imag]"
-
+            plotlabel_ = f"{plotlabel} [imag]" if plotlabel else "[imag]"
         plt.figure()
         if ptype == "fancy":
             f = interp1d(np.arange(y.size), y, kind="cubic")
