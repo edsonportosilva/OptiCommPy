@@ -6,7 +6,7 @@ from numba import njit, prange
 from scipy.special import erf
 
 from optic.dsp import pnorm
-from optic.modulation import GrayMapping, demodulateGray, minEuclid, demap
+from optic.modulation import GrayMapping, demodulateGray, minEuclid
 
 
 @njit
@@ -97,13 +97,8 @@ def fastBERcalc(rx, tx, M, constType):
             signal_power(tx[:, k]) / signal_power(rx[:, k] - tx[:, k])
         )
     for k in range(nModes):
-        # hard decision demodulation of the received symbols
-        indrx = minEuclid(np.sqrt(Es) * rx[:, k], constSymb)
-        indtx = minEuclid(np.sqrt(Es) * tx[:, k], constSymb)
-
-        # symbols to bits demapping
-        brx = demap(indrx, bitMap)
-        btx = demap(indtx, bitMap)
+        brx = demodulateGray(np.sqrt(Es) * rx[:, k], M, constType)
+        btx = demodulateGray(np.sqrt(Es) * tx[:, k], M, constType)
 
         err = np.logical_xor(brx, btx)
         BER[k] = np.mean(err)
@@ -224,11 +219,8 @@ def monteCarloGMI(rx, tx, M, constType, px=[]):
         # set the noise variance
         σ2 = noiseVar[k]
 
-        # hard decision demodulation of the transmitted symbols
-        indtx = minEuclid(tx[:, k], constSymb)
-
-        # symbols to bits demapping
-        btx = demap(indtx, bitMap)
+        # demodulate transmitted symbol sequence
+        btx = demodulateGray(np.sqrt(Es) * tx[:, k], M, constType)
 
         # soft demodulation of the received symbols
         LLRs = calcLLR(rx[:, k], σ2, constSymb, bitMap, px)
