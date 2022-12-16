@@ -76,11 +76,6 @@ def fastBERcalc(rx, tx, M, constType):
     BER = np.zeros(nModes)
     SER = np.zeros(nModes)
 
-    # get bit mapping
-    b = int(np.log2(M))
-    bitMap = demodulateGray(constSymb, M, constType)
-    bitMap = bitMap.reshape(-1, b)
-
     # pre-processing
     for k in range(nModes):
         # symbol normalization
@@ -102,7 +97,7 @@ def fastBERcalc(rx, tx, M, constType):
 
         err = np.logical_xor(brx, btx)
         BER[k] = np.mean(err)
-        SER[k] = np.mean(np.sum(err.reshape(-1, b), axis=1) > 0)
+        SER[k] = np.mean(np.sum(err.reshape(-1, int(np.log2(M))), axis=1) > 0)
     return BER, SER, SNR
 
 
