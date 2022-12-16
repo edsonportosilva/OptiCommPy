@@ -299,11 +299,14 @@ GMI, NGMI = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 EVM      = calcEVM(y_CPR[ind,:], paramTx.M, 'qam', d[ind,:])
 
-print('     pol.X     pol.Y      ')
-print('SER: %.2e, %.2e'%(SER[0], SER[1]))
-print('BER: %.2e, %.2e'%(BER[0], BER[1]))
-print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
-print('EVM: %.2f %%, %.2f %%'%(EVM[0]*100, EVM[1]*100))
-print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
-print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
-print('NGMI: %.2f, %.2f'%(NGMI[0], NGMI[1]))
+print('      pol.X      pol.Y      ')
+print(' SER: %.2e,  %.2e'%(SER[0], SER[1]))
+print(' BER: %.2e,  %.2e'%(BER[0], BER[1]))
+print(' SNR: %.2f dB,  %.2f dB'%(SNR[0], SNR[1]))
+print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
+print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
+print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
+# -
+
+
