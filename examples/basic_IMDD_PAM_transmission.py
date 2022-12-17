@@ -316,7 +316,7 @@ pulse = pulseShape('nrz', SpS)
 pulse = pulse/max(abs(pulse))
 
 # fiber channel parameters
-distance = np.arange(0,101,10) # transmission distance in km
+distance = np.arange(0,101,5) # transmission distance in km
 α = 0.2        # fiber loss parameter [dB/km]
 D = 16         # fiber dispersion parameter [ps/nm/km]
 Fc = 193.1e12  # central optical frequency [Hz]
