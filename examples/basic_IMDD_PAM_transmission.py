@@ -76,7 +76,7 @@ Pi_dBm = 0 # laser optical power at the input of the MZM in dBm
 Pi = 10**(Pi_dBm/10)*1e-3 # convert from dBm to W
 
 # generate pseudo-random bit sequence
-bitsTx = np.random.randint(2, size=int(np.log2(M)*1e5))
+bitsTx = np.random.randint(2, size=int(np.log2(M)*1e6))
 
 # generate ook modulated symbol sequence
 symbTx = modulateGray(bitsTx, M, 'pam')    
@@ -207,12 +207,12 @@ plt.ylim(0, 1.5)
 plt.xlim(0,err.size);
 # -
 
-# ### Generate curve of BER vs receiver input power
+# ### Generate curve of BER vs received input power
 
 # +
 # simulation parameters
-SpS = 16             # Samples per symbol
-M = 8               # order of the modulation format
+SpS = 16            # Samples per symbol
+M = 4               # order of the modulation format
 Rs = 40e9           # Symbol rate (for the OOK case, Rs = Rb)
 Tsymb = 1/Rs        # Symbol period in seconds
 Fs = 1/(Tsymb/SpS)  # Signal sampling frequency (samples/second)
@@ -239,7 +239,7 @@ for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
     Pi = 10**((Pi_dBm+3)/10)*1e-3 # optical signal power in W at the MZM input
 
     # generate pseudo-random bit sequence
-    bitsTx = np.random.randint(2, size=int(np.log2(M)*1e5))
+    bitsTx = np.random.randint(2, size=int(np.log2(M)*1e6))
     n = np.arange(0, bitsTx.size)
 
     # generate ook modulated symbol sequence
@@ -289,7 +289,110 @@ plt.plot(powerValues, np.log10(BER),'o',label='BER')
 plt.grid()
 plt.ylabel('log10(BER)')
 plt.xlabel('Pin (dBm)');
-plt.title('Bit-error performance vs input power at the pin receiver')
+plt.title('BER vs input power at the pin receiver')
 plt.legend();
 plt.ylim(-10,0);
 plt.xlim(min(powerValues), max(powerValues));
+
+# ### Generate curve of BER vs transmission distance
+
+# +
+# simulation parameters
+SpS = 16            # Samples per symbol
+M = 4               # order of the modulation format
+Rs = 10e9           # Symbol rate (for the OOK case, Rs = Rb)
+Tsymb = 1/Rs        # Symbol period in seconds
+Fs = 1/(Tsymb/SpS)  # Signal sampling frequency (samples/second)
+Ts = 1/Fs           # Sampling period
+
+# MZM parameters
+Pi_dBm = 0 # optical signal power in dBm at the MZM input
+Vπ = 2
+Vb = -Vπ/2
+Pi = 10**((Pi_dBm)/10)*1e-3 # optical signal power in W at the MZM input
+
+# typical NRZ pulse
+pulse = pulseShape('nrz', SpS)
+pulse = pulse/max(abs(pulse))
+
+# fiber channel parameters
+distance = np.arange(0,101,10) # transmission distance in km
+α = 0.2        # fiber loss parameter [dB/km]
+D = 16         # fiber dispersion parameter [ps/nm/km]
+Fc = 193.1e12  # central optical frequency [Hz]
+    
+BER = np.zeros(distance.shape)
+Pb = np.zeros(distance.shape)
+
+const = GrayMapping(M,'pam') # get PAM constellation
+Es = signal_power(const) # calculate the average energy per symbol of the PAM constellation
+    
+discard = 100
+for indL, L in enumerate(tqdm(distance)):
+        
+    # generate pseudo-random bit sequence
+    bitsTx = np.random.randint(2, size=int(np.log2(M)*1e5))
+    n = np.arange(0, bitsTx.size)
+
+    # generate ook modulated symbol sequence
+    symbTx = modulateGray(bitsTx, M, 'pam')    
+    symbTx = pnorm(symbTx) # power normalization
+
+    # upsampling
+    symbolsUp = upsample(symbTx, SpS)
+
+    # pulse formatting
+    sigTx = firFilter(pulse, symbolsUp)
+
+    # optical modulation
+    Ai = np.sqrt(Pi)*np.ones(sigTx.size)
+    sigTxo = mzm(Ai, 0.25*sigTx, Vπ, Vb)
+    
+    # linear optical channel   
+    sigCh = linFiberCh(sigTxo, L, α, D, Fc, Fs)
+
+    # receiver pre-amplifier
+    if L > 0:
+        G = α*L    # edfa gain
+        NF = 4.5   # edfa noise figure
+        sigCh = edfa(sigCh, Fs, G, NF, Fc)
+
+    # pin receiver
+    paramPD = parameters()
+    paramPD.ideal = False
+    paramPD.B = Rs
+    paramPD.Fs = Fs
+
+    I_Rx = photodiode(sigCh, paramPD)
+    I_Rx = I_Rx/np.std(I_Rx)
+
+    # capture samples in the middle of signaling intervals
+    symbRx = I_Rx[0::SpS]
+
+    # subtract DC level and normalize power
+    symbRx = symbRx - symbRx.mean()
+    symbRx = pnorm(symbRx)
+    
+    snr = signal_power(symbRx)/(2*signal_power(symbRx-symbTx))
+    EbN0 = 10*np.log10(snr/np.log2(M))
+    
+    # demodulate symbols to bits with minimum Euclidean distance 
+    bitsRx = demodulateGray(np.sqrt(Es)*symbRx, M, 'pam')
+
+    err = np.logical_xor(bitsRx[discard:bitsRx.size-discard], bitsTx[discard:bitsTx.size-discard])
+    BER[indL] = np.mean(err)
+    Pb[indL] = theoryBER(M, EbN0, 'pam') # probability of bit error (theory)
+# -
+
+plt.figure()
+plt.plot(distance, np.log10(Pb),'--',label='Pb (theory)')
+plt.plot(distance, np.log10(BER),'o',label='BER')
+plt.grid()
+plt.ylabel('log10(BER)')
+plt.xlabel('Distance (km)');
+plt.title('BER vs transmission distance')
+plt.legend();
+plt.ylim(-10,0);
+plt.xlim(min(distance), max(distance));
+
+
