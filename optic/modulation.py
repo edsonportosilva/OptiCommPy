@@ -141,7 +141,7 @@ def demap(indSymb, bitMap):
     M = bitMap.shape[0]
     b = int(np.log2(M))
 
-    decBits = np.zeros(len(indSymb) * b)
+    decBits = np.zeros(len(indSymb) * b, dtype='int')
 
     for i in prange(len(indSymb)):
         decBits[i * b : i * b + b] = bitMap[indSymb[i], :]
