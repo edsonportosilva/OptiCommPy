@@ -13,7 +13,7 @@ Simulate optical communications systems with Python. This repository is a Python
 ## Available features
 
 * Several digital modulations available (M-PAM, square M-QAM, M-PSK, OOK) to simulate IM-DD and coherent optical systems.
-* Numerical models to simulate optical transmitters, nonlinear propagation over optical fibers, and optical receivers.
+* Numerical models to simulate optical transmitters, optical amplification, nonlinear propagation over optical fibers, and optical receivers.
 * CPU and GPU-based implementations of the [*split-step Fourier Method*](https://en.wikipedia.org/wiki/Split-step_method) to simulate polarization multiplexed WDM transmission.
 * Standard digital signal processing (DSP) blocks employed in coherent optical receivers, such as:
   - *Signal resampling.* 
@@ -22,7 +22,7 @@ Simulate optical communications systems with Python. This repository is a Python
   - *Several NxN MIMO adaptive equalization algorithms*.
   - *Carrier phase recovery algorithms.*  
  
- For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the core DSP functions.
+* For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the core DSP functions.
   
 * Evaluate transmission performance with metrics such as:
   - *Bit-error-rate* (BER).
@@ -39,13 +39,14 @@ If you want to contribute to this project, just implement the feature you want a
 
 ## Requirements/Dependencies
 
-- python 3.2 or above
-- numpy 1.10 or above
-- scipy 0.15 or above
-- matplotlib 1.4 or above
-- Commpy 0.7.0 or above
-- numba 0.54.1 or above
-- tqdm
+- python>=3.2
+- numpy>=1.9.2
+- scipy>=0.15.0
+- matplotlib>=1.4.3
+- scikit-commpy>=0.7.0
+- numba>=0.54.1
+- tqdm>=4.64.1
+- simple-pid>=1.0.1
 
 ## Installation
 
