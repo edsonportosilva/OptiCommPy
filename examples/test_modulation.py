@@ -76,13 +76,13 @@ print('SNR = %.2f dB'%SNRdB)
 print('SNR(est) = %.2f dB'%SNRest)
 print('BER(theory) = %.2e'%theoryBER(M, EbN0dB, constType))
 
-plt.figure(figsize=(4,4))
+plt.figure(figsize=(6,6))
 plt.plot(symbRx.real, symbRx.imag,'.', label='Rx')
 plt.plot(symbTx.real, symbTx.imag,'.', label='Tx')
 plt.axis('square')
 plt.xlabel('In-Phase (I)')
 plt.ylabel('Quadrature (Q)')
-plt.legend();
+plt.legend(loc='upper right');
 plt.grid()
 
 for ind, symb in enumerate(constSymb/np.sqrt(Es)):
