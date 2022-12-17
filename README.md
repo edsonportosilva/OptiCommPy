@@ -15,14 +15,23 @@ Simulate optical communications systems with Python. This repository is a Python
 * Several digital modulations available (M-PAM, square M-QAM, M-PSK, OOK) to simulate IM-DD and coherent optical systems.
 * Numerical models to simulate optical transmitters, nonlinear propagation over optical fibers, and optical receivers.
 * CPU and GPU-based implementations of the [*split-step Fourier Method*](https://en.wikipedia.org/wiki/Split-step_method) to simulate polarization multiplexed WDM transmission.
-* Standard digital signal processing (DSP) blocks employed in coherent optical receivers. For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the core functions.
-* Tools to evaluate transmission performance with metrics such as:
-  - *bit-error-rate* (BER).
-  - *symbol-error-rate* (SER).
-  - *error vector magnitude* (EVM).
-  - *mutual information* (MI).
-  - *generalized mutual information* (GMI).  
-* Functions to vizualize constellations and eyediagrams.
+* Standard digital signal processing (DSP) blocks employed in coherent optical receivers, such as:
+  - *Signal resampling.* 
+  - *Matched filtering.*
+  - *Eletronic chromatic dispersion compensation (EDC)*.
+  - *Several NxN MIMO adaptive equalization algorithms*.
+  - *Carrier phase recovery algorithms.*  
+ 
+ For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the core DSP functions.
+  
+* Evaluate transmission performance with metrics such as:
+  - *Bit-error-rate* (BER).
+  - *Symbol-error-rate* (SER).
+  - *Error vector magnitude* (EVM).
+  - *Mutual information* (MI).
+  - *Generalized mutual information* (GMI).  
+  - *Normalized generalized mutual information* (NGMI). 
+* Vizualization of constellations and eyediagrams.
 
 ## How can I contribute?
 
