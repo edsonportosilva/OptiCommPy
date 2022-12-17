@@ -78,14 +78,14 @@ def fastBERcalc(rx, tx, M, constType):
 
     # pre-processing
     for k in range(nModes):
-        # symbol normalization
-        rx[:, k] = pnorm(rx[:, k])
-        tx[:, k] = pnorm(tx[:, k])
-
         if constType in ["qam", "psk"]:
             # correct (possible) phase ambiguity
             rot = np.mean(tx[:, k] / rx[:, k])
             rx[:, k] = rot * rx[:, k]
+            
+        # symbol normalization
+        rx[:, k] = pnorm(rx[:, k])
+        tx[:, k] = pnorm(tx[:, k])
 
         # estimate SNR of the received constellation
         SNR[k] = 10 * np.log10(
@@ -162,8 +162,8 @@ def monteCarloGMI(rx, tx, M, constType, px=[]):
     -------
     GMI : np.array
         Generalized mutual information values.
-    MIperBitPosition : np.array
-        Mutual information per bit position.
+    NGMI : np.array
+        Normalized mutual information.
 
     """
     # constellation parameters
@@ -188,9 +188,7 @@ def monteCarloGMI(rx, tx, M, constType, px=[]):
     nModes = int(tx.shape[1])  # number of sinal modes
     GMI = np.zeros(nModes)
     NGMI = np.zeros(nModes)
-
-    noiseVar = np.var(rx - tx, axis=0)
-
+    
     if len(px) == 0:  # if px is not defined, assume uniform distribution
         px = 1 / M * np.ones(constSymb.shape)
 
@@ -203,17 +201,19 @@ def monteCarloGMI(rx, tx, M, constType, px=[]):
 
     # symbol normalization
     for k in range(nModes):
+        if constType in ["qam", "psk"]:
+            # correct (possible) phase ambiguity
+            rot = np.mean(tx[:, k] / rx[:, k])
+            rx[:, k] = rot * rx[:, k]
+            
         # symbol normalization
         rx[:, k] = pnorm(rx[:, k])
         tx[:, k] = pnorm(tx[:, k])
-
-        # correct (possible) phase ambiguity
-        rot = np.mean(tx[:, k] / rx[:, k])
-        rx[:, k] = rot * rx[:, k]
+            
     for k in range(nModes):
         # set the noise variance
-        σ2 = noiseVar[k]
-
+        σ2 = np.var(rx[:, k] - tx[:, k], axis=0)
+        
         # demodulate transmitted symbol sequence
         btx = demodulateGray(np.sqrt(Es) * tx[:, k], M, constType)
 
@@ -284,10 +284,16 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
     nModes = int(rx.shape[1])  # number of sinal modes
     MI = np.zeros(nModes)
 
-    for k in range(nModes):
+    for k in range(nModes):        
+        if constType in ["qam", "psk"]:
+            # correct (possible) phase ambiguity
+            rot = np.mean(tx[:, k] / rx[:, k])
+            rx[:, k] = rot * rx[:, k]
+            
         # symbol normalization
         rx[:, k] = pnorm(rx[:, k])
         tx[:, k] = pnorm(tx[:, k])
+                    
     # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
@@ -401,21 +407,26 @@ def calcEVM(symb, M, constType, symbTx=[]):
         except IndexError:
             symbTx = symbTx.reshape(len(symbTx), 1)
         symbTx = pnorm(symbTx)
+
     # constellation parameters
     constSymb = GrayMapping(M, constType)
     constSymb = pnorm(constSymb)
 
     EVM = np.zeros((symb.shape[1], 1))
 
-    for ii in range(symb.shape[1]):
+    for ii in range(symb.shape[1]):           
         if not len(symbTx):
             decided = np.zeros(symb.shape[0], dtype="complex")
             ind = minEuclid(symb[:, ii], constSymb)  # min. dist. decision
             decided = constSymb[ind]
         else:
-            decided = symbTx[:, ii]
-        EVM[ii] = np.mean(np.abs(symb[:, ii] - decided) ** 2) / np.mean(
-            np.abs(decided) ** 2
+            if constType in ["qam", "psk"]:
+                # correct (possible) phase ambiguity
+                rot = np.mean(symbTx[:, ii] / symb[:, ii])
+                symb[:, ii] = rot * symb[:, ii]               
+            
+        EVM[ii] = np.mean(np.abs(symb[:, ii] - symbTx[:, ii]) ** 2) / np.mean(
+            np.abs(symbTx[:, ii]) ** 2
         )
     return EVM
 
