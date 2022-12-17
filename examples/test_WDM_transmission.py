@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -285,14 +285,6 @@ pconst(y_CPR[discard:-discard,:]);
 # ### Evaluate transmission metrics
 
 # + colab={"base_uri": "https://localhost:8080/"} id="67c66471" outputId="5e6538be-8488-470e-ab15-c1be2c1a9191"
-# correct (possible) phase ambiguity
-for k in range(y_CPR.shape[1]):
-    rot = np.mean(d[:,k]/y_CPR[:,k])
-    y_CPR[:,k] = rot*y_CPR[:,k]
-
-y_CPR = pnorm(y_CPR)
-
-
 ind = np.arange(discard, d.shape[0]-discard)
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 GMI, NGMI = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
