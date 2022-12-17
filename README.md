@@ -20,10 +20,8 @@ Simulate optical communications systems with Python. This repository is a Python
   - *Matched filtering.*
   - *Eletronic chromatic dispersion compensation (EDC)*.
   - *Several NxN MIMO adaptive equalization algorithms*.
-  - *Carrier phase recovery algorithms.*  
- 
-* For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the core DSP functions.
-  
+  - *Carrier phase recovery algorithms.* 
+* For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the core DSP functions.  
 * Evaluate transmission performance with metrics such as:
   - *Bit-error-rate* (BER).
   - *Symbol-error-rate* (SER).
