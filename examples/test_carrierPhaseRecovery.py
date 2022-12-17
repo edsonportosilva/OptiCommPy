@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -33,7 +33,7 @@ from optic.models import awgn, phaseNoise, pdmCoherentReceiver
 from optic.carrierRecovery import cpr
 from optic.tx import simpleWDMTx
 from optic.core import parameters
-from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power
+from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power, calcEVM
 from optic.plot import pconst
 
 import scipy.constants as const
@@ -56,11 +56,9 @@ HTML("""
 
 figsize(10, 3)
 
-# +
-# # %load_ext autoreload
-# # %autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 # #%load_ext line_profiler
-# -
 
 constCMAP = 'turbo' # configure colormap for constellation plots
 
@@ -72,8 +70,8 @@ constCMAP = 'turbo' # configure colormap for constellation plots
 # +
 # Transmitter parameters:
 paramTx = parameters()
-paramTx.M   = 8           # order of the modulation format
-paramTx.constType = 'psk'  # constellation type
+paramTx.M   = 16           # order of the modulation format
+paramTx.constType = 'qam'  # constellation type
 paramTx.Rs  = 32e9         # symbol rate [baud]
 paramTx.SpS = 8            # samples per symbol
 paramTx.Nbits = int(np.log2(paramTx.M)*1e5)   # total number of bits per polarization
@@ -115,9 +113,9 @@ print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 0*150e6                # frequency offset
+FO      = 150e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 0*200e3                 # linewidth
+lw      = 400e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
@@ -198,26 +196,21 @@ discard = 1000
 pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
 pconst(y_CPR[discard:-discard,:], cmap=constCMAP)
 
-## Performance metrics
-
-# correct (possible) phase ambiguity
-for k in range(y_CPR.shape[1]):
-    rot = np.mean(d[:,k]/y_CPR[:,k])
-    y_CPR[:,k] = rot*y_CPR[:,k]
-
-y_CPR = pnorm(y_CPR)
-
+# Performance metrics
 ind = np.arange(discard, d.shape[0]-discard)
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+GMI, NGMI = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
 MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+EVM      = calcEVM(y_CPR[ind,:], paramTx.M, 'qam', d[ind,:])
 
-print('     pol.X     pol.Y      ')
-print('SER: %.2e, %.2e'%(SER[0], SER[1]))
-print('BER: %.2e, %.2e'%(BER[0], BER[1]))
-print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
-print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
-print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+print('      pol.X      pol.Y      ')
+print(' SER: %.2e,  %.2e'%(SER[0], SER[1]))
+print(' BER: %.2e,  %.2e'%(BER[0], BER[1]))
+print(' SNR: %.2f dB,  %.2f dB'%(SNR[0], SNR[1]))
+print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
+print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
+print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
 # -
 
 # ### Carrier phase recovery with decision-directed phase-locked loop (DDPLL)
@@ -230,7 +223,7 @@ paramCPR.constType = paramTx.constType
 paramCPR.tau1 = 1/(2*np.pi*10e3)
 paramCPR.tau2 = 1/(2*np.pi*10e3)
 paramCPR.Kv  = 0.1
-paramCPR.pilotInd = np.arange(0, len(sigRx), 25)
+#paramCPR.pilotInd = np.arange(0, len(sigRx), 25)
 
 y_CPR, θ = cpr(sigRx, symbTx=d, paramCPR=paramCPR)
 
@@ -248,26 +241,20 @@ discard = 1000
 pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
 pconst(y_CPR[discard:-discard,:], cmap=constCMAP)
 
-## Performance metrics
-
-# correct (possible) phase ambiguity after CPR
-for k in range(y_CPR.shape[1]):
-    rot = np.mean(d[:,k]/y_CPR[:,k])
-    y_CPR[:,k] = rot*y_CPR[:,k]
-
-y_CPR = pnorm(y_CPR)
-
+# Performance metrics
 ind = np.arange(discard, d.shape[0]-discard)
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+GMI, NGMI = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
 MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+EVM      = calcEVM(y_CPR[ind,:], paramTx.M, 'qam', d[ind,:])
 
-print('     pol.X     pol.Y      ')
-print('SER: %.2e, %.2e'%(SER[0], SER[1]))
-print('BER: %.2e, %.2e'%(BER[0], BER[1]))
-print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
-print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
-print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+print('      pol.X      pol.Y      ')
+print(' SER: %.2e,  %.2e'%(SER[0], SER[1]))
+print(' BER: %.2e,  %.2e'%(BER[0], BER[1]))
+print(' SNR: %.2f dB,  %.2f dB'%(SNR[0], SNR[1]))
+print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
+print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
+print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
 # -
-
 
