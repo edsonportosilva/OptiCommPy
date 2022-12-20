@@ -56,6 +56,148 @@ def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
                    norm(Ey_fd - Ey_conv) ** 2) / cp.sqrt(norm(Ex_conv) ** 2 + norm(Ey_conv) ** 2
     )
 
+def ssfm(Ei, Fs, paramCh, prec=cp.complex128):
+    """
+    Run the split-step Fourier model (symmetric, dual-pol.).
+
+    Parameters
+    ----------
+    Ei : np.array
+        Input optical signal field.
+    Fs : scalar
+        Sampling frequency in Hz.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters of the optical channel.
+
+    paramCh.Ltotal: total fiber length [km][default: 400 km]
+    paramCh.Lspan: span length [km][default: 80 km]
+    paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+    paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+    paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+    paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+    paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+    paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+    paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+    paramCh.prgsBar: display progress bar? bolean variable [default:True]
+
+    Returns
+    -------
+    Ech : np.array
+        Optical signal after nonlinear propagation.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters used in the split-step alg.
+
+    """
+    # check input parameters
+    paramCh.Ltotal = getattr(paramCh, "Ltotal", 400)
+    paramCh.Lspan = getattr(paramCh, "Lspan", 80)
+    paramCh.hz = getattr(paramCh, "hz", 0.5)
+    paramCh.alpha = getattr(paramCh, "alpha", 0.2)
+    paramCh.D = getattr(paramCh, "D", 16)
+    paramCh.gamma = getattr(paramCh, "gamma", 1.3)
+    paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
+    paramCh.amp = getattr(paramCh, "amp", "edfa")
+    paramCh.NF = getattr(paramCh, "NF", 4.5)
+    paramCh.maxIter = getattr(paramCh, "maxIter", 10)
+    paramCh.tol = getattr(paramCh, "tol", 1e-5)
+    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
+    paramCh.recordSpans = getattr(paramCh, "recordSpans", False)
+    paramCh.toBeRecorded = getattr(paramCh, "toBeRecorded", [])
+
+    Ltotal = paramCh.Ltotal
+    Lspan = paramCh.Lspan
+    hz = paramCh.hz
+    alpha = paramCh.alpha
+    D = paramCh.D
+    gamma = paramCh.gamma
+    Fc = paramCh.Fc
+    amp = paramCh.amp
+    NF = paramCh.NF
+    maxIter = paramCh.maxIter
+    tol = paramCh.tol
+    prgsBar = paramCh.prgsBar
+    recordSpans = paramCh.recordSpans
+    toBeRecorded = paramCh.toBeRecorded
+
+    Nspans = int(np.floor(Ltotal / Lspan))
+    Nsteps = int(np.floor(Lspan / hz))
+
+    # channel parameters
+    c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
+    λ = c_kms / Fc
+    α = alpha / (10 * np.log10(np.exp(1)))
+    β2 = -(D * λ ** 2) / (2 * np.pi * c_kms)
+    γ = gamma
+
+    c_kms = cp.asarray(c_kms, dtype=prec)  # speed of light (vacuum) in km/s
+    λ = cp.asarray(λ, dtype=prec)
+    α = cp.asarray(α, dtype=prec)
+    β2 = cp.asarray(β2, dtype=prec)
+    γ = cp.asarray(γ, dtype=prec)
+    hz = cp.asarray(hz, dtype=prec)
+    Ltotal = cp.asarray(Ltotal, dtype=prec)
+
+    # generate frequency axis
+    Nfft = len(Ei)
+    ω = 2 * np.pi * Fs * fftfreq(Nfft).astype(prec)
+
+    Ei_ = cp.asarray(Ei).astype(prec)
+
+    Ech = Ei_.reshape(
+        len(Ei),
+    )
+    # define linear operator
+    linOperator = cp.array(
+        cp.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω ** 2) * (hz / 2))
+    ).astype(prec)
+    
+    if recordSpans:
+        Ech_spans = cp.zeros((Ei_.shape[0], Ei_.shape[1] * len(toBeRecorded))).astype(
+            prec
+        )
+        
+    indRecSpan = 0
+
+    for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
+        Ech = fft(Ech)  # single-polarization field
+
+        # fiber propagation step
+        for _ in range(1, Nsteps + 1):
+            # First linear step (frequency domain)
+            Ech = Ech * linOperator
+
+            # Nonlinear step (time domain)
+            Ech = ifft(Ech)
+            Ech = Ech * cp.exp(1j * γ * (Ech * cp.conj(Ech)) * hz)
+
+            # Second linear step (frequency domain)
+            Ech = fft(Ech)
+            Ech = Ech * linOperator
+
+        # amplification step
+        Ech = ifft(Ech)
+        if amp == "edfa":
+            Ech = edfa(Ech, Fs, alpha * Lspan, NF, Fc)
+        elif amp == "ideal":
+            Ech = Ech * cp.exp(α / 2 * Nsteps * hz)
+        elif amp is None:
+            Ech = Ech * cp.exp(0)
+            
+        if recordSpans and spanN in toBeRecorded:
+            Ech_spans[:, indRecSpan] = Ech            
+            indRecSpan += 1
+        
+    if recordSpans:
+        Ech = cp.asnumpy(Ech_spans)
+    else:
+        Ech = cp.asnumpy(Ech)
+            
+    return (
+        Ech.reshape(
+            len(Ech),
+        ),
+        paramCh,
+    )
 
 def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     """
