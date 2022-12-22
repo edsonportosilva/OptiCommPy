@@ -489,7 +489,7 @@ def GN_Model_NyquistWDM(Rs, Nch, α, γ, Ls, Ns, Ptx_dBm, D, Bref, λ):
 
     epsilon = 0.1
     # epsilon = 0;
-    var_NLI = (Ns ^ (1 + epsilon)) * var_NLI
+    var_NLI = (Ns ** (1 + epsilon)) * var_NLI
 
     return var_NLI
 
