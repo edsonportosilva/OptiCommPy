@@ -442,7 +442,7 @@ Ls = 50
 Nch = 11
 Rs = 32e9
 Bref = 12.5e9
-Ptx = np.arange(-10, 2)
+Ptx = np.arange(-10, 1.5, 0.5)
 
 OSNR,_,_ = GN_model_OSNR(Rs, Nch, Ptx, Ns, Ls)
 
