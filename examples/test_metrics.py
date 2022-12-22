@@ -437,7 +437,7 @@ plt.ylabel('EVM [dB]');
 plt.grid()
 
 # +
-Ns = 14
+Ns = 29
 Ls = 50
 Nch = 11
 Rs = 32e9
@@ -449,11 +449,12 @@ OSNR,_,_ = GN_model_OSNR(Rs, Nch, Ptx, Ns, Ls)
 OSNR_dB = 10*np.log10(OSNR)
 SNR_dB = OSNR_dB-10*np.log10(Rs/Bref);
 
-plt.plot(Ptx, OSNR_dB)
-plt.plot(Ptx, SNR_dB)
+plt.plot(Ptx, OSNR_dB,'-o',label='OSNR(dB)')
+plt.plot(Ptx, SNR_dB,'-x',label='SNR(dB)')
 plt.grid()
-plt.ylabel('OSNR (dB)')
-plt.xlabel('Pin (dBm)');
+plt.ylabel('dB')
+plt.xlabel('Pin (dBm)')
+plt.legend();
 # -
 
 
