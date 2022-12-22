@@ -27,7 +27,7 @@ if 'google.colab' in str(get_ipython()):
     # ! pip install .
 
 from optic.modulation import modulateGray, GrayMapping
-from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM
+from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM, GN_model_OSNR
 from optic.models import awgn
 from optic.dsp import pnorm
 from optic.plot import pconst
@@ -435,3 +435,25 @@ plt.legend();
 plt.xlabel('SNR [dB]');
 plt.ylabel('EVM [dB]');
 plt.grid()
+
+# +
+Ns = 14
+Ls = 50
+Nch = 11
+Rs = 32e9
+Bref = 12.5e9
+Ptx = np.arange(-10, 2)
+
+OSNR,_,_ = GN_model_OSNR(Rs, Nch, Ptx, Ns, Ls)
+
+OSNR_dB = 10*np.log10(OSNR)
+SNR_dB = OSNR_dB-10*np.log10(Rs/Bref);
+
+plt.plot(Ptx, OSNR_dB)
+plt.plot(Ptx, SNR_dB)
+plt.grid()
+plt.ylabel('OSNR (dB)')
+plt.xlabel('Pin (dBm)');
+# -
+
+
