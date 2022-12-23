@@ -4,6 +4,7 @@ import logging as logg
 import numpy as np
 from numba import njit, prange
 from scipy.special import erf
+import scipy.constants as const
 
 from optic.dsp import pnorm
 from optic.modulation import GrayMapping, demodulateGray, minEuclid
@@ -461,68 +462,101 @@ def theoryBER(M, EbN0, constType):
     return Pb
 
 
-def GN_Model_NyquistWDM(Rs, Nch, α, γ, Ls, Ns, Ptx_dBm, D, Bref, λ):
+def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
     # Reference: Bosco, G., Poggiolini, P., & Carena, A. (2011). Analytical results on channel capacity
     # in uncompensated optical links with coherent detection. Optics Express, 19(26), 438–449.
     # doi:http://dx.doi.org/10.1364/OE.19.00B440
 
     # Channel parameters:
-    λ = λ * 1e-3  # wavelength km
-    c = 3e5 / 1.5  # speed of light km/s
+    λ = const.c / Fc * 1e-3  # wavelength km
+    # λ = λ * 1e-3  # wavelength km
+    c = const.c / 1.5 * 1e-3  # speed of light km/s
     α = α / (10 * np.log10(np.exp(1)))  # fiber attenuation coefficient
     Leff = (1 - np.exp(-2 * α * Ls)) / (2 * α)  # fiber effective length
+    Leffa = 1 / (2 * α)  # the asymptotic effective length [km]
     Ptx = 10 ** (Ptx_dBm / 10) * 1e-3  # input power per channel dBm to W
     β2 = -D * λ ** 2 / (2 * np.pi * c)
 
     # Calculate NLIN variance using the GN-Model (see reference):
+    # var_NLI = (
+    #     (16 / 27)
+    #     * (γ ** 2)
+    #     * Leff
+    #     * Ptx ** 3
+    #     * (np.log(np.pi ** 2 * np.abs(β2) * Leff * Nch ** 2 * Rs ** 2))
+    #     / (np.pi * np.abs(β2) * Rs ** 3)
+    #     * Bref
+    # )
+
+    # [1], Eq.(15)
     var_NLI = (
-        (16 / 27)
+        (8 / 27)
         * (γ ** 2)
-        * Leff
-        * Ptx ** 3
-        * (np.log(np.pi ** 2 * np.abs(β2) * Leff * Nch ** 2 * Rs ** 2))
-        / (np.pi * np.abs(β2) * Rs ** 3)
+        * Leff ** 2
+        * (Ptx / Rs) ** 3
+        * (
+            np.arcsinh(
+                (np.pi ** 2) / 2 * np.abs(β2) * Leffa * Nch ** (2 * Rs / Δf) * Rs ** 2
+            )
+        )
+        / (np.pi * np.abs(β2) * Leffa)
         * Bref
     )
-    # var_NLI = Ns*(16/27)*γ^2*Leff^2*Ptx^3/(pi*abs(β2)*α*Nch^2*Rs^2)*asinh(pi^2/(2*α)*abs(β2)*Nch^2*Rs^2*Nch^2);
-    # epsilon = (3/10)*log(1 + 6/Ls*Leff/asinh((pi^2/2)*abs(β2)*Leff*Nch^2*Rs^2));
 
-    epsilon = 0.25
+    epsilon = (3 / 10) * np.log(
+        1
+        + 6
+        / Ls
+        * Leffa
+        / np.arcsinh(
+            (np.pi ** 2 / 2)
+            * np.abs(β2)
+            * Leffa
+            * (Nch ** 2) ** (2 * Rs / Δf)
+            * Rs ** 2
+        )
+    )
+    # epsilon = 0.1
     # epsilon = 0;
-    var_NLI = (Ns ** (1 + epsilon)) * var_NLI
+    var_NLI = 2 * (Ns ** (1 + epsilon)) * var_NLI # FIX: is there a multiplication 
+    # by two here? 
 
     return var_NLI
 
 
-def ASE_NyquistWDM(α, Ls, Ns, NF, Bref, λ):
+def ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc):
     # Reference: Bosco, G., Poggiolini, P., & Carena, A. (2011). Analytical results on channel capacity
     # in uncompensated optical links with coherent detection. Optics Express, 19(26), 438–449.
     # doi:http://dx.doi.org/10.1364/OE.19.00B440
 
-    h = 6.62606957e-34  # Planck's constant (J*s)
-    λ = λ * 1e-3  # wavelenght km
-    c = 3e5 / 1.5  # speed of light km/s
+    # ASE noise power calculation:
+    G = α * Ls # amplifier gain (dB)
     α = α / (10 * np.log10(np.exp(1)))  # fiber attenuation
-
+     
+    NF_lin = 10 ** (NF / 10)
+    G_lin = 10 ** (G / 10)
+    nsp = (G_lin * NF_lin - 1) / (2 * (G_lin - 1))
+    
     Gain = np.exp(α * Ls)  # amplifier gain (linear)
     NF = 10 ** (NF / 10)  # amplifier noise figure
 
     # ASE noise power calculation:
-    P_ase = (Gain - 1) * NF * h * c / λ * Bref
-    P_ase = Ns * P_ase
-
+    N_ase = Ns * (Gain - 1) * nsp * const.h * Fc
+    P_ase = 2 * N_ase * Bref
+    
     return P_ase
 
 
-def GN_model_OSNR(Rs, Nch, Ptx, Ns, Ls, α=0.2, γ=1.3, D=17, λ=1550e-9, NF=4.5, Bref=12.5e9):
+def GN_model_OSNR(
+    Rs, Nch, Δf, Ptx, Ns, Ls, α=0.2, γ=1.3, D=17, Fc=193.1e12, NF=4.5, Bref=12.5e9
+):
 
     OSNR = np.zeros(len(Ptx))
     P_nli = np.zeros(len(Ptx))
     P_ase = np.zeros(len(Ptx))
 
     for k, Ptx_dBm in enumerate(Ptx):
-        P_nli[k] = GN_Model_NyquistWDM(Rs, Nch, α, γ, Ls, Ns, Ptx_dBm, D, Bref, λ)
-        P_ase[k] = ASE_NyquistWDM(α, Ls, Ns, NF, Bref, λ)
+        P_nli[k] = GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc)
+        P_ase[k] = ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc)
         OSNR[k] = 10 ** (Ptx_dBm / 10) * 1e-3 / (P_nli[k] + P_ase[k])
-        
     return OSNR, P_nli, P_ase
