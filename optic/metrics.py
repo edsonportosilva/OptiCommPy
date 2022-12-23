@@ -463,9 +463,10 @@ def theoryBER(M, EbN0, constType):
 
 
 def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
-    # Reference: Bosco, G., Poggiolini, P., & Carena, A. (2011). Analytical results on channel capacity
-    # in uncompensated optical links with coherent detection. Optics Express, 19(26), 438–449.
-    # doi:http://dx.doi.org/10.1364/OE.19.00B440
+    # Reference: [1] P. Poggiolini, "The GN Model of Non-Linear Propagation in 
+    # Uncompensated Coherent Optical Systems," in Journal of Lightwave 
+    # Technology, vol. 30, no. 24, pp. 3857-3879, Dec.15, 2012, 
+    # doi: 10.1109/JLT.2012.2217729.
 
     # Channel parameters:
     λ = const.c / Fc * 1e-3  # wavelength km
@@ -478,16 +479,6 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
     β2 = -D * λ ** 2 / (2 * np.pi * c)
 
     # Calculate NLIN variance using the GN-Model (see reference):
-    # var_NLI = (
-    #     (16 / 27)
-    #     * (γ ** 2)
-    #     * Leff
-    #     * Ptx ** 3
-    #     * (np.log(np.pi ** 2 * np.abs(β2) * Leff * Nch ** 2 * Rs ** 2))
-    #     / (np.pi * np.abs(β2) * Rs ** 3)
-    #     * Bref
-    # )
-
     # [1], Eq.(15)
     var_NLI = (
         (8 / 27)
@@ -525,9 +516,7 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
 
 
 def ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc):
-    # Reference: Bosco, G., Poggiolini, P., & Carena, A. (2011). Analytical results on channel capacity
-    # in uncompensated optical links with coherent detection. Optics Express, 19(26), 438–449.
-    # doi:http://dx.doi.org/10.1364/OE.19.00B440
+
 
     # ASE noise power calculation:
     G = α * Ls # amplifier gain (dB)
@@ -541,6 +530,9 @@ def ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc):
     NF = 10 ** (NF / 10)  # amplifier noise figure
 
     # ASE noise power calculation:
+    # Ref. Eq.(54) of R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber 
+    # Networks," in Journal of Lightwave Technology, vol. 28, no. 4, 
+    # pp. 662-701, Feb.15, 2010, doi: 10.1109/JLT.2009.2039464.    
     N_ase = Ns * (Gain - 1) * nsp * const.h * Fc
     P_ase = 2 * N_ase * Bref
     
