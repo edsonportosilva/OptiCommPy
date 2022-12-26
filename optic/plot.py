@@ -220,3 +220,18 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             plt.grid()
             plt.show()
     return None
+
+
+def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=[], label=[]):
+    
+    if not fig:
+        fig = plt.figure()
+        
+    for indMode in range(sig.shape[1]):
+        plt.psd(sig[:,indMode], Fs=Fs, Fc=Fc, 
+                NFFT = NFFT, sides='twosided', 
+                label = 'Mode '+str(indMode)+' - '+label)
+    plt.legend(loc='lower left')    
+    plt.xlim(Fc-Fs/2,Fc+Fs/2)
+    
+    return fig, plt.gca()
