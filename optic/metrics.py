@@ -509,8 +509,8 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
     )
     # epsilon = 0.1
     # epsilon = 0;
-    var_NLI = 2 * (Ns ** (1 + epsilon)) * var_NLI # FIX: is there a multiplication 
-    # by two here? 
+    var_NLI = 2 * (Ns ** (1 + epsilon)) * var_NLI  # FIXME: is there a
+    # multiplication by two here?
 
     return var_NLI
 
@@ -520,20 +520,16 @@ def ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc):
 
     # ASE noise power calculation:
     G = α * Ls # amplifier gain (dB)
-    α = α / (10 * np.log10(np.exp(1)))  # fiber attenuation
-     
-    NF_lin = 10 ** (NF / 10)
-    G_lin = 10 ** (G / 10)
+        
+    NF_lin = 10 ** (NF / 10) # amplifier noise figure (linear)
+    G_lin = 10 ** (G / 10)   # amplifier gain (linear)
     nsp = (G_lin * NF_lin - 1) / (2 * (G_lin - 1))
-    
-    Gain = np.exp(α * Ls)  # amplifier gain (linear)
-    NF = 10 ** (NF / 10)  # amplifier noise figure
-
+           
     # ASE noise power calculation:
     # Ref. Eq.(54) of R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber 
     # Networks," in Journal of Lightwave Technology, vol. 28, no. 4, 
     # pp. 662-701, Feb.15, 2010, doi: 10.1109/JLT.2009.2039464.    
-    N_ase = Ns * (Gain - 1) * nsp * const.h * Fc
+    N_ase = Ns * (G_lin - 1) * nsp * const.h * Fc
     P_ase = 2 * N_ase * Bref
     
     return P_ase
