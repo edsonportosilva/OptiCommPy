@@ -259,6 +259,11 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=[], label=[]):
     if not label:
         label = " "
 
+    try:
+       sig.shape[1]       
+    except IndexError:
+       sig = sig.reshape(len(sig), 1)
+       
     for indMode in range(sig.shape[1]):
         plt.psd(
             sig[:, indMode],
