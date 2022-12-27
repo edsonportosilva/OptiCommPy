@@ -44,7 +44,7 @@ from optic.core import parameters
 from optic.equalization import edc, mimoAdaptEqualizer
 from optic.carrierRecovery import cpr
 from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power, calcEVM
-from optic.plot import pconst
+from optic.plot import pconst, plotPSD
 
 import scipy.constants as const
 
@@ -70,8 +70,8 @@ HTML("""
 figsize(10, 3)
 
 # + id="fc09c144"
-# # %load_ext autoreload
-# # %autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 # #%load_ext line_profiler
 
 # + [markdown] id="e22e32db"
@@ -115,7 +115,7 @@ paramCh.hz = 1           # step-size of the split-step Fourier method [km]
 paramCh.maxIter = 5      # maximum number of convergence iterations per step
 paramCh.tol = 1e-5       # error tolerance per step
 paramCh.prgsBar = True   # show progress bar?
-
+#paramCh.saveSpanN = [1, 5, 9, 14]
 Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
 # nonlinear signal propagation
@@ -126,12 +126,11 @@ sigWDM, paramCh = manakovSSF(sigWDM_Tx, Fs, paramCh)
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 241} id="489a01ea" outputId="a50a47a0-e564-4b88-de4d-21440eab470c"
 # plot psd
-plt.figure(figsize=(10, 3))
-plt.xlim(paramCh.Fc-Fs/2,paramCh.Fc+Fs/2);
-plt.psd(sigWDM_Tx[:,0], Fs=Fs, Fc=paramCh.Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Tx')
-plt.psd(sigWDM[:,0], Fs=Fs, Fc=paramCh.Fc, NFFT = 4*1024, sides='twosided', label = 'WDM spectrum - Rx')
-plt.legend(loc='lower left')
-plt.title('optical WDM spectrum');
+fig,_ = plotPSD(sigWDM_Tx, Fs, paramCh.Fc, label='Tx'); 
+fig, ax = plotPSD(sigWDM, Fs, paramCh.Fc, fig=fig, label='Rx');
+fig.set_figheight(3)
+fig.set_figwidth(10)
+ax.set_title('optical WDM spectrum');
 
 
 # + [markdown] id="f291b19a"
@@ -205,7 +204,7 @@ pconst(sigRx[0::paramTx.SpS,:], R=3)
 sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
 
 # plot constellations after CD compensation
-pconst(sigRx[0::paramTx.SpS,:], R=3)
+pconst(sigRx[0::paramTx.SpS,:], R=3);
 
 # + [markdown] id="901da914"
 # ### Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences
