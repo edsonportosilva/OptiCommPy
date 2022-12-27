@@ -8,7 +8,7 @@ from optic.dsp import pnorm
 from optic.metrics import signal_power
 
 
-def pconst(x, lim=False, R=1.5, pType='fancy', cmap = 'turbo'):
+def pconst(x, lim=False, R=1.5, pType="fancy", cmap="turbo"):
     """
     Plot signal constellations.
 
@@ -53,15 +53,15 @@ def pconst(x, lim=False, R=1.5, pType='fancy', cmap = 'turbo'):
                 ax = fig.add_subplot(nRows, nCols, Position[k])
 
                 for ind in range(len(x)):
-                    if pType == 'fancy':
+                    if pType == "fancy":
                         ax = constHist(x[ind][:, k], ax, radius, cmap)
-                    elif pType == 'fast':
+                    elif pType == "fast":
                         ax.plot(x[ind][:, k].real, x[ind][:, k].imag, ".")
 
                 ax.axis("square")
-                ax.set_xlabel('In-Phase (I)')
-                ax.set_ylabel('Quadrature (Q)')
-                #ax.grid()
+                ax.set_xlabel("In-Phase (I)")
+                ax.set_ylabel("Quadrature (Q)")
+                # ax.grid()
                 ax.set_title(f"mode {str(Position[k] - 1)}")
 
                 if lim:
@@ -70,15 +70,15 @@ def pconst(x, lim=False, R=1.5, pType='fancy', cmap = 'turbo'):
         else:
             for k in range(nSubPts):
                 ax = fig.add_subplot(nRows, nCols, Position[k])
-                if pType == 'fancy':
+                if pType == "fancy":
                     ax = constHist(x[:, k], ax, radius, cmap)
-                elif pType == 'fast':
+                elif pType == "fast":
                     ax.plot(x[:, k].real, x[:, k].imag, ".")
 
                 ax.axis("square")
-                ax.set_xlabel('In-Phase (I)')
-                ax.set_ylabel('Quadrature (Q)')
-                #ax.grid()
+                ax.set_xlabel("In-Phase (I)")
+                ax.set_ylabel("Quadrature (Q)")
+                # ax.grid()
                 ax.set_title(f"mode {str(Position[k] - 1)}")
 
                 if lim:
@@ -90,14 +90,14 @@ def pconst(x, lim=False, R=1.5, pType='fancy', cmap = 'turbo'):
     elif nSubPts == 1:
         fig = plt.figure()
         ax = plt.gca()
-        if pType == 'fancy':
-            ax = constHist(x[:,0], ax, radius, cmap)
-        elif pType == 'fast':
-            ax.plot(x.real, x.imag, ".")       
+        if pType == "fancy":
+            ax = constHist(x[:, 0], ax, radius, cmap)
+        elif pType == "fast":
+            ax.plot(x.real, x.imag, ".")
         plt.axis("square")
-        ax.set_xlabel('In-Phase (I)')
-        ax.set_ylabel('Quadrature (Q)')
-        #plt.grid()
+        ax.set_xlabel("In-Phase (I)")
+        ax.set_ylabel("Quadrature (Q)")
+        # plt.grid()
 
         if lim:
             plt.xlim(-radius, radius)
@@ -108,7 +108,7 @@ def pconst(x, lim=False, R=1.5, pType='fancy', cmap = 'turbo'):
     return fig, ax
 
 
-def constHist(symb, ax, radius, cmap='turbo'):
+def constHist(symb, ax, radius, cmap="turbo"):
     """
     Generate histogram-based constellation plot.
 
@@ -127,7 +127,7 @@ def constHist(symb, ax, radius, cmap='turbo'):
         axis of the plot.
 
     """
-    irange = radius*np.sqrt(signal_power(symb))
+    irange = radius * np.sqrt(signal_power(symb))
     imRange = np.array([[-irange, irange], [-irange, irange]])
 
     H, xedges, yedges = np.histogram2d(
@@ -135,12 +135,16 @@ def constHist(symb, ax, radius, cmap='turbo'):
     )
 
     H = H.T
-    
+
     H = gaussian_filter(H, sigma=8)
-    ax.imshow(H, cmap=cmap, origin="lower", aspect="auto",
-              extent=[-irange, irange, -irange, irange],
+    ax.imshow(
+        H,
+        cmap=cmap,
+        origin="lower",
+        aspect="auto",
+        extent=[-irange, irange, -irange, irange],
     )
-    
+
     return ax
 
 
@@ -175,7 +179,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
         if ptype == "fancy":
             f = interp1d(np.arange(y.size), y, kind="cubic")
 
-            Nup = 20*SpS
+            Nup = 20 * SpS
             tnew = np.arange(y.size) * (1 / Nup)
             y_ = f(tnew)
 
@@ -197,7 +201,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             # plt.figure(figsize=(10, 3))
             plt.imshow(
                 H,
-                cmap='turbo',
+                cmap="turbo",
                 origin="lower",
                 aspect="auto",
                 extent=[0, n, yedges[0], yedges[-1]],
@@ -220,3 +224,56 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             plt.grid()
             plt.show()
     return None
+
+
+def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=[], label=[]):
+    """
+    Plot the power spectrum density (PSD) of a signal.
+
+    Parameters
+    ----------
+    sig : np.array
+        input signal.
+    Fs : scalar, optional
+         signal's sampling frequency. The default is 1.
+    Fc : scalar, optional
+        signal's central frequency. The default is 0.
+    NFFT : scalar int, optional
+        FFT size. The default is 4096.
+    fig : figure object, optional
+        matplotlib figure handle. The default is [].
+    label : string, optional
+        PSD plot label. The default is [].
+
+    Returns
+    -------
+    fig : matplotlib figure object
+        matplotlib figure object where the plot is generated.
+    matplotlib axes object
+        matplotlib axes object where the plot is displayed.
+
+    """
+    if not fig:
+        fig = plt.figure()
+
+    if not label:
+        label = " "
+
+    try:
+       sig.shape[1]       
+    except IndexError:
+       sig = sig.reshape(len(sig), 1)
+       
+    for indMode in range(sig.shape[1]):
+        plt.psd(
+            sig[:, indMode],
+            Fs=Fs,
+            Fc=Fc,
+            NFFT=NFFT,
+            sides="twosided",
+            label=label + ": Mode " + str(indMode),
+        )
+    plt.legend(loc="lower left")
+    plt.xlim(Fc - Fs / 2, Fc + Fs / 2)
+
+    return fig, plt.gca()
