@@ -517,7 +517,8 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
     # epsilon = 0.1
     # epsilon = 0;
     var_NLI = 2 * (Ns ** (1 + epsilon)) * var_NLI  # FIXME: is there a
-    # multiplication by two here?
+    # multiplication by two here? without the multiplication by two, var_NLI
+    # does not match the split-step simulation.
 
     return var_NLI
 
