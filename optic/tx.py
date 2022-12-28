@@ -4,7 +4,7 @@ from tqdm.notebook import tqdm
 
 from optic.dsp import pnorm, pulseShape
 from optic.metrics import signal_power
-from optic.models import iqm
+from optic.models import iqm, phaseNoise
 from optic.modulation import GrayMapping, modulateGray
 
 try:
@@ -33,6 +33,7 @@ def simpleWDMTx(param):
     :param.Pch_dBm: launched power per WDM channel [dBm][default:-3 dBm]
     :param.Nch: number of WDM channels [default: 5]
     :param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz]
+    :param.lw: laser linewidth [Hz][default: 100 kHz]
     :param.freqSpac: frequency spacing of the WDM grid [Hz][default: 40e9 Hz]
     :param.Nmodes: number of polarization modes [default: 1]
 
@@ -49,13 +50,14 @@ def simpleWDMTx(param):
     param.Pch_dBm = getattr(param, "Pch_dBm", -3)
     param.Nch = getattr(param, "Nch", 5)
     param.Fc = getattr(param, "Fc", 193.1e12)
+    param.lw = getattr(param, "lw", 0)
     param.freqSpac = getattr(param, "freqSpac", 50e9)
     param.Nmodes = getattr(param, "Nmodes", 1)
     param.prgsBar = getattr(param, "prgsBar", True)
 
     # transmitter parameters
     Ts = 1 / param.Rs  # symbol period [s]
-    Fsa = 1 / (Ts / param.SpS)  # sampling frequency [samples/s]
+    Fs = 1 / (Ts / param.SpS)  # sampling frequency [samples/s]
 
     # central frequencies of the WDM channels
     freqGrid = (
@@ -138,14 +140,17 @@ def simpleWDMTx(param):
             sigTx = firFilter(pulse, symbolsUp)
 
             # optical modulation
-            sigTxCh = iqm(Ai, 0.5 * sigTx, Vπ, Vb, Vb)
+            ϕ_pn_lo = phaseNoise(param.lw, len(sigTx), 1/Fs)
+            sigLO   = Ai*np.exp(1j*ϕ_pn_lo)
+            
+            sigTxCh = iqm(sigLO, 0.5 * sigTx, Vπ, Vb, Vb)
             sigTxCh = (
                 np.sqrt(Pch[indCh] / param.Nmodes)
                 * pnorm(sigTxCh)
             )
 
             sigTxWDM[:, indMode] += sigTxCh * np.exp(
-                1j * 2 * π * (freqGrid[indCh] / Fsa) * t
+                1j * 2 * π * (freqGrid[indCh] / Fs) * t
             )
 
             Pmode += signal_power(sigTxCh)
