@@ -88,9 +88,9 @@ paramTx.M   = 16           # order of the modulation format
 paramTx.Rs  = 32e9         # symbol rate [baud]
 paramTx.SpS = 16           # samples per symbol
 paramTx.pulse = 'rrc'      # pulse shaping filter
-paramTx.Ntaps = 1024       # number of pulse shaping filter coefficients
+paramTx.Ntaps = 2*4096     # number of pulse shaping filter coefficients
 paramTx.alphaRRC = 0.01    # RRC rolloff
-paramTx.Pch_dBm = 0        # power per WDM channel [dBm]
+paramTx.Pch_dBm = -2        # power per WDM channel [dBm]
 paramTx.Nch     = 11       # number of WDM channels
 paramTx.Fc      = 193.1e12 # central optical frequency of the WDM spectrum
 paramTx.freqSpac = 37.5e9  # WDM grid spacing
@@ -111,7 +111,7 @@ paramCh.alpha = 0.2      # fiber loss parameter [dB/km]
 paramCh.D = 16           # fiber dispersion parameter [ps/nm/km]
 paramCh.gamma = 1.3      # fiber nonlinear parameter [1/(W.km)]
 paramCh.Fc = paramTx.Fc  # central optical frequency of the WDM spectrum
-paramCh.hz = 1           # step-size of the split-step Fourier method [km]
+paramCh.hz = 0.5         # step-size of the split-step Fourier method [km]
 paramCh.maxIter = 5      # maximum number of convergence iterations per step
 paramCh.tol = 1e-5       # error tolerance per step
 paramCh.prgsBar = True   # show progress bar?
@@ -140,7 +140,7 @@ ax.set_title('optical WDM spectrum');
 # Receiver
 
 # parameters
-chIndex  = 5     # index of the channel to be demodulated
+chIndex  = int(np.floor(paramTx.Nch/2))      # index of the channel to be demodulated
 
 Fc = paramCh.Fc
 Ts = 1/Fs
@@ -152,9 +152,9 @@ print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 150e6                # frequency offset
+FO      = 0*150e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 200e3                 # linewidth
+lw      = 0*200e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
@@ -194,7 +194,7 @@ if paramTx.pulse == 'nrz':
 elif paramTx.pulse == 'rrc':
     pulse = pulseShape('rrc', paramTx.SpS, N=paramTx.Ntaps, alpha=paramTx.alphaRRC, Ts=1/paramTx.Rs)
     
-pulse = pulse/np.max(np.abs(pulse))            
+pulse = pnorm(pulse)
 sigRx = firFilter(pulse, sigRx)
 
 # plot constellations after matched filtering
@@ -298,3 +298,6 @@ print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
 print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
+# -
+
+
