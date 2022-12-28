@@ -451,21 +451,23 @@ def theoryBER(M, EbN0, constType):
             2
             * (1 - 1 / L)
             / np.log2(L)
-            * Qfunc(np.sqrt(3 * np.log2(L) / (L ** 2 - 1) * (2 * EbN0lin)))
+            * Qfunc(np.sqrt(3 * np.log2(L) / (L**2 - 1) * (2 * EbN0lin)))
         )
     elif constType == "psk":
         Ps = 2 * Qfunc(np.sqrt(2 * k * EbN0lin) * np.sin(np.pi / M))
         Pb = Ps / k
     elif constType == "pam":
-        Ps = (2 * (M - 1) / M) * Qfunc(np.sqrt(6 * np.log2(M) / (M ** 2 - 1) * EbN0lin))
+        Ps = (2 * (M - 1) / M) * Qfunc(
+            np.sqrt(6 * np.log2(M) / (M**2 - 1) * EbN0lin)
+        )
         Pb = Ps / k
     return Pb
 
 
 def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
-    # Reference: [1] P. Poggiolini, "The GN Model of Non-Linear Propagation in 
-    # Uncompensated Coherent Optical Systems," in Journal of Lightwave 
-    # Technology, vol. 30, no. 24, pp. 3857-3879, Dec.15, 2012, 
+    # Reference: [1] P. Poggiolini, "The GN Model of Non-Linear Propagation in
+    # Uncompensated Coherent Optical Systems," in Journal of Lightwave
+    # Technology, vol. 30, no. 24, pp. 3857-3879, Dec.15, 2012,
     # doi: 10.1109/JLT.2012.2217729.
 
     # Channel parameters:
@@ -476,18 +478,23 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
     Leff = (1 - np.exp(-2 * α * Ls)) / (2 * α)  # fiber effective length
     Leffa = 1 / (2 * α)  # the asymptotic effective length [km]
     Ptx = 10 ** (Ptx_dBm / 10) * 1e-3  # input power per channel dBm to W
-    β2 = -D * λ ** 2 / (2 * np.pi * c)
+    β2 = -D * λ**2 / (2 * np.pi * c)
 
     # Calculate NLIN variance using the GN-Model (see reference):
     # [1], Eq.(15)
     var_NLI = (
         (8 / 27)
-        * (γ ** 2)
-        * Leff ** 2
+        * (γ**2)
+        * Leff**2
         * (Ptx / Rs) ** 3
         * (
             np.arcsinh(
-                (np.pi ** 2) / 2 * np.abs(β2) * Leffa * Nch ** (2 * Rs / Δf) * Rs ** 2
+                (np.pi**2)
+                / 2
+                * np.abs(β2)
+                * Leffa
+                * Nch ** (2 * Rs / Δf)
+                * Rs**2
             )
         )
         / (np.pi * np.abs(β2) * Leffa)
@@ -500,11 +507,11 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
         / Ls
         * Leffa
         / np.arcsinh(
-            (np.pi ** 2 / 2)
+            (np.pi**2 / 2)
             * np.abs(β2)
             * Leffa
-            * (Nch ** 2) ** (2 * Rs / Δf)
-            * Rs ** 2
+            * (Nch**2) ** (2 * Rs / Δf)
+            * Rs**2
         )
     )
     # epsilon = 0.1
@@ -517,34 +524,101 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
 
 def ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc):
 
+    # ASE noise power calculation:
+    G = α * Ls  # amplifier gain (dB)
+
+    NF_lin = 10 ** (NF / 10)  # amplifier noise figure (linear)
+    G_lin = 10 ** (G / 10)  # amplifier gain (linear)
+    nsp = (G_lin * NF_lin - 1) / (2 * (G_lin - 1))
 
     # ASE noise power calculation:
-    G = α * Ls # amplifier gain (dB)
-        
-    NF_lin = 10 ** (NF / 10) # amplifier noise figure (linear)
-    G_lin = 10 ** (G / 10)   # amplifier gain (linear)
-    nsp = (G_lin * NF_lin - 1) / (2 * (G_lin - 1))
-           
-    # ASE noise power calculation:
-    # Ref. Eq.(54) of R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber 
-    # Networks," in Journal of Lightwave Technology, vol. 28, no. 4, 
-    # pp. 662-701, Feb.15, 2010, doi: 10.1109/JLT.2009.2039464.    
+    # Ref. Eq.(54) of R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber
+    # Networks," in Journal of Lightwave Technology, vol. 28, no. 4,
+    # pp. 662-701, Feb.15, 2010, doi: 10.1109/JLT.2009.2039464.
     N_ase = Ns * (G_lin - 1) * nsp * const.h * Fc
     P_ase = 2 * N_ase * Bref
-    
+
     return P_ase
 
 
-def GN_model_OSNR(
-    Rs, Nch, Δf, Ptx, Ns, Ls, α=0.2, γ=1.3, D=17, Fc=193.1e12, NF=4.5, Bref=12.5e9
-):
+def GNmodel_OSNR(Rs, Nch, Δf, Ptx, paramCh=[], Bref=12.5e9):
+    # check input parameters
+    Ltotal = getattr(paramCh, "Ltotal", 800)
+    Ls = getattr(paramCh, "Lspan", 50)
+    α = getattr(paramCh, "alpha", 0.2)
+    D = getattr(paramCh, "D", 16)
+    γ = getattr(paramCh, "gamma", 1.3)
+    Fc = getattr(paramCh, "Fc", 193.1e12)
+    NF = getattr(paramCh, "NF", 4.5)
+
+    Ns = Ltotal // Ls
 
     OSNR = np.zeros(len(Ptx))
     P_nli = np.zeros(len(Ptx))
     P_ase = np.zeros(len(Ptx))
 
     for k, Ptx_dBm in enumerate(Ptx):
-        P_nli[k] = GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc)
+        P_nli[k] = GN_Model_NyquistWDM(
+            Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc
+        )
         P_ase[k] = ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc)
         OSNR[k] = 10 ** (Ptx_dBm / 10) * 1e-3 / (P_nli[k] + P_ase[k])
     return OSNR, P_nli, P_ase
+
+
+def calcLinOSNR(Ns, Pin, α, Ls, OSNRin, NF=4.5, Fc=193.1e12, Bref=12.5e9):
+    """
+    Calculate the OSNR evolution in a multi-span fiber transmission system.
+
+    Parameters
+    ----------
+    Ns : int
+        Number of spans of fiber + EDFA.
+    Pin : scalar
+        Fiber launch power.
+    α : scalar
+        Fiber attenuation coefficient in dB/km.
+    Ls : scalar
+        Length of fiber spans in km.
+    OSNRin : scalar
+        OSNR at the input of the first span.
+    NF : scalar, optional
+        Noise figure of the EDFA amplifiers. The default is 4.5.
+    Fc : scalar, optional
+        Optical central frequency. The default is 193.1e12.
+    Bref : scalar, optional
+        Reference bandwidth for OSNR measurement. The default is 12.5e9.
+
+    Returns
+    -------
+    OSNR : np.array
+        OSNR values in dB at the output of each fiber span.
+
+    """
+    G = α * Ls
+    NF_lin = 10 ** (NF / 10)  # amplifier noise figure (linear)
+    G_lin = 10 ** (G / 10)  # amplifier gain (linear)
+    nsp = (G_lin * NF_lin - 1) / (2 * (G_lin - 1))
+
+    # ASE noise power calculation:
+    # Ref. Eq.(54) of R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber
+    # Networks," in Journal of Lightwave Technology, vol. 28, no. 4,
+    # pp. 662-701, Feb.15, 2010, doi: 10.1109/JLT.2009.2039464.
+    N_ase = (G_lin - 1) * nsp * const.h * Fc
+    P_ase = (2 * N_ase * Bref) / 1e-3  # in mW
+
+    P_ase_dBm = 10 * np.log10(P_ase)  # ASE power in dBm generated per EDFA
+
+    Pn_in_edfa = (Pin - OSNRin) - α * Ls  # ASE power sent to the 1st EDFA
+    OSNR = np.zeros(Ns + 1)
+    OSNR[0] = OSNRin
+
+    # Calculate OSNR at the output of each span
+    for spanN in range(1, Ns + 1):
+        Pn_out_edfa = 10 * np.log10(
+            10 ** ((Pn_in_edfa + G) / 10) + 10 ** (P_ase_dBm / 10)
+        )  # Total ASE power at the output of the spanN-th EDFA
+        OSNR[spanN] = Pin - Pn_out_edfa  # current OSNR
+        Pn_in_edfa = Pn_out_edfa - α * Ls  # ASE power sent to the next EDFA
+
+    return OSNR
