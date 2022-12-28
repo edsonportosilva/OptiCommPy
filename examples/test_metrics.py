@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -27,10 +27,11 @@ if 'google.colab' in str(get_ipython()):
     # ! pip install .
 
 from optic.modulation import modulateGray, GrayMapping
-from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM, GN_model_OSNR
+from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM
 from optic.models import awgn
 from optic.dsp import pnorm
 from optic.plot import pconst
+from optic.core import parameters
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -435,26 +436,66 @@ plt.legend();
 plt.xlabel('SNR [dB]');
 plt.ylabel('EVM [dB]');
 plt.grid()
+# -
+
+# ### Test OSNR/SNR prediction with the Gaussian Noise model (GN Model) as a function of the fiber input power
 
 # +
-Ns = 29
-Ls = 50
-Nch = 11
-Rs = 32e9
-Bref = 12.5e9
+from optic.metrics import GNmodel_OSNR
+
+# optical signal parameters
+Nch = 80   # Number of Nyquist-WDM channels
+Rs = 32e9  # Symbol-rate
+Δf = 37.5e9 # WDM grid spacing in Hz
+Bref = 12.5e9 # reference bandwidth for OSNR measurement in Hz
+
+# optical channel parameters
+paramCh = parameters()
+paramCh.Ltotal = 700   # total link distance [km]
+paramCh.Lspan  = 50    # span length [km]
+paramCh.alpha = 0.2    # fiber loss parameter [dB/km]
+paramCh.D = 16         # fiber dispersion parameter [ps/nm/km]
+paramCh.gamma = 1.3    # fiber nonlinear parameter [1/(W.km)]
+paramCh.Fc = 193.1e12  # central optical frequency of the WDM spectrum in Hz
+
 Ptx = np.arange(-10, 1.5, 0.5)
 
-OSNR,_,_ = GN_model_OSNR(Rs, Nch, Ptx, Ns, Ls)
+OSNR,_,_ = GNmodel_OSNR(Rs, Nch, Δf, Ptx, paramCh, Bref)
 
 OSNR_dB = 10*np.log10(OSNR)
 SNR_dB = OSNR_dB-10*np.log10(Rs/Bref);
 
-plt.plot(Ptx, OSNR_dB,'-o',label='OSNR(dB)')
-plt.plot(Ptx, SNR_dB,'-x',label='SNR(dB)')
+plt.plot(Ptx, OSNR_dB,'-o',label='OSNR @ 0.1nm [dB]')
+plt.plot(Ptx, SNR_dB,'-s',label='SNR [dB]')
 plt.grid()
 plt.ylabel('dB')
-plt.xlabel('Pin (dBm)')
+plt.xlabel('Pin  per WDM channel (dBm)')
 plt.legend();
+plt.xlim(min(Ptx), max(Ptx));
 # -
+# ### Test OSNR/SNR prediction with for a linear fiber channel as a function of the distance
 
+# +
+from optic.metrics import calcLinOSNR
 
+Ns = 14       # number of fiber spans
+Ls = 50       # span length in km
+Rs = 32e9     # symbol-rate
+Pin = -4      # launch power per channel in dBm
+OSNRin = 35   # launch OSNR in dB
+NF = 6        # EDFA noise figure in dB
+α = 0.2       # fiber attenuation in dB/km
+Fc = 193.1e12 # central optical frequency in Hz
+Bref = 12.5e9 # OSNR reference bandwidth in Hz
+
+OSNR_dB = calcLinOSNR(Ns, Pin, α, Ls, OSNRin, NF, Fc, Bref)
+
+SNR_dB = OSNR_dB-10*np.log10(Rs/Bref);
+
+plt.plot(OSNR_dB,'-o',label='OSNR @ 0.1nm [dB]')
+plt.plot(SNR_dB,'-s',label='SNR [dB]')
+plt.grid()
+plt.ylabel('dB')
+plt.xlabel('span number')
+plt.legend();
+plt.xlim(0, Ns);
