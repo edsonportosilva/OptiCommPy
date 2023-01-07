@@ -93,6 +93,7 @@ paramTx.alphaRRC = 0.01    # RRC rolloff
 paramTx.Pch_dBm = -2        # power per WDM channel [dBm]
 paramTx.Nch     = 11       # number of WDM channels
 paramTx.Fc      = 193.1e12 # central optical frequency of the WDM spectrum
+paramTx.lw      = 100e3    # laser linewidth in Hz
 paramTx.freqSpac = 37.5e9  # WDM grid spacing
 paramTx.Nmodes = 2         # number of signal modes [2 for polarization multiplexed signals]
 paramTx.Nbits = int(np.log2(paramTx.M)*1e5) # total number of bits per polarization
@@ -154,7 +155,7 @@ symbTx = symbTx_[:,:,chIndex]
 # local oscillator (LO) parameters:
 FO      = 0*150e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 0*200e3                 # linewidth
+lw      = 0*100e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
