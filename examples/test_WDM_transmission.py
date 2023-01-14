@@ -155,7 +155,7 @@ symbTx = symbTx_[:,:,chIndex]
 # local oscillator (LO) parameters:
 FO      = 150e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 100e4                 # linewidth
+lw      = 100e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
 Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
 ϕ_lo    = 0                     # initial phase in rad    
