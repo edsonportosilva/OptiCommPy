@@ -140,8 +140,9 @@ def simpleWDMTx(param):
             sigTx = firFilter(pulse, symbolsUp)
 
             # optical modulation
-            ϕ_pn_lo = phaseNoise(param.lw, len(sigTx), 1/Fs)
-            sigLO   = Ai*np.exp(1j*ϕ_pn_lo)
+            if indMode == 0:  # generate LO field with phase noise
+                ϕ_pn_lo = phaseNoise(param.lw, len(sigTx), 1/Fs)
+                sigLO   = Ai*np.exp(1j*ϕ_pn_lo)
             
             sigTxCh = iqm(sigLO, 0.5 * sigTx, Vπ, Vb, Vb)
             sigTxCh = (
