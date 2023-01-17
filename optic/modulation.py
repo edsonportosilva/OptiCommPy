@@ -4,7 +4,6 @@ import logging as logg
 import numpy as np
 from commpy.utilities import bitarray2dec, dec2bitarray
 from numba import njit, prange
-from numpy.matlib import repmat
 
 
 def GrayCode(n):
@@ -57,6 +56,7 @@ def GrayMapping(M, constType):
     if M != 2 and constType == "ook":
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
+
     L = int(M - 1) if constType in ["pam", "ook"] else int(np.sqrt(M) - 1)
     bitsSymb = int(np.log2(M))
 
@@ -68,8 +68,8 @@ def GrayMapping(M, constType):
         PAM = np.array([PAM])
 
         # generate complex square M-QAM constellation
-        const = repmat(PAM, L + 1, 1) + 1j * repmat(np.flip(PAM.T, 0), 1, L + 1)
-        const = const.T
+        const = np.tile(PAM, (L + 1, 1))
+        const = const + 1j * np.flipud(const.T)
 
         for ind in np.arange(1, L + 1, 2):
             const[ind] = np.flip(const[ind], 0)
@@ -83,7 +83,9 @@ def GrayMapping(M, constType):
 
     for ind in range(M):
         const_[ind, 0] = const[ind, 0]  # complex constellation symbol
-        const_[ind, 1] = int(code[ind], 2)  # mapped bit sequence (as integer decimal)
+        const_[ind, 1] = int(
+            code[ind], 2
+        )  # mapped bit sequence (as integer decimal)
     # sort complex symbols column according to their mapped bit sequence (as integer decimal)
     const = const_[const_[:, 1].real.argsort()]
     const = const[:, 0]
@@ -141,7 +143,7 @@ def demap(indSymb, bitMap):
     M = bitMap.shape[0]
     b = int(np.log2(M))
 
-    decBits = np.zeros(len(indSymb) * b, dtype='int')
+    decBits = np.zeros(len(indSymb) * b, dtype="int")
 
     for i in prange(len(indSymb)):
         decBits[i * b : i * b + b] = bitMap[indSymb[i], :]
