@@ -14,7 +14,7 @@
 #     name: python3
 # ---
 
-# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/jupyter/test_carrierPhaseRecovery.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_carrierPhaseRecovery.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # # Test carrier phase recovery algorithms for coherent receivers
 
@@ -28,14 +28,12 @@ if 'google.colab' in str(get_ipython()):
 import matplotlib.pyplot as plt
 import numpy as np
 
-from commpy.modulation import QAMModem
-
-from optic.dsp import pulseShape, firFilter, decimate, symbolSync
+from optic.dsp import pulseShape, firFilter, decimate, symbolSync, pnorm
 from optic.models import awgn, phaseNoise, pdmCoherentReceiver
 from optic.carrierRecovery import cpr
 from optic.tx import simpleWDMTx
 from optic.core import parameters
-from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power
+from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power, calcEVM
 from optic.plot import pconst
 
 import scipy.constants as const
@@ -58,11 +56,11 @@ HTML("""
 
 figsize(10, 3)
 
-# +
-# #%load_ext autoreload
-# #%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 # #%load_ext line_profiler
-# -
+
+constCMAP = 'turbo' # configure colormap for constellation plots
 
 #
 # ## Transmitter
@@ -72,10 +70,11 @@ figsize(10, 3)
 # +
 # Transmitter parameters:
 paramTx = parameters()
-paramTx.M   = 64           # order of the modulation format
+paramTx.M   = 16           # order of the modulation format
+paramTx.constType = 'qam'  # constellation type
 paramTx.Rs  = 32e9         # symbol rate [baud]
 paramTx.SpS = 8            # samples per symbol
-paramTx.Nbits = 120000      # total number of bits per polarization
+paramTx.Nbits = int(np.log2(paramTx.M)*1e5)   # total number of bits per polarization
 paramTx.pulse = 'rrc'      # pulse shaping filter
 paramTx.Ntaps = 1024       # number of pulse shaping filter coefficients
 paramTx.alphaRRC = 0.01    # RRC rolloff
@@ -90,10 +89,12 @@ sigTx, symbTx_, paramTx = simpleWDMTx(paramTx)
 
 Fs = paramTx.Rs*paramTx.SpS # sampling frequency
 # -
-SNR = 25
+# ### Add noise to fix the SNR
+
+SNR = 35
 sigCh = awgn(sigTx, SNR, Fs, paramTx.Rs)
 
-# ###  coherent detection and demodulation
+# ###  Simulate a coherent receiver frontend subject to laser phase noise and frequency offset
 
 # +
 # Receiver
@@ -112,7 +113,7 @@ print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 0*64e6                # frequency offset
+FO      = 150e6                # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
 lw      = 200e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
@@ -129,10 +130,10 @@ t       = np.arange(0, len(sigTx))*Ts
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
 # polarization multiplexed coherent optical receiver
-sigRx = pdmCoherentReceiver(sigCh, sigLO, θsig = 0, Rdx=1, Rdy=1)
+sigRx = pdmCoherentReceiver(sigCh, sigLO, θsig = 0)
 
 # plot constellation
-pconst(sigRx[0::paramTx.SpS,:])
+pconst(sigRx[0::paramTx.SpS,:],R =1.5, cmap=constCMAP);
 # -
 
 # ### Matched filtering
@@ -150,10 +151,10 @@ pulse = pulse/np.max(np.abs(pulse))
 sigRx = firFilter(pulse, sigRx)
 
 # plot constellation
-pconst(sigRx[0::paramTx.SpS,:])
+pconst(sigRx[0::paramTx.SpS,:], R=1.75, cmap=constCMAP);
 # -
 
-# ### Downsample to 1 sample/symbol and re-synchronization with transmitted sequences
+# ### Downsample to 1 sample/symbol and power normalization
 
 # +
 # decimation
@@ -162,18 +163,11 @@ paramDec.SpS_in  = paramTx.SpS
 paramDec.SpS_out = 1
 sigRx = decimate(sigRx, paramDec)
 
-d = symbolSync(sigRx, symbTx, 1)
-
-# correct (possible) phase ambiguity w.r.t transmitted symbols
-for k in range(sigRx.shape[1]):
-    rot = np.mean(d[:,k]/sigRx[:,k])
-    sigRx[:,k] = rot*sigRx[:,k]
-
 # power normalization
-sigRx = sigRx/np.sqrt(signal_power(sigRx))
-d = d/np.sqrt(signal_power(d))
+sigRx = pnorm(sigRx) 
+d = pnorm(symbTx)
 
-pconst(sigRx)
+pconst(sigRx, R=1.75, cmap=constCMAP);
 # -
 
 # ### Carrier phase recovery with blind phase search (BPS)
@@ -182,12 +176,13 @@ pconst(sigRx)
 paramCPR = parameters()
 paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
+paramCPR.constType = paramTx.constType
 paramCPR.N   = 85
 paramCPR.B   = 64
        
 y_CPR, θ = cpr(sigRx, paramCPR=paramCPR)
 
-y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+y_CPR = pnorm(y_CPR)
 
 plt.figure()
 plt.title('CPR estimated phase')
@@ -198,29 +193,24 @@ plt.grid();
 discard = 1000
 
 # plot constellations
-pconst([y_CPR[discard:-discard,:],\
-            d[discard:-discard,:]])
+pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
+pconst(y_CPR[discard:-discard,:], cmap=constCMAP)
 
-## Performance metrics
-
-# correct (possible) phase ambiguity
-for k in range(y_CPR.shape[1]):
-    rot = np.mean(d[:,k]/y_CPR[:,k])
-    y_CPR[:,k] = rot*y_CPR[:,k]
-
-y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
-
+# Performance metrics
 ind = np.arange(discard, d.shape[0]-discard)
-BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+GMI, NGMI = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+EVM      = calcEVM(y_CPR[ind,:], paramTx.M, 'qam', d[ind,:])
 
-print('     pol.X     pol.Y      ')
-print('SER: %.2e, %.2e'%(SER[0], SER[1]))
-print('BER: %.2e, %.2e'%(BER[0], BER[1]))
-print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
-print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
-print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+print('      pol.X      pol.Y      ')
+print(' SER: %.2e,  %.2e'%(SER[0], SER[1]))
+print(' BER: %.2e,  %.2e'%(BER[0], BER[1]))
+print(' SNR: %.2f dB,  %.2f dB'%(SNR[0], SNR[1]))
+print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
+print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
+print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
 # -
 
 # ### Carrier phase recovery with decision-directed phase-locked loop (DDPLL)
@@ -229,14 +219,15 @@ print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 paramCPR = parameters()
 paramCPR.alg = 'ddpll'
 paramCPR.M   = paramTx.M
+paramCPR.constType = paramTx.constType
 paramCPR.tau1 = 1/(2*np.pi*10e3)
 paramCPR.tau2 = 1/(2*np.pi*10e3)
 paramCPR.Kv  = 0.1
-paramCPR.pilotInd = np.arange(0, len(sigRx), 25)
+#paramCPR.pilotInd = np.arange(0, len(sigRx), 25)
 
 y_CPR, θ = cpr(sigRx, symbTx=d, paramCPR=paramCPR)
 
-y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
+y_CPR = pnorm(y_CPR)
 
 plt.figure()
 plt.title('CPR estimated phase')
@@ -247,26 +238,23 @@ plt.grid();
 discard = 1000
 
 # plot constellations
-pconst([y_CPR[discard:-discard,:],\
-            d[discard:-discard,:]])
+pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
+pconst(y_CPR[discard:-discard,:], cmap=constCMAP)
 
-## Performance metrics
-
-# correct (possible) phase ambiguity after CPR
-for k in range(y_CPR.shape[1]):
-    rot = np.mean(d[:,k]/y_CPR[:,k])
-    y_CPR[:,k] = rot*y_CPR[:,k]
-
-y_CPR = y_CPR/np.sqrt(signal_power(y_CPR))
-
+# Performance metrics
 ind = np.arange(discard, d.shape[0]-discard)
-BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-GMI,_    = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+GMI, NGMI = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+EVM      = calcEVM(y_CPR[ind,:], paramTx.M, 'qam', d[ind,:])
 
-print('     pol.X     pol.Y      ')
-print('SER: %.2e, %.2e'%(SER[0], SER[1]))
-print('BER: %.2e, %.2e'%(BER[0], BER[1]))
-print('SNR: %.2f dB, %.2f dB'%(SNR[0], SNR[1]))
-print('MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
-print('GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+print('      pol.X      pol.Y      ')
+print(' SER: %.2e,  %.2e'%(SER[0], SER[1]))
+print(' BER: %.2e,  %.2e'%(BER[0], BER[1]))
+print(' SNR: %.2f dB,  %.2f dB'%(SNR[0], SNR[1]))
+print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
+print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
+print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
+# -
+

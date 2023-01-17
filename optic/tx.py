@@ -1,17 +1,19 @@
 import numpy as np
 from commpy.utilities import upsample
+from tqdm.notebook import tqdm
 
-from optic.dsp import pulseShape
+from optic.dsp import pnorm, pulseShape
 from optic.metrics import signal_power
-from optic.models import iqm
+from optic.models import iqm, phaseNoise
 from optic.modulation import GrayMapping, modulateGray
 
 try:
     from optic.dspGPU import firFilter
-except:
+except ImportError:
     from optic.dsp import firFilter
 
 import logging as logg
+
 
 def simpleWDMTx(param):
     """
@@ -31,13 +33,14 @@ def simpleWDMTx(param):
     :param.Pch_dBm: launched power per WDM channel [dBm][default:-3 dBm]
     :param.Nch: number of WDM channels [default: 5]
     :param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz]
+    :param.lw: laser linewidth [Hz][default: 100 kHz]
     :param.freqSpac: frequency spacing of the WDM grid [Hz][default: 40e9 Hz]
     :param.Nmodes: number of polarization modes [default: 1]
 
     """
     # check input parameters
     param.M = getattr(param, "M", 16)
-    param.constType = getattr(param,'constType','qam')
+    param.constType = getattr(param, 'constType', 'qam')
     param.Rs = getattr(param, "Rs", 32e9)
     param.SpS = getattr(param, "SpS", 16)
     param.Nbits = getattr(param, "Nbits", 60000)
@@ -47,12 +50,14 @@ def simpleWDMTx(param):
     param.Pch_dBm = getattr(param, "Pch_dBm", -3)
     param.Nch = getattr(param, "Nch", 5)
     param.Fc = getattr(param, "Fc", 193.1e12)
+    param.lw = getattr(param, "lw", 0)
     param.freqSpac = getattr(param, "freqSpac", 50e9)
     param.Nmodes = getattr(param, "Nmodes", 1)
+    param.prgsBar = getattr(param, "prgsBar", True)
 
     # transmitter parameters
     Ts = 1 / param.Rs  # symbol period [s]
-    Fsa = 1 / (Ts / param.SpS)  # sampling frequency [samples/s]
+    Fs = 1 / (Ts / param.SpS)  # sampling frequency [samples/s]
 
     # central frequencies of the WDM channels
     freqGrid = (
@@ -104,7 +109,7 @@ def simpleWDMTx(param):
 
     pulse = pulse / np.max(np.abs(pulse))
 
-    for indCh in range(param.Nch):
+    for indCh in tqdm(range(param.Nch), disable=not(param.prgsBar)):
 
         logg.info(
             "channel %d\t fc : %3.4f THz" % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
@@ -135,15 +140,18 @@ def simpleWDMTx(param):
             sigTx = firFilter(pulse, symbolsUp)
 
             # optical modulation
-            sigTxCh = iqm(Ai, 0.5 * sigTx, Vπ, Vb, Vb)
+            if indMode == 0:  # generate LO field with phase noise
+                ϕ_pn_lo = phaseNoise(param.lw, len(sigTx), 1/Fs)
+                sigLO   = Ai*np.exp(1j*ϕ_pn_lo)
+            
+            sigTxCh = iqm(sigLO, 0.5 * sigTx, Vπ, Vb, Vb)
             sigTxCh = (
                 np.sqrt(Pch[indCh] / param.Nmodes)
-                * sigTxCh
-                / np.sqrt(signal_power(sigTxCh))
+                * pnorm(sigTxCh)
             )
 
             sigTxWDM[:, indMode] += sigTxCh * np.exp(
-                1j * 2 * π * (freqGrid[indCh] / Fsa) * t
+                1j * 2 * π * (freqGrid[indCh] / Fs) * t
             )
 
             Pmode += signal_power(sigTxCh)

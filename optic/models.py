@@ -1,15 +1,17 @@
+"""Basic physical models for optical devices and optical channels."""
 import numpy as np
 import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from numpy.random import normal
 from tqdm.notebook import tqdm
-from optic.metrics import signal_power
+
 from optic.dsp import lowPassFIR
+from optic.metrics import signal_power
 
 try:
     from optic.dspGPU import firFilter
-except:
+except ImportError:
     from optic.dsp import firFilter
 
 
@@ -113,16 +115,28 @@ def pbs(E, θ=0):
 
 def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     """
-    Linear fiber channel w/ loss and chromatic dispersion.
+    Simulate signal propagation through a linear fiber channel.
 
-    :param Ei: optical signal at the input of the fiber
-    :param L: fiber length [km]
-    :param alpha: loss coeficient [dB/km]
-    :param D: chromatic dispersion parameter [ps/nm/km]
-    :param Fc: carrier frequency [Hz]
-    :param Fs: sampling frequency [Hz]
+    Parameters
+    ----------
+    Ei : np.array
+        Input optical field.
+    L : real scalar
+        Length of the fiber.
+    alpha : real scalar
+        Fiber's attenuation coefficient in dB/km.
+    D : real scalar
+        Fiber's chromatic dispersion (2nd order) coefficient in ps/nm/km.
+    Fc : real scalar
+        Optical carrier frequency in Hz.
+    Fs : real scalar
+        Sampling rate of the simulation.
 
-    :return Eo: optical signal at the output of the fiber
+    Returns
+    -------
+    Eo : np.array
+        Optical field at the output of the fiber.
+
     """
     # c  = 299792458   # speed of light [m/s](vacuum)
     c_kms = const.c / 1e3
@@ -162,7 +176,8 @@ def photodiode(E, paramPD=[]):
     ----------
     E : np.array
         Input optical field.
-    paramPD : struct, optional
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiode.
 
     paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
     paramPD.Tc: temperature [°C][default: 25°C]
@@ -195,7 +210,9 @@ def photodiode(E, paramPD=[]):
     ideal = getattr(paramPD, "ideal", True)
 
     assert R > 0, "PD responsivity should be a positive scalar"
-    assert Fs >= 2*B, "Sampling frequency Fs needs to be at least twice of B."
+    assert (
+        Fs >= 2 * B
+    ), "Sampling frequency Fs needs to be at least twice of B."
 
     ipd = R * E * np.conj(E)  # ideal fotodetected current
 
@@ -223,7 +240,7 @@ def photodiode(E, paramPD=[]):
     return ipd.real
 
 
-def balancedPD(E1, E2, R=1):
+def balancedPD(E1, E2, paramPD=[]):
     """
     Balanced photodiode (BPD).
 
@@ -233,8 +250,18 @@ def balancedPD(E1, E2, R=1):
         Input optical field.
     E2 : np.array
         Input optical field.
-    R : scalar, optional
-        Photodiode responsivity in A/W. The default is 1.
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiodes.
+
+    paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
+    paramPD.Tc: temperature [°C][default: 25°C]
+    paramPD.Id: dark current [A][default: 5e-9 A]
+    paramPD.RL: impedance load [Ω] [default: 50Ω]
+    paramPD.B bandwidth [Hz][default: 30e9 Hz]
+    paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
+    paramPD.fType: frequency response type [default: 'rect']
+    paramPD.N: number of the frequency resp. filter taps. [default: 8001]
+    paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
 
     Returns
     -------
@@ -242,11 +269,10 @@ def balancedPD(E1, E2, R=1):
            Balanced photocurrent.
 
     """
-    assert R > 0, "PD responsivity should be a positive scalar"
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
-    i1 = R * E1 * np.conj(E1)
-    i2 = R * E2 * np.conj(E2)
+    i1 = photodiode(E1, paramPD)
+    i2 = photodiode(E2, paramPD)
     return i1 - i2
 
 
@@ -286,7 +312,7 @@ def hybrid_2x4_90deg(Es, Elo):
     return T @ Ei
 
 
-def coherentReceiver(Es, Elo, Rd=1):
+def coherentReceiver(Es, Elo, paramPD=[]):
     """
     Single polarization coherent optical front-end.
 
@@ -296,8 +322,8 @@ def coherentReceiver(Es, Elo, Rd=1):
         Input signal optical field.
     Elo : np.array
         Input LO optical field.
-    Rd : scalar, optional
-        Photodiodes responsivity in A/W. The default is 1.
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiodes.
 
     Returns
     -------
@@ -305,7 +331,6 @@ def coherentReceiver(Es, Elo, Rd=1):
         Downconverted signal after balanced detection.
 
     """
-    assert Rd > 0, "PD responsivity should be a positive scalar"
     assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
     assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
@@ -314,13 +339,13 @@ def coherentReceiver(Es, Elo, Rd=1):
     Eo = hybrid_2x4_90deg(Es, Elo)
 
     # balanced photodetection
-    sI = balancedPD(Eo[1, :], Eo[0, :], Rd)
-    sQ = balancedPD(Eo[2, :], Eo[3, :], Rd)
+    sI = balancedPD(Eo[1, :], Eo[0, :], paramPD)
+    sQ = balancedPD(Eo[2, :], Eo[3, :], paramPD)
 
     return sI + 1j * sQ
 
 
-def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
+def pdmCoherentReceiver(Es, Elo, θsig=0, paramPD=[]):
     """
     Polarization multiplexed coherent optical front-end.
 
@@ -332,10 +357,8 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
         Input LO optical field.
     θsig : scalar, optional
         Input polarization rotation angle in rad. The default is 0.
-    Rdx : scalar, optional
-        Photodiode resposivity pol.X in A/W. The default is 1.
-    Rdy : scalar, optional
-        Photodiode resposivity pol.Y in A/W. The default is 1.
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiodes.
 
     Returns
     -------
@@ -343,14 +366,13 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, Rdx=1, Rdy=1):
         Downconverted signal after balanced detection.
 
     """
-    assert Rdx > 0 and Rdy > 0, "PD responsivity should be a positive scalar"
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
     Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
     Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orth. polarizations
 
-    Sx = coherentReceiver(Esx, Elox, Rd=Rdx)  # coherent detection of pol.X
-    Sy = coherentReceiver(Esy, Eloy, Rd=Rdy)  # coherent detection of pol.Y
+    Sx = coherentReceiver(Esx, Elox, paramPD)  # coherent detection of pol.X
+    Sy = coherentReceiver(Esy, Eloy, paramPD)  # coherent detection of pol.Y
 
     return np.array([Sx, Sy]).T
 
@@ -362,7 +384,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     Parameters
     ----------
     Ei : np.array
-        Input signal field .
+        Input signal field.
     Fs : scalar
         Sampling frequency in Hz.
     G : scalar, optional
@@ -384,8 +406,15 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     NF_lin = 10 ** (NF / 10)
     G_lin = 10 ** (G / 10)
     nsp = (G_lin * NF_lin - 1) / (2 * (G_lin - 1))
+
+    # ASE noise power calculation:
+    # Ref. Eq.(54) of R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber
+    # Networks," in Journal of Lightwave Technology, vol. 28, no. 4,
+    # pp. 662-701, Feb.15, 2010, doi: 10.1109/JLT.2009.2039464.
+
     N_ase = (G_lin - 1) * nsp * const.h * Fc
     p_noise = N_ase * Fs
+
     noise = normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * normal(
         0, np.sqrt(p_noise / 2), Ei.shape
     )
@@ -493,23 +522,35 @@ def ssfm(Ei, Fs, paramCh):
 
 def manakovSSF(Ei, Fs, paramCh):
     """
-    Manakov split-step Fourier model (symmetric, dual-pol.).
+    Run the Manakov split-step Fourier model (symmetric, dual-pol.).
 
-    :param Ei: input signal
-    :param Fs: sampling frequency of Ei [Hz]
-    :param paramCh: object with physical parameters of the optical channel
+    Parameters
+    ----------
+    Ei : np.array
+        Input optical signal field.
+    Fs : scalar
+        Sampling frequency in Hz.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters of the optical channel.
 
-    :paramCh.Ltotal: total fiber length [km][default: 400 km]
-    :paramCh.Lspan: span length [km][default: 80 km]
-    :paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-    :paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-    :paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-    :paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-    :paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-    :paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-    :paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+    paramCh.Ltotal: total fiber length [km][default: 400 km]
+    paramCh.Lspan: span length [km][default: 80 km]
+    paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+    paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+    paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+    paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+    paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+    paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+    paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+    paramCh.prgsBar: display progress bar? bolean variable [default:True]
 
-    :return Ech: propagated signal
+    Returns
+    -------
+    Ech : np.array
+        Optical signal after nonlinear propagation.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters used in the split-step alg.
+
     """
     # check input parameters
     paramCh.Ltotal = getattr(paramCh, "Ltotal", 400)
@@ -652,26 +693,24 @@ def awgn(sig, snr, Fs=1, B=1):
     Parameters
     ----------
     sig : np.array
-        input signal.
+        Input signal.
     snr : scalar
-        signal-to-noise ratio in dB.
-    Fs : scalar
-        sampling frequency. The default is 1.
-    B : scalar
-        signal bandwidth. The default is 1.
+        Signal-to-noise ratio in dB.
+    Fs : real scalar
+        Sampling frequency. The default is 1.
+    B : real scalar
+        Signal bandwidth. The default is 1.
 
     Returns
     -------
-    sigNoisy : np.array
-        input signal plus noise.
+    np.array
+        Input signal plus noise.
 
     """
     snr_lin = 10 ** (snr / 10)
     noiseVar = signal_power(sig) / snr_lin
     σ = np.sqrt((Fs / B) * noiseVar)
-    noise = normal(0, σ, sig.shape) + 1j * normal(
-        0, σ, sig.shape
-    )
+    noise = normal(0, σ, sig.shape) + 1j * normal(0, σ, sig.shape)
     noise = 1 / np.sqrt(2) * noise
 
     return sig + noise
