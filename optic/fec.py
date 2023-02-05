@@ -22,17 +22,21 @@ def ldpcEncode(b, LDPCparams):
     else:
         N = LDPCparams["n_vnodes"]
 
+<<<<<<< Updated upstream
     # generate random interleaver
     interlv = np.random.permutation(N)
+=======
+    N = n if fecFamily == 'AR4JA' else LDPCparams["n_vnodes"]
+>>>>>>> Stashed changes
 
     # encode bits
     codedBits = enc(b, LDPCparams, pad=False)
-    interCodedBits = (codedBits[interlv, :].T).reshape(1, -1).T
+    codedBits = (codedBits[0:n, :].T).reshape(1, -1).T
 
-    return interCodedBits, codedBits, interlv
+    return  codedBits
 
 
-def ldpcDecode(llr, interlv, LDPCparams, nIter, alg="SPA"):
+def ldpcDecode(llr, deinterlv, LDPCparams, nIter, alg="SPA"):
     """
     Decode binary LDPC encoded data bits
     b = np.random.randint(2, size=(K, Nwords))
@@ -42,13 +46,20 @@ def ldpcDecode(llr, interlv, LDPCparams, nIter, alg="SPA"):
     fecID = LDPCparams['filename'][12:]
     
     num = [float(s) for s in re.findall(r'-?\d+\.?\d*', fecID)]    
+<<<<<<< Updated upstream
     
     N = LDPCparams["n_vnodes"]
     n = int(num[0])
     
+=======
+
+    N = LDPCparams["n_vnodes"]   
+    n = int(num[0])        
+>>>>>>> Stashed changes
     dep = int(N-n)
     
     # generate deinterleaver
+<<<<<<< Updated upstream
     deinterlv = interlv.argsort()
 
     # deinterleave received LLRs
@@ -59,10 +70,27 @@ def ldpcDecode(llr, interlv, LDPCparams, nIter, alg="SPA"):
     if dep > 0:
         llr = np.concatenate((llr, np.zeros((llr.shape[0], dep))), axis=1)
                 
+=======
+    # deinterlv = interlv.argsort()
+    
+    # reshape received LLRs
+    llr = llr.reshape(-1, n)    
+        
+    # depuncturing
+    if dep > 0:
+        llr = np.concatenate((llr, np.zeros((llr.shape[0], dep))), axis=1)
+    
+    decodedBits_hd = (-np.sign(llr)+1)//2 
+    decodedBits_hd = decodedBits_hd.reshape(-1, N).T
+    
+    print(llr.shape)
+    
+    llr = llr[:, deinterlv]
+>>>>>>> Stashed changes
     llr = llr.ravel()
         
     # decode received code words
     decodedBits, llr_out = dec(llr, LDPCparams, alg, nIter)
-
-    return decodedBits, llr_out
+        
+    return decodedBits, decodedBits_hd, llr_out
 
