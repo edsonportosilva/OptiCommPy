@@ -1,13 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from commpy.modulation import QAMModem
 from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
+
+from optic.dsp import pnorm
+from optic.modulation import GrayMapping
 
 
 def cpr(Ei, symbTx=[], paramCPR=[]):
     """
-    Carrier phase recovery (CPR)
+    Carrier phase recovery function (CPR)
 
     Parameters
     ----------
@@ -18,11 +20,20 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     paramCPR : core.param object, optional
         configuration parameters. The default is [].
         
+        BPS params:
+            
         paramCPR.alg: CPR algorithm to be used ['bps' or 'ddpll']
-        paramCPR.N: length of the moving average window
-        paramCPR.M: constellation
-        paramCPR.B: number of BPS test phases
-        paramCPR.pilotInd: indexes of pilot-symbol locations
+        paramCPR.M: constellation order. The default is 4.
+        paramCPR.N: length of BPS the moving average window. The default is 35.    
+        paramCPR.B: number of BPS test phases. The default is 64.
+        
+        DDPLL params:
+            
+        paramCPR.tau1: DDPLL loop filter param. 1. The default is 1/2*pi*10e6.
+        paramCPR.tau2: DDPLL loop filter param. 2. The default is 1/2*pi*10e6.
+        paramCPR.Kv: DDPLL loop filter gain. The default is 0.1.
+        paramCPR.Ts: symbol period. The default is 1/32e9.
+        paramCPR.pilotInd: indexes of pilot-symbol locations.
 
     Raises
     ------
@@ -34,44 +45,49 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     -------
     Eo : complex-valued ndarray
         Phase-compensated signal.
-    ϕ : real-valued ndarray
-        Raw estimated phase-shifts.
     θ : real-valued ndarray
-        Moving-average of estimated phase-shifts.
+        Time-varying estimated phase-shifts.
 
     """
-
     # check input parameters
     alg = getattr(paramCPR, "alg", "bps")
     M = getattr(paramCPR, "M", 4)
+    constType = getattr(paramCPR, 'constType','qam')
     B = getattr(paramCPR, "B", 64)
     N = getattr(paramCPR, "N", 35)
+    Kv = getattr(paramCPR, "Kv", 0.1)
+    tau1 = getattr(paramCPR, "tau1", 1 / (2 * np.pi * 10e6))
+    tau2 = getattr(paramCPR, "tau2", 1 / (2 * np.pi * 10e6))
+    Ts = getattr(paramCPR, "Ts", 1 / 32e9)
     pilotInd = getattr(paramCPR, "pilotInd", np.array([len(Ei) + 1]))
 
     try:
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
-    mod = QAMModem(m=M)
-    constSymb = mod.constellation / np.sqrt(mod.Es)
 
+    # constellation parameters
+    constSymb = GrayMapping(M, constType)
+    constSymb = pnorm(constSymb)
+    
+    # 4th power frequency offset estimation/compensation
+    Ei, _ = fourthPowerFOE(Ei, 1/Ts)
+    Ei = pnorm(Ei)
+    
     if alg == "ddpll":
-        ϕ, θ = ddpll(Ei, N, constSymb, symbTx, pilotInd)
+        θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
-        θ = bps(Ei, int(N / 2), constSymb, B)
-        ϕ = np.copy(θ)
+        θ = bps(Ei, N // 2, constSymb, B)
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
-    ϕ = np.unwrap(4 * ϕ, axis=0) / 4
     θ = np.unwrap(4 * θ, axis=0) / 4
 
     Eo = Ei * np.exp(1j * θ)
 
     if Eo.shape[1] == 1:
         Eo = Eo[:]
-        ϕ = ϕ[:]
         θ = θ[:]
-    return Eo, ϕ, θ
+    return Eo, θ
 
 
 @njit
@@ -93,10 +109,9 @@ def bps(Ei, N, constSymb, B):
     Returns
     -------
     θ : real-valued ndarray
-        Estimated phases.
+        Time-varying estimated phase-shifts.
 
     """
-
     nModes = Ei.shape[1]
 
     ϕ_test = np.arange(0, B) * (np.pi / 2) / B  # test phases
@@ -110,12 +125,12 @@ def bps(Ei, N, constSymb, B):
 
     L = x.shape[0]
 
-    for n in range(0, nModes):
+    for n in range(nModes):
 
         dist = np.zeros((B, constSymb.shape[0]), dtype="float")
         dmin = np.zeros((B, 2 * N + 1), dtype="float")
 
-        for k in range(0, L):
+        for k in range(L):
             for indPhase, ϕ in enumerate(ϕ_test):
                 dist[indPhase, :] = np.abs(x[k, n] * np.exp(1j * ϕ) - constSymb) ** 2
                 dmin[indPhase, -1] = np.min(dist[indPhase, :])
@@ -128,7 +143,7 @@ def bps(Ei, N, constSymb, B):
 
 
 @njit
-def ddpll(Ei, N, constSymb, symbTx, pilotInd):
+def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     """
     Decision-directed Phase-locked Loop (DDPLL) algorithm
 
@@ -136,8 +151,14 @@ def ddpll(Ei, N, constSymb, symbTx, pilotInd):
     ----------
     Ei : complex-valued ndarray
         Received constellation symbols.
-    N : TYPE
-        DESCRIPTION.
+    Ts : float scalar
+        Symbol period.
+    Kv : float scalar
+        Loop filter gain.
+    tau1 : float scalar
+        Loop filter parameter 1.
+    tau2 : float scalar
+        Loop filter parameter 2.
     constSymb : complex-valued ndarray
         Complex-valued ideal constellation symbols.
     symbTx : complex-valued ndarray
@@ -147,52 +168,92 @@ def ddpll(Ei, N, constSymb, symbTx, pilotInd):
 
     Returns
     -------
-    ϕ : real-valued ndarray
-        Raw estimated phase-shifts.
     θ : real-valued ndarray
-        Moving-average of estimated phase-shifts.
+        Time-varying estimated phase-shifts.
 
+    References
+    -------
+    [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel 
+    estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.    
+    
     """
     nModes = Ei.shape[1]
 
-    ϕ = np.zeros(Ei.shape)
     θ = np.zeros(Ei.shape)
 
-    for n in range(0, nModes):
-        for k in range(0, len(Ei)):
+    # Loop filter coefficients
+    a1b = np.array(
+        [
+            1,
+            Ts / (2 * tau1) * (1 - 1 / np.tan(Ts / (2 * tau2))),
+            Ts / (2 * tau1) * (1 + 1 / np.tan(Ts / (2 * tau2))),
+        ]
+    )
 
-            decided = np.argmin(
-                np.abs(Ei[k, n] * np.exp(1j * θ[k - 1, n]) - constSymb)
-            )  # find closest constellation symbol
+    u = np.zeros(3)  # [u_f, u_d1, u_d]
 
+    for n in range(nModes):
+
+        u[2] = 0  # Output of phase detector (residual phase error)
+        u[0] = 0  # Output of loop filter
+
+        for k in range(len(Ei)):
+            u[1] = u[2]
+
+            # Remove estimate of phase error from input symbol
+            Eo = Ei[k, n] * np.exp(1j * θ[k, n])
+
+            # Slicer (perform hard decision on symbol)
             if k in pilotInd:
-                ϕ[k, n] = np.angle(
-                    symbTx[k, n] / (Ei[k, n])
-                )  # phase estimation with pilot symbol
+                # phase estimation with pilot symbol
+                # Generate phase error signal (also called x_n (Meyer))
+                u[2] = np.imag(Eo * np.conj(symbTx[k, n]))
             else:
-                ϕ[k, n] = np.angle(
-                    constSymb[decided] / (Ei[k, n])
-                )  # phase estimation after symbol decision
-            if k > N:
-                θ[k, n] = np.mean(ϕ[k - N : k, n])  # moving average filter
-            else:
-                θ[k, n] = np.angle(symbTx[k, n] / (Ei[k, n]))
-    return ϕ, θ
+                # find closest constellation symbol
+                decided = np.argmin(np.abs(Eo - constSymb))
+                # Generate phase error signal (also called x_n (Meyer))
+                u[2] = np.imag(Eo * np.conj(constSymb[decided]))
+            # Pass phase error signal in Loop Filter (also called e_n (Meyer))
+            u[0] = np.sum(a1b * u)
+
+            # Estimate the phase error for the next symbol
+            θ[k + 1, n] = θ[k, n] - Kv * u[0]
+    return θ
 
 
-def fourthPowerFOE(Ei, Ts, plotSpec=False):
+def fourthPowerFOE(Ei, Fs, plotSpec=False):
     """
-    4th power frequency offset estimator (FOE)
-    """
+    4th power frequency offset estimator (FOE).
 
-    Fs = 1 / Ts
-    Nfft = len(Ei)
+    Parameters
+    ----------
+    Ei : np.array
+        Input signal.
+    Fs : real scalar
+        Sampling frequency.
+    plotSpec : bolean, optional
+        Plot spectrum. The default is False.
+
+    Returns
+    -------
+    Real scalar
+        Estimated frequency offset.
+
+    """
+    Nfft = Ei.shape[0]
 
     f = Fs * fftfreq(Nfft)
     f = fftshift(f)
 
-    f4 = 10 * np.log10(np.abs(fftshift(fft(Ei ** 4))))
-    indFO = np.argmax(f4)
+    nModes = Ei.shape[1]
+    Eo = Ei.copy()
+    t = np.arange(0, Eo.shape[0])*1/Fs
+
+    for n in range(nModes):
+        f4 = 10 * np.log10(np.abs(fftshift(fft(Ei[:, n] ** 4))))
+        indFO = np.argmax(f4)
+        fo = f[indFO] / 4
+        Eo[:, n] = Ei[:, n] * np.exp(-1j * 2 * np.pi * fo * t)
 
     if plotSpec:
         plt.figure()
@@ -201,4 +262,4 @@ def fourthPowerFOE(Ei, Ts, plotSpec=False):
         plt.legend()
         plt.xlim(min(f), max(f))
         plt.grid()
-    return f[indFO] / 4
+    return Eo, f[indFO] / 4
