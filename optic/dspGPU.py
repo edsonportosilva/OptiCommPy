@@ -8,16 +8,16 @@ def firFilter(h, x, prec=cp.complex128):
 
     Parameters
     ----------
-    h : ndarray
+    h : np.array
         Coefficients of the FIR filter (impulse response, symmetric).
-    x : ndarray
+    x : np.array
         Input signal.
     prec: cp.dtype
         Size of the complex representation.
 
     Returns
     -------
-    y : ndarray
+    y : np.array
         Output (filtered) signal.
     """
     try:

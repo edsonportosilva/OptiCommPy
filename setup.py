@@ -4,14 +4,14 @@
 from setuptools import setup
 
 # Taken from scikit-commpy setup.py
-DISTNAME = 'OpticCommpy'
+DISTNAME = 'OptiCommPy'
 DESCRIPTION = 'Optical Communications Algorithms with Python'
 LONG_DESCRIPTION = open('README.md', encoding="utf8").read()
 MAINTAINER = 'Edson Porto da Silva'
 MAINTAINER_EMAIL = 'edsonporto88@gmail.com'
-URL = 'https://github.com/edsonportosilva/OpticCommPy'
+URL = 'https://github.com/edsonportosilva/OptiCommPy'
 LICENSE = 'BSD 3-Clause'
-VERSION = '0.1.0'
+VERSION = '0.2.0'
 
 #This is a list of files to install, and where
 #(relative to the 'root' dir, where setup.py is)

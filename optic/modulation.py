@@ -1,8 +1,10 @@
 """Digital modulation utilities."""
+import logging as logg
+
 import numpy as np
-from numpy.matlib import repmat
 from commpy.utilities import bitarray2dec, dec2bitarray
-from numba import njit
+from numba import njit, prange
+from numpy.matlib import repmat
 
 
 def GrayCode(n):
@@ -26,12 +28,11 @@ def GrayCode(n):
         # Generating the decimal
         # values of gray code then using
         # bitset to convert them to binary form
-        val = (i ^ (i >> 1))
+        val = i ^ (i >> 1)
 
         # Converting to binary string
         s = bin(val)[2::]
         code.append(s.zfill(n))
-
     return code
 
 
@@ -43,7 +44,7 @@ def GrayMapping(M, constType):
     ----------
     M : int
         modulation order
-    constType : 'qam' or 'psk'
+    constType : 'qam', 'psk', 'pam' or 'ook'.
         type of constellation.
 
     Returns
@@ -53,43 +54,46 @@ def GrayMapping(M, constType):
         Gray bit sequence as integer decimal).
 
     """
-    L = int(np.sqrt(M)-1)
+    if M != 2 and constType == "ook":
+        logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
+        M = 2
+    L = int(M - 1) if constType in ["pam", "ook"] else int(np.sqrt(M) - 1)
     bitsSymb = int(np.log2(M))
 
     code = GrayCode(bitsSymb)
-
-    if constType == 'qam':
-        PAM = np.arange(-L, L+1, 2)
+    if constType in ["pam", "ook"]:
+        const = np.arange(-L, L + 1, 2)
+    elif constType == "qam":
+        PAM = np.arange(-L, L + 1, 2)
         PAM = np.array([PAM])
 
         # generate complex square M-QAM constellation
-        const = repmat(PAM, L+1, 1) + 1j*repmat(np.flip(PAM.T, 0), 1, L+1)
+        const = repmat(PAM, L + 1, 1) + 1j * repmat(np.flip(PAM.T, 0), 1, L + 1)
         const = const.T
 
-        for ind in np.arange(1, L+1, 2):
+        for ind in np.arange(1, L + 1, 2):
             const[ind] = np.flip(const[ind], 0)
-
-    elif constType == 'psk':
-        pskPhases = np.arange(0, 2*np.pi, 2*np.pi/M)
+    elif constType == "psk":
+        pskPhases = np.arange(0, 2 * np.pi, 2 * np.pi / M)
 
         # generate complex M-PSK constellation
-        const = np.exp(1j*pskPhases)
-
+        const = np.exp(1j * pskPhases)
     const = const.reshape(M, 1)
     const_ = np.zeros((M, 2), dtype=complex)
 
     for ind in range(M):
-        const_[ind, 0] = const[ind, 0]   # complex constellation symbol
-        const_[ind, 1] = int(code[ind], 2) # mapped bit sequence (as integer decimal)
-
-    # sort complex symbols column according to their mapped bit sequence (as integer decimal)                 
+        const_[ind, 0] = const[ind, 0]  # complex constellation symbol
+        const_[ind, 1] = int(code[ind], 2)  # mapped bit sequence (as integer decimal)
+    # sort complex symbols column according to their mapped bit sequence (as integer decimal)
     const = const_[const_[:, 1].real.argsort()]
     const = const[:, 0]
 
+    if constType in ["pam", "ook"]:
+        const = const.real
     return const
 
 
-@njit
+@njit(parallel=True)
 def minEuclid(symb, const):
     """
     Find minimum Euclidean distance.
@@ -99,10 +103,10 @@ def minEuclid(symb, const):
 
     Parameters
     ----------
-    symb : complex-valued symbol (or array)
-        complex-valued received constellation symbol.
-    const : complex-valued array
-        reference complex-valued constellation.
+    symb : np.array
+        Received constellation symbols.
+    const : np.array
+        Reference constellation.
 
     Returns
     -------
@@ -110,7 +114,38 @@ def minEuclid(symb, const):
         indexes of the closest constellation symbols.
 
     """
-    return np.abs(symb - const).argmin()
+    ind = np.zeros(symb.shape, dtype=np.int64)
+    for ii in prange(len(symb)):
+        ind[ii] = np.abs(symb[ii] - const).argmin()
+    return ind
+
+
+@njit(parallel=True)
+def demap(indSymb, bitMap):
+    """
+    Contellation symbol index to bit sequence demapping.
+
+    Parameters
+    ----------
+    indSymb : np.array of ints
+        Indexes of received symbol sequence.
+    bitMap : (M, log2(M)) np.array
+        bit-to-symbol mapping.
+
+    Returns
+    -------
+    decBits : np.array
+        Sequence of demapped bits.
+
+    """
+    M = bitMap.shape[0]
+    b = int(np.log2(M))
+
+    decBits = np.zeros(len(indSymb) * b, dtype='int')
+
+    for i in prange(len(indSymb)):
+        decBits[i * b : i * b + b] = bitMap[indSymb[i], :]
+    return decBits
 
 
 def modulateGray(bits, M, constType):
@@ -124,7 +159,7 @@ def modulateGray(bits, M, constType):
     M : int
         order of the modulation format.
     constType : string
-        'qam' or 'psk'.
+        'qam', 'psk', 'pam' or 'ook'.
 
     Returns
     -------
@@ -132,6 +167,9 @@ def modulateGray(bits, M, constType):
         bits modulated to complex constellation symbols.
 
     """
+    if M != 2 and constType == "ook":
+        logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
+        M = 2
     bitsSymb = int(np.log2(M))
     const = GrayMapping(M, constType)
 
@@ -154,16 +192,26 @@ def demodulateGray(symb, M, constType):
     M : int
         order of the modulation format.
     constType : string
-        'qam' or 'psk'.
+        'qam', 'psk', 'pam' or 'ook'.
 
     Returns
     -------
-    demodBits : array of ints
+    array of ints
         sequence of demodulated bits.
 
     """
+    if M != 2 and constType == "ook":
+        logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
+        M = 2
     const = GrayMapping(M, constType)
 
-    minEuclid_vec = np.vectorize(minEuclid, excluded=[1])
-    index_list = minEuclid_vec(symb, const)
-    return dec2bitarray(index_list, int(np.log2(M)))
+    # get bit to symbol mapping
+    indMap = minEuclid(const, const)
+    bitMap = dec2bitarray(indMap, int(np.log2(M)))
+    b = int(np.log2(M))
+    bitMap = bitMap.reshape(-1, b)
+
+    # demodulate received symbol sequence
+    indrx = minEuclid(symb, const)
+
+    return demap(indrx, bitMap)

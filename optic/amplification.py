@@ -1,20 +1,17 @@
+import copy
+import logging as logg
 import os
 
 import numpy as np
 import numpy.matlib as npmat
 import matplotlib.pyplot as plt
-import matplotlib.mlab as mlab
-
+from numba import njit
+from numpy.fft import fft, fftfreq, ifft
 from scipy import interpolate
-from numpy.fft import fft, ifft, fftfreq
+from scipy.constants import Planck, c
 from scipy.integrate import solve_ivp
-
-from scipy.constants import c, Planck
 from scipy.special import jv, kv
-
 from simple_pid import PID
-import logging as logg
-import copy
 
 from optic.core import parameters
 

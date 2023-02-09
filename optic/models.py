@@ -5,12 +5,13 @@ from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from numpy.random import normal
 from tqdm.notebook import tqdm
-from optic.metrics import signal_power
+
 from optic.dsp import lowPassFIR
+from optic.metrics import signal_power
 
 try:
     from optic.dspGPU import firFilter
-except:
+except ImportError:
     from optic.dsp import firFilter
 
 
@@ -405,8 +406,15 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     NF_lin = 10 ** (NF / 10)
     G_lin = 10 ** (G / 10)
     nsp = (G_lin * NF_lin - 1) / (2 * (G_lin - 1))
-    N_ase = (G_lin - 1) * nsp * const.h * Fc
+          
+    # ASE noise power calculation:
+    # Ref. Eq.(54) of R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber 
+    # Networks," in Journal of Lightwave Technology, vol. 28, no. 4, 
+    # pp. 662-701, Feb.15, 2010, doi: 10.1109/JLT.2009.2039464.
+    
+    N_ase = (G_lin - 1) * nsp * const.h * Fc    
     p_noise = N_ase * Fs
+    
     noise = normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * normal(
         0, np.sqrt(p_noise / 2), Ei.shape
     )
@@ -685,18 +693,18 @@ def awgn(sig, snr, Fs=1, B=1):
     Parameters
     ----------
     sig : np.array
-        input signal.
+        Input signal.
     snr : scalar
-        signal-to-noise ratio in dB.
-    Fs : scalar
-        sampling frequency. The default is 1.
-    B : scalar
-        signal bandwidth. The default is 1.
+        Signal-to-noise ratio in dB.
+    Fs : real scalar
+        Sampling frequency. The default is 1.
+    B : real scalar
+        Signal bandwidth. The default is 1.
 
     Returns
     -------
-    sigNoisy : np.array
-        input signal plus noise.
+    np.array
+        Input signal plus noise.
 
     """
     snr_lin = 10 ** (snr / 10)
