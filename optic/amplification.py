@@ -1,17 +1,20 @@
-import copy
-import logging as logg
 import os
 
 import numpy as np
 import numpy.matlib as npmat
 import matplotlib.pyplot as plt
-from numba import njit
-from numpy.fft import fft, fftfreq, ifft
+import matplotlib.mlab as mlab
+
 from scipy import interpolate
-from scipy.constants import Planck, c
+from numpy.fft import fft, ifft, fftfreq
 from scipy.integrate import solve_ivp
+
+from scipy.constants import c, Planck
 from scipy.special import jv, kv
+
 from simple_pid import PID
+import logging as logg
+import copy
 
 from optic.core import parameters
 
@@ -433,7 +436,7 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
             # PID control - only in forward pumping
             # TODO - and backward pumping? both?
             pid = PID(
-                0.01, 0.01, 0.05, setpoint=param_edfa.value, output_limits=(0, 300e-3)
+                param_edfa.kp, param_edfa.ki, param_edfa.kd, setpoint=param_edfa.value, output_limits=(-pumpPmpFor/2, 300e-3)
             )
             pumpPmpFor = pumpPmpFor + pid(errorAutoCrtl)
             errorAutoCrtl = errorAutoCrtl - param_edfa.value
