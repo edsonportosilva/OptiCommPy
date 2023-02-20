@@ -1,6 +1,6 @@
 numpy>=1.9.2
 scipy>=0.15.0
-matplotlib>=1.4.3
+matplotlib>=3.7.0
 scikit-commpy>=0.7.0
 xeus-python>=0.12.5
 numba>=0.54.1
