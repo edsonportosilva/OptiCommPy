@@ -32,13 +32,14 @@ setup(
     #recursively.)
     packages=['optic'],
     install_requires=[
-          'numpy',
-          'scipy',
-          'matplotlib',
+          'numpy>=1.9.2',
+          'scipy>=0.15.0',
+          'matplotlib>=3.7.0',
           'sympy',
-          'tqdm',
-          'numba',
-          'scikit-commpy'
+          'tqdm>=4.64.1',
+          'numba>=0.54.1',
+          'scikit-commpy>=0.7.0',
+	  'simple-pid>=1.0.1'
     ],
     #'package' package must contain files (see list above)
     #This dict maps the package name =to=> directories
