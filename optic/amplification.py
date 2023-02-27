@@ -40,7 +40,7 @@ def power_meter(x):
     """
     return np.sum(np.mean(x * np.conj(x), axis=0).real)
 
-def OSA(x, Fs, Fc=193.1e12, pol='XY'):
+def OSA(x, Fs, Fc=193.1e12):
     """
     Plot the optical spectrum of the signal in X and Y polarizations.
 
@@ -274,6 +274,93 @@ def updtCnst(param):
     param.const4 = param.absCoef + param.lossS
     param.const5 = param.gainCoef * Planck * param.freq * param.noiseBand
     return param
+
+# Calculates gamma, field profile (ik), absorption and emission cross-section (or
+# absorption and gain coeficients)
+def edfParams(param_edfa):
+    # Create EDF struct
+    param_edf = parameters()
+    # Load Gile's file
+    fileT = np.loadtxt(param_edfa.file)
+    # Verify file frequency unit
+    if param_edfa.fileunit == "nm":
+        param_edf.lbFl = fileT[:,0] * 1e-9
+    elif param_edfa.fileunit == "m":
+        param_edf.lbFl = fileT[:,0]
+    elif param_edfa.fileunit == "Hz'":
+        param_edf.lbFl = c/fileT[:,0]
+    elif param_edfa.fileunit == "THz":
+        param_edf.lbFl = c/fileT[:,0] * 1e-12
+    else:
+        raise TypeError('edfaSM.fileunit invalid argument - [nm - m - Hz - THz].')
+    # Logitudinal step
+    param_edf.dr = param_edfa.a / param_edfa.longSteps
+    param_edf.r  = np.arange(0,param_edfa.a, param_edf.dr)
+    # Define field profile
+    V = (2 * np.pi / param_edf.lbFl) * param_edfa.a * param_edfa.na
+    # u and v calculation for LP01 and Bessel profiles
+    u = ((1 + np.sqrt(2)) * V) / (1 + (4 + V ** 4) ** 0.25)
+    v = np.sqrt(V ** 2 - u ** 2)
+    # Gamma and field profile calculation
+    if (param_edfa.gmtc == 'LP01'):
+        gamma = (((v * param_edfa.b) / (param_edfa.a * V * jv(1, u))) ** 2) * (jv(0, u * param_edfa.b / param_edfa.a) ** 2 + jv(1, u * param_edfa.b / param_edfa.a) ** 2)
+        if (param_edfa.algo == "Giles_spatial"):
+            param_edf.gamma = gamma
+            ik = (
+                lambda r: 1
+                / np.pi
+                * (
+                    v
+                    / (param_edfa.a * V)
+                    * jv(0, u * param_edfa.r / param_edfa.a)
+                    / jv(1, u)
+                )
+                ** 2
+            )
+            param_edf.i_k = [i_k(x) for x in param_edfa.r]
+    else:
+        w_gauss = getModeRadius(param_edfa, V, v, u)
+        gamma = 1 - np.exp(-2 * (param_edfa.b / w_gauss) ** 2)
+        if param_edfa.algo == "Giles_spatial":
+            param_edf.gamma = gamma
+            i_k = lambda r: 2 / (np.pi * w_gauss ** 2) * np.exp(-2 * (r / w_gauss) ** 2)
+            param_edf.i_k = [i_k(x) for x in param_edf.r]
+    # absorption and emission cross-section (or
+    # absorption and gain coeficients) calculation
+    if (np.sum(fileT[:,1]) > 1):
+        logg.info("\nEDF absorption and gain coeficients. Calculating absorption and emission cross-section ...")
+        param_edf.absCoef  = 0.1 * np.log(10) * fileT[:,1]
+        param_edf.gainCoef = 0.1 * np.log(10) * fileT[:,2]
+        # Doping profile is uniform with density RHO.
+        param_edf.absCross = param_edf.absCoef / param_edfa.rho / gamma
+        param_edf.emiCross = param_edf.gainCoef / param_edfa.rho / gamma
+    else:
+        logg.info(
+            "\nEDF absorption and emission cross-section. Calculating absorption and gain coeficients ..."
+        )
+        param_edf.absCross = fileT[:, 1]
+        param_edf.emiCross = fileT[:, 2]
+        # Doping profile is uniform with density RHO.
+        param_edf.absCoef = param_edfa.absCross * param_edfa.rho * gamma
+        param_edf.gainCoef = param_edfa.emiCross * param_edfa.rho * gamma
+    return param_edf
+
+def getModeRadius(param_edfa, V, v, u):
+    if param_edfa.gmtc == "Bessel":
+        w_gauss = param_edfa.a * V / u * kv(1, v) / kv(0, v) * jv(0, u)
+    elif param_edfa.gmtc == "Marcuse":
+        w_gauss = param_edfa.a * (0.650 + 1.619 / V ** 1.5 + 2.879 / V ** 6)
+    elif param_edfa.gmtc == "Whitley":
+        w_gauss = param_edfa.a * (0.616 + 1.660 / V ** 1.5 + 0.987 / V ** 6)
+    elif param_edfa.gmtc == "Desurvire":
+        w_gauss = param_edfa.a * (0.759 + 1.289 / V ** 1.5 + 1.041 / V ** 6)
+    elif param_edfa.gmtc == "Myslinski":
+        w_gauss = param_edfa.a * (0.761 + 1.237 / V ** 1.5 + 1.429 / V ** 6)
+    else:
+        raise TypeError(
+        "edfaSM.gmtc invalid argument - [LP01 - Marcuse - Whitley - Desurvire - Myslinski - Bessel]."
+        )
+    return w_gauss
 
 def edfaArgs(param_edfa):
     # gain or power control parameters
@@ -598,89 +685,3 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
 
     return Eout, PpumpF, PpumpB
 
-# Calculates gamma, field profile (ik), absorption and emission cross-section (or
-# absorption and gain coeficients)
-def edfParams(param_edfa):
-    # Create EDF struct
-    param_edf = parameters()
-    # Load Gile's file
-    fileT = np.loadtxt(param_edfa.file)
-    # Verify file frequency unit
-    if param_edfa.fileunit == "nm":
-        param_edf.lbFl = fileT[:,0] * 1e-9
-    elif param_edfa.fileunit == "m":
-        param_edf.lbFl = fileT[:,0]
-    elif param_edfa.fileunit == "Hz'":
-        param_edf.lbFl = c/fileT[:,0]
-    elif param_edfa.fileunit == "THz":
-        param_edf.lbFl = c/fileT[:,0] * 1e-12
-    else:
-        raise TypeError('edfaSM.fileunit invalid argument - [nm - m - Hz - THz].')
-    # Logitudinal step
-    param_edf.dr = param_edfa.a / param_edfa.longSteps
-    param_edf.r  = np.arange(0,param_edfa.a, param_edf.dr)
-    # Define field profile
-    V = (2 * np.pi / param_edf.lbFl) * param_edfa.a * param_edfa.na
-    # u and v calculation for LP01 and Bessel profiles
-    u = ((1 + np.sqrt(2)) * V) / (1 + (4 + V ** 4) ** 0.25)
-    v = np.sqrt(V ** 2 - u ** 2)
-    # Gamma and field profile calculation
-    if (param_edfa.gmtc == 'LP01'):
-        gamma = (((v * param_edfa.b) / (param_edfa.a * V * jv(1, u))) ** 2) * (jv(0, u * param_edfa.b / param_edfa.a) ** 2 + jv(1, u * param_edfa.b / param_edfa.a) ** 2)
-        if (param_edfa.algo == "Giles_spatial"):
-            param_edf.gamma = gamma
-            ik = (
-                lambda r: 1
-                / np.pi
-                * (
-                    v
-                    / (param_edfa.a * V)
-                    * jv(0, u * param_edfa.r / param_edfa.a)
-                    / jv(1, u)
-                )
-                ** 2
-            )
-            param_edf.i_k = [i_k(x) for x in param_edfa.r]
-    else:
-        w_gauss = getModeRadius(param_edfa, V, v, u)
-        gamma = 1 - np.exp(-2 * (param_edfa.b / w_gauss) ** 2)
-        if param_edfa.algo == "Giles_spatial":
-            param_edf.gamma = gamma
-            i_k = lambda r: 2 / (np.pi * w_gauss ** 2) * np.exp(-2 * (r / w_gauss) ** 2)
-            param_edf.i_k = [i_k(x) for x in param_edf.r]
-    # absorption and emission cross-section (or
-    # absorption and gain coeficients) calculation
-    if (np.sum(fileT[:,1]) > 1):
-        logg.info("\nEDF absorption and gain coeficients. Calculating absorption and emission cross-section ...")
-        param_edf.absCoef  = 0.1 * np.log(10) * fileT[:,1]
-        param_edf.gainCoef = 0.1 * np.log(10) * fileT[:,2]
-        # Doping profile is uniform with density RHO.
-        param_edf.absCross = param_edf.absCoef / param_edfa.rho / gamma
-        param_edf.emiCross = param_edf.gainCoef / param_edfa.rho / gamma
-    else:
-        logg.info(
-            "\nEDF absorption and emission cross-section. Calculating absorption and gain coeficients ..."
-        )
-        param_edf.absCross = fileT[:, 1]
-        param_edf.emiCross = fileT[:, 2]
-        # Doping profile is uniform with density RHO.
-        param_edf.absCoef = param_edfa.absCross * param_edfa.rho * gamma
-        param_edf.gainCoef = param_edfa.emiCross * param_edfa.rho * gamma
-    return param_edf
-
-def getModeRadius(param_edfa, V, v, u):
-    if param_edfa.gmtc == "Bessel":
-        w_gauss = param_edfa.a * V / u * kv(1, v) / kv(0, v) * jv(0, u)
-    elif param_edfa.gmtc == "Marcuse":
-        w_gauss = param_edfa.a * (0.650 + 1.619 / V ** 1.5 + 2.879 / V ** 6)
-    elif param_edfa.gmtc == "Whitley":
-        w_gauss = param_edfa.a * (0.616 + 1.660 / V ** 1.5 + 0.987 / V ** 6)
-    elif param_edfa.gmtc == "Desurvire":
-        w_gauss = param_edfa.a * (0.759 + 1.289 / V ** 1.5 + 1.041 / V ** 6)
-    elif param_edfa.gmtc == "Myslinski":
-        w_gauss = param_edfa.a * (0.761 + 1.237 / V ** 1.5 + 1.429 / V ** 6)
-    else:
-        raise TypeError(
-        "edfaSM.gmtc invalid argument - [LP01 - Marcuse - Whitley - Desurvire - Myslinski - Bessel]."
-        )
-    return w_gauss
