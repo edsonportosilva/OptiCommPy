@@ -9,6 +9,11 @@ from scipy import interpolate
 from numpy.fft import fft, ifft, fftfreq
 from scipy.integrate import solve_ivp
 
+import pandas as pd
+from scipy.signal import find_peaks
+from scipy.constants import lambda2nu
+from scipy import signal
+
 from scipy.constants import c, Planck
 from scipy.special import jv, kv
 
@@ -35,7 +40,7 @@ def power_meter(x):
     """
     return np.sum(np.mean(x * np.conj(x), axis=0).real)
 
-def OSA(x, Fs, Fc=193.1e12):
+def OSA(x, Fs, Fc=193.1e12, pol='XY'):
     """
     Plot the optical spectrum of the signal in X and Y polarizations.
 
@@ -56,17 +61,88 @@ def OSA(x, Fs, Fc=193.1e12):
     ZX, freqs = getSpectrum(x[:,0], Fs, Fc)
     yMin = -70
     yMax = ZX.max() + 10
-    plt.plot( freqs, ZX, label="X Pol.")
+    _,ax = plt.subplots(1)
+    ax.plot( freqs, ZX, label="X Pol.")
     if (np.shape(x)[1] == 2):
         ZY, freqs = getSpectrum(x[:,1], Fs, Fc)
-        plt.plot( freqs, ZY, label="Y Pol.", alpha=0.5)
+        ax.plot( freqs, ZY, label="Y Pol.", alpha=0.5)
         yMax = np.array([ZX.max(), ZY.max()]).max() + 10
-    plt.ylim([yMin, yMax])   
-    plt.xlabel("Frequency [nm]")
-    plt.ylabel("Magnitude [dBm]")
-    plt.grid(True)
+        ax.legend()
+    ax.set_ylim([yMin, yMax])   
+    ax.set_xlabel("Wavelength [nm]")
+    ax.set_ylabel("Magnitude [dBm]")
+    ax.minorticks_on()
+    ax.grid(True)
     
-    return None
+    return ax
+
+def movingaverage(interval, window_size):
+        window = signal.windows.boxcar(window_size)
+        return np.convolve(interval, window, 'same')/sum(window)
+
+def wdmAnlysr(x, Fs, Fc=193.1e12, xmin = 1520, xmax = 1580, ymin = -100, ymax = 0):
+    # Get signal spectrum
+    ZX, freqs = getSpectrum(x, Fs, Fc)
+    # Get index of limits
+    xminIndx = np.abs(freqs - xmin).argmin()
+    xmaxIndx = np.abs(freqs - xmax).argmin()
+    window_width = np.sqrt(len(x))
+    # Smooth the spectrum and update frequency
+    sZX = movingaverage(ZX[xmaxIndx:xminIndx], int(window_width))
+    sfreq = freqs[xmaxIndx:xminIndx]
+    # find peaks power
+    peaksPwr, _ = find_peaks(sZX, prominence=1)
+    # find noise power between channels
+    peaksNs , _ = find_peaks(-sZX, prominence=1)
+    # fit noise power bellow each channel
+    nsPwr = np.zeros(len(peaksNs)-1)
+    for i in range(len(nsPwr)):
+        # Parameters from the fit of the polynomial
+        xlim = np.array([sfreq[peaksNs[i]], sfreq[peaksNs[i+1]]])
+        ylim = np.array([sZX[peaksNs[i]], sZX[peaksNs[i+1]]])
+        p = np.polyfit(xlim, ylim, deg=1)
+        # Noise estimation
+        nsPwr[i] = p[1] + p[0] * sfreq[peaksPwr[i]]
+
+    # Plot signals
+    ax = wdmAnlysr_plot(freqs, sfreq, ZX, sZX, peaksPwr, nsPwr)
+    ax.set_xlim([xmin, xmax])
+    ax.set_ylim([ymin, ymax])
+
+    # Return channels information
+    return wdmAnlysr_table(sfreq, sZX, peaksPwr, nsPwr)    
+
+def wdmAnlysr_plot(Wv, fWv, SpcPwr, fSpcPwr, pksPwr, nsPwr):   
+    _,ax = plt.subplots(figsize=(12,5))
+    # Plot original signal
+    ax.plot(Wv, SpcPwr, 'b', label="X Pol.")            
+    # Plot smooth signal
+    ax.plot(fWv, fSpcPwr, 'r')
+    # plot peaks and noise power
+    ax.plot(fWv[pksPwr], fSpcPwr[pksPwr], 'ko')
+    ax.plot(fWv[pksPwr], nsPwr, 'go')
+    # Set pot properties
+    #plt.title('Signal Power - %.3f [dBm]'%(10*np.log10(tx_pw)))
+    ax.set_xlabel("Wavelength [nm]")
+    ax.set_ylabel("Magnitude [dBm]")
+    ax.minorticks_on()
+    ax.grid(True)
+
+    return ax
+
+def wdmAnlysr_table(Wv, fSpcPwr, pksPwr, nsPwr):
+    frqHz = lambda2nu(Wv[pksPwr])
+    diffFrqHz = np.diff(frqHz)
+    diffFrqHz = np.insert(diffFrqHz,0,diffFrqHz[0])
+    pwr = fSpcPwr[pksPwr]
+    data = np.stack((Wv[pksPwr], 1e-3*frqHz, diffFrqHz, pwr, nsPwr, pwr-nsPwr), axis=-1)
+    columns=['Wav. [nm]','Freq. [Thz]', 'Spacing [THz]','Power [dBm]', 'Noise [dBm]', 'OSNR [dB]']
+    wdmAnlz = pd.DataFrame(data,
+                        columns=columns)
+    wdmAnlz.index.name = 'Channel'
+    wdmAnlz.style.format(precision=2)
+
+    return wdmAnlz
 
 def getSpectrum(x, Fs, Fc, window=mlab.window_none, sides="twosided"):
     """
@@ -199,12 +275,16 @@ def updtCnst(param):
     param.const5 = param.gainCoef * Planck * param.freq * param.noiseBand
     return param
 
-def edfaSM(Ei, Fs, Fc, param_edfa):
-    ## Verify arguments
+def edfaArgs(param_edfa):
+    # gain or power control parameters
     param_edfa.type = getattr(param_edfa, "type", "AGC")
     param_edfa.value = getattr(
         param_edfa, "value", 20
     )  # dB (for gain) and dBm (for power)
+    param_edfa.kp = getattr(param_edfa, "kp", 1e-2)
+    param_edfa.ki = getattr(param_edfa, "ki", 1e-2)
+    param_edfa.kd = getattr(param_edfa, "kd", 5e-2)
+    # edf parameters
     param_edfa.file = getattr(param_edfa, "file", "")
     param_edfa.fileunit = getattr(param_edfa, "fileunit", "nm")
     param_edfa.a = getattr(param_edfa, "a", 1.56e-6)
@@ -215,6 +295,7 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     param_edfa.algo = getattr(param_edfa, "algo", "Giles_spectrum")
     param_edfa.lngth = getattr(param_edfa, "lngth", 8)
     param_edfa.tal = getattr(param_edfa, "tal", 10e-3)
+    # pump paramters
     param_edfa.forPump = getattr(
         param_edfa,
         "forPump",
@@ -227,19 +308,19 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     )
     param_edfa.lossS = getattr(param_edfa, "lossS", 2.08 * 0.0001 * np.log10(10))
     param_edfa.lossP = getattr(param_edfa, "lossP", 2.08 * 0.0001 * np.log10(10))
+    # solver parameters
     param_edfa.longSteps = getattr(param_edfa, "longSteps", 100)
-    param_edfa.tol = getattr(param_edfa, "tol", 2 / 100)  #%
+    param_edfa.tol = getattr(param_edfa, "tol", 2 / 100)
     param_edfa.tolCtrl = getattr(param_edfa, "tolCtrl", 0.5)  # dB
+    # noise parameters
     param_edfa.noiseBand = getattr(param_edfa, "noiseBand", 125e9)
 
     # Verify amplification type
     if param_edfa.type not in ("AGC", "APC", "none"):
         raise TypeError("edfaSM.type invalid argument - [AGC, APC, none].")
-    elif param_edfa.type == "AGC":
-        power_in = power_meter(Ei)
     # Verify giles file
     if not (os.path.exists(param_edfa.file)):
-        raise TypeError("%s file doesn't exist." % (param_edfa.file))
+        raise TypeError(f"{param_edfa.file} file doesn't exist.")
     # Verify algorithm argument
     if param_edfa.algo not in (
         "Giles_spatial",
@@ -251,6 +332,16 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
         raise TypeError(
             "edfaSM.algo invalid argument - [Giles_spatial, Giles_spectrum, Saleh, Jopson, Inhomogeneous]."
         )
+
+    return param_edfa
+
+def edfaSM(Ei, Fs, Fc, param_edfa):
+    ## Verify arguments
+    param_edfa = edfaArgs(param_edfa)
+
+    if (param_edfa.type == "AGC"):
+        power_in = power_meter(Ei)
+    
     ## Get pump signal frequency points
     freqPmpFor = c / param_edfa.forPump["pump_lambda"]
     freqPmpBck = c / param_edfa.bckPump["pump_lambda"]
@@ -436,7 +527,7 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
             # PID control - only in forward pumping
             # TODO - and backward pumping? both?
             pid = PID(
-                param_edfa.kp, param_edfa.ki, param_edfa.kd, setpoint=param_edfa.value, output_limits=(-pumpPmpFor/2, 300e-3)
+                param_edfa.kp, param_edfa.ki, param_edfa.kd, setpoint=param_edfa.value, output_limits=(-pumpPmpFor/2, pumpPmpFor/2)
             )
             pumpPmpFor = pumpPmpFor + pid(errorAutoCrtl)
             errorAutoCrtl = errorAutoCrtl - param_edfa.value
