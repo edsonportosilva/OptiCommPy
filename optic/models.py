@@ -330,7 +330,7 @@ def coherentReceiver(Es, Elo, paramPD=[]):
     s : np.array
         Downconverted signal after balanced detection.
 
-    """    
+    """
     assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
     assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
@@ -365,7 +365,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, paramPD=[]):
     S : np.array
         Downconverted signal after balanced detection.
 
-    """    
+    """
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
     Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
@@ -406,15 +406,15 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     NF_lin = 10 ** (NF / 10)
     G_lin = 10 ** (G / 10)
     nsp = (G_lin * NF_lin - 1) / (2 * (G_lin - 1))
-          
+
     # ASE noise power calculation:
-    # Ref. Eq.(54) of R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber 
-    # Networks," in Journal of Lightwave Technology, vol. 28, no. 4, 
+    # Ref. Eq.(54) of R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber
+    # Networks," in Journal of Lightwave Technology, vol. 28, no. 4,
     # pp. 662-701, Feb.15, 2010, doi: 10.1109/JLT.2009.2039464.
-    
-    N_ase = (G_lin - 1) * nsp * const.h * Fc    
+
+    N_ase = (G_lin - 1) * nsp * const.h * Fc
     p_noise = N_ase * Fs
-    
+
     noise = normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * normal(
         0, np.sqrt(p_noise / 2), Ei.shape
     )
