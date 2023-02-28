@@ -25,6 +25,8 @@ from scipy.special import erfc
 from scipy.constants import c
 from optic.amplification import edfaSM,OSA
 
+import os.path as path
+
 #import logging as logg
 #logg.getLogger().setLevel(logg.INFO)
 #logg.basicConfig(format='%(message)s')
@@ -213,13 +215,19 @@ param_edfa.kd = 0
 param_edfa.forPump  = {'pump_signal': np.array([100e-3]), 'pump_lambda': np.array([980e-9])}
 param_edfa.bckPump  = {'pump_signal': np.array([000e-3]), 'pump_lambda': np.array([980e-9])}
 # giles parameters
-param_edfa.file     = '..\\optic\\ampParams\\giles_MP980.dat'
+param_edfa.file     = 'giles_MP980.dat'
 param_edfa.fileunit = 'nm'
 param_edfa.gmtc     = 'Bessel'
 param_edfa.tol      = 0.05
 param_edfa.tolCtrl  = 0.5
 # ASE
 param_edfa.noiseBand= 1.25e9
+
+# %%
+if 'google.colab' in str(get_ipython()):  
+  param_edfa.file = path.join(path.abspath(path.join("../")), 'OptiCommPy', 'optic', 'ampParams', param_edfa.file)
+else:
+  param_edfa.file = path.join(path.abspath(path.join("../")), 'optic', 'ampParams', param_edfa.file)
 
 # %%
 Fc = c/1550e-9 # central wavelength
@@ -326,3 +334,5 @@ plt.legend()
 plt.grid()
 plt.ylim(0, 1.5)
 plt.xlim(0,err.size)
+
+

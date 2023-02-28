@@ -34,6 +34,8 @@ import scipy.constants as const
 
 from optic.amplification import edfaSM,OSA
 
+import os.path as path
+
 import logging as logg
 logg.getLogger().setLevel(logg.INFO)
 logg.basicConfig(format='%(message)s')
@@ -112,12 +114,18 @@ param_edfa.kd = 5e-2
 param_edfa.forPump  = {'pump_signal': np.array([100e-3]), 'pump_lambda': np.array([980e-9])}
 param_edfa.bckPump  = {'pump_signal': np.array([000e-3]), 'pump_lambda': np.array([980e-9])}
 # giles parameters
-param_edfa.file     = '..\\optic\\ampParams\\giles_MP980.dat'
+param_edfa.file     = 'giles_MP980.dat'
 param_edfa.fileunit = 'nm'
 param_edfa.gmtc     = 'Bessel'
 param_edfa.tol      = 3/100
 param_edfa.tolCtrl  = 0.5
 param_edfa.noiseBand= 12.5e9
+
+# %%
+if 'google.colab' in str(get_ipython()):  
+  param_edfa.file = path.join(path.abspath(path.join("../")), 'OptiCommPy', 'optic', 'ampParams', param_edfa.file)
+else:
+  param_edfa.file = path.join(path.abspath(path.join("../")), 'optic', 'ampParams', param_edfa.file)
 
 # %% [markdown]
 # ## Simulation
