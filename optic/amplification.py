@@ -13,6 +13,7 @@ import pandas as pd
 from scipy.signal import find_peaks
 from scipy.constants import lambda2nu
 from scipy import signal
+from scipy.constants import c, Planck
 
 from scipy.constants import c, Planck
 from scipy.special import jv, kv
@@ -76,51 +77,50 @@ def OSA(x, Fs, Fc=193.1e12):
     
     return ax
 
-def movingaverage(interval, window_size):
+def moving_average(interval, window_size):
         window = signal.windows.boxcar(window_size)
         return np.convolve(interval, window, 'same')/sum(window)
 
-def wdmAnlysr(x, Fs, Fc=193.1e12, xmin = 1520, xmax = 1580, ymin = -100, ymax = 0):
-    # Get signal spectrum
-    ZX, freqs = getSpectrum(x, Fs, Fc)
+def get_signal_and_noise_peaks(spectrum, wavelength, wavelength_lim):
     # Get index of limits
-    xminIndx = np.abs(freqs - xmin).argmin()
-    xmaxIndx = np.abs(freqs - xmax).argmin()
-    window_width = np.sqrt(len(x))
+    index_min = np.abs(wavelength - wavelength_lim[0]).argmin()
+    index_max = np.abs(wavelength - wavelength_lim[1]).argmin()
+
     # Smooth the spectrum and update frequency
-    sZX = movingaverage(ZX[xmaxIndx:xminIndx], int(window_width))
-    sfreq = freqs[xmaxIndx:xminIndx]
+    window_width = np.sqrt(len(spectrum))
+    spectrum_smooth = moving_average(spectrum[index_max:index_min], int(window_width))
+    wavelength_smooth = wavelength[index_max:index_min]
+
     # find peaks power
-    peaksPwr, _ = find_peaks(sZX, prominence=1)
+    peaks_signal_index, _ = find_peaks(spectrum_smooth, prominence=1)
+
     # find noise power between channels
-    peaksNs , _ = find_peaks(-sZX, prominence=1)
+    peaks_noise_index , _ = find_peaks(-spectrum_smooth, prominence=1)
+
+    return spectrum_smooth, wavelength_smooth, peaks_signal_index, peaks_noise_index
+
+def get_noise_floor(spectrum_smooth, wavelength_smooth, peaks_signal_index, peaks_noise_index):
     # fit noise power bellow each channel
-    nsPwr = np.zeros(len(peaksNs)-1)
-    for i in range(len(nsPwr)):
+    noise_power = np.zeros(len(peaks_noise_index)-1)
+    for i in range(len(noise_power)):
         # Parameters from the fit of the polynomial
-        xlim = np.array([sfreq[peaksNs[i]], sfreq[peaksNs[i+1]]])
-        ylim = np.array([sZX[peaksNs[i]], sZX[peaksNs[i+1]]])
+        xlim = np.array([wavelength_smooth[peaks_noise_index[i]], wavelength_smooth[peaks_noise_index[i+1]]])
+        ylim = np.array([spectrum_smooth[peaks_noise_index[i]], spectrum_smooth[peaks_noise_index[i+1]]])
         p = np.polyfit(xlim, ylim, deg=1)
         # Noise estimation
-        nsPwr[i] = p[1] + p[0] * sfreq[peaksPwr[i]]
+        noise_power[i] = p[1] + p[0] * wavelength_smooth[peaks_signal_index[i]]
+    
+    return noise_power
 
-    # Plot signals
-    ax = wdmAnlysr_plot(freqs, sfreq, ZX, sZX, peaksPwr, nsPwr)
-    ax.set_xlim([xmin, xmax])
-    ax.set_ylim([ymin, ymax])
-
-    # Return channels information
-    return wdmAnlysr_table(sfreq, sZX, peaksPwr, nsPwr)    
-
-def wdmAnlysr_plot(Wv, fWv, SpcPwr, fSpcPwr, pksPwr, nsPwr):   
+def wdm_analyzer_plot(wavelength, spectrum, wavelength_smooth, spectrum_smooth, peaks_signal_index, noise_power):   
     _,ax = plt.subplots(figsize=(12,5))
     # Plot original signal
-    ax.plot(Wv, SpcPwr, 'b', label="X Pol.")            
+    ax.plot(wavelength, spectrum, 'b', label="X Pol.")            
     # Plot smooth signal
-    ax.plot(fWv, fSpcPwr, 'r')
-    # plot peaks and noise power
-    ax.plot(fWv[pksPwr], fSpcPwr[pksPwr], 'ko')
-    ax.plot(fWv[pksPwr], nsPwr, 'go')
+    ax.plot(wavelength_smooth, spectrum_smooth, 'r')
+    # plot signal peak and noise bellow each channel
+    ax.plot(wavelength_smooth[peaks_signal_index], spectrum_smooth[peaks_signal_index], 'ko')
+    ax.plot(wavelength_smooth[peaks_signal_index], noise_power, 'go')
     # Set pot properties
     #plt.title('Signal Power - %.3f [dBm]'%(10*np.log10(tx_pw)))
     ax.set_xlabel("Wavelength [nm]")
@@ -130,19 +130,90 @@ def wdmAnlysr_plot(Wv, fWv, SpcPwr, fSpcPwr, pksPwr, nsPwr):
 
     return ax
 
-def wdmAnlysr_table(Wv, fSpcPwr, pksPwr, nsPwr):
-    frqHz = lambda2nu(Wv[pksPwr])
-    diffFrqHz = np.diff(frqHz)
-    diffFrqHz = np.insert(diffFrqHz,0,diffFrqHz[0])
-    pwr = fSpcPwr[pksPwr]
-    data = np.stack((Wv[pksPwr], 1e-3*frqHz, diffFrqHz, pwr, nsPwr, pwr-nsPwr), axis=-1)
+def wdm_analyzer_table(wavelength, signal_power, noise_power):
+    frequency = lambda2nu(wavelength)
+    bandwidth = np.diff(frequency)
+    bandwidth = np.insert(bandwidth,0,bandwidth[0])
+    data = np.stack((wavelength, 1e-3*frequency, bandwidth, signal_power, noise_power, signal_power-noise_power), axis=-1)
     columns=['Wav. [nm]','Freq. [Thz]', 'Spacing [THz]','Power [dBm]', 'Noise [dBm]', 'OSNR [dB]']
-    wdmAnlz = pd.DataFrame(data,
+    wdm_analyzer = pd.DataFrame(data,
                         columns=columns)
-    wdmAnlz.index.name = 'Channel'
-    wdmAnlz.style.format(precision=2)
+    wdm_analyzer.index.name = 'Channel'
+    wdm_analyzer.style.format(precision=2)
 
-    return wdmAnlz
+    return wdm_analyzer
+
+def wdm_analyzer(x, Fs, Fc=193.1e12, plot = True, xlim = np.array([1520,1580]), ylim = np.array([-100, 0])):
+    # Get signal spectrum
+    x_spectrum, x_wavelength = getSpectrum(x, Fs, Fc)
+
+    # Get signal peak power and noise between channels
+    spectrum_smooth, wavelength_smooth, peaks_signal_index, peaks_noise_index = get_signal_and_noise_peaks(x_spectrum, x_wavelength, xlim)
+
+    # Get noise bellow each channel
+    noise_floor = get_noise_floor(spectrum_smooth, wavelength_smooth, peaks_signal_index, peaks_noise_index)
+
+    # plot signal
+    if plot:
+        ax = wdm_analyzer_plot(x_wavelength, x_spectrum, wavelength_smooth, spectrum_smooth, peaks_signal_index, noise_floor)
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+
+    # Return channels information
+    return wdm_analyzer_table(wavelength_smooth[peaks_signal_index], spectrum_smooth[peaks_signal_index], noise_floor)
+
+def edfa_analyzer_plot(wavelength, gain, noise_figure):
+    _,ax = plt.subplots(figsize=(12,5))
+    axy = ax.twinx()
+    # Plot gain and noise figure
+    ax.plot(wavelength, gain, 'bs-', label='Gain') 
+    axy.plot(wavelength, noise_figure, 'ro-', label = 'Noise Figure')           
+    # Plot smooth signal
+    ax.set_xlabel("Wavelength [nm]")
+    ax.set_ylabel("Gain [dB]")
+    axy.set_ylabel("Noise figure [dB]")
+    ax.minorticks_on()
+    ax.grid(True)
+
+    return ax
+
+def edfa_analyzer_table(wavelength, gain, noise_figure):
+    frequency = lambda2nu(wavelength)
+    data = np.stack((wavelength, 1e-3*frequency, gain, noise_figure), axis=-1)
+    columns=['Wav. [nm]','Freq. [Thz]', 'Gain [dB]','Noise figure [dB]']
+    edfa_analyzer = pd.DataFrame(data,
+                        columns=columns)
+    edfa_analyzer.index.name = 'Channel'
+    edfa_analyzer.style.format(precision=2)
+
+    return edfa_analyzer
+
+def edfa_analyzer(x_pre_amp, x_pos_amp, Fs, Fc=193.1e12, resolution = 0.1e-9, plot = True, xlim = np.array([1520,1580]), ylim = np.array([-100, 0])):    
+    ## Pre amp signal
+    # Get signal spectrum
+    spectrum_pre_amp, wavelength_pre_amp = getSpectrum(x_pre_amp, Fs, Fc)
+    # Get signal peak power and noise between channels
+    spectrum_smooth_pre_amp, wavelength_smooth_pre_amp, peaks_signal_index_pre_amp, peaks_noise_index_pre_amp = get_signal_and_noise_peaks(spectrum_pre_amp, wavelength_pre_amp, xlim)
+    ## Pos amp signal
+    # Get signal spectrum
+    spectrum_pos_amp, wavelength_pos_amp = getSpectrum(x_pos_amp, Fs, Fc)
+    # Get signal peak power and noise between channels
+    spectrum_smooth_pos_amp, wavelength_smooth_pos_amp, peaks_signal_index_pos_amp, peaks_noise_index_pos_amp = get_signal_and_noise_peaks(spectrum_pos_amp, wavelength_pos_amp, xlim)
+    # Get noise bellow each channel
+    noise_floor_pos_amp = get_noise_floor(spectrum_smooth_pos_amp, wavelength_smooth_pos_amp, peaks_signal_index_pos_amp, peaks_noise_index_pos_amp)
+
+    frequency = 1e9*lambda2nu(wavelength_smooth_pre_amp[peaks_signal_index_pre_amp])
+    delta_frequency = frequency**2 * resolution / c
+    
+    # Gain and noise figure
+    gain = spectrum_smooth_pos_amp[peaks_signal_index_pos_amp] - spectrum_smooth_pre_amp[peaks_signal_index_pre_amp]
+    noise_figure = 10*np.log10(10**(noise_floor_pos_amp/10)/(Planck*frequency*delta_frequency*gain) + 1 / gain)
+
+    if plot:
+        edfa_analyzer_plot(wavelength_smooth_pos_amp[peaks_signal_index_pos_amp], gain, noise_figure)        
+
+    return edfa_analyzer_table(wavelength_smooth_pos_amp[peaks_signal_index_pos_amp], gain, noise_figure)
+   
 
 def getSpectrum(x, Fs, Fc, window=mlab.window_none, sides="twosided"):
     """
