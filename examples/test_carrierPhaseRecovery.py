@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -91,7 +91,7 @@ Fs = paramTx.Rs*paramTx.SpS # sampling frequency
 # -
 # ### Add noise to fix the SNR
 
-SNR = 35
+SNR = 30
 sigCh = awgn(sigTx, SNR, Fs, paramTx.Rs)
 
 # ###  Simulate a coherent receiver frontend subject to laser phase noise and frequency offset
@@ -256,5 +256,3 @@ print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
 print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
-# -
-
