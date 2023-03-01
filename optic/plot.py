@@ -1,14 +1,19 @@
 """Plot utilities."""
 import matplotlib.pyplot as plt
+from matplotlib import cm
+import mpl_scatter_density
 import numpy as np
+import copy
 from scipy.interpolate import interp1d
 from scipy.ndimage.filters import gaussian_filter
 
 from optic.dsp import pnorm
 from optic.metrics import signal_power
+import warnings
 
+warnings.filterwarnings('ignore', r'All-NaN (slice|axis) encountered')
 
-def pconst(x, lim=False, R=1.5, pType="fancy", cmap="turbo"):
+def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
     """
     Plot signal constellations.
 
@@ -49,13 +54,16 @@ def pconst(x, lim=False, R=1.5, pType="fancy", cmap="turbo"):
         fig = plt.figure()
 
         if type(x) == list:
-            for k in range(nSubPts):
-                ax = fig.add_subplot(nRows, nCols, Position[k])
+            for k in range(nSubPts):           
 
                 for ind in range(len(x)):
                     if pType == "fancy":
-                        ax = constHist(x[ind][:, k], ax, radius, cmap)
+                        if ind == 0:
+                            ax = fig.add_subplot(nRows, nCols, Position[k], projection='scatter_density')
+                        ax = constHist(x[ind][:, k], ax, radius, cmap, whiteb)
                     elif pType == "fast":
+                        if ind == 0:
+                            ax = fig.add_subplot(nRows, nCols, Position[k])
                         ax.plot(x[ind][:, k].real, x[ind][:, k].imag, ".")
 
                 ax.axis("square")
@@ -68,11 +76,12 @@ def pconst(x, lim=False, R=1.5, pType="fancy", cmap="turbo"):
                     ax.set_xlim(-radius, radius)
                     ax.set_ylim(-radius, radius)
         else:
-            for k in range(nSubPts):
-                ax = fig.add_subplot(nRows, nCols, Position[k])
+            for k in range(nSubPts):                
                 if pType == "fancy":
-                    ax = constHist(x[:, k], ax, radius, cmap)
+                    ax = fig.add_subplot(nRows, nCols, Position[k], projection='scatter_density')
+                    ax = constHist(x[:, k], ax, radius, cmap, whiteb)
                 elif pType == "fast":
+                    ax = fig.add_subplot(nRows, nCols, Position[k])
                     ax.plot(x[:, k].real, x[:, k].imag, ".")
 
                 ax.axis("square")
@@ -89,10 +98,12 @@ def pconst(x, lim=False, R=1.5, pType="fancy", cmap="turbo"):
 
     elif nSubPts == 1:
         fig = plt.figure()
-        ax = plt.gca()
+        #ax = plt.gca()
         if pType == "fancy":
-            ax = constHist(x[:, 0], ax, radius, cmap)
+            ax = fig.add_subplot(1, 1, 1, projection='scatter_density')
+            ax = constHist(x[:, 0], ax, radius, cmap, whiteb)
         elif pType == "fast":
+            ax = plt.gca()
             ax.plot(x.real, x.imag, ".")
         plt.axis("square")
         ax.set_xlabel("In-Phase (I)")
@@ -108,7 +119,7 @@ def pconst(x, lim=False, R=1.5, pType="fancy", cmap="turbo"):
     return fig, ax
 
 
-def constHist(symb, ax, radius, cmap="turbo"):
+def constHist(symb, ax, radius, cmap="turbo", whiteb=True):
     """
     Generate histogram-based constellation plot.
 
@@ -127,24 +138,13 @@ def constHist(symb, ax, radius, cmap="turbo"):
         axis of the plot.
 
     """
-    irange = radius * np.sqrt(signal_power(symb))
-    imRange = np.array([[-irange, irange], [-irange, irange]])
-
-    H, xedges, yedges = np.histogram2d(
-        symb.real, symb.imag, bins=500, range=imRange
-    )
-
-    H = H.T
-
-    H = gaussian_filter(H, sigma=8)
-    ax.imshow(
-        H,
-        cmap=cmap,
-        origin="lower",
-        aspect="auto",
-        extent=[-irange, irange, -irange, irange],
-    )
-
+    cmap = copy.copy(cm.get_cmap(cmap))
+    if  whiteb:
+        cmap.set_under(alpha=0)
+    
+    ax.scatter_density(symb.real, symb.imag, cmap=cmap, 
+                             vmin=0.25, vmax=np.nanmax,
+                             dpi=72, downres_factor=2)
     return ax
 
 
