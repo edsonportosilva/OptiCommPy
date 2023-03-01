@@ -18,7 +18,7 @@ Simulate optical communications systems with Python. This repository is a Python
 * Standard digital signal processing (DSP) blocks employed in coherent optical receivers, such as:
   - *Signal resampling.* 
   - *Matched filtering.*
-  - *Eletronic chromatic dispersion compensation (EDC)*.
+  - *Electronic chromatic dispersion compensation (EDC)*.
   - *Several NxN MIMO adaptive equalization algorithms*.
   - *Carrier phase recovery algorithms.* 
 * For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the core DSP functions.  
@@ -29,7 +29,7 @@ Simulate optical communications systems with Python. This repository is a Python
   - *Mutual information* (MI).
   - *Generalized mutual information* (GMI).  
   - *Normalized generalized mutual information* (NGMI). 
-* Vizualization of constellations and eyediagrams.
+* Vizualization of the spectrum of electrical/optical signals, signal constellations and eyediagrams.
 
 ## How can I contribute?
 
@@ -45,6 +45,7 @@ If you want to contribute to this project, just implement the feature you want a
 - numba>=0.54.1
 - tqdm>=4.64.1
 - simple-pid>=1.0.1
+- mpl-scatter-density>=0.7.0
 
 ## Installation
 
