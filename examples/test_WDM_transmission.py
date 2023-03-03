@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -49,8 +49,7 @@ from optic.plot import pconst, plotPSD
 import scipy.constants as const
 
 import logging as logg
-logg.getLogger().setLevel(logg.INFO)
-logg.basicConfig(format='%(message)s')
+logg.basicConfig(level=logg.INFO, format='%(message)s', force=True)
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 17} id="7df01820" outputId="604d8ed4-041f-4280-ec2b-972c3a244a4d"
 from IPython.core.display import HTML
@@ -251,7 +250,7 @@ y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
 #plot constellations after adaptive equalization
 discard = 5000
-pconst(y_EQ[discard:-discard,:]);
+pconst(y_EQ[discard:-discard,:], R=1.5);
 
 # + [markdown] id="aaf0f85c"
 # ### Carrier phase recovery
@@ -278,7 +277,6 @@ discard = 5000
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 435} id="4f6650fe" outputId="c5e97918-3305-4e71-8017-8b3432ff1e38"
 #plot constellations after CPR
-pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
 pconst(y_CPR[discard:-discard,:]);
 
 # + [markdown] id="e9e07048"
