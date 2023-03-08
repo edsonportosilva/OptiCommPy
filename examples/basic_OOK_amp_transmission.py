@@ -254,7 +254,7 @@ print('Average power - TX [dBm] : %.3f dBm' %(10*np.log10(tx_pw)))
 OSA(sigTxo, Fs, Fc)
 
 # %%
-Eout, PumpF, PumpB = edfaSM(sigTxo, Fs, Fc, param_edfa)
+Eout, PumpF, PumpB, noisef = edfaSM(sigTxo, Fs, Fc, param_edfa)
 
 # %%
 rx_pw = np.sum(1000*np.mean(Eout * np.conj(Eout), axis = 0).real)

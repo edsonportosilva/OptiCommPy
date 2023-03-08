@@ -36,9 +36,9 @@ from optic.amplification import edfaSM,OSA
 
 import os.path as path
 
-import logging as logg
-logg.getLogger().setLevel(logg.INFO)
-logg.basicConfig(format='%(message)s')
+#import logging as logg
+#logg.getLogger().setLevel(logg.INFO)
+#logg.basicConfig(format='%(message)s')
 
 # %%
 from IPython.core.display import HTML
@@ -145,7 +145,9 @@ print('Average power of the modulated optical signal [mW]: %.3f mW'%(signal_powe
 print('Average power of the modulated optical signal [dBm]: %.3f dBm'%(10*np.log10(signal_power(sigWDM_Tx)/1e-3)))
 
 # %%
-OSA(sigWDM_Tx, Fs, paramTx.Fc)
+ax = OSA(sigWDM_Tx, Fs, paramTx.Fc)
+ax.set_xlim([1550,1555])
+ax.set_ylim([-80,-40])
 
 # %% [markdown]
 # **Nonlinear fiber propagation with the split-step Fourier method**
@@ -155,7 +157,9 @@ OSA(sigWDM_Tx, Fs, paramTx.Fc)
 sigWDM, paramCh = manakovSSF(sigWDM_Tx, Fs, paramCh)
 
 # %%
-OSA(sigWDM, Fs, paramTx.Fc)
+ax = OSA(sigWDM, Fs, paramTx.Fc)
+ax.set_xlim([1550,1555])
+ax.set_ylim([-80,-40])
 
 # %%
 prog_pw = signal_power(sigWDM)/1e-3 #np.sum(1000*np.mean(sigWDM * np.conj(sigWDM), axis = 0).real)
@@ -166,10 +170,10 @@ print('Average power of the modulated optical signal [dBm]: %.3f dBm'%(10*np.log
 # **Optical amplification using an EDFA**
 
 # %%
-sigWDM_Amp, PumpF, PumpB  = edfaSM(sigWDM, Fs, paramTx.Fc, param_edfa)
+sigWDM_Amp, PumpF, PumpB, noisef  = edfaSM(sigWDM, Fs, paramTx.Fc, param_edfa)
 
 # %%
-rx_pw = signal_power(sigWDM_Amp)/1e-3
+rx_pw = 1e3*signal_power(sigWDM_Amp)
 print('Forward pump  - [mW] : %.3f' %(1e3*PumpF[0]))
 print('Backward pump - [mW] : %.3f' %(1e3*PumpB[1]))
 print('Average power - RX amp [mW] : %.3f' %(rx_pw))
@@ -177,7 +181,9 @@ print('Average power - RX amp [dBm] : %.3f' %(10*np.log10(rx_pw)))
 print('Gain [dB]: %.3f' %(10*np.log10(rx_pw/prog_pw)))
 
 # %%
-OSA(sigWDM_Amp, Fs, paramTx.Fc)
+ax = OSA(sigWDM_Amp, Fs, paramTx.Fc)
+ax.set_xlim([1550,1555])
+ax.set_ylim([-80,-40])
 
 # %% [markdown]
 # **Optical WDM spectrum before and after transmission**
