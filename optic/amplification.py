@@ -202,6 +202,23 @@ def getOverlapInt(n2_norm, properties, param_edf):
     dopPrf = npmat.repmat(2 * np.pi * param_edf.r * n2_norm, np.shape(properties.i_k)[1], 1) * param_edf.dr
     return np.trapz(np.transpose(properties.i_k) * dopPrf)
 
+def get_mode_radius(model, radius, V, v, u):
+    if model == "Bessel":
+        w_gauss = radius * V / u * kv(1, v) / kv(0, v) * jv(0, u)
+    elif model == "Marcuse":
+        w_gauss = radius * (0.650 + 1.619 / V ** 1.5 + 2.879 / V ** 6)
+    elif model == "Whitley":
+        w_gauss = radius * (0.616 + 1.660 / V ** 1.5 + 0.987 / V ** 6)
+    elif model == "Desurvire":
+        w_gauss = radius * (0.759 + 1.289 / V ** 1.5 + 1.041 / V ** 6)
+    elif model == "Myslinski":
+        w_gauss = radius * (0.761 + 1.237 / V ** 1.5 + 1.429 / V ** 6)
+    else:
+        raise TypeError(
+        "model invalid argument - [LP01 - Marcuse - Whitley - Desurvire - Myslinski - Bessel]."
+        )
+    return w_gauss
+
 def updtCnst(param):
     xi = np.pi * param.b ** 2 * param.rho / param.tal
     param.const1 = (1 / (Planck * xi)) * (param.absCoef / param.freq)
@@ -255,7 +272,7 @@ def edfParams(param_edfa):
             )
             param_edf.i_k = [i_k(x) for x in param_edfa.r]
     else:
-        w_gauss = getModeRadius(param_edfa, V, v, u)
+        w_gauss = get_mode_radius(param_edfa.gmtc, param_edfa.a, V, v, u)
         gamma = 1 - np.exp(-2 * (param_edfa.b / w_gauss) ** 2)
         if param_edfa.algo == "Giles_spatial":
             param_edf.gamma = gamma
@@ -281,22 +298,7 @@ def edfParams(param_edfa):
         param_edf.gainCoef = param_edfa.emiCross * param_edfa.rho * gamma
     return param_edf
 
-def getModeRadius(param_edfa, V, v, u):
-    if param_edfa.gmtc == "Bessel":
-        w_gauss = param_edfa.a * V / u * kv(1, v) / kv(0, v) * jv(0, u)
-    elif param_edfa.gmtc == "Marcuse":
-        w_gauss = param_edfa.a * (0.650 + 1.619 / V ** 1.5 + 2.879 / V ** 6)
-    elif param_edfa.gmtc == "Whitley":
-        w_gauss = param_edfa.a * (0.616 + 1.660 / V ** 1.5 + 0.987 / V ** 6)
-    elif param_edfa.gmtc == "Desurvire":
-        w_gauss = param_edfa.a * (0.759 + 1.289 / V ** 1.5 + 1.041 / V ** 6)
-    elif param_edfa.gmtc == "Myslinski":
-        w_gauss = param_edfa.a * (0.761 + 1.237 / V ** 1.5 + 1.429 / V ** 6)
-    else:
-        raise TypeError(
-        "edfaSM.gmtc invalid argument - [LP01 - Marcuse - Whitley - Desurvire - Myslinski - Bessel]."
-        )
-    return w_gauss
+
 
 def edfaArgs(param_edfa):
     # gain or power control parameters
@@ -318,6 +320,8 @@ def edfaArgs(param_edfa):
     param_edfa.algo = getattr(param_edfa, "algo", "Giles_spectrum")
     param_edfa.lngth = getattr(param_edfa, "lngth", 8)
     param_edfa.tal = getattr(param_edfa, "tal", 10e-3)
+    param_edfa.lossS = getattr(param_edfa, "lossS", 2.08 * 0.0001 * np.log10(10))
+    param_edfa.lossP = getattr(param_edfa, "lossP", 2.08 * 0.0001 * np.log10(10))
     # pump paramters
     param_edfa.forPump = getattr(
         param_edfa,
@@ -328,9 +332,7 @@ def edfaArgs(param_edfa):
         param_edfa,
         "bckPump",
         {"pump_signal": np.array([100e-3]), "pump_lambda": np.array([980e-9])},
-    )
-    param_edfa.lossS = getattr(param_edfa, "lossS", 2.08 * 0.0001 * np.log10(10))
-    param_edfa.lossP = getattr(param_edfa, "lossP", 2.08 * 0.0001 * np.log10(10))
+    )    
     # solver parameters
     param_edfa.longSteps = getattr(param_edfa, "longSteps", 100)
     param_edfa.tol = getattr(param_edfa, "tol", 2 / 100)
