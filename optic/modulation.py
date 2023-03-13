@@ -61,7 +61,9 @@ def GrayMapping(M, constType):
     bitsSymb = int(np.log2(M))
 
     code = GrayCode(bitsSymb)
-    if constType in ["pam", "ook"]:
+    if constType == "ook":
+        const = np.arange(0, 2)
+    elif constType == "pam":
         const = np.arange(-L, L + 1, 2)
     elif constType == "qam":
         PAM = np.arange(-L, L + 1, 2)
