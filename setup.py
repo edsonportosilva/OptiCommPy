@@ -4,14 +4,14 @@
 from setuptools import setup
 
 # Taken from scikit-commpy setup.py
-DISTNAME = 'OpticCommpy'
+DISTNAME = 'OptiCommPy'
 DESCRIPTION = 'Optical Communications Algorithms with Python'
 LONG_DESCRIPTION = open('README.md', encoding="utf8").read()
 MAINTAINER = 'Edson Porto da Silva'
 MAINTAINER_EMAIL = 'edsonporto88@gmail.com'
-URL = 'https://github.com/edsonportosilva/OpticCommPy'
+URL = 'https://github.com/edsonportosilva/OptiCommPy'
 LICENSE = 'BSD 3-Clause'
-VERSION = '0.1.0'
+VERSION = '0.2.0'
 
 #This is a list of files to install, and where
 #(relative to the 'root' dir, where setup.py is)
@@ -32,13 +32,15 @@ setup(
     #recursively.)
     packages=['optic'],
     install_requires=[
-          'numpy',
-          'scipy',
-          'matplotlib',
+          'numpy>=1.9.2',
+          'scipy>=0.15.0',
+          'matplotlib>=3.7.0',
           'sympy',
-          'tqdm',
-          'numba',
-          'scikit-commpy'
+          'tqdm>=4.64.1',
+          'numba>=0.54.1',
+          'scikit-commpy>=0.7.0',
+	    'simple-pid>=1.0.1',
+	    'mpl-scatter-density>=0.7.0'
     ],
     #'package' package must contain files (see list above)
     #This dict maps the package name =to=> directories

@@ -7,14 +7,14 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
 
-# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/jupyter/test_metrics.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_metrics.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # + [markdown] toc=true
 # # Test transmission performance metrics for the AWGN channel
@@ -24,12 +24,14 @@ if 'google.colab' in str(get_ipython()):
     # ! git clone -b main https://github.com/edsonportosilva/OptiCommPy
     from os import chdir as cd
     cd('/content/OptiCommPy/')
-    # ! pip install 
+    # ! pip install .
 
 from optic.modulation import modulateGray, GrayMapping
-from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER
+from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM
 from optic.models import awgn
 from optic.dsp import pnorm
+from optic.plot import pconst
+from optic.core import parameters
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -60,13 +62,13 @@ for ii, M in enumerate(qamOrder):
         EbN0dB = EbN0dB_[indSNR]
 
         # generate random bits
-        bitsTx = np.random.randint(2, size=2*3*5*2**15)    
+        bitsTx = np.random.randint(2, size=int(np.log2(M)*1e5))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) 
 
         # AWGN channel  
         snrdB  = EbN0dB + 10*np.log10(np.log2(M))
@@ -120,13 +122,13 @@ for ii, M in enumerate(pskOrder):
         EbN0dB = EbN0dB_[indSNR]
 
         # generate random bits
-        bitsTx = np.random.randint(2, size=2*3*5*2**15)    
+        bitsTx = np.random.randint(2, size=int(np.log2(M)*1e5))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'psk')
 
         # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) 
 
         # AWGN channel  
         snrdB  = EbN0dB + 10*np.log10(np.log2(M))
@@ -180,13 +182,13 @@ for ii, M in enumerate(qamOrder):
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2*3*5*2**14)    
+        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e5))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) 
 
         # AWGN channel       
         symbRx = awgn(symbTx, snrdB)
@@ -228,13 +230,13 @@ for ii, M in enumerate(pskOrder):
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2*3*5*2**14)    
+        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e4))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'psk')
 
         # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) 
 
         # AWGN channel       
         symbRx = awgn(symbTx, snrdB)
@@ -279,13 +281,13 @@ for ii, M in enumerate(qamOrder):
         snrdB = SNR[indSNR]
 
         # generate random bits
-        bitsTx   = np.random.randint(2, size=2*3*5*2**14)    
+        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e4))    
 
         # Map bits to constellation symbols
         symbTx = modulateGray(bitsTx, M, 'qam')
 
         # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) #symbTx/np.sqrt(signal_power(symbTx))
+        symbTx = pnorm(symbTx) 
 
         # AWGN channel        
         symbRx = awgn(symbTx, snrdB)
@@ -310,7 +312,7 @@ plt.xlabel('SNR [dB]');
 plt.ylabel('MI [bits/symbol]');
 plt.grid()
 # -
-# ## Test mutual information (MI) versus signal-to-noise ratio (SNR) with probabilistically shaped QAM constellation
+# ## Test MI/GMI versus signal-to-noise ratio (SNR) with probabilistically shaped QAM constellation
 
 # +
 from numpy.random import choice
@@ -330,10 +332,11 @@ def maxwellBolt(λ, const):
 # +
 # Run MI vs SNR Monte Carlo simulation 
 
-qamOrder  = [64, 64]  # Modulation order
+qamOrder  = [256, 256]  # Modulation order
 
 SNR  = np.arange(-2, 34, 1)
-MI  = np.zeros((len(SNR),len(qamOrder)))
+MI = np.zeros((len(SNR),len(qamOrder)))
+GMI = np.zeros((len(SNR),len(qamOrder)))
 Nsymbols = 80000
 
 PS = 0
@@ -360,18 +363,19 @@ for ii, M in enumerate(qamOrder):
         symbRx = awgn(symbTx, snrdB)      
 
         # MI estimation
-        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam', probSymb)       
+        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam', probSymb)  
+        GMI[indSNR, ii], _ = monteCarloGMI(symbRx, symbTx, M, 'qam', probSymb)
 
         if indSNR == len(SNR)-10:
-            plt.figure()
-            plt.hist2d(symbRx.real,symbRx.imag, bins=256, density=True);
+            pconst(symbRx, R=2);
 
 # +
 plt.figure(figsize=(10,6))
 
 for ii, M in enumerate(qamOrder):
     pltLabel = 'QAM uniform' if ii == 0 else 'QAM shaped'
-    plt.plot(SNR, MI[:,ii],'-', label=str(M)+pltLabel,linewidth=2)
+    plt.plot(SNR, MI[:,ii], '-', label=f'MI {str(M)}{pltLabel}', linewidth=2)
+    plt.plot(SNR, GMI[:,ii], '-', label=f'GMI {str(M)}{pltLabel}', linewidth=2)
 
 # plot theoretical AWGN channel capacity    
 C = np.log2(1 + 10**(SNR/10))
@@ -383,3 +387,115 @@ plt.legend();
 plt.xlabel('SNR [dB]');
 plt.ylabel('MI [bits/symbol]');
 plt.grid()
+# -
+
+# ## Test error vector magnitude (EVM) versus signal-to-noise ratio (SNR)
+
+# +
+# Run EVM vs SNR Monte Carlo simulation 
+
+qamOrder  = [4, 16, 64, 256, 1024]  # Modulation order
+
+SNR  = np.arange(-2, 35, 1)
+EVM_dataAided  = np.zeros((len(SNR),len(qamOrder)))
+EVM_decisions  = np.zeros((len(SNR),len(qamOrder)))
+
+for ii, M in enumerate(qamOrder):
+    print('run sim: M = ', M)         
+
+    for indSNR in tqdm(range(SNR.size)):
+
+        snrdB = SNR[indSNR]
+
+        # generate random bits
+        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e5))    
+
+        # Map bits to constellation symbols
+        symbTx = modulateGray(bitsTx, M, 'qam')
+
+        # Normalize symbols energy to 1
+        symbTx = pnorm(symbTx) 
+
+        # AWGN channel        
+        symbRx = awgn(symbTx, snrdB)
+
+        # EVM estimation
+        EVM_dataAided[indSNR, ii] = calcEVM(symbRx, M, 'qam', symbTx=symbTx)
+        EVM_decisions[indSNR, ii] = calcEVM(symbRx, M, 'qam')
+
+# +
+plt.figure(figsize=(10,6))
+
+for ii, M in enumerate(qamOrder):
+    plt.plot(SNR, 10*np.log10(EVM_dataAided[:,ii]), '--', color='black', label=f'{str(M)}QAM (data aided)', linewidth=2)
+    plt.plot(SNR, 10*np.log10(EVM_decisions[:,ii]), '-o', label=f'{str(M)}QAM (decisions)', linewidth=2)
+
+
+plt.xlim(min(SNR), max(SNR))
+plt.legend();
+plt.xlabel('SNR [dB]');
+plt.ylabel('EVM [dB]');
+plt.grid()
+# -
+
+# ### Test OSNR/SNR prediction with the Gaussian Noise model (GN Model) as a function of the fiber input power
+
+# +
+from optic.metrics import GNmodel_OSNR
+
+# optical signal parameters
+Nch = 80   # Number of Nyquist-WDM channels
+Rs = 32e9  # Symbol-rate
+Δf = 37.5e9 # WDM grid spacing in Hz
+Bref = 12.5e9 # reference bandwidth for OSNR measurement in Hz
+
+# optical channel parameters
+paramCh = parameters()
+paramCh.Ltotal = 700   # total link distance [km]
+paramCh.Lspan  = 50    # span length [km]
+paramCh.alpha = 0.2    # fiber loss parameter [dB/km]
+paramCh.D = 16         # fiber dispersion parameter [ps/nm/km]
+paramCh.gamma = 1.3    # fiber nonlinear parameter [1/(W.km)]
+paramCh.Fc = 193.1e12  # central optical frequency of the WDM spectrum in Hz
+
+Ptx = np.arange(-10, 1.5, 0.5)
+
+OSNR,_,_ = GNmodel_OSNR(Rs, Nch, Δf, Ptx, paramCh, Bref)
+
+OSNR_dB = 10*np.log10(OSNR)
+SNR_dB = OSNR_dB-10*np.log10(Rs/Bref);
+
+plt.plot(Ptx, OSNR_dB,'-o',label='OSNR @ 0.1nm [dB]')
+plt.plot(Ptx, SNR_dB,'-s',label='SNR [dB]')
+plt.grid()
+plt.ylabel('dB')
+plt.xlabel('Pin  per WDM channel (dBm)')
+plt.legend();
+plt.xlim(min(Ptx), max(Ptx));
+# -
+# ### Test OSNR/SNR prediction with for a linear fiber channel as a function of the distance
+
+# +
+from optic.metrics import calcLinOSNR
+
+Ns = 14       # number of fiber spans
+Ls = 50       # span length in km
+Rs = 32e9     # symbol-rate
+Pin = -4      # launch power per channel in dBm
+OSNRin = 35   # launch OSNR in dB
+NF = 6        # EDFA noise figure in dB
+α = 0.2       # fiber attenuation in dB/km
+Fc = 193.1e12 # central optical frequency in Hz
+Bref = 12.5e9 # OSNR reference bandwidth in Hz
+
+OSNR_dB = calcLinOSNR(Ns, Pin, α, Ls, OSNRin, NF, Fc, Bref)
+
+SNR_dB = OSNR_dB-10*np.log10(Rs/Bref);
+
+plt.plot(OSNR_dB,'-o',label='OSNR @ 0.1nm [dB]')
+plt.plot(SNR_dB,'-s',label='SNR [dB]')
+plt.grid()
+plt.ylabel('dB')
+plt.xlabel('span number')
+plt.legend();
+plt.xlim(0, Ns);
