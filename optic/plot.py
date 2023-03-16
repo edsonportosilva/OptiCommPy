@@ -159,7 +159,10 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     :param plotlabel: label for the plot legend
     """
     sig = sigIn.copy()
-
+    
+    if not plotlabel:
+        plotlabel = " "
+    
     if np.iscomplex(sig).any():
         d = 1
         plotlabel_ = f"{plotlabel} [real]" if plotlabel else "[real]"
@@ -208,6 +211,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             )
             plt.xlabel("symbol period (Ts)")
             plt.ylabel("amplitude")
+            plt.title("eye diagram "+plotlabel_)
         elif ptype == "fast":
             y[x == n * SpS] = np.nan
             y[x == 0] = np.nan
@@ -216,7 +220,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             plt.xlim(min(x / SpS), max(x / SpS))
             plt.xlabel("symbol period (Ts)")
             plt.ylabel("amplitude")
-            plt.title("eye diagram")
+            plt.title("eye diagram "+plotlabel_)
 
             if plotlabel is not None:
                 plt.legend(loc="upper left")
