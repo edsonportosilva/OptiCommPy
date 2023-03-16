@@ -182,7 +182,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
         if ptype == "fancy":
             f = interp1d(np.arange(y.size), y, kind="cubic")
 
-            Nup = 20 * SpS
+            Nup = 40 * SpS
             tnew = np.arange(y.size) * (1 / Nup)
             y_ = f(tnew)
 
@@ -190,7 +190,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             imRange = np.array(
                 [
                     [min(taxis), max(taxis)],
-                    [min(y) - 0.1 * np.mean(y), 1.1 * max(y)],
+                    [min(y) - 0.1 * np.mean(np.abs(y)), 1.1 * max(y)],
                 ]
             )
 
@@ -199,9 +199,8 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             )
 
             H = H.T
-            H = gaussian_filter(H, sigma=0.9)
-
-            # plt.figure(figsize=(10, 3))
+            H = gaussian_filter(H, sigma=1.0)
+        
             plt.imshow(
                 H,
                 cmap="turbo",
