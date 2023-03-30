@@ -240,7 +240,7 @@ paramEq.L = [int(0.2*d.shape[0]), int(0.8*d.shape[0])]
 paramEq.prgsBar = False
 
 if paramTx.M == 4:
-    paramEq.alg = ['nlms','cma'] # QPSK
+    paramEq.alg = ['cma','cma'] # QPSK
     paramEq.mu = [5e-3, 1e-3] 
 else:
     paramEq.alg = ['da-rde','rde'] # M-QAM
@@ -284,6 +284,25 @@ pconst(y_CPR[discard:-discard,:]);
 
 # + colab={"base_uri": "https://localhost:8080/"} id="67c66471" outputId="5e6538be-8488-470e-ab15-c1be2c1a9191"
 ind = np.arange(discard, d.shape[0]-discard)
+
+# remove phase and polarization ambiguities for QPSK signals
+if paramTx.M == 4:   
+    d = symbTx
+    # find rotations after CPR and/or polarizations swaps possibly added at the output the adaptive equalizer:
+    rot0 = [np.mean(pnorm(symbTx[ind,0])/pnorm(y_CPR[ind,0])), np.mean(pnorm(symbTx[ind,1])/pnorm(y_CPR[ind,0]))]
+    rot1 = [np.mean(pnorm(symbTx[ind,1])/pnorm(y_CPR[ind,1])), np.mean(pnorm(symbTx[ind,0])/pnorm(y_CPR[ind,1]))]
+
+    if np.argmax(np.abs(rot0)) == 1 and np.argmax(np.abs(rot1)) == 1:      
+        y_CPR_ = y_CPR.copy() 
+        # undo swap and rotation 
+        y_CPR[:,0] = pnorm(rot1[np.argmax(np.abs(rot1))]*y_CPR_[:,1]) 
+        y_CPR[:,1] = pnorm(rot0[np.argmax(np.abs(rot0))]*y_CPR_[:,0])
+    else:
+        # undo rotation
+        y_CPR[:,0] = pnorm(rot0[np.argmax(np.abs(rot0))]*y_CPR[:,0])
+        y_CPR[:,1] = pnorm(rot1[np.argmax(np.abs(rot1))]*y_CPR[:,1])
+        
+
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 GMI, NGMI = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
@@ -297,6 +316,3 @@ print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
 print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
-# -
-
-
