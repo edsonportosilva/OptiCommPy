@@ -37,7 +37,10 @@ def mzm(Ai, u, Vπ, Vb):
 
     """
     try:
-        assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
+        if Ai.shape == ():
+            Ai = Ai * np.ones(u.shape)
+        else:
+            assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
