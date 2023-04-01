@@ -40,18 +40,20 @@ def mzm(Ai, u, Vπ, Vb):
 
     """
     try:
-        u.shape            
+        u.shape
     except AttributeError:
-         u = np.array([u])
-         
+        u = np.array([u])
+
     try:
         if Ai.shape == () and u.shape != ():
             Ai = Ai * np.ones(u.shape)
         else:
-            assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
-    except AttributeError:        
-        Ai = Ai * np.ones(u.shape)        
-            
+            assert (
+                Ai.shape == u.shape
+            ), "Ai and u need to have the same dimensions"
+    except AttributeError:
+        Ai = Ai * np.ones(u.shape)
+
     π = np.pi
     return Ai * np.cos(0.5 / Vπ * (u + Vb) * π)
 
@@ -553,7 +555,12 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
     paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
     paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+    paramCh.maxIter: max number of iter. in the trap. integration [default: 10]
+    paramCh.tol: convergence tol. of the trap. integration.[default: 1e-5]
+    paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
+    paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
     paramCh.prgsBar: display progress bar? bolean variable [default:True]
+    paramCh.saveSpanN: specify the span indexes to be output [default:[]]
 
     Returns
     -------
@@ -597,12 +604,12 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     saveSpanN = paramCh.saveSpanN
     nlprMethod = paramCh.nlprMethod
     maxNlinPhaseRot = paramCh.maxNlinPhaseRot
-    
+
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
     λ = c_kms / Fc
     α = alpha / (10 * np.log10(np.exp(1)))
-    β2 = -(D * λ ** 2) / (2 * np.pi * c_kms)
+    β2 = -(D * λ**2) / (2 * np.pi * c_kms)
     γ = gamma
 
     # generate frequency axis
@@ -622,13 +629,13 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
         argLimOp = np.tile(argLimOp, (Ech_x.shape[0], 1))
     else:
         argLimOp = argLimOp.reshape(1, -1)
-    
+
     if saveSpanN:
         Ech_spans = np.zeros(
             (Ei.shape[0], Ei.shape[1] * len(saveSpanN))
         ).astype(prec)
         indRecSpan = 0
-        
+
     for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
 
         Ex_conv = Ech_x.copy()
@@ -704,12 +711,12 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
         elif amp is None:
             Ech_x = Ech_x * np.exp(0)
             Ech_y = Ech_y * np.exp(0)
-        
+
         if spanN in saveSpanN:
             Ech_spans[:, 2 * indRecSpan : 2 * indRecSpan + 1] = Ech_x.T
             Ech_spans[:, 2 * indRecSpan + 1 : 2 * indRecSpan + 2] = Ech_y.T
             indRecSpan += 1
-            
+
     if saveSpanN:
         Ech = Ech_spans
     else:
@@ -718,6 +725,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
         Ech[:, 1::2] = Ech_y.T
 
     return Ech, paramCh
+
 
 def nlinPhaseRot(Ex, Ey, Pch, γ):
     return ((8 / 9) * γ * (Pch + Ex * np.conj(Ex) + Ey * np.conj(Ey)) / 2).real

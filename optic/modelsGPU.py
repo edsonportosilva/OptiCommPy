@@ -217,6 +217,10 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
     paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
     paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+    paramCh.maxIter: max number of iter. in the trap. integration [default: 10]
+    paramCh.tol: convergence tol. of the trap. integration.[default: 1e-5]
+    paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
+    paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
     paramCh.prgsBar: display progress bar? bolean variable [default:True]
     paramCh.saveSpanN: specify the span indexes to be output [default:[]]
 
