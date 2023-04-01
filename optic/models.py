@@ -1,4 +1,6 @@
 """Basic physical models for optical devices and optical channels."""
+import logging as logg
+
 import numpy as np
 import scipy.constants as const
 from scipy.linalg import norm
@@ -573,10 +575,12 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     paramCh.NF = getattr(paramCh, "NF", 4.5)
     paramCh.maxIter = getattr(paramCh, "maxIter", 10)
     paramCh.tol = getattr(paramCh, "tol", 1e-5)
-    paramCh.recordSpans = getattr(paramCh, "recordSpans", False)
-    paramCh.toBeRecorded = getattr(paramCh, "toBeRecorded", [])
+    paramCh.nlprMethod = getattr(paramCh, "nlprMethod", True)
+    paramCh.maxNlinPhaseRot = getattr(paramCh, "maxNlinPhaseRot", 2e-2)
     paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
-
+    paramCh.saveSpanN = getattr(
+        paramCh, "saveSpanN", [int(paramCh.Ltotal / paramCh.Lspan)]
+    )
 
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
@@ -589,10 +593,10 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     NF = paramCh.NF
     maxIter = paramCh.maxIter
     tol = paramCh.tol
-    recordSpans = paramCh.recordSpans
-    toBeRecorded = paramCh.toBeRecorded
     prgsBar = paramCh.prgsBar
-
+    saveSpanN = paramCh.saveSpanN
+    nlprMethod = paramCh.nlprMethod
+    maxNlinPhaseRot = paramCh.maxNlinPhaseRot
     
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
@@ -612,17 +616,17 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     Ech_y = Ei[:, 1::2].T
 
     # define linear operator
-    linOperator = np.array(
-        np.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2))
-    ).astype(prec)
+    argLimOp = np.array(-(α / 2) + 1j * (β2 / 2) * (ω**2)).astype(prec)
 
     if Ech_x.shape[0] > 1:
-        linOperator = np.tile(linOperator, (Ech_x.shape[0], 1))
+        argLimOp = np.tile(argLimOp, (Ech_x.shape[0], 1))
     else:
-        linOperator = linOperator.reshape(1, -1)
+        argLimOp = argLimOp.reshape(1, -1)
     
-    if recordSpans:
-        Ech_spans = np.zeros((Ei.shape[0], Ei.shape[1]*len(toBeRecorded))).astype(prec)
+    if saveSpanN:
+        Ech_spans = np.zeros(
+            (Ei.shape[0], Ei.shape[1] * len(saveSpanN))
+        ).astype(prec)
         indRecSpan = 0
         
     for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
@@ -630,35 +634,40 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
         Ex_conv = Ech_x.copy()
         Ey_conv = Ech_y.copy()
 
-        # fiber propagation step
-        for stepN in range(1, Nsteps + 1):
+        z_current = 0
+
+        # fiber propagation steps
+        while z_current < Lspan:
+
+            Pch = Ech_x * np.conj(Ech_x) + Ech_y * np.conj(Ech_y)
+
+            phiRot = nlinPhaseRot(Ex_conv, Ey_conv, Pch, γ)
+
+            if nlprMethod:
+                if Lspan - z_current >= maxNlinPhaseRot / np.max(phiRot):
+                    hz_ = maxNlinPhaseRot / np.max(phiRot)
+                else:
+                    hz_ = Lspan - z_current
+            else:
+                if Lspan - z_current < hz:
+                    hz_ = Lspan - z_current  # check that the remaining
+                    # distance is not less than hz (due to non-integer
+                    # steps/span)
+                else:
+                    hz_ = hz
+
+            linOperator = np.exp(argLimOp * (hz_ / 2))
 
             # First linear step (frequency domain)
             Ex_hd = ifft(fft(Ech_x) * linOperator)
             Ey_hd = ifft(fft(Ech_y) * linOperator)
 
-            Pch = (
-                Ech_x * np.conj(Ech_x)
-                + Ech_y * np.conj(Ech_y)                
-            )
-
             # Nonlinear step (time domain)
             for nIter in range(maxIter):
+                rotOperator = np.exp(1j * phiRot * hz_)
 
-                phiRot = (
-                    (8 / 9)
-                    * γ
-                    * (
-                        Pch
-                        + Ex_conv * np.conj(Ex_conv)
-                        + Ey_conv * np.conj(Ey_conv)
-                    )
-                    * hz
-                    / 2
-                )
-
-                Ech_x_fd = Ex_hd * np.exp(1j * phiRot)
-                Ech_y_fd = Ey_hd * np.exp(1j * phiRot)
+                Ech_x_fd = Ex_hd * rotOperator
+                Ech_y_fd = Ey_hd * rotOperator
 
                 # Second linear step (frequency domain)
                 Ech_x_fd = ifft(fft(Ech_x_fd) * linOperator)
@@ -675,15 +684,16 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
                 if lim < tol:
                     break
                 elif nIter == maxIter - 1:
-                    print(
-                        "Warning: target SSFM error tolerance was not achieved in "
-                        + str(maxIter)
-                        + " iterations"
+                    logg.warning(
+                        f"Warning: target SSFM error tolerance was not achieved in {maxIter} iterations"
                     )
+
+                phiRot = nlinPhaseRot(Ex_conv, Ey_conv, Pch, γ)
 
             Ech_x = Ech_x_fd.copy()
             Ech_y = Ech_y_fd.copy()
 
+            z_current += hz_  # update propagated distance
         # amplification step
         if amp == "edfa":
             Ech_x = edfa(Ech_x, Fs, alpha * Lspan, NF, Fc)
@@ -695,27 +705,30 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
             Ech_x = Ech_x * np.exp(0)
             Ech_y = Ech_y * np.exp(0)
         
-        if recordSpans and spanN in toBeRecorded:            
-            Ech_spans[:,2*indRecSpan:2*indRecSpan+1] = Ech_x.T
-            Ech_spans[:,2*indRecSpan+1:2*indRecSpan+2] = Ech_y.T
+        if spanN in saveSpanN:
+            Ech_spans[:, 2 * indRecSpan : 2 * indRecSpan + 1] = Ech_x.T
+            Ech_spans[:, 2 * indRecSpan + 1 : 2 * indRecSpan + 2] = Ech_y.T
             indRecSpan += 1
             
-    if recordSpans:
-        Ech = Ech_spans       
-    else:   
+    if saveSpanN:
+        Ech = Ech_spans
+    else:
         Ech = Ei.copy()
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
 
     return Ech, paramCh
 
+def nlinPhaseRot(Ex, Ey, Pch, γ):
+    return ((8 / 9) * γ * (Pch + Ex * np.conj(Ex) + Ey * np.conj(Ey)) / 2).real
+
+
 def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
 
-    lim = np.sqrt(
-        norm(Ex_fd - Ex_conv, axis=1) ** 2 + norm(Ey_fd - Ey_conv, axis=1) ** 2
-    ) / np.sqrt(norm(Ex_conv, axis=1) ** 2 + norm(Ey_conv, axis=1) ** 2)
+    return np.sqrt(
+        norm(Ex_fd - Ex_conv) ** 2 + norm(Ey_fd - Ey_conv) ** 2
+    ) / np.sqrt(norm(Ex_conv) ** 2 + norm(Ey_conv) ** 2)
 
-    return max(lim)
 
 @njit
 def phaseNoise(lw, Nsamples, Ts):
