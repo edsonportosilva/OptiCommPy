@@ -575,6 +575,8 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     paramCh.tol = getattr(paramCh, "tol", 1e-5)
     paramCh.recordSpans = getattr(paramCh, "recordSpans", False)
     paramCh.toBeRecorded = getattr(paramCh, "toBeRecorded", [])
+    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
+
 
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
@@ -589,6 +591,8 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     tol = paramCh.tol
     recordSpans = paramCh.recordSpans
     toBeRecorded = paramCh.toBeRecorded
+    prgsBar = paramCh.prgsBar
+
     
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
@@ -621,7 +625,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
         Ech_spans = np.zeros((Ei.shape[0], Ei.shape[1]*len(toBeRecorded))).astype(prec)
         indRecSpan = 0
         
-    for spanN in tqdm(range(1, Nspans + 1)):
+    for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
 
         Ex_conv = Ech_x.copy()
         Ey_conv = Ech_y.copy()
