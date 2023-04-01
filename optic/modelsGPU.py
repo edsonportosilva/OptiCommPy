@@ -44,27 +44,20 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12, prec=cp.complex128):
     NF_lin = 10 ** (NF / 10)
     G_lin = 10 ** (G / 10)
     nsp = (G_lin * NF_lin - 1) / (2 * (G_lin - 1))
-          
+
     # ASE noise power calculation:
-    # Ref. Eq.(54) of R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber 
-    # Networks," in Journal of Lightwave Technology, vol. 28, no. 4, 
+    # Ref. Eq.(54) of R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber
+    # Networks," in Journal of Lightwave Technology, vol. 28, no. 4,
     # pp. 662-701, Feb.15, 2010, doi: 10.1109/JLT.2009.2039464.
-    
-    N_ase = (G_lin - 1) * nsp * const.h * Fc    
+
+    N_ase = (G_lin - 1) * nsp * const.h * Fc
     p_noise = N_ase * Fs
-        
+
     noise = normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * normal(
         0, np.sqrt(p_noise / 2), Ei.shape
     )
     noise = cp.array(noise).astype(prec)
     return Ei * cp.sqrt(G_lin) + noise
-
-
-def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
-
-    return cp.sqrt(
-        norm(Ex_fd - Ex_conv) ** 2 + norm(Ey_fd - Ey_conv) ** 2
-    ) / cp.sqrt(norm(Ex_conv) ** 2 + norm(Ey_conv) ** 2)
 
 
 def ssfm(Ei, Fs, paramCh, prec=cp.complex128):
@@ -89,7 +82,7 @@ def ssfm(Ei, Fs, paramCh, prec=cp.complex128):
     paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
     paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
     paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
-    paramCh.prgsBar: display progress bar? bolean variable [default:True]    
+    paramCh.prgsBar: display progress bar? bolean variable [default:True]
     paramCh.saveSpanN: specify the span indexes to be output [default:[]]
 
     Returns
@@ -110,8 +103,10 @@ def ssfm(Ei, Fs, paramCh, prec=cp.complex128):
     paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
     paramCh.amp = getattr(paramCh, "amp", "edfa")
     paramCh.NF = getattr(paramCh, "NF", 4.5)
-    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)    
-    paramCh.saveSpanN = getattr(paramCh, "saveSpanN", [int(paramCh.Ltotal/paramCh.Lspan)])
+    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
+    paramCh.saveSpanN = getattr(
+        paramCh, "saveSpanN", [int(paramCh.Ltotal / paramCh.Lspan)]
+    )
 
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
@@ -156,10 +151,8 @@ def ssfm(Ei, Fs, paramCh, prec=cp.complex128):
     linOperator = cp.array(
         cp.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2))
     ).astype(prec)
-  
-    Ech_spans = cp.zeros(
-        (Ech.shape[0], len(saveSpanN))
-    ).astype(prec)
+
+    Ech_spans = cp.zeros((Ech.shape[0], len(saveSpanN))).astype(prec)
 
     indRecSpan = 0
 
@@ -192,13 +185,13 @@ def ssfm(Ei, Fs, paramCh, prec=cp.complex128):
             Ech_spans[:, indRecSpan] = Ech
             indRecSpan += 1
 
-    
     Ech = cp.asnumpy(Ech_spans)
-    
+
     if Ech.shape[1] == 1:
         Ech = Ech.reshape(
-                    len(Ech),)
-        
+            len(Ech),
+        )
+
     return Ech, paramCh
 
 
@@ -224,7 +217,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
     paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
     paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
-    paramCh.prgsBar: display progress bar? bolean variable [default:True]    
+    paramCh.prgsBar: display progress bar? bolean variable [default:True]
     paramCh.saveSpanN: specify the span indexes to be output [default:[]]
 
     Returns
@@ -247,8 +240,10 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     paramCh.NF = getattr(paramCh, "NF", 4.5)
     paramCh.maxIter = getattr(paramCh, "maxIter", 10)
     paramCh.tol = getattr(paramCh, "tol", 1e-5)
-    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)    
-    paramCh.saveSpanN = getattr(paramCh, "saveSpanN", [int(paramCh.Ltotal/paramCh.Lspan)])
+    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
+    paramCh.saveSpanN = getattr(
+        paramCh, "saveSpanN", [int(paramCh.Ltotal / paramCh.Lspan)]
+    )
 
     Ltotal = paramCh.Ltotal
     Lspan = paramCh.Lspan
@@ -384,6 +379,13 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
         Ech[:, 1::2] = Ech_y.T
 
     return Ech, paramCh
+
+
+def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
+
+    return cp.sqrt(
+        norm(Ex_fd - Ex_conv) ** 2 + norm(Ey_fd - Ey_conv) ** 2
+    ) / cp.sqrt(norm(Ex_conv) ** 2 + norm(Ey_conv) ** 2)
 
 
 def setPowerforParSSFM(sig, powers):
