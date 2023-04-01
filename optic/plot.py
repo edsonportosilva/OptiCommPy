@@ -1,6 +1,7 @@
 """Plot utilities."""
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import mpl_scatter_density
 import numpy as np
 import copy
 from scipy.interpolate import interp1d
