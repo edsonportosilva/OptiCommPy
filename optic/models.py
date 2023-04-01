@@ -1,6 +1,7 @@
 """Basic physical models for optical devices and optical channels."""
 import numpy as np
 import scipy.constants as const
+from scipy.linalg import norm
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from numpy.random import normal
