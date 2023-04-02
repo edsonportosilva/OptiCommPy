@@ -622,7 +622,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     Ech_x = Ei[:, 0::2].T
     Ech_y = Ei[:, 1::2].T
 
-    # define linear operator
+    # define static part of the linear operator
     argLimOp = np.array(-(α / 2) + 1j * (β2 / 2) * (ω**2)).astype(prec)
 
     if Ech_x.shape[0] > 1:
@@ -663,6 +663,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
                 else:
                     hz_ = hz
 
+            # define the linear operator
             linOperator = np.exp(argLimOp * (hz_ / 2))
 
             # First linear step (frequency domain)
@@ -713,8 +714,8 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
             Ech_y = Ech_y * np.exp(0)
 
         if spanN in saveSpanN:
-            Ech_spans[:, 2 * indRecSpan : 2 * indRecSpan + 1] = Ech_x.T
-            Ech_spans[:, 2 * indRecSpan + 1 : 2 * indRecSpan + 2] = Ech_y.T
+            Ech_spans[:, 2 * indRecSpan: 2 * indRecSpan + 1] = Ech_x.T
+            Ech_spans[:, 2 * indRecSpan + 1: 2 * indRecSpan + 2] = Ech_y.T
             indRecSpan += 1
 
     if saveSpanN:
@@ -728,11 +729,50 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
 
 
 def nlinPhaseRot(Ex, Ey, Pch, γ):
+    """
+    Calculate nonlinear phase-shift per step for the Manakov SSFM.
+
+    Parameters
+    ----------
+    Ex : np.array
+        Input optical signal field of x-polarization.
+    Ey : np.array
+        Input optical signal field of y-polarization.
+    Pch : np.array
+        Input optical power.
+    γ : real scalar
+        fiber nonlinearity coefficient.
+
+    Returns
+    -------
+    np.array
+        nonlinear phase-shift of each sample of the signal.
+
+    """
     return ((8 / 9) * γ * (Pch + Ex * np.conj(Ex) + Ey * np.conj(Ey)) / 2).real
 
 
 def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
+    """
+    Verify the convergence condition for the trapezoidal integration.
 
+    Parameters
+    ----------
+    Ex_fd : np.array
+        field of x-polarization fully dispersed and rotated.
+    Ey_fd : np.array
+        field of y-polarization fully dispersed and rotated.
+    Ex_conv : np.array
+        field of x-polarization at the begining of the step.
+    Ey_conv : np.array
+        Ifield of y-polarization at the begining of the step.
+
+    Returns
+    -------
+    scalar
+        squared root of the MSE normalized by the power of the fields.
+
+    """
     return np.sqrt(
         norm(Ex_fd - Ex_conv) ** 2 + norm(Ey_fd - Ey_conv) ** 2
     ) / np.sqrt(norm(Ex_conv) ** 2 + norm(Ey_conv) ** 2)
