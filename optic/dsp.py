@@ -318,7 +318,7 @@ def finddelay(x, y):
 @njit
 def pnorm(x):
     """
-    Normalize the average power of x.
+    Normalize the average power of each componennt of x.
 
     Parameters
     ----------
@@ -328,7 +328,7 @@ def pnorm(x):
     Returns
     -------
     np.array
-        Signal x with normalized power.
+        Signal x with each component normalized in power.
 
     """
     return x / np.sqrt(np.mean(x * np.conj(x)).real)
