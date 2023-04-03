@@ -130,6 +130,10 @@ runDBP = True
 
 ### Receiver parameters
 
+Fc = paramCh.Fc
+Ts = 1/Fs
+freqGrid = paramTx.freqGrid
+    
 ## LO parameters
 FO      = 150e6                 # frequency offset
 lw      = 100e3                 # linewidth
@@ -160,16 +164,13 @@ for indP, G in enumerate(scale):
 
     sigWDM, paramCh = manakovSSF(np.sqrt(G_lin)*sigWDM_Tx, Fs, paramCh)
     print('sigWDM power: ', round(10*np.log10(signal_power(sigWDM)/paramTx.Nch /1e-3),2),'dBm')
+    
     ### WDM channels coherent detection and demodulation
 
     ### Receiver
 
     # parameters
     chIndex  = int(np.floor(paramTx.Nch/2))      # index of the channel to be demodulated
-
-    Fc = paramCh.Fc
-    Ts = 1/Fs
-    freqGrid = paramTx.freqGrid
 
 #     print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 #           %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
