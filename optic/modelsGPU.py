@@ -452,6 +452,209 @@ def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
     ) / cp.sqrt(norm(Ex_conv) ** 2 + norm(Ey_conv) ** 2)
 
 
+def manakovDBP(Ei, Fs, paramCh, prec=cp.complex128):
+    """
+    Run the Manakov SSF digital backpropagation (symmetric, dual-pol.).
+
+    Parameters
+    ----------
+    Ei : np.array
+        Input optical signal field.
+    Fs : scalar
+        Sampling frequency in Hz.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters of the optical channel.
+
+    paramCh.Ltotal: total fiber length [km][default: 400 km]
+    paramCh.Lspan: span length [km][default: 80 km]
+    paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+    paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+    paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+    paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+    paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+    paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+    paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+    paramCh.maxIter: max number of iter. in the trap. integration [default: 10]
+    paramCh.tol: convergence tol. of the trap. integration.[default: 1e-5]
+    paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
+    paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
+    paramCh.prgsBar: display progress bar? bolean variable [default:True]
+    paramCh.saveSpanN: specify the span indexes to be output [default:[]]
+
+    Returns
+    -------
+    Ech : np.array
+        Optical signal after nonlinear backward propagation.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters used in the split-step alg.
+
+    """
+    # check input parameters
+    paramCh.Ltotal = getattr(paramCh, "Ltotal", 400)
+    paramCh.Lspan = getattr(paramCh, "Lspan", 80)
+    paramCh.hz = getattr(paramCh, "hz", 0.5)
+    paramCh.alpha = getattr(paramCh, "alpha", 0.2)
+    paramCh.D = getattr(paramCh, "D", 16)
+    paramCh.gamma = getattr(paramCh, "gamma", 1.3)
+    paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
+    paramCh.amp = getattr(paramCh, "amp", "edfa")    
+    paramCh.maxIter = getattr(paramCh, "maxIter", 10)
+    paramCh.tol = getattr(paramCh, "tol", 1e-5)
+    paramCh.nlprMethod = getattr(paramCh, "nlprMethod", True)
+    paramCh.maxNlinPhaseRot = getattr(paramCh, "maxNlinPhaseRot", 2e-2)
+    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
+    paramCh.saveSpanN = getattr(
+        paramCh, "saveSpanN", [int(paramCh.Ltotal / paramCh.Lspan)]
+    )
+
+    Ltotal = paramCh.Ltotal
+    Lspan = paramCh.Lspan
+    hz = paramCh.hz
+    alpha = paramCh.alpha
+    D = paramCh.D
+    gamma = paramCh.gamma
+    Fc = paramCh.Fc
+    amp = paramCh.amp
+    maxIter = paramCh.maxIter
+    tol = paramCh.tol
+    prgsBar = paramCh.prgsBar
+    saveSpanN = paramCh.saveSpanN
+    nlprMethod = paramCh.nlprMethod
+    maxNlinPhaseRot = paramCh.maxNlinPhaseRot
+
+    Nspans = int(np.floor(Ltotal / Lspan))
+
+    # channel parameters
+    c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
+    λ = c_kms / Fc
+    α = alpha / (10 * np.log10(np.exp(1)))
+    β2 = -(D * λ**2) / (2 * np.pi * c_kms)
+    γ = gamma
+
+    c_kms = cp.asarray(c_kms, dtype=prec)  # speed of light (vacuum) in km/s
+    λ = cp.asarray(λ, dtype=prec)
+    α = cp.asarray(α, dtype=prec)
+    β2 = cp.asarray(β2, dtype=prec)
+    γ = cp.asarray(γ, dtype=prec)
+    hz = cp.asarray(hz, dtype=prec)
+    Ltotal = cp.asarray(Ltotal, dtype=prec)
+    maxNlinPhaseRot = cp.asarray(maxNlinPhaseRot, dtype=prec)
+
+    # generate frequency axis
+    Nfft = len(Ei)
+    ω = 2 * np.pi * Fs * fftfreq(Nfft).astype(prec)
+
+    Ei_ = cp.asarray(Ei).astype(prec)
+
+    Ech_x = Ei_[:, 0::2].T
+    Ech_y = Ei_[:, 1::2].T
+
+    # define static part of the linear operator
+    argLimOp = cp.array((α / 2) - 1j * (β2 / 2) * (ω**2)).astype(prec)
+
+    if Ech_x.shape[0] > 1:
+        argLimOp = cp.tile(argLimOp, (Ech_x.shape[0], 1))
+    else:
+        argLimOp = argLimOp.reshape(1, -1)
+
+    if saveSpanN:
+        Ech_spans = cp.zeros(
+            (Ei_.shape[0], Ei_.shape[1] * len(saveSpanN))
+        ).astype(prec)
+        indRecSpan = 0
+
+    for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
+        
+        # reverse amplification step
+        if amp == "edfa" or amp == "ideal":
+            Ech_x = Ech_x * cp.exp(-α / 2 * Lspan)
+            Ech_y = Ech_y * cp.exp(-α / 2 * Lspan)            
+        elif amp is None:
+            Ech_x = Ech_x * cp.exp(0)
+            Ech_y = Ech_y * cp.exp(0)
+            
+        Ex_conv = Ech_x.copy()
+        Ey_conv = Ech_y.copy()
+        z_current = 0
+            
+        # reverse fiber propagation steps
+        while z_current < Lspan:
+
+            Pch = Ech_x * cp.conj(Ech_x) + Ech_y * cp.conj(Ech_y)
+
+            phiRot = nlinPhaseRot(Ex_conv, Ey_conv, Pch, γ)
+
+            if nlprMethod:
+                if Lspan - z_current >= maxNlinPhaseRot / cp.max(phiRot):
+                    hz_ = maxNlinPhaseRot / cp.max(phiRot)
+                else:
+                    hz_ = Lspan - z_current
+            else:
+                if Lspan - z_current < hz:
+                    hz_ = Lspan - z_current  # check that the remaining
+                    # distance is not less than hz (due to non-integer
+                    # steps/span)
+                else:
+                    hz_ = hz
+
+            # define the linear operator
+            linOperator = cp.exp(argLimOp * (hz_ / 2))
+
+            # First linear step (frequency domain)
+            Ex_hd = ifft(fft(Ech_x) * linOperator)
+            Ey_hd = ifft(fft(Ech_y) * linOperator)
+
+            # Nonlinear step (time domain)
+            for nIter in range(maxIter):
+                rotOperator = cp.exp(-1j * phiRot * hz_)
+
+                Ech_x_fd = Ex_hd * rotOperator
+                Ech_y_fd = Ey_hd * rotOperator
+
+                # Second linear step (frequency domain)
+                Ech_x_fd = ifft(fft(Ech_x_fd) * linOperator)
+                Ech_y_fd = ifft(fft(Ech_y_fd) * linOperator)
+
+                # check convergence o trapezoidal integration in phiRot
+                lim = convergenceCondition(
+                    Ech_x_fd, Ech_y_fd, Ex_conv, Ey_conv
+                )
+
+                Ex_conv = Ech_x_fd.copy()
+                Ey_conv = Ech_y_fd.copy()
+
+                if lim < tol:
+                    break
+                elif nIter == maxIter - 1:
+                    logg.warning(
+                        f"Warning: target SSFM error tolerance was not achieved in {maxIter} iterations"
+                    )
+
+                phiRot = nlinPhaseRot(Ex_conv, Ey_conv, Pch, γ)
+
+            Ech_x = Ech_x_fd.copy()
+            Ech_y = Ech_y_fd.copy()
+
+            z_current += hz_  # update propagated distance
+                    
+        if spanN in saveSpanN:
+            Ech_spans[:, 2 * indRecSpan: 2 * indRecSpan + 1] = Ech_x.T
+            Ech_spans[:, 2 * indRecSpan + 1: 2 * indRecSpan + 2] = Ech_y.T
+            indRecSpan += 1
+
+    if saveSpanN:
+        Ech = cp.asnumpy(Ech_spans)
+    else:
+        Ech_x = cp.asnumpy(Ech_x)
+        Ech_y = cp.asnumpy(Ech_y)
+
+        Ech = Ei.copy()
+        Ech[:, 0::2] = Ech_x.T
+        Ech[:, 1::2] = Ech_y.T
+
+    return Ech, paramCh
+
+
 def setPowerforParSSFM(sig, powers):
 
     powers_lin = 10 ** (powers / 10) * 1e-3
