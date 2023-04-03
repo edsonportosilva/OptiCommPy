@@ -10,8 +10,31 @@ from optic.dsp import pnorm
 from optic.modulation import GrayMapping, demodulateGray, minEuclid
 
 
-@njit
+
 def signal_power(x):
+    """
+    Calculate the total average power of x.
+
+    Parameters
+    ----------
+    x : np.array
+        Signal.
+
+    Returns
+    -------
+    scalar
+        Total average power of x: P = Nmodes*mean(abs(x)**2).
+
+    """
+    try:
+        Nmodes = x.shape[1]
+    except IndexError:
+        Nmodes = 1
+        
+    return Nmodes*sigPow(x)
+
+@njit
+def sigPow(x):
     """
     Calculate the average power of x.
 
@@ -23,9 +46,9 @@ def signal_power(x):
     Returns
     -------
     scalar
-        Average signal power of x: P = mean(abs(x)**2).
+        Average power of x: P = Nmodes*mean(abs(x)**2).
 
-    """
+    """        
     return np.mean(np.abs(x) ** 2)
 
 
@@ -404,7 +427,7 @@ def calcEVM(symb, M, constType, symbTx=[]):
     constSymb = GrayMapping(M, constType)
     constSymb = pnorm(constSymb)
 
-    EVM = np.zeros((symb.shape[1], 1))
+    EVM = np.zeros(symb.shape[1])
 
     for ii in range(symb.shape[1]):
         if not len(symbTx):
