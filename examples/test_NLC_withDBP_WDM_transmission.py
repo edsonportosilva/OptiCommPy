@@ -18,7 +18,7 @@
 # <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_WDM_transmission.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # + [markdown] id="0270b2b0"
-# # Simulation of coherent WDM transmission
+# # Simulation of coherent WDM transmission with nonlinearity compensation using digital backpropagation (DBP)
 
 # + colab={"base_uri": "https://localhost:8080/"} id="1ca1b9d6" outputId="842dd4fc-f03a-4069-cf21-3ff634969be9"
 if 'google.colab' in str(get_ipython()):    
@@ -103,7 +103,7 @@ paramTx.Nbits = int(np.log2(paramTx.M)*1e5) # total number of bits per polarizat
 # generate WDM signal
 sigWDM_Tx, symbTx_, paramTx = simpleWDMTx(paramTx)
 # + [markdown] id="0cb851bf"
-# **Nonlinear fiber propagation with the split-step Fourier method**
+# **Nonlinear fiber propagation with the split-step Fourier method + receiver DSP**
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 49, "referenced_widgets": ["d7ec57b1b19d4660a0548563dd43f97c", "f973387453444cc4b5fbec8658506a3a", "0d0d223577654c0980520ed48c4866a7", "92a22dde2b5e4ab882f824d5dff0d377", "7b1b87f7b77049a691df25723928eef3", "32ef48a5dd1d4a2cb94e5409dd572d74", "c5a9e5d034e64b00b295e93140f51e72", "b70bb6363ff64ccbb7087900ef892eb5", "d4247b94ef5c4a439cd4af9458125fc2", "6a786005faa04fd8b7c5e69dc70df06a", "994d17059a9b47f0b2ed3654712fb0c3"]} id="05599d49" outputId="debb83bb-27f7-46f4-be76-89fc838c11ac"
 # optical channel parameters
@@ -307,21 +307,22 @@ for indP, G in enumerate(tqdm(scale)):
         print('NGMI: %.2f,      %.2f'%(NGMI[indsave[0],indP], NGMI[indsave[1],indP]))
 
 # +
-fig, ax = plt.subplots(1,4)
+fig, ax = plt.subplots(1,4, layout="constrained", figsize=(18,9))
+
 ax[0].plot(Powers, np.log10(BER.T), '-*', label=['x-pol DBP', 'y-pol DBP', 'x-pol EDC', 'y-pol EDC']);
 ax[0].set_xlabel('Power [dBm]')
-ax[0].set_ylabel('BER')
+ax[0].set_ylabel('log10(BER)')
 ax[0].legend()
 ax[0].grid()
-ax[0].set_box_aspect(1)
+ax[0].set_box_aspect(0.75)
 ax[0].set_xlim(min(Powers), max(Powers))
 
 ax[1].plot(Powers, np.log10(SER.T), '-*', label=['x-pol DBP', 'y-pol DBP', 'x-pol EDC', 'y-pol EDC']);
 ax[1].set_xlabel('Power [dBm]')
-ax[1].set_ylabel('SER')
+ax[1].set_ylabel('log10(SER)')
 ax[1].legend()
 ax[1].grid()
-ax[1].set_box_aspect(1)
+ax[1].set_box_aspect(0.75)
 ax[1].set_xlim(min(Powers), max(Powers))
 
 ax[2].plot(Powers, SNR.T, '-*', label=['x-pol DBP', 'y-pol DBP', 'x-pol EDC', 'y-pol EDC']);
@@ -329,7 +330,7 @@ ax[2].set_xlabel('Power [dBm]')
 ax[2].set_ylabel('SNR [dB]')
 ax[2].legend()
 ax[2].grid()
-ax[2].set_box_aspect(1)
+ax[2].set_box_aspect(0.75)
 ax[2].set_xlim(min(Powers), max(Powers))
 
 ax[3].plot(Powers, GMI.T, '-*', label=['x-pol DBP', 'y-pol DBP', 'x-pol EDC', 'y-pol EDC']);
@@ -337,8 +338,8 @@ ax[3].set_xlabel('Power [dBm]')
 ax[3].set_ylabel('GMI [bits]')
 ax[3].legend()
 ax[3].grid()
-ax[3].set_box_aspect(1)
-ax[3].set_xlim(min(Powers), max(Powers))
+ax[3].set_box_aspect(0.75);
+ax[3].set_xlim(min(Powers), max(Powers));
 
-fig.tight_layout()
-fig.set_size_inches(15, 10)
+#fig.tight_layout()
+#fig.set_size_inches(15, 20)
