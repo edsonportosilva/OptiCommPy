@@ -49,9 +49,10 @@ from optic.plot import pconst, plotPSD
 import scipy.constants as const
 
 import logging as logg
-logg.basicConfig(level=logg.INFO, format='%(message)s', force=True)
+logg.basicConfig(level=logg.WARNING, format='%(message)s', force=True)
 
 from copy import deepcopy
+from tqdm.notebook import tqdm
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 17} id="7df01820" outputId="604d8ed4-041f-4280-ec2b-972c3a244a4d"
 from IPython.core.display import HTML
@@ -147,23 +148,23 @@ paramPD.B = paramTx.Rs
 paramPD.Fs = Fs    
 paramPD.ideal = True
     
-Powers = paramTx.Pch_dBm + np.arange(-5,2,0.5)
-scale = np.arange(-5,2,0.5)
+Powers = paramTx.Pch_dBm + np.arange(-8,0,0.5)
+scale = np.arange(-8,0,0.5)
 
-BER = np.zeros((2,len(Powers)))
-SER = np.zeros((2,len(Powers)))
-MI  = np.zeros((2,len(Powers)))
-GMI = np.zeros((2,len(Powers)))
-NGMI = np.zeros((2,len(Powers)))
-SNR = np.zeros((2,len(Powers)))
-EVM = np.zeros((2,len(Powers)))
+BER = np.zeros((4,len(Powers)))
+SER = np.zeros((4,len(Powers)))
+MI  = np.zeros((4,len(Powers)))
+GMI = np.zeros((4,len(Powers)))
+NGMI = np.zeros((4,len(Powers)))
+SNR = np.zeros((4,len(Powers)))
+EVM = np.zeros((4,len(Powers)))
 
-for indP, G in enumerate(scale):
+for indP, G in enumerate(tqdm(scale)):
     # nonlinear signal propagation
     G_lin = 10**(G/10)
 
     sigWDM, paramCh = manakovSSF(np.sqrt(G_lin)*sigWDM_Tx, Fs, paramCh)
-    print('sigWDM power: ', round(10*np.log10(signal_power(sigWDM)/paramTx.Nch /1e-3),2),'dBm')
+    print('Fiber launch power per WDM channel: ', round(10*np.log10(signal_power(sigWDM)/paramTx.Nch /1e-3),2),'dBm')
     
     ### WDM channels coherent detection and demodulation
 
@@ -188,114 +189,156 @@ for indP, G in enumerate(scale):
 
     #### polarization multiplexed coherent optical receiver
     θsig = π/3 # polarization rotation angle
-    sigRx = pdmCoherentReceiver(sigWDM, sigLO, θsig, paramPD)
+    sigRx_coh = pdmCoherentReceiver(sigWDM, sigLO, θsig, paramPD)
 
-    ### Matched filtering and CD compensation
-
-    # Rx filtering
+    for runDBP in [True, False]:
+        ### Matched filtering and CD compensation
+        
+        # Rx filtering
     
-    # Matched filtering
-    if paramTx.pulse == 'nrz':
-        pulse = pulseShape('nrz', paramTx.SpS)
-    elif paramTx.pulse == 'rrc':
-        pulse = pulseShape('rrc', paramTx.SpS, N=paramTx.Ntaps, alpha=paramTx.alphaRRC, Ts=1/paramTx.Rs)
+        # Matched filtering
+        if paramTx.pulse == 'nrz':
+            pulse = pulseShape('nrz', paramTx.SpS)
+        elif paramTx.pulse == 'rrc':
+            pulse = pulseShape('rrc', paramTx.SpS, N=paramTx.Ntaps, alpha=paramTx.alphaRRC, Ts=1/paramTx.Rs)
 
-    pulse = pnorm(pulse)
-    sigRx = firFilter(pulse, sigRx)
+        pulse = pnorm(pulse)
+        sigRx = firFilter(pulse, sigRx_coh)  
 
-    # CD compensation/digital backpropagation
-    if runDBP:
-        Pch = 10**((G + paramTx.Pch_dBm)/10)*1e-3
-        sigRx = np.sqrt(Pch/2)*pnorm(sigRx)
-        print('channel input power (DBP): ', round(10*np.log10(signal_power(sigRx)/1e-3),3),'dBm')
+        # CD compensation/digital backpropagation
+        if runDBP:
+            Pch = 10**((G + paramTx.Pch_dBm)/10)*1e-3
+            sigRx = np.sqrt(Pch/2)*pnorm(sigRx)
+            #print('channel input power (DBP): ', round(10*np.log10(signal_power(sigRx)/1e-3),3),'dBm')
 
-        sigRx,_ = manakovDBP(sigRx, Fs, paramDBP)    
-    else:
-        sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
-
-    ### Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences
-
-    # decimation
-    paramDec = parameters()
-    paramDec.SpS_in  = paramTx.SpS
-    paramDec.SpS_out = 2
-    sigRx = decimate(sigRx, paramDec)
-
-    symbRx = symbolSync(sigRx, symbTx, 2)
-
-    ### Power normalization
-
-    x = pnorm(sigRx)
-    d = pnorm(symbRx)
-
-    ### Adaptive equalization
-
-    # adaptive equalization parameters
-    paramEq = parameters()
-    paramEq.nTaps = 15
-    paramEq.SpS = paramDec.SpS_out
-    paramEq.numIter = 5
-    paramEq.storeCoeff = False
-    paramEq.M = paramTx.M
-    paramEq.L = [int(0.2*d.shape[0]), int(0.8*d.shape[0])]
-    paramEq.prgsBar = False
-
-    if paramTx.M == 4:
-        paramEq.alg = ['cma','cma'] # QPSK
-        paramEq.mu = [5e-3, 1e-3] 
-    else:
-        paramEq.alg = ['da-rde','rde'] # M-QAM
-        paramEq.mu = [5e-3, 2e-4] 
-
-    y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
-
-    ### Carrier phase recovery
-
-    paramCPR = parameters()
-    paramCPR.alg = 'bps'
-    paramCPR.M   = paramTx.M
-    paramCPR.N   = 75
-    paramCPR.B   = 64
-    paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
-
-    y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
-
-    y_CPR = pnorm(y_CPR)
-
-    discard = 5000
-
-    ### Evaluate transmission metrics
-
-    ind = np.arange(discard, d.shape[0]-discard)
-
-    # remove phase and polarization ambiguities for QPSK signals
-    if paramTx.M == 4:   
-        d = symbTx
-        # find rotations after CPR and/or polarizations swaps possibly added at the output the adaptive equalizer:
-        rot0 = [np.mean(pnorm(symbTx[ind,0])/pnorm(y_CPR[ind,0])), np.mean(pnorm(symbTx[ind,1])/pnorm(y_CPR[ind,0]))]
-        rot1 = [np.mean(pnorm(symbTx[ind,1])/pnorm(y_CPR[ind,1])), np.mean(pnorm(symbTx[ind,0])/pnorm(y_CPR[ind,1]))]
-
-        if np.argmax(np.abs(rot0)) == 1 and np.argmax(np.abs(rot1)) == 1:      
-            y_CPR_ = y_CPR.copy() 
-            # undo swap and rotation 
-            y_CPR[:,0] = pnorm(rot1[np.argmax(np.abs(rot1))]*y_CPR_[:,1]) 
-            y_CPR[:,1] = pnorm(rot0[np.argmax(np.abs(rot0))]*y_CPR_[:,0])
+            sigRx,_ = manakovDBP(sigRx, Fs, paramDBP)    
         else:
-            # undo rotation
-            y_CPR[:,0] = pnorm(rot0[np.argmax(np.abs(rot0))]*y_CPR[:,0])
-            y_CPR[:,1] = pnorm(rot1[np.argmax(np.abs(rot1))]*y_CPR[:,1])
+            sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
 
+        ### Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences
 
-    BER[:,indP], SER[:,indP], SNR[:,indP] = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-    GMI[:,indP], NGMI[:,indP] = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-    MI[:,indP] = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
-    EVM[:,indP] = calcEVM(y_CPR[ind,:], paramTx.M, 'qam', d[ind,:])
+        # decimation
+        paramDec = parameters()
+        paramDec.SpS_in  = paramTx.SpS
+        paramDec.SpS_out = 2
+        sigRx = decimate(sigRx, paramDec)
 
-    print('      pol.X      pol.Y      ')
-    print(' SER: %.2e,  %.2e'%(SER[0,indP], SER[1,indP]))
-    print(' BER: %.2e,  %.2e'%(BER[0,indP], BER[1,indP]))
-    print(' SNR: %.2f dB,  %.2f dB'%(SNR[0,indP], SNR[1,indP]))
-    print(' EVM: %.2f %%,    %.2f %%'%(EVM[0,indP]*100, EVM[1,indP]*100))
-    print('  MI: %.2f bits, %.2f bits'%(MI[0,indP], MI[1,indP]))
-    print(' GMI: %.2f bits, %.2f bits'%(GMI[0,indP], GMI[1,indP]))
-    print('NGMI: %.2f,      %.2f'%(NGMI[0,indP], NGMI[1,indP]))
+        symbRx = symbolSync(sigRx, symbTx, 2)
+
+        ### Power normalization
+
+        x = pnorm(sigRx)
+        d = pnorm(symbRx)
+
+        ### Adaptive equalization
+
+        # adaptive equalization parameters
+        paramEq = parameters()
+        paramEq.nTaps = 15
+        paramEq.SpS = paramDec.SpS_out
+        paramEq.numIter = 5
+        paramEq.storeCoeff = False
+        paramEq.M = paramTx.M
+        paramEq.L = [int(0.2*d.shape[0]), int(0.8*d.shape[0])]
+        paramEq.prgsBar = False
+
+        if paramTx.M == 4:
+            paramEq.alg = ['cma','cma'] # QPSK
+            paramEq.mu = [5e-3, 1e-3] 
+        else:
+            paramEq.alg = ['da-rde','rde'] # M-QAM
+            paramEq.mu = [5e-3, 2e-4] 
+
+        y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
+
+        ### Carrier phase recovery
+
+        paramCPR = parameters()
+        paramCPR.alg = 'bps'
+        paramCPR.M   = paramTx.M
+        paramCPR.N   = 75
+        paramCPR.B   = 64
+        paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
+
+        y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
+
+        y_CPR = pnorm(y_CPR)
+
+        discard = 5000
+
+        ### Evaluate transmission metrics
+
+        ind = np.arange(discard, d.shape[0]-discard)
+
+        # remove phase and polarization ambiguities for QPSK signals
+        if paramTx.M == 4:   
+            d = symbTx
+            # find rotations after CPR and/or polarizations swaps possibly added at the output the adaptive equalizer:
+            rot0 = [np.mean(pnorm(symbTx[ind,0])/pnorm(y_CPR[ind,0])), np.mean(pnorm(symbTx[ind,1])/pnorm(y_CPR[ind,0]))]
+            rot1 = [np.mean(pnorm(symbTx[ind,1])/pnorm(y_CPR[ind,1])), np.mean(pnorm(symbTx[ind,0])/pnorm(y_CPR[ind,1]))]
+
+            if np.argmax(np.abs(rot0)) == 1 and np.argmax(np.abs(rot1)) == 1:      
+                y_CPR_ = y_CPR.copy() 
+                # undo swap and rotation 
+                y_CPR[:,0] = pnorm(rot1[np.argmax(np.abs(rot1))]*y_CPR_[:,1]) 
+                y_CPR[:,1] = pnorm(rot0[np.argmax(np.abs(rot0))]*y_CPR_[:,0])
+            else:
+                # undo rotation
+                y_CPR[:,0] = pnorm(rot0[np.argmax(np.abs(rot0))]*y_CPR[:,0])
+                y_CPR[:,1] = pnorm(rot1[np.argmax(np.abs(rot1))]*y_CPR[:,1])
+
+        if runDBP:
+            indsave = np.arange(0,2)
+        else:
+            indsave = np.arange(2,4)
+            
+        BER[indsave,indP], SER[indsave,indP], SNR[indsave,indP] = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+        GMI[indsave,indP], NGMI[indsave,indP] = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+        MI[indsave,indP] = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
+        EVM[indsave,indP] = calcEVM(y_CPR[ind,:], paramTx.M, 'qam', d[ind,:])
+
+        print('      pol.X      pol.Y      ')
+        print(' SER: %.2e,  %.2e'%(SER[indsave[0],indP], SER[indsave[1],indP]))
+        print(' BER: %.2e,  %.2e'%(BER[indsave[0],indP], BER[indsave[1],indP]))
+        print(' SNR: %.2f dB,  %.2f dB'%(SNR[indsave[0],indP], SNR[indsave[1],indP]))
+        print(' EVM: %.2f %%,    %.2f %%'%(EVM[indsave[0],indP]*100, EVM[indsave[1],indP]*100))
+        print('  MI: %.2f bits, %.2f bits'%(MI[indsave[0],indP], MI[indsave[1],indP]))
+        print(' GMI: %.2f bits, %.2f bits'%(GMI[indsave[0],indP], GMI[indsave[1],indP]))
+        print('NGMI: %.2f,      %.2f'%(NGMI[indsave[0],indP], NGMI[indsave[1],indP]))
+
+# +
+fig, ax = plt.subplots(1,4)
+ax[0].plot(Powers, np.log10(BER.T), '-*', label=['x-pol DBP', 'y-pol DBP', 'x-pol EDC', 'y-pol EDC']);
+ax[0].set_xlabel('Power [dBm]')
+ax[0].set_ylabel('BER')
+ax[0].legend()
+ax[0].grid()
+ax[0].set_box_aspect(1)
+ax[0].set_xlim(min(Powers), max(Powers))
+
+ax[1].plot(Powers, np.log10(SER.T), '-*', label=['x-pol DBP', 'y-pol DBP', 'x-pol EDC', 'y-pol EDC']);
+ax[1].set_xlabel('Power [dBm]')
+ax[1].set_ylabel('SER')
+ax[1].legend()
+ax[1].grid()
+ax[1].set_box_aspect(1)
+ax[1].set_xlim(min(Powers), max(Powers))
+
+ax[2].plot(Powers, SNR.T, '-*', label=['x-pol DBP', 'y-pol DBP', 'x-pol EDC', 'y-pol EDC']);
+ax[2].set_xlabel('Power [dBm]')
+ax[2].set_ylabel('SNR [dB]')
+ax[2].legend()
+ax[2].grid()
+ax[2].set_box_aspect(1)
+ax[2].set_xlim(min(Powers), max(Powers))
+
+ax[3].plot(Powers, GMI.T, '-*', label=['x-pol DBP', 'y-pol DBP', 'x-pol EDC', 'y-pol EDC']);
+ax[3].set_xlabel('Power [dBm]')
+ax[3].set_ylabel('GMI [bits]')
+ax[3].legend()
+ax[3].grid()
+ax[3].set_box_aspect(1)
+ax[3].set_xlim(min(Powers), max(Powers))
+
+fig.tight_layout()
+fig.set_size_inches(15, 10)
