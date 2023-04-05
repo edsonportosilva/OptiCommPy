@@ -82,7 +82,17 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
 
     """
     try:
-        assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
+        u.shape
+    except AttributeError:
+        u = np.array([u])
+    
+    try:
+        if Ai.shape == () and u.shape != ():
+            Ai = Ai * np.ones(u.shape)
+        else:
+            assert (
+                Ai.shape == u.shape
+            ), "Ai and u need to have the same dimensions"
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
