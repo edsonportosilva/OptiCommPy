@@ -17,7 +17,7 @@ import logging as logg
 
 def simpleWDMTx(param):
     """
-    Simple WDM transmitter.
+    Implement a simple WDM transmitter.
 
     Generates a complex baseband waveform representing a WDM signal with
     arbitrary number of carriers
@@ -40,7 +40,7 @@ def simpleWDMTx(param):
     """
     # check input parameters
     param.M = getattr(param, "M", 16)
-    param.constType = getattr(param, 'constType', 'qam')
+    param.constType = getattr(param, "constType", "qam")
     param.Rs = getattr(param, "Rs", 32e9)
     param.SpS = getattr(param, "SpS", 16)
     param.Nbits = getattr(param, "Nbits", 60000)
@@ -94,25 +94,27 @@ def simpleWDMTx(param):
         (len(t) // param.SpS, param.Nmodes, param.Nch), dtype="complex"
     )
 
-
     Psig = 0
 
     # constellation symbols info
     const = GrayMapping(param.M, param.constType)
-    Es = np.mean(np.abs(const)**2)    
+    Es = np.mean(np.abs(const) ** 2)
 
     # pulse shaping filter
     if param.pulse == "nrz":
         pulse = pulseShape("nrz", param.SpS)
     elif param.pulse == "rrc":
-        pulse = pulseShape("rrc", param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts)
+        pulse = pulseShape(
+            "rrc", param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts
+        )
 
     pulse = pulse / np.max(np.abs(pulse))
 
-    for indCh in tqdm(range(param.Nch), disable=not(param.prgsBar)):
+    for indCh in tqdm(range(param.Nch), disable=not (param.prgsBar)):
 
         logg.info(
-            "channel %d\t fc : %3.4f THz" % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
+            "channel %d\t fc : %3.4f THz"
+            % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
         )
 
         Pmode = 0
@@ -125,7 +127,7 @@ def simpleWDMTx(param):
             # generate random bits
             bitsTx = np.random.randint(2, size=param.Nbits)
 
-            # map bits to constellation symbols            
+            # map bits to constellation symbols
             symbTx = modulateGray(bitsTx, param.M, param.constType)
 
             # normalize symbols energy to 1
@@ -141,14 +143,11 @@ def simpleWDMTx(param):
 
             # optical modulation
             if indMode == 0:  # generate LO field with phase noise
-                ϕ_pn_lo = phaseNoise(param.lw, len(sigTx), 1/Fs)
-                sigLO   = Ai*np.exp(1j*ϕ_pn_lo)
-            
+                ϕ_pn_lo = phaseNoise(param.lw, len(sigTx), 1 / Fs)
+                sigLO = Ai * np.exp(1j * ϕ_pn_lo)
+
             sigTxCh = iqm(sigLO, 0.5 * sigTx, Vπ, Vb, Vb)
-            sigTxCh = (
-                np.sqrt(Pch[indCh] / param.Nmodes)
-                * pnorm(sigTxCh)
-            )
+            sigTxCh = np.sqrt(Pch[indCh] / param.Nmodes) * pnorm(sigTxCh)
 
             sigTxWDM[:, indMode] += sigTxCh * np.exp(
                 1j * 2 * π * (freqGrid[indCh] / Fs) * t
@@ -158,9 +157,14 @@ def simpleWDMTx(param):
 
         Psig += Pmode
 
-        logg.info("channel %d\t power: %.2f dBm\n" % (indCh, 10 * np.log10(Pmode / 1e-3)))
+        logg.info(
+            "channel %d\t power: %.2f dBm\n"
+            % (indCh, 10 * np.log10(Pmode / 1e-3))
+        )
 
-    logg.info("total WDM signal power: %.2f dBm" % (10 * np.log10(Psig / 1e-3)))
+    logg.info(
+        "total WDM signal power: %.2f dBm" % (10 * np.log10(Psig / 1e-3))
+    )
 
     param.freqGrid = freqGrid
 
