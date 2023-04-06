@@ -707,8 +707,8 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
             Ech_x = edfa(Ech_x, Fs, alpha * Lspan, NF, Fc)
             Ech_y = edfa(Ech_y, Fs, alpha * Lspan, NF, Fc)
         elif amp == "ideal":
-            Ech_x = Ech_x * np.exp(α / 2 * Nsteps * hz)
-            Ech_y = Ech_y * np.exp(α / 2 * Nsteps * hz)
+            Ech_x = Ech_x * np.exp(α / 2 * Lspan)
+            Ech_y = Ech_y * np.exp(α / 2 * Lspan)
         elif amp is None:
             Ech_x = Ech_x * np.exp(0)
             Ech_y = Ech_y * np.exp(0)
