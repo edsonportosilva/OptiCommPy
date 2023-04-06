@@ -17,7 +17,7 @@ import logging as logg
 
 def simpleWDMTx(param):
     """
-    Simple WDM transmitter
+    Simple WDM transmitter.
 
     Generates a complex baseband waveform representing a WDM signal with
     arbitrary number of carriers

@@ -85,7 +85,7 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
         u.shape
     except AttributeError:
         u = np.array([u])
-    
+
     try:
         if Ai.shape == () and u.shape != ():
             Ai = Ai * np.ones(u.shape)
