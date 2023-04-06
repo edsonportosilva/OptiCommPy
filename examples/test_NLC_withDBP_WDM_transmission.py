@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -15,7 +15,7 @@
 # ---
 
 # + [markdown] colab_type="text" id="view-in-github"
-# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_WDM_transmission.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_NLC_withDBP_WDM_transmission.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # + [markdown] id="0270b2b0"
 # # Simulation of coherent WDM transmission with nonlinearity compensation using digital backpropagation (DBP)
@@ -119,7 +119,7 @@ paramCh.maxIter = 5      # maximum number of convergence iterations per step
 paramCh.tol = 1e-5       # error tolerance per step
 paramCh.nlprMethod = True # use adaptive step-size based o maximum nonlinear phase-shift?
 paramCh.maxNlinPhaseRot = 2e-2 # maximum nonlinear phase-shift per step
-paramCh.prgsBar = True   # show progress bar?
+paramCh.prgsBar = False   # show progress bar?
 #paramCh.saveSpanN = [1, 5, 9, 14]
 Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
