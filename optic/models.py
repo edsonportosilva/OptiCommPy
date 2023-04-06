@@ -560,7 +560,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
     paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
     paramCh.prgsBar: display progress bar? bolean variable [default:True]
-    paramCh.saveSpanN: specify the span indexes to be output [default:[]]
+    paramCh.saveSpanN: specify the span indexes to be outputted [default:[]]
 
     Returns
     -------
@@ -617,7 +617,6 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     ω = 2 * np.pi * Fs * fftfreq(Nfft)
 
     Nspans = int(np.floor(Ltotal / Lspan))
-    Nsteps = int(np.floor(Lspan / hz))
 
     Ech_x = Ei[:, 0::2].T
     Ech_y = Ei[:, 1::2].T
