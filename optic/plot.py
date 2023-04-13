@@ -159,10 +159,10 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     :param plotlabel: label for the plot legend
     """
     sig = sigIn.copy()
-    
+
     if not plotlabel:
         plotlabel = " "
-    
+
     if np.iscomplex(sig).any():
         d = 1
         plotlabel_ = f"{plotlabel} [real]" if plotlabel else "[real]"
@@ -200,7 +200,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
 
             H = H.T
             H = gaussian_filter(H, sigma=1.0)
-        
+
             plt.imshow(
                 H,
                 cmap="turbo",
@@ -208,28 +208,27 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
                 aspect="auto",
                 extent=[0, n, yedges[0], yedges[-1]],
             )
-            plt.xlabel("symbol period (Ts)")
-            plt.ylabel("amplitude")
-            plt.title("eye diagram "+plotlabel_)
+
         elif ptype == "fast":
             y[x == n * SpS] = np.nan
             y[x == 0] = np.nan
 
             plt.plot(x / SpS, y, color="blue", alpha=0.8, label=plotlabel_)
-            plt.xlim(min(x / SpS), max(x / SpS))
-            plt.xlabel("symbol period (Ts)")
-            plt.ylabel("amplitude")
-            plt.title("eye diagram "+plotlabel_)
+            plt.xlim(min(x / SpS), max(x / SpS)) 
 
             if plotlabel is not None:
                 plt.legend(loc="upper left")
 
-            plt.grid()
-            plt.show()
+        plt.xlabel("symbol period (Ts)")
+        plt.ylabel("amplitude")
+        plt.title(f"eye diagram {plotlabel_}")        
+        plt.grid(alpha=0.15)
+        plt.show()
+
     return None
 
 
-def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=[], label=[]):
+def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
     """
     Plot the power spectrum density (PSD) of a signal.
 
@@ -256,6 +255,10 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=[], label=[]):
         matplotlib axes object where the plot is displayed.
 
     """
+    if fig is None:
+        fig = []
+    if label is None:
+        label = []
     if not fig:
         fig = plt.figure()
 
@@ -266,7 +269,7 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=[], label=[]):
        sig.shape[1]       
     except IndexError:
        sig = sig.reshape(len(sig), 1)
-       
+
     for indMode in range(sig.shape[1]):
         plt.psd(
             sig[:, indMode],
@@ -274,7 +277,7 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=[], label=[]):
             Fc=Fc,
             NFFT=NFFT,
             sides="twosided",
-            label=label + ": Mode " + str(indMode),
+            label=f"{label}: Mode {str(indMode)}",
         )
     plt.legend(loc="lower left")
     plt.xlim(Fc - Fs / 2, Fc + Fs / 2)
