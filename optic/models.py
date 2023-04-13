@@ -191,7 +191,7 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     return Eo
 
 
-def photodiode(E, paramPD=[]):
+def photodiode(E, paramPD=None):
     """
     Pin photodiode (PD).
 
@@ -218,6 +218,8 @@ def photodiode(E, paramPD=[]):
           photocurrent.
 
     """
+    if paramPD is None:
+        paramPD = []
     kB = const.value("Boltzmann constant")
     q = const.value("elementary charge")
 
@@ -263,7 +265,7 @@ def photodiode(E, paramPD=[]):
     return ipd.real
 
 
-def balancedPD(E1, E2, paramPD=[]):
+def balancedPD(E1, E2, paramPD=None):
     """
     Balanced photodiode (BPD).
 
@@ -292,6 +294,8 @@ def balancedPD(E1, E2, paramPD=[]):
            Balanced photocurrent.
 
     """
+    if paramPD is None:
+        paramPD = []
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
     i1 = photodiode(E1, paramPD)
@@ -335,7 +339,7 @@ def hybrid_2x4_90deg(Es, Elo):
     return T @ Ei
 
 
-def coherentReceiver(Es, Elo, paramPD=[]):
+def coherentReceiver(Es, Elo, paramPD=None):
     """
     Single polarization coherent optical front-end.
 
@@ -354,6 +358,8 @@ def coherentReceiver(Es, Elo, paramPD=[]):
         Downconverted signal after balanced detection.
 
     """
+    if paramPD is None:
+        paramPD = []
     assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
     assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
@@ -368,7 +374,7 @@ def coherentReceiver(Es, Elo, paramPD=[]):
     return sI + 1j * sQ
 
 
-def pdmCoherentReceiver(Es, Elo, θsig=0, paramPD=[]):
+def pdmCoherentReceiver(Es, Elo, θsig=0, paramPD=None):
     """
     Polarization multiplexed coherent optical front-end.
 
@@ -389,6 +395,8 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, paramPD=[]):
         Downconverted signal after balanced detection.
 
     """
+    if paramPD is None:
+        paramPD = []
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
     Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
@@ -596,7 +604,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     paramCh.maxNlinPhaseRot = getattr(paramCh, "maxNlinPhaseRot", 2e-2)
     paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
     paramCh.saveSpanN = getattr(
-        paramCh, "saveSpanN", [int(paramCh.Ltotal / paramCh.Lspan)]
+        paramCh, "saveSpanN", [paramCh.Ltotal // paramCh.Lspan]
     )
 
     Ltotal = paramCh.Ltotal
@@ -660,17 +668,17 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
             phiRot = nlinPhaseRot(Ex_conv, Ey_conv, Pch, γ)
 
             if nlprMethod:
-                if Lspan - z_current >= maxNlinPhaseRot / np.max(phiRot):
-                    hz_ = maxNlinPhaseRot / np.max(phiRot)
-                else:
-                    hz_ = Lspan - z_current
+                hz_ = (
+                    maxNlinPhaseRot / np.max(phiRot)
+                    if Lspan - z_current >= maxNlinPhaseRot / np.max(phiRot)
+                    else Lspan - z_current
+                )
+            elif Lspan - z_current < hz:
+                hz_ = Lspan - z_current  # check that the remaining
+                # distance is not less than hz (due to non-integer
+                # steps/span)
             else:
-                if Lspan - z_current < hz:
-                    hz_ = Lspan - z_current  # check that the remaining
-                    # distance is not less than hz (due to non-integer
-                    # steps/span)
-                else:
-                    hz_ = hz
+                hz_ = hz
 
             # define the linear operator
             linOperator = np.exp(argLimOp * (hz_ / 2))
