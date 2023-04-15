@@ -164,7 +164,7 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap, px):
     return LLRs
 
 
-def monteCarloGMI(rx, tx, M, constType, px=[]):
+def monteCarloGMI(rx, tx, M, constType, px=None):
     """
     Monte Carlo based generalized mutual information (GMI) estimation.
 
@@ -189,6 +189,8 @@ def monteCarloGMI(rx, tx, M, constType, px=[]):
         Normalized mutual information.
 
     """
+    if px is None:
+        px = []
     # constellation parameters
     constSymb = GrayMapping(M, constType)
 
@@ -258,7 +260,7 @@ def monteCarloGMI(rx, tx, M, constType, px=[]):
     return GMI, NGMI
 
 
-def monteCarloMI(rx, tx, M, constType, px=[]):
+def monteCarloMI(rx, tx, M, constType, px=None):
     """
     Monte Carlo based mutual information (MI) estimation.
 
@@ -281,6 +283,8 @@ def monteCarloMI(rx, tx, M, constType, px=[]):
         Estimated MI values.
 
     """
+    if px is None:
+        px = []
     if len(px) == 0:  # if px is not defined
         px = 1 / M * np.ones(M)  # assume uniform distribution
     # constellation parameters
@@ -387,7 +391,7 @@ def Qfunc(x):
     return 0.5 - 0.5 * erf(x / np.sqrt(2))
 
 
-def calcEVM(symb, M, constType, symbTx=[]):
+def calcEVM(symb, M, constType, symbTx=None):
     """
     Calculate error vector magnitude (EVM) metrics.
 
@@ -408,6 +412,8 @@ def calcEVM(symb, M, constType, symbTx=[]):
         Error vector magnitude (EVM) per signal dimension.
 
     """
+    if symbTx is None:
+        symbTx = []
     symb = pnorm(symb)
 
     # We want all the signal sequences to be disposed in columns:
@@ -560,12 +566,12 @@ def ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc):
     # Networks," in Journal of Lightwave Technology, vol. 28, no. 4,
     # pp. 662-701, Feb.15, 2010, doi: 10.1109/JLT.2009.2039464.
     N_ase = Ns * (G_lin - 1) * nsp * const.h * Fc
-    P_ase = 2 * N_ase * Bref
-
-    return P_ase
+    return 2 * N_ase * Bref
 
 
-def GNmodel_OSNR(Rs, Nch, Δf, Ptx, paramCh=[], Bref=12.5e9):
+def GNmodel_OSNR(Rs, Nch, Δf, Ptx, paramCh=None, Bref=12.5e9):
+    if paramCh is None:
+        paramCh = []
     # check input parameters
     Ltotal = getattr(paramCh, "Ltotal", 800)
     Ls = getattr(paramCh, "Lspan", 50)
