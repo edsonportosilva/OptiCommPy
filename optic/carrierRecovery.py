@@ -7,7 +7,7 @@ from optic.dsp import pnorm
 from optic.modulation import GrayMapping
 
 
-def cpr(Ei, symbTx=[], paramCPR=[]):
+def cpr(Ei, symbTx=None, paramCPR=None):
     """
     Carrier phase recovery function (CPR)
 
@@ -49,6 +49,10 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
         Time-varying estimated phase-shifts.
 
     """
+    if symbTx is None:
+        symbTx = []
+    if paramCPR is None:
+        paramCPR = []
     # check input parameters
     alg = getattr(paramCPR, "alg", "bps")
     M = getattr(paramCPR, "M", 4)
@@ -69,11 +73,11 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     # constellation parameters
     constSymb = GrayMapping(M, constType)
     constSymb = pnorm(constSymb)
-    
+
     # 4th power frequency offset estimation/compensation
     Ei, _ = fourthPowerFOE(Ei, 1/Ts)
     Ei = pnorm(Ei)
-    
+
     if alg == "ddpll":
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
@@ -256,10 +260,14 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):
         Eo[:, n] = Ei[:, n] * np.exp(-1j * 2 * np.pi * fo * t)
 
     if plotSpec:
-        plt.figure()
-        plt.plot(f, f4, label="$|FFT(s[k]^4)|[dB]$")
-        plt.plot(f[indFO], f4[indFO], "x", label="$4f_o$")
-        plt.legend()
-        plt.xlim(min(f), max(f))
-        plt.grid()
+        plotSpectrum(f, f4, indFO)
     return Eo, f[indFO] / 4
+
+
+def plotSpectrum(f, f4, indFO):
+    plt.figure()
+    plt.plot(f, f4, label="$|FFT(s[k]^4)|[dB]$")
+    plt.plot(f[indFO], f4[indFO], "x", label="$4f_o$")
+    plt.legend()
+    plt.xlim(min(f), max(f))
+    plt.grid()
