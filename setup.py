@@ -39,8 +39,9 @@ setup(
           'tqdm>=4.64.1',
           'numba>=0.54.1',
           'scikit-commpy>=0.7.0',
-	    'simple-pid>=1.0.1',
-	    'mpl-scatter-density>=0.7.0'
+	  'simple-pid>=1.0.1',
+	  'mpl-scatter-density>=0.7.0',
+	  'pandas>=2.0.0'
     ],
     #'package' package must contain files (see list above)
     #This dict maps the package name =to=> directories

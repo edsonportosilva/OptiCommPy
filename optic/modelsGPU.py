@@ -105,7 +105,7 @@ def ssfm(Ei, Fs, paramCh, prec=cp.complex128):
     paramCh.NF = getattr(paramCh, "NF", 4.5)
     paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
     paramCh.saveSpanN = getattr(
-        paramCh, "saveSpanN", [int(paramCh.Ltotal / paramCh.Lspan)]
+        paramCh, "saveSpanN", [paramCh.Ltotal // paramCh.Lspan]
     )
 
     Ltotal = paramCh.Ltotal
@@ -248,7 +248,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
     paramCh.maxNlinPhaseRot = getattr(paramCh, "maxNlinPhaseRot", 2e-2)
     paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
     paramCh.saveSpanN = getattr(
-        paramCh, "saveSpanN", [int(paramCh.Ltotal / paramCh.Lspan)]
+        paramCh, "saveSpanN", [paramCh.Ltotal // paramCh.Lspan]
     )
 
     Ltotal = paramCh.Ltotal
@@ -322,17 +322,17 @@ def manakovSSF(Ei, Fs, paramCh, prec=cp.complex128):
             phiRot = nlinPhaseRot(Ex_conv, Ey_conv, Pch, γ)
 
             if nlprMethod:
-                if Lspan - z_current >= maxNlinPhaseRot / cp.max(phiRot):
-                    hz_ = maxNlinPhaseRot / cp.max(phiRot)
-                else:
-                    hz_ = Lspan - z_current
+                hz_ = (
+                    maxNlinPhaseRot / cp.max(phiRot)
+                    if Lspan - z_current >= maxNlinPhaseRot / cp.max(phiRot)
+                    else Lspan - z_current
+                )
+            elif Lspan - z_current < hz:
+                hz_ = Lspan - z_current  # check that the remaining
+                # distance is not less than hz (due to non-integer
+                # steps/span)
             else:
-                if Lspan - z_current < hz:
-                    hz_ = Lspan - z_current  # check that the remaining
-                    # distance is not less than hz (due to non-integer
-                    # steps/span)
-                else:
-                    hz_ = hz
+                hz_ = hz
 
             # define the linear operator
             linOperator = cp.exp(argLimOp * (hz_ / 2))
@@ -497,14 +497,14 @@ def manakovDBP(Ei, Fs, paramCh, prec=cp.complex128):
     paramCh.D = getattr(paramCh, "D", 16)
     paramCh.gamma = getattr(paramCh, "gamma", 1.3)
     paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
-    paramCh.amp = getattr(paramCh, "amp", "edfa")    
+    paramCh.amp = getattr(paramCh, "amp", "edfa")
     paramCh.maxIter = getattr(paramCh, "maxIter", 10)
     paramCh.tol = getattr(paramCh, "tol", 1e-5)
     paramCh.nlprMethod = getattr(paramCh, "nlprMethod", True)
     paramCh.maxNlinPhaseRot = getattr(paramCh, "maxNlinPhaseRot", 2e-2)
     paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
     paramCh.saveSpanN = getattr(
-        paramCh, "saveSpanN", [int(paramCh.Ltotal / paramCh.Lspan)]
+        paramCh, "saveSpanN", [paramCh.Ltotal // paramCh.Lspan]
     )
 
     Ltotal = paramCh.Ltotal
@@ -564,19 +564,19 @@ def manakovDBP(Ei, Fs, paramCh, prec=cp.complex128):
         indRecSpan = 0
 
     for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
-        
+
         # reverse amplification step
-        if amp == "edfa" or amp == "ideal":
+        if amp in {"edfa", "ideal"}:
             Ech_x = Ech_x * cp.exp(-α / 2 * Lspan)
-            Ech_y = Ech_y * cp.exp(-α / 2 * Lspan)            
+            Ech_y = Ech_y * cp.exp(-α / 2 * Lspan)
         elif amp is None:
             Ech_x = Ech_x * cp.exp(0)
             Ech_y = Ech_y * cp.exp(0)
-            
+
         Ex_conv = Ech_x.copy()
         Ey_conv = Ech_y.copy()
         z_current = 0
-            
+
         # reverse fiber propagation steps
         while z_current < Lspan:
 
@@ -585,17 +585,17 @@ def manakovDBP(Ei, Fs, paramCh, prec=cp.complex128):
             phiRot = nlinPhaseRot(Ex_conv, Ey_conv, Pch, γ)
 
             if nlprMethod:
-                if Lspan - z_current >= maxNlinPhaseRot / cp.max(phiRot):
-                    hz_ = maxNlinPhaseRot / cp.max(phiRot)
-                else:
-                    hz_ = Lspan - z_current
+                hz_ = (
+                    maxNlinPhaseRot / cp.max(phiRot)
+                    if Lspan - z_current >= maxNlinPhaseRot / cp.max(phiRot)
+                    else Lspan - z_current
+                )
+            elif Lspan - z_current < hz:
+                hz_ = Lspan - z_current  # check that the remaining
+                # distance is not less than hz (due to non-integer
+                # steps/span)
             else:
-                if Lspan - z_current < hz:
-                    hz_ = Lspan - z_current  # check that the remaining
-                    # distance is not less than hz (due to non-integer
-                    # steps/span)
-                else:
-                    hz_ = hz
+                hz_ = hz
 
             # define the linear operator
             linOperator = cp.exp(argLimOp * (hz_ / 2))
@@ -636,7 +636,7 @@ def manakovDBP(Ei, Fs, paramCh, prec=cp.complex128):
             Ech_y = Ech_y_fd.copy()
 
             z_current += hz_  # update propagated distance
-                    
+
         if spanN in saveSpanN:
             Ech_spans[:, 2 * indRecSpan: 2 * indRecSpan + 1] = Ech_x.T
             Ech_spans[:, 2 * indRecSpan + 1: 2 * indRecSpan + 2] = Ech_y.T
