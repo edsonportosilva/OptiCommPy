@@ -7,9 +7,9 @@ from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
-from optic.dsp import pnorm
-from optic.models import linFiberCh
-from optic.modulation import GrayMapping
+from optic.dsp.core import pnorm
+from optic.models.channels import linFiberCh
+from optic.comm.modulation import GrayMapping
 
 
 def edc(Ei, L, D, Fc, Fs):
