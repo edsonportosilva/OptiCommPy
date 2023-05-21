@@ -3,8 +3,8 @@ import numpy as np
 from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
 
-from optic.dsp import pnorm
-from optic.modulation import GrayMapping
+from optic.dsp.core import pnorm
+from optic.comm.modulation import GrayMapping
 
 
 def cpr(Ei, symbTx=None, paramCPR=None):

@@ -9,7 +9,7 @@ from cupy.random import normal
 from cupyx.scipy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
-from optic.metrics import signal_power
+from optic.dsp.core import signal_power
 
 
 def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12, prec=cp.complex128):

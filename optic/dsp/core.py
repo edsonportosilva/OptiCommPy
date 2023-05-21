@@ -7,6 +7,46 @@ from numba import njit
 from scipy import signal
 
 
+@njit
+def sigPow(x):
+    """
+    Calculate the average power of x.
+
+    Parameters
+    ----------
+    x : np.array
+        Signal.
+
+    Returns
+    -------
+    scalar
+        Average power of x: P = Nmodes*mean(abs(x)**2).
+
+    """        
+    return np.mean(np.abs(x) ** 2)
+
+def signal_power(x):
+    """
+    Calculate the total average power of x.
+
+    Parameters
+    ----------
+    x : np.array
+        Signal.
+
+    Returns
+    -------
+    scalar
+        Total average power of x: P = Nmodes*mean(abs(x)**2).
+
+    """
+    try:
+        Nmodes = x.shape[1]
+    except IndexError:
+        Nmodes = 1
+        
+    return Nmodes*sigPow(x)
+
 def firFilter(h, x):
     """
     Perform FIR filtering and compensate for filter delay.

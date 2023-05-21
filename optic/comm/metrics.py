@@ -6,50 +6,8 @@ from numba import njit, prange
 from scipy.special import erf
 import scipy.constants as const
 
-from optic.dsp import pnorm
-from optic.modulation import GrayMapping, demodulateGray, minEuclid
-
-
-
-def signal_power(x):
-    """
-    Calculate the total average power of x.
-
-    Parameters
-    ----------
-    x : np.array
-        Signal.
-
-    Returns
-    -------
-    scalar
-        Total average power of x: P = Nmodes*mean(abs(x)**2).
-
-    """
-    try:
-        Nmodes = x.shape[1]
-    except IndexError:
-        Nmodes = 1
-        
-    return Nmodes*sigPow(x)
-
-@njit
-def sigPow(x):
-    """
-    Calculate the average power of x.
-
-    Parameters
-    ----------
-    x : np.array
-        Signal.
-
-    Returns
-    -------
-    scalar
-        Average power of x: P = Nmodes*mean(abs(x)**2).
-
-    """        
-    return np.mean(np.abs(x) ** 2)
+from optic.dsp.core import pnorm, signal_power
+from optic.comm.modulation import GrayMapping, demodulateGray, minEuclid
 
 
 def fastBERcalc(rx, tx, M, constType):
@@ -446,8 +404,9 @@ def calcEVM(symb, M, constType, symbTx=None):
                 rot = np.mean(symbTx[:, ii] / symb[:, ii])
                 symb[:, ii] = rot * symb[:, ii]
             decided = symbTx[:, ii]
+
         EVM[ii] = np.mean(np.abs(symb[:, ii] - decided) ** 2) / np.mean(
-            np.abs(symbTx[:, ii]) ** 2
+            np.abs(decided) ** 2
         )
     return EVM
 

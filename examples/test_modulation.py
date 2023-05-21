@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -24,10 +24,10 @@ if 'google.colab' in str(get_ipython()):
     cd('/content/OptiCommPy/')
     # ! pip install . 
 
-from optic.modulation import modulateGray, demodulateGray, GrayMapping
-from optic.metrics import signal_power, fastBERcalc, theoryBER
-from optic.models import awgn
-from optic.dsp import pnorm
+from optic.comm.modulation import modulateGray, demodulateGray, GrayMapping
+from optic.comm.metrics import fastBERcalc, theoryBER
+from optic.models.channels import awgn
+from optic.dsp.core import pnorm, signal_power
 from optic.plot import pconst
 import matplotlib.pyplot as plt
 import numpy as np
