@@ -16,6 +16,41 @@ try:
 except ImportError:
     from optic.dsp.core import firFilter
 
+def pm(Ai, u, Vπ):
+    """
+    Optical Phase Modulator (PM).
+
+    Parameters
+    ----------
+    Ai : scalar or np.array
+        Amplitude of the optical field at the input of the PM.
+    u : np.array
+        Electrical driving signal.
+    Vπ : scalar
+        PM's Vπ voltage.
+    Returns
+    -------
+    Ao : np.array
+        Modulated optical field at the output of the PM.
+
+    """
+    try:
+        u.shape
+    except AttributeError:
+        u = np.array([u])
+
+    try:
+        if Ai.shape == () and u.shape != ():
+            Ai = Ai * np.ones(u.shape)
+        else:
+            assert (
+                Ai.shape == u.shape
+            ), "Ai and u need to have the same dimensions"
+    except AttributeError:
+        Ai = Ai * np.ones(u.shape)
+
+    π = np.pi
+    return Ai * np.exp(1j* (u / Vπ) * π)
 
 def mzm(Ai, u, Vπ, Vb):
     """
