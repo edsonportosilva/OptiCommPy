@@ -1,44 +1,57 @@
-# %% [markdown]
+# -*- coding: utf-8 -*-
+# ---
+# jupyter:
+#   jupytext:
+#     formats: ipynb,py:light
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.1
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
+
 # <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/jupyter/test_WDM_transmission.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
-# %% [markdown]
 # # Simulation of coherent WDM transmission
 
-# %%
 if 'google.colab' in str(get_ipython()):    
-    ! git clone -b main https://github.com/edsonportosilva/OptiCommPy
+    # ! git clone -b main https://github.com/edsonportosilva/OptiCommPy
     from os import chdir as cd
     cd('/content/OptiCommPy/')
-    ! pip install . 
+    # ! pip install . 
 
-# %%
 import matplotlib.pyplot as plt
 import numpy as np
 
-from optic.dsp import pulseShape, firFilter, decimate, symbolSync, pnorm
-from optic.models import phaseNoise, pdmCoherentReceiver
+from optic.dsp.core import pulseShape, firFilter, decimate, symbolSync, pnorm, signal_power
+from optic.models.devices import pdmCoherentReceiver
+from optic.models.channels import phaseNoise
 
 try:
-    from optic.modelsGPU import manakovSSF
+    from optic.models.modelsGPU import manakovSSF
 except:
-    from optic.models import manakovSSF
+    from optic.models.channels import manakovSSF
 
-from optic.tx import simpleWDMTx
+from optic.models.tx import simpleWDMTx
 from optic.core import parameters
-from optic.equalization import edc, mimoAdaptEqualizer
-from optic.carrierRecovery import cpr
-from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power, calcEVM
+from optic.dsp.equalization import edc, mimoAdaptEqualizer
+from optic.dsp.carrierRecovery import cpr
+from optic.comm.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, calcEVM
 from optic.plot import pconst
 
 import scipy.constants as const
 
-from optic.amplification import edfaSM,OSA
+from optic.models.amplification import edfaSM,OSA
 
 import os.path as path
 
-#import logging as logg
-#logg.getLogger().setLevel(logg.INFO)
-#logg.basicConfig(format='%(message)s')
+import logging as logg
+logg.getLogger().setLevel(logg.INFO)
+logg.basicConfig(format='%(message)s')
 
 # %%
 from IPython.core.display import HTML
@@ -58,13 +71,14 @@ HTML("""
 figsize(10, 3)
 
 # %%
-#%load_ext autoreload
-#%autoreload 2
-#%load_ext line_profiler
+# %load_ext autoreload
+# %autoreload 2
+# %load_ext line_profiler
 
-# %% [markdown]
-# 
+# + [markdown] magic_args="[markdown]"
+#
 # ## Parameters
+# -
 
 # %%
 # Transmitter parameters:
@@ -121,58 +135,49 @@ param_edfa.tol      = 3/100
 param_edfa.tolCtrl  = 0.5
 param_edfa.noiseBand= 12.5e9
 
-# %%
 if 'google.colab' in str(get_ipython()):  
-  param_edfa.file = path.join(path.abspath(path.join("../")), 'OptiCommPy', 'optic', 'ampParams', param_edfa.file)
+  param_edfa.file = path.join(path.abspath(path.join("../")), 'OptiCommPy', 'optic', 'models', 'ampParams', param_edfa.file)
 else:
-  param_edfa.file = path.join(path.abspath(path.join("../")), 'optic', 'ampParams', param_edfa.file)
+  param_edfa.file = path.join(path.abspath(path.join("../")), 'optic', 'models', 'ampParams', param_edfa.file)
 
-# %% [markdown]
 # ## Simulation
 
-# %% [markdown]
 # ### Singal generation, propagation, amplification and reception
 
-# %% [markdown]
 # **Polarization multiplexed WDM signal generation**
 
-# %%
 # generate WDM signal
 sigWDM_Tx, symbTx_, paramTx = simpleWDMTx(paramTx)
 
-# %%
 print('Average power of the modulated optical signal [mW]: %.3f mW'%(signal_power(sigWDM_Tx)/1e-3))
 print('Average power of the modulated optical signal [dBm]: %.3f dBm'%(10*np.log10(signal_power(sigWDM_Tx)/1e-3)))
 
-# %%
 ax = OSA(sigWDM_Tx, Fs, paramTx.Fc)
 ax.set_xlim([1550,1555])
 ax.set_ylim([-80,-40])
 
-# %% [markdown]
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
-# %%
 # nonlinear signal propagation
 sigWDM, paramCh = manakovSSF(sigWDM_Tx, Fs, paramCh)
 
-# %%
+# +
+
 ax = OSA(sigWDM, Fs, paramTx.Fc)
 ax.set_xlim([1550,1555])
 ax.set_ylim([-80,-40])
 
-# %%
+# +
+
 prog_pw = signal_power(sigWDM)/1e-3 #np.sum(1000*np.mean(sigWDM * np.conj(sigWDM), axis = 0).real)
 print('Average power of the modulated optical signal [mW]: %.3f mW'%(prog_pw))
 print('Average power of the modulated optical signal [dBm]: %.3f dBm'%(10*np.log10(prog_pw)))
+# -
 
-# %% [markdown]
 # **Optical amplification using an EDFA**
 
-# %%
 sigWDM_Amp, PumpF, PumpB, noisef  = edfaSM(sigWDM, Fs, paramTx.Fc, param_edfa)
 
-# %%
 rx_pw = 1e3*signal_power(sigWDM_Amp)
 print('Forward pump  - [mW] : %.3f' %(1e3*PumpF[0]))
 print('Backward pump - [mW] : %.3f' %(1e3*PumpB[1]))
@@ -180,12 +185,13 @@ print('Average power - RX amp [mW] : %.3f' %(rx_pw))
 print('Average power - RX amp [dBm] : %.3f' %(10*np.log10(rx_pw)))
 print('Gain [dB]: %.3f' %(10*np.log10(rx_pw/prog_pw)))
 
-# %%
+# +
+
 ax = OSA(sigWDM_Amp, Fs, paramTx.Fc)
 ax.set_xlim([1550,1555])
 ax.set_ylim([-80,-40])
+# -
 
-# %% [markdown]
 # **Optical WDM spectrum before and after transmission**
 
 # %%
@@ -198,11 +204,7 @@ plt.psd(sigWDM_Amp[:,0], Fs=Fs, Fc=paramCh.Fc, NFFT = 4*1024, sides='twosided', 
 plt.legend(loc='lower left')
 plt.title('optical WDM spectrum');
 
-# %% [markdown]
 # **WDM channels coherent detection and demodulation**
-
-# %%
-# Receiver
 
 # parameters
 chIndex  = int(np.floor(paramTx.Nch/2))      # index of the channel to be demodulated
@@ -233,7 +235,7 @@ t       = np.arange(0, len(sigWDM_Amp))*Ts
 ϕ_pn_lo = phaseNoise(lw, len(sigWDM_Amp), Ts)
 sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
 
-# polarization multiplexed coherent optical receiver
+# **polarization multiplexed coherent optical receiver**
 
 # photodiodes parameters
 paramPD = parameters()
@@ -245,33 +247,28 @@ paramPD.ideal = True
 sigRx = pdmCoherentReceiver(sigWDM_Amp, sigLO, θsig, paramPD)
 
 # plot received constellations
-pconst(sigRx[0::paramTx.SpS,:], R=3)
+pconst(sigRx[0::paramTx.SpS,:], R=3);
 
-# %% [markdown]
 # **Matched filtering and CD compensation**
-
-# %%
-# Rx filtering
 
 # Matched filtering
 if paramTx.pulse == 'nrz':
     pulse = pulseShape('nrz', paramTx.SpS)
 elif paramTx.pulse == 'rrc':
     pulse = pulseShape('rrc', paramTx.SpS, N=paramTx.Ntaps, alpha=paramTx.alphaRRC, Ts=1/paramTx.Rs)
-    
+
 pulse = pnorm(pulse)
 sigRx = firFilter(pulse, sigRx)
 
 # plot constellations after matched filtering
-pconst(sigRx[0::paramTx.SpS,:], R=3)
+pconst(sigRx[0::paramTx.SpS,:], R=3);
 
 # CD compensation
 sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
 
 # plot constellations after CD compensation
-pconst(sigRx[0::paramTx.SpS,:], R=3)
+pconst(sigRx[0::paramTx.SpS,:], R=3);
 
-# %% [markdown]
 # **Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences**
 
 # %%
@@ -283,14 +280,12 @@ sigRx = decimate(sigRx, paramDec)
 
 symbRx = symbolSync(sigRx, symbTx, 2)
 
-# %% [markdown]
 # **Power normalization**
 
 # %%
 x = pnorm(sigRx)
 d = pnorm(symbRx)
 
-# %% [markdown]
 # **Adaptive equalization**
 
 # %%
@@ -310,14 +305,13 @@ if paramTx.M == 4:
 else:
     paramEq.alg = ['da-rde','rde'] # M-QAM
     paramEq.mu = [5e-3, 2e-4] 
-    
+
 y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
 
 #plot constellations after adaptive equalization
 discard = 5000
-pconst(y_EQ[discard:-discard,:])
+pconst(y_EQ[discard:-discard,:]);
 
-# %% [markdown]
 # **Carrier phase recovery**
 
 # %%
@@ -340,12 +334,10 @@ plt.grid()
 
 discard = 500
 
-# %%
 #plot constellations after CPR
 pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
 pconst(y_CPR[discard:-discard,:]);
 
-# %% [markdown]
 # ### Evaluate transmission metrics
 
 # %%
@@ -363,5 +355,3 @@ print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
 print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
-
-
