@@ -31,19 +31,20 @@ if 'google.colab' in str(get_ipython()):
 import matplotlib.pyplot as plt
 import numpy as np
 
-from optic.dsp import pulseShape, firFilter, decimate, symbolSync, pnorm
-from optic.models import phaseNoise, pdmCoherentReceiver
+from optic.dsp.core import pulseShape, firFilter, decimate, symbolSync, pnorm, signal_power
+from optic.models.devices import pdmCoherentReceiver
+from optic.models.channels import phaseNoise
 
 try:
-    from optic.modelsGPU import manakovSSF
+    from optic.models.modelsGPU import manakovSSF
 except:
-    from optic.models import manakovSSF
+    from optic.models.channels import manakovSSF
 
-from optic.tx import simpleWDMTx
+from optic.models.tx import simpleWDMTx
 from optic.core import parameters
-from optic.equalization import edc, mimoAdaptEqualizer
-from optic.carrierRecovery import cpr
-from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power, calcEVM
+from optic.dsp.equalization import edc, mimoAdaptEqualizer
+from optic.dsp.carrierRecovery import cpr
+from optic.comm.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, calcEVM
 from optic.plot import pconst, plotPSD
 
 import scipy.constants as const
