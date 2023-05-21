@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -25,10 +25,10 @@ if 'google.colab' in str(get_ipython()):
 
 import numpy as np
 from commpy.utilities  import upsample
-from optic.models import mzm, photodiode, linFiberCh, edfa
-from optic.modulation import GrayMapping, modulateGray
-from optic.metrics import signal_power
-from optic.dsp import firFilter, pulseShape, lowPassFIR, pnorm
+from optic.models.devices import mzm, photodiode, edfa
+from optic.models.channels import linFiberCh
+from optic.comm.modulation import GrayMapping, modulateGray
+from optic.dsp.core import firFilter, pulseShape, lowPassFIR, pnorm, signal_power
 from optic.core import parameters
 from optic.plot import eyediagram
 import matplotlib.pyplot as plt
@@ -73,8 +73,8 @@ Pi = 10**(Pi_dBm/10)*1e-3 # convert from dBm to W
 # generate pseudo-random bit sequence
 bitsTx = np.random.randint(2, size=100000)
 
-# generate ook modulated symbol sequence
-symbTx = modulateGray(bitsTx, M, 'ook')    
+# generate 2-PAM modulated symbol sequence
+symbTx = modulateGray(bitsTx, M, 'pam')    
 symbTx = pnorm(symbTx) # power normalization
 
 # upsampling
@@ -114,7 +114,7 @@ axs[1].grid()
 fig, axs = plt.subplots(1, 2, figsize=(16,3))
 # plot psd
 axs[0].set_xlim(-3*Rs,3*Rs);
-axs[0].set_ylim(-270,-170);
+axs[0].set_ylim(-230,-130);
 axs[0].psd(np.abs(sigTxo)**2, Fs=Fs, NFFT = 16*1024, sides='twosided', label = 'Optical signal spectrum')
 axs[0].legend(loc='upper left');
 
@@ -247,7 +247,7 @@ for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
     n = np.arange(0, bitsTx.size)
 
     # generate ook modulated symbol sequence
-    symbTx = modulateGray(bitsTx, M, 'ook')    
+    symbTx = modulateGray(bitsTx, M, 'pam')    
     symbTx = pnorm(symbTx) # power normalization
 
     # upsampling

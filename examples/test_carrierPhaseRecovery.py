@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -28,12 +28,13 @@ if 'google.colab' in str(get_ipython()):
 import matplotlib.pyplot as plt
 import numpy as np
 
-from optic.dsp import pulseShape, firFilter, decimate, symbolSync, pnorm
-from optic.models import awgn, phaseNoise, pdmCoherentReceiver
-from optic.carrierRecovery import cpr
-from optic.tx import simpleWDMTx
+from optic.dsp.core import pulseShape, firFilter, decimate, symbolSync, pnorm, signal_power
+from optic.models.devices import pdmCoherentReceiver
+from optic.models.channels import awgn, phaseNoise
+from optic.models.tx import simpleWDMTx
+from optic.dsp.carrierRecovery import cpr
 from optic.core import parameters
-from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power, calcEVM
+from optic.comm.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, calcEVM
 from optic.plot import pconst
 
 import scipy.constants as const

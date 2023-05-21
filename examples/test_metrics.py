@@ -26,10 +26,10 @@ if 'google.colab' in str(get_ipython()):
     cd('/content/OptiCommPy/')
     # ! pip install .
 
-from optic.modulation import modulateGray, GrayMapping
-from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM
-from optic.models import awgn
-from optic.dsp import pnorm
+from optic.comm.modulation import modulateGray, GrayMapping
+from optic.comm.metrics import monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM
+from optic.models.channels import awgn
+from optic.dsp.core import pnorm, signal_power
 from optic.plot import pconst
 from optic.core import parameters
 import matplotlib.pyplot as plt
@@ -441,7 +441,7 @@ plt.grid()
 # ### Test OSNR/SNR prediction with the Gaussian Noise model (GN Model) as a function of the fiber input power
 
 # +
-from optic.metrics import GNmodel_OSNR
+from optic.comm.metrics import GNmodel_OSNR
 
 # optical signal parameters
 Nch = 80   # Number of Nyquist-WDM channels
@@ -476,7 +476,7 @@ plt.xlim(min(Ptx), max(Ptx));
 # ### Test OSNR/SNR prediction with for a linear fiber channel as a function of the distance
 
 # +
-from optic.metrics import calcLinOSNR
+from optic.comm.metrics import calcLinOSNR
 
 Ns = 14       # number of fiber spans
 Ls = 50       # span length in km

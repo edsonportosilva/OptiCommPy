@@ -25,10 +25,11 @@ if 'google.colab' in str(get_ipython()):
 
 import numpy as np
 from commpy.utilities  import upsample
-from optic.models import mzm, photodiode, linFiberCh, edfa
-from optic.modulation import GrayMapping, modulateGray, demodulateGray
-from optic.metrics import signal_power, theoryBER
-from optic.dsp import firFilter, pulseShape, lowPassFIR, pnorm
+from optic.models.devices import mzm, photodiode, edfa
+from optic.models.channels import linFiberCh
+from optic.comm.modulation import GrayMapping, modulateGray, demodulateGray
+from optic.comm.metrics import  theoryBER
+from optic.dsp.core import firFilter, pulseShape, lowPassFIR, pnorm, signal_power
 from optic.core import parameters
 from optic.plot import eyediagram, pconst
 import matplotlib.pyplot as plt
