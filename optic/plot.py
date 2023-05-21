@@ -7,8 +7,7 @@ import copy
 from scipy.interpolate import interp1d
 from scipy.ndimage.filters import gaussian_filter
 
-from optic.dsp import pnorm
-from optic.metrics import signal_power
+from optic.dsp.core import pnorm, signal_power
 import warnings
 
 warnings.filterwarnings('ignore', r'All-NaN (slice|axis) encountered')

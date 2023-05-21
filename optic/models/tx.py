@@ -2,15 +2,16 @@ import numpy as np
 from commpy.utilities import upsample
 from tqdm.notebook import tqdm
 
-from optic.dsp import pnorm, pulseShape
-from optic.metrics import signal_power
-from optic.models import iqm, phaseNoise
-from optic.modulation import GrayMapping, modulateGray
+from optic.dsp.core import pnorm, pulseShape
+from optic.dsp.core import signal_power
+from optic.models.devices import iqm
+from optic.models.channels import phaseNoise
+from optic.comm.modulation import GrayMapping, modulateGray
 
 try:
-    from optic.dspGPU import firFilter
+    from optic.dsp.coreGPU import firFilter
 except ImportError:
-    from optic.dsp import firFilter
+    from optic.dsp.core import firFilter
 
 import logging as logg
 

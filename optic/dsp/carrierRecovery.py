@@ -3,11 +3,11 @@ import numpy as np
 from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
 
-from optic.dsp import pnorm
-from optic.modulation import GrayMapping
+from optic.dsp.core import pnorm
+from optic.comm.modulation import GrayMapping
 
 
-def cpr(Ei, symbTx=[], paramCPR=[]):
+def cpr(Ei, symbTx=None, paramCPR=None):
     """
     Carrier phase recovery function (CPR)
 
@@ -49,6 +49,10 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
         Time-varying estimated phase-shifts.
 
     """
+    if symbTx is None:
+        symbTx = []
+    if paramCPR is None:
+        paramCPR = []
     # check input parameters
     alg = getattr(paramCPR, "alg", "bps")
     M = getattr(paramCPR, "M", 4)
@@ -69,11 +73,11 @@ def cpr(Ei, symbTx=[], paramCPR=[]):
     # constellation parameters
     constSymb = GrayMapping(M, constType)
     constSymb = pnorm(constSymb)
-    
+
     # 4th power frequency offset estimation/compensation
     Ei, _ = fourthPowerFOE(Ei, 1/Ts)
     Ei = pnorm(Ei)
-    
+
     if alg == "ddpll":
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
