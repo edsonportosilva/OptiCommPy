@@ -217,11 +217,12 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
             u[0] = np.sum(a1b * u)
 
             # Estimate the phase error for the next symbol
-            θ[k + 1, n] = θ[k, n] - Kv * u[0]
+            if k < len(Ei)-1:
+                θ[k + 1, n] = θ[k, n] - Kv * u[0]
     return θ
 
 
-def fourthPowerFOE(Ei, Fs, plotSpec=False):
+def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
     """
     4th power frequency offset estimator (FOE).
 
