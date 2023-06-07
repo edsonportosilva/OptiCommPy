@@ -15,9 +15,40 @@ warnings.filterwarnings('ignore', r'All-NaN (slice|axis) encountered')
 def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
     """
     Plot signal constellations.
-
-    :param x: complex signals or list of complex signals
-
+    
+    Parameters
+    ----------
+    x : complex signals or list of complex signals
+        Input signals.
+    
+    lim : bool, optional
+        Flag indicating whether to limit the axes to the radius of the signal. 
+        Defaults to True.
+    
+    R : float, optional
+        Scaling factor for the radius of the signal. 
+        Defaults to 1.25.
+    
+    pType : str, optional
+        Type of plot. "fancy" for scatter_density plot, "fast" for fast plot.
+        Defaults to "fancy".
+    
+    cmap : str, optional
+        Color map for scatter_density plot.
+        Defaults to "turbo".
+    
+    whiteb : bool, optional
+        Flag indicating whether to use white background for scatter_density plot.
+        Defaults to True.
+    
+    Returns
+    -------
+    fig : Figure
+        Figure object.
+    
+    ax : Axes or array of Axes
+        Axes object(s).
+    
     """
     if type(x) == list:
         for ind, _ in enumerate(x):
