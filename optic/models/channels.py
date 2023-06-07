@@ -9,7 +9,7 @@ from numpy.fft import fft, fftfreq, ifft
 from numpy.random import normal
 from tqdm.notebook import tqdm
 
-from optic.dsp.core import lowPassFIR, signal_power
+from optic.dsp.core import lowPassFIR, signal_power, sigPow
 from optic.models.devices import edfa
 
 try:
@@ -444,7 +444,7 @@ def phaseNoise(lw, Nsamples, Ts):
     return phi
 
 
-#@njit
+@njit
 def awgn(sig, snr, Fs=1, B=1):
     """
     Implement an AWGN channel.
@@ -467,7 +467,7 @@ def awgn(sig, snr, Fs=1, B=1):
 
     """
     snr_lin = 10 ** (snr / 10)
-    noiseVar = signal_power(sig) / snr_lin
+    noiseVar = sigPow(sig) / snr_lin
     σ = np.sqrt((Fs / B) * noiseVar)
     noise = normal(0, σ, sig.shape) + 1j * normal(0, σ, sig.shape)
     noise = 1 / np.sqrt(2) * noise
