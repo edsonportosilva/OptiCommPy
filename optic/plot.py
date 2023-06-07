@@ -151,11 +151,24 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     """
     Plot the eye diagram of a modulated signal waveform.
 
-    :param Nsamples: number os samples to be plotted
-    :param SpS: samples per symbol
-    :param n: number of symbol periods
-    :param type: 'fast' or 'fancy'
-    :param plotlabel: label for the plot legend
+    Parameters
+    ----------
+    sigIn : array-like
+        Input signal waveform.
+    Nsamples : int
+        Number of samples to be plotted.
+    SpS : int
+        Samples per symbol.
+    n : int, optional
+        Number of symbol periods. Defaults to 3.
+    ptype : str, optional
+        Type of eye diagram. Can be 'fast' or 'fancy'. Defaults to 'fast'.
+    plotlabel : str, optional
+        Label for the plot legend. Defaults to None.
+
+    Returns
+    -------
+    None
     """
     sig = sigIn.copy()
 

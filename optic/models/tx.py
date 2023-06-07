@@ -23,22 +23,36 @@ def simpleWDMTx(param):
     Generates a complex baseband waveform representing a WDM signal with
     arbitrary number of carriers
 
-    :param.M: modulation order [default: 16]
-    :param.constType: 'qam' or 'psk' [default: 'qam']
-    :param.Rs: carrier baud rate [baud][default: 32e9]
-    :param.SpS: samples per symbol [default: 16]
-    :param.Nbits: total number of bits per carrier [default: 60000]
-    :param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc']
-    :param.Ntaps: number of coefficients of the rrc filter [default: 4096]
-    :param.alphaRRC: rolloff do rrc filter [default: 0.01]
-    :param.Pch_dBm: launched power per WDM channel [dBm][default:-3 dBm]
-    :param.Nch: number of WDM channels [default: 5]
-    :param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz]
-    :param.lw: laser linewidth [Hz][default: 100 kHz]
-    :param.freqSpac: frequency spacing of the WDM grid [Hz][default: 40e9 Hz]
-    :param.Nmodes: number of polarization modes [default: 1]
+    Parameters
+    ----------
+    param : system parameters of the WDM transmitter.
+        optic.core.parameter object.
+        
+        param.M: modulation order [default: 16]
+        param.constType: 'qam' or 'psk' [default: 'qam']
+        param.Rs: carrier baud rate [baud][default: 32e9]
+        param.SpS: samples per symbol [default: 16]
+        param.Nbits: total number of bits per carrier [default: 60000]
+        param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc']
+        param.Ntaps: number of coefficients of the rrc filter [default: 4096]
+        param.alphaRRC: rolloff do rrc filter [default: 0.01]
+        param.Pch_dBm: launched power per WDM channel [dBm][default:-3 dBm]
+        param.Nch: number of WDM channels [default: 5]
+        param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz]
+        param.lw: laser linewidth [Hz][default: 100 kHz]
+        param.freqSpac: frequency spacing of the WDM grid [Hz][default: 40e9 Hz]
+        param.Nmodes: number of polarization modes [default: 1]
 
-    """
+    Returns
+    -------
+    sigTxWDM : np.array
+        WDM signal.
+    symbTxWDM : np.array
+        Array of symbols per WDM carrier.
+    param : optic.core.parameter object
+        System parameters for the WDM transmitter.
+
+    """    
     # check input parameters
     param.M = getattr(param, "M", 16)
     param.constType = getattr(param, "constType", "qam")

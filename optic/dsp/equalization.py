@@ -38,31 +38,49 @@ def edc(Ei, L, D, Fc, Fs):
     return linFiberCh(Ei, L, 0, -D, Fc, Fs)
 
 
-def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
+def mimoAdaptEqualizer(x, dx=None, paramEq=None):
     """
     N-by-N MIMO adaptive equalizer.
 
     Parameters
     ----------
-    x : TYPE
-        DESCRIPTION.
-    dx : TYPE, optional
-        DESCRIPTION. The default is [].
-    paramEq : TYPE, optional
-        DESCRIPTION. The default is [].
+    x : array-like
+        Input array.
+    dx : array-like, optional
+        Syncronized exact symbol sequence corresponding to the received input array x.
+    paramEq : object, optional
+        Parameter object containing the following attributes:
+        - numIter : int, number of pre-convergence iterations (default: 1)
+        - nTaps : int, number of filter taps (default: 15)
+        - mu : float or list of floats, step size parameter(s) (default: [1e-3])
+        - lambdaRLS : float, RLS forgetting factor (default: 0.99)
+        - SpS : int, samples per symbol (default: 2)
+        - H : array-like, coefficient matrix (default: [])
+        - L : int or list of ints, length of the output of the training section (default: [])
+        - Hiter : list, history of coefficient matrices (default: [])
+        - storeCoeff : bool, flag indicating whether to store coefficient matrices (default: False)
+        - alg : str or list of strs, equalizer algorithm(s) (default: ['nlms'])
+        - constType : str, constellation type (default: 'qam')
+        - M : int, modulation order (default: 4)
+        - prgsBar : bool, flag indicating whether to display progress bar (default: True)
 
     Returns
     -------
-    yEq : TYPE
-        DESCRIPTION.
-    H : TYPE
-        DESCRIPTION.
-    errSq : TYPE
-        DESCRIPTION.
-    Hiter : TYPE
-        DESCRIPTION.
+    yEq : array-like
+        Equalized output array.
+    H : array-like
+        Coefficient matrix.
+    errSq : array-like
+        Squared absolute error array.
+    Hiter : list
+        History of coefficient matrices.
 
     """
+    if dx is None:
+        dx = []
+    if paramEq is None:
+        paramEq = []
+
     # check input parameters
     numIter = getattr(paramEq, "numIter", 1)
     nTaps = getattr(paramEq, "nTaps", 15)
@@ -179,9 +197,44 @@ def mimoAdaptEqualizer(x, dx=[], paramEq=[]):
 def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSymb):
     """
     Adaptive equalizer core processing function
-    
-    """
 
+    Parameters
+    ----------
+    x : array-like
+        Input array.
+    dx : array-like
+        Exact constellation radius array.
+    SpS : int
+        Samples per symbol.
+    H : array-like
+        Coefficient matrix.
+    L : int
+        Length of the output.
+    mu : float
+        Step size parameter.
+    lambdaRLS : float
+        RLS forgetting factor.
+    nTaps : int
+        Number of taps.
+    storeCoeff : bool
+        Flag indicating whether to store coefficient matrices.
+    alg : str
+        Equalizer algorithm.
+    constSymb : array-like
+        Constellation symbols.
+
+    Returns
+    -------
+    yEq : array-like
+        Equalized output array.
+    H : array-like
+        Coefficient matrix.
+    errSq : array-like
+        Squared absolute error array.
+    Hiter : array-like
+        History of coefficient matrices.
+
+    """
     # allocate variables
     nModes = int(x.shape[1])
     indTaps = np.arange(0, nTaps)
@@ -266,7 +319,30 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSy
 @njit
 def nlmsUp(x, dx, outEq, mu, H, nModes):
     """
-    coefficient update with the NLMS algorithm    
+    Coefficient update with the NLMS algorithm.
+
+    Parameters
+    ----------
+    x : array-like
+        Input array.
+    dx : array-like
+        Desired output array.
+    outEq : array-like
+        Equalized output array.
+    mu : float
+        Step size for the update.
+    H : array-like
+        Coefficient matrix.
+    nModes : int
+        Number of modes.
+
+    Returns
+    -------
+    H : array-like
+        Updated coefficient matrix.
+    err_sq : array-like
+        Squared absolute error.
+
     """
     indMode = np.arange(0, nModes)
     err = dx - outEq.T  # calculate output error for the NLMS algorithm
@@ -289,7 +365,34 @@ def nlmsUp(x, dx, outEq, mu, H, nModes):
 @njit
 def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
     """
-    coefficient update with the RLS algorithm    
+    Coefficient update with the RLS algorithm.
+
+    Parameters
+    ----------
+    x : array-like
+        Input array.
+    dx : array-like
+        Desired output array.
+    outEq : array-like
+        Equalized output array.
+    λ : float
+        Forgetting factor.
+    H : array-like
+        Coefficient matrix.
+    Sd : array-like
+        Inverse correlation matrix.
+    nModes : int
+        Number of modes.
+
+    Returns
+    -------
+    H : array-like
+        Updated coefficient matrix.
+    Sd : array-like
+        Updated inverse correlation matrix.
+    err_sq : array-like
+        Squared absolute error.
+
     """
     nTaps = H.shape[1]
     indMode = np.arange(0, nModes)
@@ -326,7 +429,30 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
 @njit
 def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
     """
-    coefficient update with the DD-LMS algorithm    
+    Coefficient update with the DD-LMS algorithm.
+
+    Parameters
+    ----------
+    x : array-like
+        Input array.
+    constSymb : array-like
+        Array of constellation symbols.
+    outEq : array-like
+        Equalized output array.
+    mu : float
+        Step size for the update.
+    H : array-like
+        Coefficient matrix.
+    nModes : int
+        Number of modes.
+
+    Returns
+    -------
+    H : array-like
+        Updated coefficient matrix.
+    err_sq : array-like
+        Squared absolute error.
+
     """
     indMode = np.arange(0, nModes)
     outEq = outEq.T
@@ -355,7 +481,34 @@ def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
 @njit
 def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
     """
-    coefficient update with the DD-RLS algorithm    
+    Coefficient update with the DD-RLS algorithm.
+
+    Parameters
+    ----------
+    x : array-like
+        Input array.
+    constSymb : array-like
+        Array of constellation symbols.
+    outEq : array-like
+        Equalized output array.
+    λ : float
+        Forgetting factor.
+    H : array-like
+        Coefficient matrix.
+    Sd : array-like
+        Inverse correlation matrix.
+    nModes : int
+        Number of modes.
+
+    Returns
+    -------
+    H : array-like
+        Updated coefficient matrix.
+    Sd : array-like
+        Updated inverse correlation matrix.
+    err_sq : array-like
+        Squared absolute error.
+
     """
     nTaps = H.shape[1]
     indMode = np.arange(0, nModes)
@@ -398,7 +551,30 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
 @njit
 def cmaUp(x, R, outEq, mu, H, nModes):
     """
-    coefficient update with the CMA algorithm    
+    Coefficient update with the CMA algorithm.
+
+    Parameters
+    ----------
+    x : array-like
+        Input array.
+    R : array-like
+        Correlation array.
+    outEq : array-like
+        Equalized output array.
+    mu : float
+        Step size parameter.
+    H : array-like
+        Coefficient matrix.
+    nModes : int
+        Number of modes.
+
+    Returns
+    -------
+    H : array-like
+        Updated coefficient matrix.
+    err_sq : array-like
+        Squared absolute error.
+
     """
     indMode = np.arange(0, nModes)
     outEq = outEq.T
@@ -422,7 +598,30 @@ def cmaUp(x, R, outEq, mu, H, nModes):
 @njit
 def rdeUp(x, R, outEq, mu, H, nModes):
     """
-    coefficient update with the RDE algorithm    
+    Coefficient update with the RDE algorithm.
+
+    Parameters
+    ----------
+    x : array-like
+        Input array.
+    R : array-like
+        Constellation radius array.
+    outEq : array-like
+        Equalized output array.
+    mu : float
+        Step size parameter.
+    H : array-like
+        Coefficient matrix.
+    nModes : int
+        Number of modes.
+
+    Returns
+    -------
+    H : array-like
+        Updated coefficient matrix.
+    err_sq : array-like
+        Squared absolute error.
+
     """
     indMode = np.arange(0, nModes)
     outEq = outEq.T
@@ -454,7 +653,30 @@ def rdeUp(x, R, outEq, mu, H, nModes):
 @njit
 def dardeUp(x, dx, outEq, mu, H, nModes):
     """
-    coefficient update with the data-aided RDE algorithm    
+    Coefficient update with the data-aided RDE algorithm.
+
+    Parameters
+    ----------
+    x : array-like
+        Input array.
+    dx : array-like
+        Exact constellation radius array.
+    outEq : array-like
+        Equalized output array.
+    mu : float
+        Step size parameter.
+    H : array-like
+        Coefficient matrix.
+    nModes : int
+        Number of modes.
+
+    Returns
+    -------
+    H : array-like
+        Updated coefficient matrix.
+    err_sq : array-like
+        Squared absolute error.
+
     """
     indMode = np.arange(0, nModes)
     outEq = outEq.T
