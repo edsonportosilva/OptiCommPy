@@ -181,9 +181,9 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.    
     
     """
-    nModes = Ei.shape[1]
+    nSymbols, nModes = Ei.shape
 
-    θ = np.zeros(Ei.shape)
+    θ = np.zeros((nSymbols, nModes), dtype=np.float64)
 
     # Loop filter coefficients
     a1b = np.array(
@@ -194,14 +194,14 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
         ]
     )
 
-    u = np.zeros(3)  # [u_f, u_d1, u_d]
+    u = np.zeros(3, dtype=np.float64)  # [u_f, u_d1, u_d]
 
     for n in range(nModes):
 
         u[2] = 0  # Output of phase detector (residual phase error)
         u[0] = 0  # Output of loop filter
 
-        for k in range(len(Ei)):
+        for k in range(Ei.shape[0]):
             u[1] = u[2]
 
             # Remove estimate of phase error from input symbol
@@ -221,28 +221,29 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
             u[0] = np.sum(a1b * u)
 
             # Estimate the phase error for the next symbol
-            if k < len(Ei)-1:
+            if k < Ei.shape[0]-1:
                 θ[k + 1, n] = θ[k, n] - Kv * u[0]
     return θ
 
 
 def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
     """
-    4th power frequency offset estimator (FOE).
+    Estimate the frequency offset (FO) with the 4th-power method.
 
     Parameters
     ----------
-    Ei : np.array
+    Ei : ndarray
         Input signal.
-    Fs : real scalar
+    Fs : float
         Sampling frequency.
-    plotSpec : bolean, optional
-        Plot spectrum. The default is False.
+    plotSpec : bool, optional
+        Whether to plot the spectrum. Default is False.
 
     Returns
     -------
-    Real scalar
-        Estimated frequency offset.
+    ndarray, float
+        - The output signal after applying frequency offset correction.
+        - The estimated frequency offset.
 
     """
     Nfft = Ei.shape[0]
