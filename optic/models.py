@@ -180,7 +180,7 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
 
     ω = np.tile(ω, (1, Nmodes))
     Eo = ifft(
-        fft(Ei, axis=0) * np.exp(-α * L + 1j * (β2 / 2) * (ω**2) * L), axis=0
+        fft(Ei, axis=0) * np.exp(-α/2 * L + 1j * (β2 / 2) * (ω**2) * L), axis=0
     )
 
     if Nmodes == 1:
