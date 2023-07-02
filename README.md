@@ -1,6 +1,6 @@
 # OptiCommPy: Fiber Optic Communications with Python
 
-Simulate optical communications systems with Python. This repository is a Python-based framework to simulate systems, subsystems and components of fiber optic communication systems, for educational and research purposes.
+Simulate optical communications systems with Python. This repository is a Python-based framework to simulate systems, subsystems, and components of fiber optic communication systems, for educational and research purposes.
 <p align="center">
 <img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/eyeDisp.gif" width="400">  <img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/40GOOK_spectrum.jpg" width="400">
 
@@ -29,11 +29,11 @@ Simulate optical communications systems with Python. This repository is a Python
   - *Mutual information* (MI).
   - *Generalized mutual information* (GMI).  
   - *Normalized generalized mutual information* (NGMI). 
-* Vizualization of the spectrum of electrical/optical signals, signal constellations and eyediagrams.
+* Visualization of the spectrum of electrical/optical signals, signal constellations, and eyediagrams.
 
 ## How can I contribute?
 
-If you want to contribute to this project, just implement the feature you want and send me a pull request. If you want to suggest new features or discuss anything related to OptiCommPy, please get in touch with me (edsonporto88@gmail.com).
+If you want to contribute to this project, implement the feature you want and send me a pull request. If you want to suggest new features or discuss anything related to OptiCommPy, please get in touch with me (edsonporto88@gmail.com).
 
 ## Requirements/Dependencies
 
@@ -55,7 +55,7 @@ Using pip:
 pip install OptiCommPy
 ```
 
-Cloning the repository from github:
+Cloning the repository from GitHub:
 
 ```
 $ git clone https://github.com/edsonportosilva/OptiCommPy.git
