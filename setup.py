@@ -11,7 +11,7 @@ MAINTAINER = 'Edson Porto da Silva'
 MAINTAINER_EMAIL = 'edsonporto88@gmail.com'
 URL = 'https://github.com/edsonportosilva/OptiCommPy'
 LICENSE = 'BSD 3-Clause'
-VERSION = '0.3.0'
+VERSION = '0.4.0'
 
 #This is a list of files to install, and where
 #(relative to the 'root' dir, where setup.py is)
