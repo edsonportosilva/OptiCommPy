@@ -210,7 +210,7 @@ def decimate(Ei, param):
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
-        
+
     decFactor = int(param.SpS_in / param.SpS_out)
 
     # simple timing recovery
@@ -263,9 +263,8 @@ def resample(Ei, param):
     tout = np.arange(0, Ei.shape[0] * (1 / inFs), 1 / outFs)
 
     Eo = np.zeros((len(tout), Ei.shape[1]), dtype="complex")
-
     # Anti-aliasing filters:
-    N = 2048
+    N = min(Ei.shape[0], 2048)
     hi = lowPassFIR(inFs / 2, inFs, N, typeF="rect")
     ho = lowPassFIR(outFs / 2, outFs, N, typeF="rect")
 
