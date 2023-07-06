@@ -206,6 +206,11 @@ def decimate(Ei, param):
         Decimated signal.
 
     """
+    try:
+        Ei.shape[1]
+    except IndexError:
+        Ei = Ei.reshape(len(Ei), 1)
+        
     decFactor = int(param.SpS_in / param.SpS_out)
 
     # simple timing recovery
