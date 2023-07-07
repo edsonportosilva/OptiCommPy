@@ -184,21 +184,35 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     paramCh : parameter object  (struct)
         Object with physical/simulation parameters of the optical channel.
 
-    paramCh.Ltotal: total fiber length [km][default: 400 km]
-    paramCh.Lspan: span length [km][default: 80 km]
-    paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-    paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-    paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-    paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-    paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-    paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-    paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
-    paramCh.maxIter: max number of iter. in the trap. integration [default: 10]
-    paramCh.tol: convergence tol. of the trap. integration.[default: 1e-5]
-    paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
-    paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
-    paramCh.prgsBar: display progress bar? bolean variable [default:True]
-    paramCh.saveSpanN: specify the span indexes to be outputted [default:[]]
+        - paramCh.Ltotal: total fiber length [km][default: 400 km]
+
+        - paramCh.Lspan: span length [km][default: 80 km]
+
+        - paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+
+        - paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+
+        - paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+
+        - paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+
+        - paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+
+        - paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+
+        - paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+
+        - paramCh.maxIter: max number of iter. in the trap. integration [default: 10]
+
+        - paramCh.tol: convergence tol. of the trap. integration.[default: 1e-5]
+
+        - paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
+
+        - paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
+
+        - paramCh.prgsBar: display progress bar? bolean variable [default:True]
+
+        - paramCh.saveSpanN: specify the span indexes to be outputted [default:[]]
 
     Returns
     -------
