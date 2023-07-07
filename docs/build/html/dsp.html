@@ -1,211 +1,118 @@
-<!doctype html>
-<html class="no-js" lang="English">
-  <head><meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="models" href="models.html" />
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <!-- Generated with Sphinx 7.0.1 and Furo 2023.05.20 -->
-        <title>dsp - OptiCommPy 0.4.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=e6660623a769aa55fea372102b9bf3151b292993" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
-    
-    
-
-
-<style>
-  body {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dsp &mdash; OptiCommPy 0.4.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-  }
-  @media not print {
-    body[data-theme="dark"] {
-      --color-code-background: #202020;
-  --color-code-foreground: #d0d0d0;
-  
-    }
-    @media (prefers-color-scheme: dark) {
-      body:not([data-theme="light"]) {
-        --color-code-background: #202020;
-  --color-code-foreground: #d0d0d0;
-  
-      }
-    }
-  }
-</style></head>
-  <body>
-    
-    <script>
-      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
-    </script>
-    
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="models" href="models.html" /> 
+</head>
 
-<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-  <symbol id="svg-toc" viewBox="0 0 24 24">
-    <title>Contents</title>
-    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
-      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
-    </svg>
-  </symbol>
-  <symbol id="svg-menu" viewBox="0 0 24 24">
-    <title>Menu</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
-      <line x1="3" y1="12" x2="21" y2="12"></line>
-      <line x1="3" y1="6" x2="21" y2="6"></line>
-      <line x1="3" y1="18" x2="21" y2="18"></line>
-    </svg>
-  </symbol>
-  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
-    <title>Expand</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
-      <polyline points="9 18 15 12 9 6"></polyline>
-    </svg>
-  </symbol>
-  <symbol id="svg-sun" viewBox="0 0 24 24">
-    <title>Light mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
-      <circle cx="12" cy="12" r="5"></circle>
-      <line x1="12" y1="1" x2="12" y2="3"></line>
-      <line x1="12" y1="21" x2="12" y2="23"></line>
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-      <line x1="1" y1="12" x2="3" y2="12"></line>
-      <line x1="21" y1="12" x2="23" y2="12"></line>
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-    </svg>
-  </symbol>
-  <symbol id="svg-moon" viewBox="0 0 24 24">
-    <title>Dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
-    </svg>
-  </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
-</svg>
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
 
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
-<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation">
-  <div class="visually-hidden">Hide navigation sidebar</div>
-</label>
-<label class="overlay toc-overlay" for="__toc">
-  <div class="visually-hidden">Hide table of contents sidebar</div>
-</label>
-
-
-
-<div class="page">
-  <header class="mobile-header">
-    <div class="header-left">
-      <label class="nav-overlay-icon" for="__navigation">
-        <div class="visually-hidden">Toggle site navigation sidebar</div>
-        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
-      </label>
-    </div>
-    <div class="header-center">
-      <a href="index.html"><div class="brand">OptiCommPy 0.4.0 documentation</div></a>
-    </div>
-    <div class="header-right">
-      <div class="theme-toggle-container theme-toggle-header">
-        <button class="theme-toggle">
-          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
-          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
-          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
-          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
-        </button>
-      </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
-        <div class="visually-hidden">Toggle table of contents sidebar</div>
-        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-      </label>
-    </div>
-  </header>
-  <aside class="sidebar-drawer">
-    <div class="sidebar-container">
-      
-      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
-  
-  
-  <span class="sidebar-brand-text">OptiCommPy 0.4.0 documentation</span>
-  
-</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
-  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
-  <input type="hidden" name="check_keywords" value="yes">
-  <input type="hidden" name="area" value="default">
-</form>
-<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OptiCommPy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="comm.html">comm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">models</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">dsp</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dsp</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-optic.dsp.core">core</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.core.decimate"><code class="docutils literal notranslate"><span class="pre">decimate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.core.finddelay"><code class="docutils literal notranslate"><span class="pre">finddelay()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.core.firFilter"><code class="docutils literal notranslate"><span class="pre">firFilter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.core.lowPassFIR"><code class="docutils literal notranslate"><span class="pre">lowPassFIR()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.core.pnorm"><code class="docutils literal notranslate"><span class="pre">pnorm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.core.pulseShape"><code class="docutils literal notranslate"><span class="pre">pulseShape()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.core.resample"><code class="docutils literal notranslate"><span class="pre">resample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.core.sigPow"><code class="docutils literal notranslate"><span class="pre">sigPow()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.core.signal_power"><code class="docutils literal notranslate"><span class="pre">signal_power()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.core.symbolSync"><code class="docutils literal notranslate"><span class="pre">symbolSync()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-optic.dsp.equalization">equalization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.equalization.dbp"><code class="docutils literal notranslate"><span class="pre">dbp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.equalization.edc"><code class="docutils literal notranslate"><span class="pre">edc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.equalization.mimoAdaptEqualizer"><code class="docutils literal notranslate"><span class="pre">mimoAdaptEqualizer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#carrierrecovery">carrierRecovery</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.carrierRecovery.bps"><code class="docutils literal notranslate"><span class="pre">bps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.carrierRecovery.cpr"><code class="docutils literal notranslate"><span class="pre">cpr()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.carrierRecovery.ddpll"><code class="docutils literal notranslate"><span class="pre">ddpll()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optic.dsp.carrierRecovery.fourthPowerFOE"><code class="docutils literal notranslate"><span class="pre">fourthPowerFOE()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
-</div>
-</div>
-
-      </div>
-      
-    </div>
-  </aside>
-  <div class="main">
-    <div class="content">
-      <div class="article-container">
-        <a href="#" class="back-to-top muted-link">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
-          </svg>
-          <span>Back to top</span>
-        </a>
-        <div class="content-icon-container">
-          
-<div class="theme-toggle-container theme-toggle-content">
-            <button class="theme-toggle">
-              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
-              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
-              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
-              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
-            </button>
-          </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
-            <div class="visually-hidden">Toggle table of contents sidebar</div>
-            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-          </label>
         </div>
-        <article role="main">
-          <section id="dsp">
-<h1>dsp<a class="headerlink" href="#dsp" title="Permalink to this heading">#</a></h1>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OptiCommPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">dsp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/dsp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="dsp">
+<h1>dsp<a class="headerlink" href="#dsp" title="Permalink to this heading"></a></h1>
 <section id="module-optic.dsp.core">
-<span id="core"></span><h2>core<a class="headerlink" href="#module-optic.dsp.core" title="Permalink to this heading">#</a></h2>
+<span id="core"></span><h2>core<a class="headerlink" href="#module-optic.dsp.core" title="Permalink to this heading"></a></h2>
 <p>Digital signal processing utilities.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.core.decimate">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">decimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.decimate" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">decimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.decimate" title="Permalink to this definition"></a></dt>
 <dd><p>Decimate signal.</p>
 <section id="parameters">
-<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>Ei<span class="classifier">np.array</span></dt><dd><p>Input signal.</p>
 </dd>
@@ -218,7 +125,7 @@
 </dl>
 </section>
 <section id="returns">
-<h3>Returns<a class="headerlink" href="#returns" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>Eo<span class="classifier">np.array</span></dt><dd><p>Decimated signal.</p>
 </dd>
@@ -228,10 +135,10 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.core.finddelay">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">finddelay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.finddelay" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">finddelay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.finddelay" title="Permalink to this definition"></a></dt>
 <dd><p>Find delay between x and y.</p>
 <section id="id1">
-<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>x<span class="classifier">np.array</span></dt><dd><p>Signal 1.</p>
 </dd>
@@ -240,7 +147,7 @@
 </dl>
 </section>
 <section id="id2">
-<h3>Returns<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>d<span class="classifier">int</span></dt><dd><p>Delay between x and y, in samples.</p>
 </dd>
@@ -250,10 +157,10 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.core.firFilter">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">firFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.firFilter" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">firFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.firFilter" title="Permalink to this definition"></a></dt>
 <dd><p>Perform FIR filtering and compensate for filter delay.</p>
 <section id="id3">
-<h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>h<span class="classifier">np.array</span></dt><dd><p>Coefficients of the FIR filter (impulse response, symmetric).</p>
 </dd>
@@ -264,7 +171,7 @@
 </dl>
 </section>
 <section id="id4">
-<h3>Returns<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>y<span class="classifier">np.array</span></dt><dd><p>Output (filtered) signal.</p>
 </dd>
@@ -274,10 +181,10 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.core.lowPassFIR">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">lowPassFIR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typeF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rect'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.lowPassFIR" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">lowPassFIR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typeF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rect'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.lowPassFIR" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate FIR coefficients of a lowpass filter.</p>
 <section id="id5">
-<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>fc<span class="classifier">float</span></dt><dd><p>Cutoff frequency.</p>
 </dd>
@@ -290,7 +197,7 @@
 </dl>
 </section>
 <section id="id6">
-<h3>Returns<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id6" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>h<span class="classifier">np.array</span></dt><dd><p>Filter coefficients.</p>
 </dd>
@@ -300,17 +207,17 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.core.pnorm">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">pnorm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.pnorm" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">pnorm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.pnorm" title="Permalink to this definition"></a></dt>
 <dd><p>Normalize the average power of each componennt of x.</p>
 <section id="id7">
-<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>x<span class="classifier">np.array</span></dt><dd><p>Signal.</p>
 </dd>
 </dl>
 </section>
 <section id="id8">
-<h3>Returns<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id8" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>np.array</dt><dd><p>Signal x with each component normalized in power.</p>
 </dd>
@@ -320,10 +227,10 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.core.pulseShape">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">pulseShape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulseType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SpS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.pulseShape" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">pulseShape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulseType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SpS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.pulseShape" title="Permalink to this definition"></a></dt>
 <dd><p>Generate a pulse shaping filter.</p>
 <section id="id9">
-<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>pulseType<span class="classifier">string ('rect','nrz','rrc')</span></dt><dd><p>type of pulse shaping filter.</p>
 </dd>
@@ -338,7 +245,7 @@
 </dl>
 </section>
 <section id="id10">
-<h3>Returns<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id10" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>filterCoeffs<span class="classifier">np.array</span></dt><dd><p>Array of filter coefficients (normalized).</p>
 </dd>
@@ -348,10 +255,10 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.core.resample">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.resample" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.resample" title="Permalink to this definition"></a></dt>
 <dd><p>Resample signal to a given sampling rate.</p>
 <section id="id11">
-<h3>Parameters<a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id11" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>Ei<span class="classifier">ndarray</span></dt><dd><p>Input signal.</p>
 </dd>
@@ -365,7 +272,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </dl>
 </section>
 <section id="id12">
-<h3>Returns<a class="headerlink" href="#id12" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id12" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>Eo<span class="classifier">ndarray</span></dt><dd><p>Resampled signal.</p>
 </dd>
@@ -375,17 +282,17 @@ param.SpS_out : samples per symbol of the output signal.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.core.sigPow">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">sigPow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.sigPow" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">sigPow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.sigPow" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate the average power of x.</p>
 <section id="id13">
-<h3>Parameters<a class="headerlink" href="#id13" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id13" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>x<span class="classifier">np.array</span></dt><dd><p>Signal.</p>
 </dd>
 </dl>
 </section>
 <section id="id14">
-<h3>Returns<a class="headerlink" href="#id14" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id14" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>scalar</dt><dd><p>Average power of x: P = Nmodes*mean(abs(x)**2).</p>
 </dd>
@@ -395,17 +302,17 @@ param.SpS_out : samples per symbol of the output signal.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.core.signal_power">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">signal_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.signal_power" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">signal_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.signal_power" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate the total average power of x.</p>
 <section id="id15">
-<h3>Parameters<a class="headerlink" href="#id15" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id15" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>x<span class="classifier">np.array</span></dt><dd><p>Signal.</p>
 </dd>
 </dl>
 </section>
 <section id="id16">
-<h3>Returns<a class="headerlink" href="#id16" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id16" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>scalar</dt><dd><p>Total average power of x: P = Nmodes*mean(abs(x)**2).</p>
 </dd>
@@ -415,10 +322,10 @@ param.SpS_out : samples per symbol of the output signal.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.core.symbolSync">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">symbolSync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SpS</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'amp'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.symbolSync" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.core.</span></span><span class="sig-name descname"><span class="pre">symbolSync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SpS</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'amp'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.symbolSync" title="Permalink to this definition"></a></dt>
 <dd><p>Symbol synchronizer.</p>
 <section id="id17">
-<h3>Parameters<a class="headerlink" href="#id17" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id17" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>rx<span class="classifier">np.array</span></dt><dd><p>Received symbol sequence.</p>
 </dd>
@@ -429,7 +336,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </dl>
 </section>
 <section id="id18">
-<h3>Returns<a class="headerlink" href="#id18" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id18" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>tx<span class="classifier">ndarray</span></dt><dd><p>Transmitted sequence synchronized to rx.</p>
 </dd>
@@ -439,11 +346,11 @@ param.SpS_out : samples per symbol of the output signal.</p>
 
 </section>
 <section id="module-optic.dsp.equalization">
-<span id="equalization"></span><h2>equalization<a class="headerlink" href="#module-optic.dsp.equalization" title="Permalink to this heading">#</a></h2>
+<span id="equalization"></span><h2>equalization<a class="headerlink" href="#module-optic.dsp.equalization" title="Permalink to this heading"></a></h2>
 <p>Functions for adaptive and static equalization.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.equalization.dbp">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.equalization.</span></span><span class="sig-name descname"><span class="pre">dbp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ltotal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lspan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.dbp" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.equalization.</span></span><span class="sig-name descname"><span class="pre">dbp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ltotal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lspan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.dbp" title="Permalink to this definition"></a></dt>
 <dd><p>Digital backpropagation (symmetric, single-pol.)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -467,10 +374,10 @@ param.SpS_out : samples per symbol of the output signal.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.equalization.edc">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.equalization.</span></span><span class="sig-name descname"><span class="pre">edc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.edc" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.equalization.</span></span><span class="sig-name descname"><span class="pre">edc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.edc" title="Permalink to this definition"></a></dt>
 <dd><p>Electronic chromatic dispersion compensation (EDC).</p>
 <section id="id19">
-<h3>Parameters<a class="headerlink" href="#id19" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id19" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>Ei<span class="classifier">np.array</span></dt><dd><p>Dispersed signal.</p>
 </dd>
@@ -485,7 +392,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </dl>
 </section>
 <section id="id20">
-<h3>Returns<a class="headerlink" href="#id20" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id20" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>np.array</dt><dd><p>CD compensated signal.</p>
 </dd>
@@ -495,10 +402,10 @@ param.SpS_out : samples per symbol of the output signal.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.equalization.mimoAdaptEqualizer">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.equalization.</span></span><span class="sig-name descname"><span class="pre">mimoAdaptEqualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramEq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.mimoAdaptEqualizer" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.equalization.</span></span><span class="sig-name descname"><span class="pre">mimoAdaptEqualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramEq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.mimoAdaptEqualizer" title="Permalink to this definition"></a></dt>
 <dd><p>N-by-N MIMO adaptive equalizer.</p>
 <section id="id21">
-<h3>Parameters<a class="headerlink" href="#id21" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id21" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>x<span class="classifier">array-like</span></dt><dd><p>Input array.</p>
 </dd>
@@ -524,7 +431,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </dl>
 </section>
 <section id="id22">
-<h3>Returns<a class="headerlink" href="#id22" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id22" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>yEq<span class="classifier">array-like</span></dt><dd><p>Equalized output array.</p>
 </dd>
@@ -540,13 +447,13 @@ param.SpS_out : samples per symbol of the output signal.</p>
 
 </section>
 <section id="carrierrecovery">
-<h2>carrierRecovery<a class="headerlink" href="#carrierrecovery" title="Permalink to this heading">#</a></h2>
+<h2>carrierRecovery<a class="headerlink" href="#carrierrecovery" title="Permalink to this heading"></a></h2>
 <span class="target" id="module-optic.dsp.carrierRecovery"></span><dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.carrierRecovery.bps">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.carrierRecovery.</span></span><span class="sig-name descname"><span class="pre">bps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.bps" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.carrierRecovery.</span></span><span class="sig-name descname"><span class="pre">bps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.bps" title="Permalink to this definition"></a></dt>
 <dd><p>Blind phase search (BPS) algorithm</p>
 <section id="id23">
-<h3>Parameters<a class="headerlink" href="#id23" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id23" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>Ei<span class="classifier">complex-valued ndarray</span></dt><dd><p>Received constellation symbols.</p>
 </dd>
@@ -559,7 +466,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </dl>
 </section>
 <section id="id24">
-<h3>Returns<a class="headerlink" href="#id24" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id24" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>θ<span class="classifier">real-valued ndarray</span></dt><dd><p>Time-varying estimated phase-shifts.</p>
 </dd>
@@ -569,10 +476,10 @@ param.SpS_out : samples per symbol of the output signal.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.carrierRecovery.cpr">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.carrierRecovery.</span></span><span class="sig-name descname"><span class="pre">cpr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCPR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.cpr" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.carrierRecovery.</span></span><span class="sig-name descname"><span class="pre">cpr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCPR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.cpr" title="Permalink to this definition"></a></dt>
 <dd><p>Carrier phase recovery function (CPR)</p>
 <section id="id25">
-<h3>Parameters<a class="headerlink" href="#id25" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id25" title="Permalink to this heading"></a></h3>
 <dl>
 <dt>Ei<span class="classifier">complex-valued ndarray</span></dt><dd><p>received constellation symbols.</p>
 </dd>
@@ -598,7 +505,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </dl>
 </section>
 <section id="raises">
-<h3>Raises<a class="headerlink" href="#raises" title="Permalink to this heading">#</a></h3>
+<h3>Raises<a class="headerlink" href="#raises" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>ValueError</dt><dd><p>Error is generated if the CPR algorithm is not correctly
 passed.</p>
@@ -606,7 +513,7 @@ passed.</p>
 </dl>
 </section>
 <section id="id26">
-<h3>Returns<a class="headerlink" href="#id26" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id26" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>Eo<span class="classifier">complex-valued ndarray</span></dt><dd><p>Phase-compensated signal.</p>
 </dd>
@@ -618,10 +525,10 @@ passed.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.carrierRecovery.ddpll">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.carrierRecovery.</span></span><span class="sig-name descname"><span class="pre">ddpll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pilotInd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.ddpll" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.carrierRecovery.</span></span><span class="sig-name descname"><span class="pre">ddpll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pilotInd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.ddpll" title="Permalink to this definition"></a></dt>
 <dd><p>Decision-directed Phase-locked Loop (DDPLL) algorithm</p>
 <section id="id27">
-<h3>Parameters<a class="headerlink" href="#id27" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id27" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>Ei<span class="classifier">complex-valued ndarray</span></dt><dd><p>Received constellation symbols.</p>
 </dd>
@@ -642,14 +549,14 @@ passed.</p>
 </dl>
 </section>
 <section id="id28">
-<h3>Returns<a class="headerlink" href="#id28" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id28" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>θ<span class="classifier">real-valued ndarray</span></dt><dd><p>Time-varying estimated phase-shifts.</p>
 </dd>
 </dl>
 </section>
 <section id="references">
-<h3>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#references" title="Permalink to this heading"></a></h3>
 <p>[1] H. Meyer, Digital Communication Receivers: Synchronization, Channel 
 estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.</p>
 </section>
@@ -657,10 +564,10 @@ estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.carrierRecovery.fourthPowerFOE">
-<span class="sig-prename descclassname"><span class="pre">optic.dsp.carrierRecovery.</span></span><span class="sig-name descname"><span class="pre">fourthPowerFOE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotSpec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.fourthPowerFOE" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">optic.dsp.carrierRecovery.</span></span><span class="sig-name descname"><span class="pre">fourthPowerFOE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotSpec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.fourthPowerFOE" title="Permalink to this definition"></a></dt>
 <dd><p>Estimate the frequency offset (FO) with the 4th-power method.</p>
 <section id="id29">
-<h3>Parameters<a class="headerlink" href="#id29" title="Permalink to this heading">#</a></h3>
+<h3>Parameters<a class="headerlink" href="#id29" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>Ei<span class="classifier">ndarray</span></dt><dd><p>Input signal.</p>
 </dd>
@@ -671,7 +578,7 @@ estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.</p>
 </dl>
 </section>
 <section id="id30">
-<h3>Returns<a class="headerlink" href="#id30" title="Permalink to this heading">#</a></h3>
+<h3>Returns<a class="headerlink" href="#id30" title="Permalink to this heading"></a></h3>
 <dl class="simple">
 <dt>ndarray, float</dt><dd><ul class="simple">
 <li><p>The output signal after applying frequency offset correction.</p></li>
@@ -685,94 +592,34 @@ estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.</p>
 </section>
 </section>
 
-        </article>
-      </div>
-      <footer>
-        
-        <div class="related-pages">
-          
-          <a class="prev-page" href="models.html">
-              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
-              <div class="page-info">
-                <div class="context">
-                  <span>Previous</span>
-                </div>
-                
-                <div class="title">models</div>
-                
-              </div>
-            </a>
-        </div>
-        <div class="bottom-of-page">
-          <div class="left-details">
-            <div class="copyright">
-                Copyright &#169; 2023, Edson Porto da Silva, Adolfo Fernandes Herbster
-            </div>
-            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
-            
-            <a href="https://github.com/pradyunsg/furo">Furo</a>
-            
-          </div>
-          <div class="right-details">
-            
-          </div>
-        </div>
-        
-      </footer>
-    </div>
-    <aside class="toc-drawer">
-      
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">dsp</a><ul>
-<li><a class="reference internal" href="#module-optic.dsp.core">core</a><ul>
-<li><a class="reference internal" href="#optic.dsp.core.decimate"><code class="docutils literal notranslate"><span class="pre">decimate()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.core.finddelay"><code class="docutils literal notranslate"><span class="pre">finddelay()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.core.firFilter"><code class="docutils literal notranslate"><span class="pre">firFilter()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.core.lowPassFIR"><code class="docutils literal notranslate"><span class="pre">lowPassFIR()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.core.pnorm"><code class="docutils literal notranslate"><span class="pre">pnorm()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.core.pulseShape"><code class="docutils literal notranslate"><span class="pre">pulseShape()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.core.resample"><code class="docutils literal notranslate"><span class="pre">resample()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.core.sigPow"><code class="docutils literal notranslate"><span class="pre">sigPow()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.core.signal_power"><code class="docutils literal notranslate"><span class="pre">signal_power()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.core.symbolSync"><code class="docutils literal notranslate"><span class="pre">symbolSync()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-optic.dsp.equalization">equalization</a><ul>
-<li><a class="reference internal" href="#optic.dsp.equalization.dbp"><code class="docutils literal notranslate"><span class="pre">dbp()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.equalization.edc"><code class="docutils literal notranslate"><span class="pre">edc()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.equalization.mimoAdaptEqualizer"><code class="docutils literal notranslate"><span class="pre">mimoAdaptEqualizer()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#carrierrecovery">carrierRecovery</a><ul>
-<li><a class="reference internal" href="#optic.dsp.carrierRecovery.bps"><code class="docutils literal notranslate"><span class="pre">bps()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.carrierRecovery.cpr"><code class="docutils literal notranslate"><span class="pre">cpr()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.carrierRecovery.ddpll"><code class="docutils literal notranslate"><span class="pre">ddpll()</span></code></a></li>
-<li><a class="reference internal" href="#optic.dsp.carrierRecovery.fourthPowerFOE"><code class="docutils literal notranslate"><span class="pre">fourthPowerFOE()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
 
+           </div>
           </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="models.html" class="btn btn-neutral float-left" title="models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      
-      
-    </aside>
+    </section>
   </div>
-</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
-    <script src="_static/scripts/furo.js"></script>
-    </body>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

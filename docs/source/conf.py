@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'OptiCommPy'
-copyright = '2023, Edson Porto da Silva, Adolfo Fernandes Herbster'
-author = 'Edson Porto da Silva, Adolfo Fernandes Herbster'
+copyright = '2023, Edson P. da Silva, Adolfo F. Herbster'
+author = 'Edson P. da Silva, Adolfo F. Herbster, Carlos D. F. da Silva, Joaquin Matres'
 release = '0.4.0'
 
 # -- General configuration ---------------------------------------------------
@@ -29,5 +29,5 @@ language = 'English'
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'furo'
+html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
