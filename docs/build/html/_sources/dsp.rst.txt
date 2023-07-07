@@ -1,5 +1,5 @@
 
-dsp
+DSP
 =====
 
 .. automodule:: optic.dsp.core

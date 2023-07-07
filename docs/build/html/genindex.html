@@ -44,12 +44,11 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="comm.html">comm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dsp.html">dsp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital communications utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Physical models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">DSP</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plot.html">plot</a></li>
 </ul>
 
@@ -94,6 +93,8 @@
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#Q"><strong>Q</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  
 </div>
@@ -146,10 +147,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/optic.dsp.carrierRecovery.ddpll.html#optic.dsp.carrierRecovery.ddpll">ddpll() (in module optic.dsp.carrierRecovery)</a>
 </li>
-      <li><a href="comm.html#optic.comm.modulation.demap">demap() (in module optic.comm.modulation)</a>
+      <li><a href="generated/optic.dsp.core.decimate.html#optic.dsp.core.decimate">decimate() (in module optic.dsp.core)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="comm.html#optic.comm.modulation.demap">demap() (in module optic.comm.modulation)</a>
+</li>
       <li><a href="comm.html#optic.comm.modulation.demodulateGray">demodulateGray() (in module optic.comm.modulation)</a>
 </li>
       <li><a href="comm.html#optic.comm.ofdm.demodulateOFDM">demodulateOFDM() (in module optic.comm.ofdm)</a>
@@ -176,8 +179,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="comm.html#optic.comm.metrics.fastBERcalc">fastBERcalc() (in module optic.comm.metrics)</a>
 </li>
+      <li><a href="generated/optic.dsp.core.finddelay.html#optic.dsp.core.finddelay">finddelay() (in module optic.dsp.core)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/optic.dsp.core.firFilter.html#optic.dsp.core.firFilter">firFilter() (in module optic.dsp.core)</a>
+</li>
       <li><a href="generated/optic.dsp.carrierRecovery.fourthPowerFOE.html#optic.dsp.carrierRecovery.fourthPowerFOE">fourthPowerFOE() (in module optic.dsp.carrierRecovery)</a>
 </li>
   </ul></td>
@@ -221,6 +228,10 @@
       <li><a href="generated/optic.models.channels.linFiberCh.html#optic.models.channels.linFiberCh">linFiberCh() (in module optic.models.channels)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/optic.dsp.core.lowPassFIR.html#optic.dsp.core.lowPassFIR">lowPassFIR() (in module optic.dsp.core)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
@@ -240,8 +251,6 @@
     module
 
       <ul>
-        <li><a href="generated/optic.html#module-optic">optic</a>
-</li>
         <li><a href="comm.html#module-optic.comm.metrics">optic.comm.metrics</a>
 </li>
         <li><a href="comm.html#module-optic.comm.modulation">optic.comm.modulation</a>
@@ -265,13 +274,6 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li>
-    optic
-
-      <ul>
-        <li><a href="generated/optic.html#module-optic">module</a>
-</li>
-      </ul></li>
       <li>
     optic.comm.metrics
 
@@ -314,15 +316,19 @@
 </li>
       <li><a href="generated/optic.models.devices.pdmCoherentReceiver.html#optic.models.devices.pdmCoherentReceiver">pdmCoherentReceiver() (in module optic.models.devices)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/optic.models.channels.phaseNoise.html#optic.models.channels.phaseNoise">phaseNoise() (in module optic.models.channels)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/optic.models.devices.photodiode.html#optic.models.devices.photodiode">photodiode() (in module optic.models.devices)</a>
 </li>
       <li><a href="plot.html#optic.plot.plotPSD">plotPSD() (in module optic.plot)</a>
 </li>
       <li><a href="generated/optic.models.devices.pm.html#optic.models.devices.pm">pm() (in module optic.models.devices)</a>
+</li>
+      <li><a href="generated/optic.dsp.core.pnorm.html#optic.dsp.core.pnorm">pnorm() (in module optic.dsp.core)</a>
+</li>
+      <li><a href="generated/optic.dsp.core.pulseShape.html#optic.dsp.core.pulseShape">pulseShape() (in module optic.dsp.core)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -331,6 +337,28 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="comm.html#optic.comm.metrics.Qfunc">Qfunc() (in module optic.comm.metrics)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/optic.dsp.core.resample.html#optic.dsp.core.resample">resample() (in module optic.dsp.core)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/optic.dsp.core.signal_power.html#optic.dsp.core.signal_power">signal_power() (in module optic.dsp.core)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/optic.dsp.core.sigPow.html#optic.dsp.core.sigPow">sigPow() (in module optic.dsp.core)</a>
+</li>
+      <li><a href="generated/optic.dsp.core.symbolSync.html#optic.dsp.core.symbolSync">symbolSync() (in module optic.dsp.core)</a>
 </li>
   </ul></td>
 </tr></table>

@@ -1,4 +1,4 @@
-Models
+Physical models
 =====
 
 .. automodule:: optic.models.devices

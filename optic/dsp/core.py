@@ -1,3 +1,22 @@
+"""
+==================================================
+Core digital signal processing utilities (:mod:`optic.dsp.core`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   sigPow                 -- Calculate the average power of x
+   signal_power           -- Calculate the total average power of x
+   firFilter              -- Perform FIR filtering and compensate for filter delay
+   pulseShape             -- Generate a pulse shaping filter
+   lowPassFIR             -- Calculate FIR coefficients of a lowpass filter
+   decimate               -- Decimate signal
+   resample               -- Signal resampling
+   symbolSync             -- Synchronizer delayed sequences of symbols
+   finddelay              -- Estimate the delay between sequences of symbols
+   pnorm                  -- Normalize the average power of each componennt of x
+"""
 """Digital signal processing utilities."""
 import matplotlib.pyplot as plt
 import numpy as np

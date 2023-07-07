@@ -1,5 +1,5 @@
 
-comm
+Digital communications utilities
 =====
 
 modulation

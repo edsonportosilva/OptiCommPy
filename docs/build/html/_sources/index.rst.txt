@@ -13,11 +13,6 @@ components of fiber optic communication systems, for educational and research pu
 
    This project is under active development.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-
 
 Indices and tables
 ==================
@@ -32,13 +27,11 @@ Contents
 .. toctree::
 
    usage
-   api
-
-
+   
 Reference
 ---------
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 2
 
     comm
     models

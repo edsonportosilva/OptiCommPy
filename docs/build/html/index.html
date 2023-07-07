@@ -46,12 +46,11 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="comm.html">comm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dsp.html">dsp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital communications utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Physical models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">DSP</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plot.html">plot</a></li>
 </ul>
 
@@ -87,8 +86,6 @@ components of fiber optic communication systems, for educational and research pu
 <p class="admonition-title">Note</p>
 <p>This project is under active development.</p>
 </div>
-<div class="toctree-wrapper compound">
-</div>
 </section>
 <section id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
@@ -105,10 +102,6 @@ components of fiber optic communication systems, for educational and research pu
 <li class="toctree-l2"><a class="reference internal" href="usage.html#installation">Installation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="generated/optic.html">optic</a></li>
-</ul>
-</li>
 </ul>
 </div>
 </section>
@@ -116,73 +109,21 @@ components of fiber optic communication systems, for educational and research pu
 <h2>Reference<a class="headerlink" href="#reference" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="comm.html">comm</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="comm.html#module-optic.comm.modulation">modulation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.modulation.GrayCode"><code class="docutils literal notranslate"><span class="pre">GrayCode</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.modulation.GrayMapping"><code class="docutils literal notranslate"><span class="pre">GrayMapping</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.modulation.demap"><code class="docutils literal notranslate"><span class="pre">demap</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.modulation.demodulateGray"><code class="docutils literal notranslate"><span class="pre">demodulateGray</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.modulation.minEuclid"><code class="docutils literal notranslate"><span class="pre">minEuclid</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.modulation.modulateGray"><code class="docutils literal notranslate"><span class="pre">modulateGray</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital communications utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comm.html#module-optic.comm.modulation">modulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comm.html#module-optic.comm.metrics">metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comm.html#module-optic.comm.ofdm">ofdm</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="comm.html#module-optic.comm.metrics">metrics</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.metrics.Qfunc"><code class="docutils literal notranslate"><span class="pre">Qfunc</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.metrics.calcEVM"><code class="docutils literal notranslate"><span class="pre">calcEVM</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.metrics.calcLLR"><code class="docutils literal notranslate"><span class="pre">calcLLR</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.metrics.calcLinOSNR"><code class="docutils literal notranslate"><span class="pre">calcLinOSNR</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.metrics.calcMI"><code class="docutils literal notranslate"><span class="pre">calcMI</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.metrics.fastBERcalc"><code class="docutils literal notranslate"><span class="pre">fastBERcalc</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.metrics.monteCarloGMI"><code class="docutils literal notranslate"><span class="pre">monteCarloGMI</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.metrics.monteCarloMI"><code class="docutils literal notranslate"><span class="pre">monteCarloMI</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.metrics.theoryBER"><code class="docutils literal notranslate"><span class="pre">theoryBER</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Physical models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="models.html#models-for-optical-devices-optic-models-devices">Models for optical devices (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.devices</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#models-for-fiber-optic-channels-optic-models-channels">Models for fiber optic channels (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.channels</span></code>)</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="comm.html#module-optic.comm.ofdm">ofdm</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.ofdm.calcSymbolRate"><code class="docutils literal notranslate"><span class="pre">calcSymbolRate</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.ofdm.demodulateOFDM"><code class="docutils literal notranslate"><span class="pre">demodulateOFDM</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.ofdm.hermit"><code class="docutils literal notranslate"><span class="pre">hermit</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="comm.html#optic.comm.ofdm.modulateOFDM"><code class="docutils literal notranslate"><span class="pre">modulateOFDM</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="models.html#models-for-optical-devices-optic-models-devices">Models for optical devices (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.devices</span></code>)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.pm.html">optic.models.devices.pm</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.mzm.html">optic.models.devices.mzm</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.iqm.html">optic.models.devices.iqm</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.pbs.html">optic.models.devices.pbs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.hybrid_2x4_90deg.html">optic.models.devices.hybrid_2x4_90deg</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.photodiode.html">optic.models.devices.photodiode</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.balancedPD.html">optic.models.devices.balancedPD</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.coherentReceiver.html">optic.models.devices.coherentReceiver</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.pdmCoherentReceiver.html">optic.models.devices.pdmCoherentReceiver</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.edfa.html">optic.models.devices.edfa</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="models.html#models-for-fiber-optic-channels-optic-models-channels">Models for fiber optic channels (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.channels</span></code>)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.channels.linFiberCh.html">optic.models.channels.linFiberCh</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.channels.manakovSSF.html">optic.models.channels.manakovSSF</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.channels.awgn.html">optic.models.channels.awgn</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.channels.phaseNoise.html">optic.models.channels.phaseNoise</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="dsp.html">dsp</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dsp.html#dsp-algorithms-for-equalization-optic-dsp-equalization">DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.equalization.edc.html">optic.dsp.equalization.edc</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.equalization.mimoAdaptEqualizer.html">optic.dsp.equalization.mimoAdaptEqualizer</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="dsp.html#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.carrierRecovery.bps.html">optic.dsp.carrierRecovery.bps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.carrierRecovery.ddpll.html">optic.dsp.carrierRecovery.ddpll</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.carrierRecovery.fourthPowerFOE.html">optic.dsp.carrierRecovery.fourthPowerFOE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.carrierRecovery.cpr.html">optic.dsp.carrierRecovery.cpr</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">DSP</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dsp.html#core-digital-signal-processing-utilities-optic-dsp-core">Core digital signal processing utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dsp.html#dsp-algorithms-for-equalization-optic-dsp-equalization">DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dsp.html#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="plot.html">plot</a><ul>

@@ -34,6 +34,14 @@ language = 'English'
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
+# The suffix of source filenames.
+source_suffix = '.rst'
+
+# The encoding of source files.
+#source_encoding = 'utf-8-sig'
+
+# The master toctree document.
+master_doc = 'index'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -57,3 +65,4 @@ add_function_parentheses = False
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
 add_module_names = False
+

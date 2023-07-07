@@ -5,6 +5,7 @@ DSP algorithms for carrier phase and frequency recovery (:mod:`optic.dsp.carrier
 
 .. autosummary::
    :toctree: generated/
+   :nosignatures:
 
    bps            -- Blind phase search (BPS) phase recovery algorithm
    ddpll          -- Decision-directed phase-locked loop (DD-PLL) phase recovery algorithm
