@@ -42,3 +42,4 @@ Reference
     comm
     models
     dsp
+    plot

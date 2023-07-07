@@ -1,7 +1,7 @@
 models
 =====
 
-Devices
+devices
 ------------
 
 .. automodule:: optic.models.devices
