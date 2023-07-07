@@ -196,9 +196,11 @@ def decimate(Ei, param):
     Ei : np.array
         Input signal.
     param : core.parameter
-    Decimation parameters:
-            param.SpS_in  : samples per symbol of the input signal.
-            param.SpS_out : samples per symbol of the output signal.
+        Decimation parameters:
+        
+        - param.SpS_in  : samples per symbol of the input signal.
+
+        - param.SpS_out : samples per symbol of the output signal.
 
     Returns
     -------
