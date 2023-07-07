@@ -472,7 +472,7 @@ def awgn(sig, snr, Fs=1, B=1):
     Fs : real scalar
         Sampling frequency. The default is 1.
     B : real scalar
-        Signal bandwidth. The default is 1.
+        Signal bandwidth, defined as the length of the frequency interval [-B/2, B/2]. The default is 1.
 
     Returns
     -------
