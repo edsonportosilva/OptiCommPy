@@ -1,3 +1,24 @@
+"""
+==================================================
+Models for optical devices (:mod:`optic.models.devices`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   pm                    -- Optical phase modulator
+   mzm                   -- Optical Mach-Zhender modulator
+   iqm                   -- Optical In-Phase/Quadrature Modulator (IQM)
+   pbs                   -- Polarization beam splitter (PBS)
+   hybrid_2x4_90deg      -- Optical 2 x 4 90° hybrid
+   photodiode            -- Pin photodiode
+   balancedPD            -- Balanced photodiode pair
+   coherentReceiver      -- Optical coherent receiver (single polarization)
+   pdmCoherentReceiver   -- Optical polarization-multiplexed coherent receiver
+   edfa                  -- Simple EDFA model (gain + AWGN noise)
+"""
+
+
 """Basic physical models for optical devices."""
 import logging as logg
 

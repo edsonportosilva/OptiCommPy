@@ -1,36 +1,25 @@
-models
+Models
 =====
-
-devices
-------------
 
 .. automodule:: optic.models.devices
     :members:
-    :exclude-members: normal
-
-channels
-------------
+    :noindex:
 
 .. automodule:: optic.models.channels
     :members:
-    :exclude-members: normal, convergenceCondition
-
-amplification
-------------
+    :exclude-members: normal, convergenceCondition, nlinPhaseRot
+    :noindex:
 
 .. automodule:: optic.models.amplification
     :members:
-
-modelsGPU
-------------
+    :noindex:
 
 .. automodule:: optic.models.modelsGPU
     :members:
-    :exclude-members: convergenceCondition
-
-tx
-------------
+    :exclude-members: convergenceCondition, nlinPhaseRot
+    :noindex:
 
 .. automodule:: optic.models.tx
     :members:
+    :noindex:
 

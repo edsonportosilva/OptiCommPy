@@ -2,18 +2,17 @@
 dsp
 =====
 
-core
-------------
 .. automodule:: optic.dsp.core
     :members:
+    :noindex:
 
-equalization
-------------
+
 .. automodule:: optic.dsp.equalization
     :members:
     :exclude-members: cmaUp, dardeUp, ddlmsUp, ddrlsUp, nlmsUp, rdeUp, rlsUp, coreAdaptEq
+    :noindex:
 
-carrierRecovery
-------------
+
 .. automodule:: optic.dsp.carrierRecovery
     :members:
+    :noindex:

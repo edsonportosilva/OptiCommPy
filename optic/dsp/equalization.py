@@ -1,3 +1,16 @@
+"""
+==================================================
+DSP algorithms for equalization (:mod:`optic.dsp.equalization`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   edc                 -- Electronic chromatic dispersion compensation (EDC)
+   mimoAdaptEqualizer  -- General N-by-N MIMO adaptive equalizer with several adaptive filtering algorithms available.
+"""
+
+
 """Functions for adaptive and static equalization."""
 import logging as logg
 

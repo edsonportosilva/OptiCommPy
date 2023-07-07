@@ -32,6 +32,7 @@ Contents
 .. toctree::
 
    usage
+   api
 
 
 Reference

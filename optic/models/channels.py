@@ -1,3 +1,18 @@
+"""
+==================================================
+Models for fiber optic channels (:mod:`optic.models.channels`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   linFiberCh           -- Linear optical fiber channel model.
+   manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.
+   awgn                 -- AWGN channel model.
+   phaseNoise           -- Phase noise model.
+"""
+
+
 """Basic physical models for optical channels."""
 import logging as logg
 

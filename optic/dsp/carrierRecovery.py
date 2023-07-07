@@ -1,3 +1,17 @@
+"""
+==================================================
+DSP algorithms for carrier phase and frequency recovery (:mod:`optic.dsp.carrierRecovery`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   bps            -- Blind phase search (BPS) phase recovery algorithm
+   ddpll          -- Decision-directed phase-locked loop (DD-PLL) phase recovery algorithm
+   fourthPowerFOE -- Frequency offset (FO) estimation and compensation with the 4th-power method
+   cpr            -- General function to call and configure any of the CPR algorithms in this module   
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
@@ -39,7 +53,7 @@ def cpr(Ei, symbTx=None, paramCPR=None):
         - paramCPR.Kv: DDPLL loop filter gain. The default is 0.1.
 
         - paramCPR.Ts: symbol period. The default is 1/32e9.
-        
+
         - paramCPR.pilotInd: indexes of pilot-symbol locations.
 
     Raises
