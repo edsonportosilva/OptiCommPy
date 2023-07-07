@@ -1,0 +1,1170 @@
+<!doctype html>
+<html class="no-js" lang="English">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="dsp" href="dsp.html" /><link rel="prev" title="comm" href="comm.html" />
+
+    <!-- Generated with Sphinx 7.0.1 and Furo 2023.05.20 -->
+        <title>models - OptiCommPy 0.4.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=e6660623a769aa55fea372102b9bf3151b292993" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">OptiCommPy 0.4.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">OptiCommPy 0.4.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="comm.html">comm</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">dsp</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="models">
+<h1>models<a class="headerlink" href="#models" title="Permalink to this heading">#</a></h1>
+<section id="module-optic.models.devices">
+<span id="devices"></span><h2>Devices<a class="headerlink" href="#module-optic.models.devices" title="Permalink to this heading">#</a></h2>
+<p>Basic physical models for optical devices.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.devices.balancedPD">
+<span class="sig-prename descclassname"><span class="pre">optic.models.devices.</span></span><span class="sig-name descname"><span class="pre">balancedPD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramPD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.balancedPD" title="Permalink to this definition">#</a></dt>
+<dd><p>Balanced photodiode (BPD).</p>
+<section id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>E1<span class="classifier">np.array</span></dt><dd><p>Input optical field.</p>
+</dd>
+<dt>E2<span class="classifier">np.array</span></dt><dd><p>Input optical field.</p>
+</dd>
+<dt>paramPD<span class="classifier">parameter object (struct), optional</span></dt><dd><p>Parameters of the photodiodes.</p>
+</dd>
+</dl>
+<p>paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
+paramPD.Tc: temperature [°C][default: 25°C]
+paramPD.Id: dark current [A][default: 5e-9 A]
+paramPD.RL: impedance load [Ω] [default: 50Ω]
+paramPD.B bandwidth [Hz][default: 30e9 Hz]
+paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
+paramPD.fType: frequency response type [default: 'rect']
+paramPD.N: number of the frequency resp. filter taps. [default: 8001]
+paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]</p>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>ibpd<span class="classifier">np.array</span></dt><dd><p>Balanced photocurrent.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.devices.coherentReceiver">
+<span class="sig-prename descclassname"><span class="pre">optic.models.devices.</span></span><span class="sig-name descname"><span class="pre">coherentReceiver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Es</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramPD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.coherentReceiver" title="Permalink to this definition">#</a></dt>
+<dd><p>Single polarization coherent optical front-end.</p>
+<section id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Es<span class="classifier">np.array</span></dt><dd><p>Input signal optical field.</p>
+</dd>
+<dt>Elo<span class="classifier">np.array</span></dt><dd><p>Input LO optical field.</p>
+</dd>
+<dt>paramPD<span class="classifier">parameter object (struct), optional</span></dt><dd><p>Parameters of the photodiodes.</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h3>Returns<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>s<span class="classifier">np.array</span></dt><dd><p>Downconverted signal after balanced detection.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.devices.edfa">
+<span class="sig-prename descclassname"><span class="pre">optic.models.devices.</span></span><span class="sig-name descname"><span class="pre">edfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.edfa" title="Permalink to this definition">#</a></dt>
+<dd><p>Implement simple EDFA model.</p>
+<section id="id3">
+<h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ei<span class="classifier">np.array</span></dt><dd><p>Input signal field.</p>
+</dd>
+<dt>Fs<span class="classifier">scalar</span></dt><dd><p>Sampling frequency in Hz.</p>
+</dd>
+<dt>G<span class="classifier">scalar, optional</span></dt><dd><p>Amplifier gain in dB. The default is 20.</p>
+</dd>
+<dt>NF<span class="classifier">scalar, optional</span></dt><dd><p>EDFA noise figure in dB. The default is 4.5.</p>
+</dd>
+<dt>Fc<span class="classifier">scalar, optional</span></dt><dd><p>Central optical frequency. The default is 193.1e12.</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h3>Returns<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Eo<span class="classifier">np.array</span></dt><dd><p>Amplified noisy optical signal.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.devices.hybrid_2x4_90deg">
+<span class="sig-prename descclassname"><span class="pre">optic.models.devices.</span></span><span class="sig-name descname"><span class="pre">hybrid_2x4_90deg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Es</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elo</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.hybrid_2x4_90deg" title="Permalink to this definition">#</a></dt>
+<dd><p>Optical 2 x 4 90° hybrid.</p>
+<section id="id5">
+<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Es<span class="classifier">np.array</span></dt><dd><p>Input signal optical field.</p>
+</dd>
+<dt>Elo<span class="classifier">np.array</span></dt><dd><p>Input LO optical field.</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h3>Returns<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Eo<span class="classifier">np.array</span></dt><dd><p>Optical hybrid outputs.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.devices.iqm">
+<span class="sig-prename descclassname"><span class="pre">optic.models.devices.</span></span><span class="sig-name descname"><span class="pre">iqm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ai</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vπ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">VbI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">VbQ</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.iqm" title="Permalink to this definition">#</a></dt>
+<dd><p>Optical In-Phase/Quadrature Modulator (IQM).</p>
+<section id="id7">
+<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ai<span class="classifier">scalar or np.array</span></dt><dd><p>Amplitude of the optical field at the input of the IQM.</p>
+</dd>
+<dt>u<span class="classifier">complex-valued np.array</span></dt><dd><p>Modulator's driving signal (complex-valued baseband).</p>
+</dd>
+<dt>Vπ<span class="classifier">scalar</span></dt><dd><p>MZM Vπ-voltage.</p>
+</dd>
+<dt>VbI<span class="classifier">scalar</span></dt><dd><p>I-MZM's bias voltage.</p>
+</dd>
+<dt>VbQ<span class="classifier">scalar</span></dt><dd><p>Q-MZM's bias voltage.</p>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h3>Returns<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ao<span class="classifier">complex-valued np.array</span></dt><dd><p>Modulated optical field at the output of the IQM.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.devices.mzm">
+<span class="sig-prename descclassname"><span class="pre">optic.models.devices.</span></span><span class="sig-name descname"><span class="pre">mzm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ai</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vπ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vb</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.mzm" title="Permalink to this definition">#</a></dt>
+<dd><p>Optical Mach-Zehnder Modulator (MZM).</p>
+<section id="id9">
+<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ai<span class="classifier">scalar or np.array</span></dt><dd><p>Amplitude of the optical field at the input of the MZM.</p>
+</dd>
+<dt>u<span class="classifier">np.array</span></dt><dd><p>Electrical driving signal.</p>
+</dd>
+<dt>Vπ<span class="classifier">scalar</span></dt><dd><p>MZM's Vπ voltage.</p>
+</dd>
+<dt>Vb<span class="classifier">scalar</span></dt><dd><p>MZM's bias voltage.</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h3>Returns<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ao<span class="classifier">np.array</span></dt><dd><p>Modulated optical field at the output of the MZM.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.devices.pbs">
+<span class="sig-prename descclassname"><span class="pre">optic.models.devices.</span></span><span class="sig-name descname"><span class="pre">pbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">θ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.pbs" title="Permalink to this definition">#</a></dt>
+<dd><p>Polarization beam splitter (PBS).</p>
+<section id="id11">
+<h3>Parameters<a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>E<span class="classifier">(N,2) np.array</span></dt><dd><p>Input pol. multiplexed optical field.</p>
+</dd>
+<dt>θ<span class="classifier">scalar, optional</span></dt><dd><p>Rotation angle of input field in radians. The default is 0.</p>
+</dd>
+</dl>
+</section>
+<section id="id12">
+<h3>Returns<a class="headerlink" href="#id12" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ex<span class="classifier">(N,) np.array</span></dt><dd><p>Ex output single pol. field.</p>
+</dd>
+<dt>Ey<span class="classifier">(N,) np.array</span></dt><dd><p>Ey output single pol. field.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.devices.pdmCoherentReceiver">
+<span class="sig-prename descclassname"><span class="pre">optic.models.devices.</span></span><span class="sig-name descname"><span class="pre">pdmCoherentReceiver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Es</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">θsig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramPD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.pdmCoherentReceiver" title="Permalink to this definition">#</a></dt>
+<dd><p>Polarization multiplexed coherent optical front-end.</p>
+<section id="id13">
+<h3>Parameters<a class="headerlink" href="#id13" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Es<span class="classifier">np.array</span></dt><dd><p>Input signal optical field.</p>
+</dd>
+<dt>Elo<span class="classifier">np.array</span></dt><dd><p>Input LO optical field.</p>
+</dd>
+<dt>θsig<span class="classifier">scalar, optional</span></dt><dd><p>Input polarization rotation angle in rad. The default is 0.</p>
+</dd>
+<dt>paramPD<span class="classifier">parameter object (struct), optional</span></dt><dd><p>Parameters of the photodiodes.</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h3>Returns<a class="headerlink" href="#id14" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>S<span class="classifier">np.array</span></dt><dd><p>Downconverted signal after balanced detection.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.devices.photodiode">
+<span class="sig-prename descclassname"><span class="pre">optic.models.devices.</span></span><span class="sig-name descname"><span class="pre">photodiode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramPD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.photodiode" title="Permalink to this definition">#</a></dt>
+<dd><p>Pin photodiode (PD).</p>
+<section id="id15">
+<h3>Parameters<a class="headerlink" href="#id15" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>E<span class="classifier">np.array</span></dt><dd><p>Input optical field.</p>
+</dd>
+<dt>paramPD<span class="classifier">parameter object (struct), optional</span></dt><dd><p>Parameters of the photodiode.</p>
+</dd>
+</dl>
+<p>paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
+paramPD.Tc: temperature [°C][default: 25°C]
+paramPD.Id: dark current [A][default: 5e-9 A]
+paramPD.RL: impedance load [Ω] [default: 50Ω]
+paramPD.B bandwidth [Hz][default: 30e9 Hz]
+paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
+paramPD.fType: frequency response type [default: 'rect']
+paramPD.N: number of the frequency resp. filter taps. [default: 8001]
+paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]</p>
+</section>
+<section id="id16">
+<h3>Returns<a class="headerlink" href="#id16" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>ipd<span class="classifier">np.array</span></dt><dd><p>photocurrent.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.devices.pm">
+<span class="sig-prename descclassname"><span class="pre">optic.models.devices.</span></span><span class="sig-name descname"><span class="pre">pm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ai</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vπ</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.pm" title="Permalink to this definition">#</a></dt>
+<dd><p>Optical Phase Modulator (PM).</p>
+<section id="id17">
+<h3>Parameters<a class="headerlink" href="#id17" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ai<span class="classifier">scalar or np.array</span></dt><dd><p>Amplitude of the optical field at the input of the PM.</p>
+</dd>
+<dt>u<span class="classifier">np.array</span></dt><dd><p>Electrical driving signal.</p>
+</dd>
+<dt>Vπ<span class="classifier">scalar</span></dt><dd><p>PM's Vπ voltage.</p>
+</dd>
+</dl>
+</section>
+<section id="id18">
+<h3>Returns<a class="headerlink" href="#id18" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ao<span class="classifier">np.array</span></dt><dd><p>Modulated optical field at the output of the PM.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-optic.models.channels">
+<span id="channels"></span><h2>channels<a class="headerlink" href="#module-optic.models.channels" title="Permalink to this heading">#</a></h2>
+<p>Basic physical models for optical channels.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.channels.awgn">
+<span class="sig-prename descclassname"><span class="pre">optic.models.channels.</span></span><span class="sig-name descname"><span class="pre">awgn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.channels.awgn" title="Permalink to this definition">#</a></dt>
+<dd><p>Implement an AWGN channel.</p>
+<section id="id19">
+<h3>Parameters<a class="headerlink" href="#id19" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>sig<span class="classifier">np.array</span></dt><dd><p>Input signal.</p>
+</dd>
+<dt>snr<span class="classifier">scalar</span></dt><dd><p>Signal-to-noise ratio in dB.</p>
+</dd>
+<dt>Fs<span class="classifier">real scalar</span></dt><dd><p>Sampling frequency. The default is 1.</p>
+</dd>
+<dt>B<span class="classifier">real scalar</span></dt><dd><p>Signal bandwidth. The default is 1.</p>
+</dd>
+</dl>
+</section>
+<section id="id20">
+<h3>Returns<a class="headerlink" href="#id20" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>np.array</dt><dd><p>Input signal plus noise.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.channels.linFiberCh">
+<span class="sig-prename descclassname"><span class="pre">optic.models.channels.</span></span><span class="sig-name descname"><span class="pre">linFiberCh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.channels.linFiberCh" title="Permalink to this definition">#</a></dt>
+<dd><p>Simulate signal propagation through a linear fiber channel.</p>
+<section id="id21">
+<h3>Parameters<a class="headerlink" href="#id21" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ei<span class="classifier">np.array</span></dt><dd><p>Input optical field.</p>
+</dd>
+<dt>L<span class="classifier">real scalar</span></dt><dd><p>Length of the fiber.</p>
+</dd>
+<dt>alpha<span class="classifier">real scalar</span></dt><dd><p>Fiber's attenuation coefficient in dB/km.</p>
+</dd>
+<dt>D<span class="classifier">real scalar</span></dt><dd><p>Fiber's chromatic dispersion (2nd order) coefficient in ps/nm/km.</p>
+</dd>
+<dt>Fc<span class="classifier">real scalar</span></dt><dd><p>Optical carrier frequency in Hz.</p>
+</dd>
+<dt>Fs<span class="classifier">real scalar</span></dt><dd><p>Sampling rate of the simulation.</p>
+</dd>
+</dl>
+</section>
+<section id="id22">
+<h3>Returns<a class="headerlink" href="#id22" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Eo<span class="classifier">np.array</span></dt><dd><p>Optical field at the output of the fiber.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.channels.manakovSSF">
+<span class="sig-prename descclassname"><span class="pre">optic.models.channels.</span></span><span class="sig-name descname"><span class="pre">manakovSSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.complex128'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.channels.manakovSSF" title="Permalink to this definition">#</a></dt>
+<dd><p>Run the Manakov split-step Fourier model (symmetric, dual-pol.).</p>
+<section id="id23">
+<h3>Parameters<a class="headerlink" href="#id23" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ei<span class="classifier">np.array</span></dt><dd><p>Input optical signal field.</p>
+</dd>
+<dt>Fs<span class="classifier">scalar</span></dt><dd><p>Sampling frequency in Hz.</p>
+</dd>
+<dt>paramCh<span class="classifier">parameter object  (struct)</span></dt><dd><p>Object with physical/simulation parameters of the optical channel.</p>
+<ul class="simple">
+<li><p>paramCh.Ltotal: total fiber length [km][default: 400 km]</p></li>
+<li><p>paramCh.Lspan: span length [km][default: 80 km]</p></li>
+<li><p>paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]</p></li>
+<li><p>paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]</p></li>
+<li><p>paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]</p></li>
+<li><p>paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]</p></li>
+<li><p>paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]</p></li>
+<li><p>paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']</p></li>
+<li><p>paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]</p></li>
+<li><p>paramCh.maxIter: max number of iter. in the trap. integration [default: 10]</p></li>
+<li><p>paramCh.tol: convergence tol. of the trap. integration.[default: 1e-5]</p></li>
+<li><p>paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]</p></li>
+<li><p>paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]</p></li>
+<li><p>paramCh.prgsBar: display progress bar? bolean variable [default:True]</p></li>
+<li><p>paramCh.saveSpanN: specify the span indexes to be outputted [default:[]]</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="id24">
+<h3>Returns<a class="headerlink" href="#id24" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ech<span class="classifier">np.array</span></dt><dd><p>Optical signal after nonlinear propagation.</p>
+</dd>
+<dt>paramCh<span class="classifier">parameter object  (struct)</span></dt><dd><p>Object with physical/simulation parameters used in the split-step alg.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.channels.nlinPhaseRot">
+<span class="sig-prename descclassname"><span class="pre">optic.models.channels.</span></span><span class="sig-name descname"><span class="pre">nlinPhaseRot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ey</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">γ</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.channels.nlinPhaseRot" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculate nonlinear phase-shift per step for the Manakov SSFM.</p>
+<section id="id25">
+<h3>Parameters<a class="headerlink" href="#id25" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ex<span class="classifier">np.array</span></dt><dd><p>Input optical signal field of x-polarization.</p>
+</dd>
+<dt>Ey<span class="classifier">np.array</span></dt><dd><p>Input optical signal field of y-polarization.</p>
+</dd>
+<dt>Pch<span class="classifier">np.array</span></dt><dd><p>Input optical power.</p>
+</dd>
+<dt>γ<span class="classifier">real scalar</span></dt><dd><p>fiber nonlinearity coefficient.</p>
+</dd>
+</dl>
+</section>
+<section id="id26">
+<h3>Returns<a class="headerlink" href="#id26" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>np.array</dt><dd><p>nonlinear phase-shift of each sample of the signal.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.channels.phaseNoise">
+<span class="sig-prename descclassname"><span class="pre">optic.models.channels.</span></span><span class="sig-name descname"><span class="pre">phaseNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nsamples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.channels.phaseNoise" title="Permalink to this definition">#</a></dt>
+<dd><p>Generate realization of a random-walk phase-noise process.</p>
+<section id="id27">
+<h3>Parameters<a class="headerlink" href="#id27" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>lw<span class="classifier">scalar</span></dt><dd><p>laser linewidth.</p>
+</dd>
+<dt>Nsamples<span class="classifier">scalar</span></dt><dd><p>number of samples to be draw.</p>
+</dd>
+<dt>Ts<span class="classifier">scalar</span></dt><dd><p>sampling period.</p>
+</dd>
+</dl>
+</section>
+<section id="id28">
+<h3>Returns<a class="headerlink" href="#id28" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>phi<span class="classifier">np.array</span></dt><dd><p>realization of the phase noise process.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.channels.ssfm">
+<span class="sig-prename descclassname"><span class="pre">optic.models.channels.</span></span><span class="sig-name descname"><span class="pre">ssfm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.channels.ssfm" title="Permalink to this definition">#</a></dt>
+<dd><p>Split-step Fourier method (symmetric, single-pol.).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ei</strong> -- input signal</p></li>
+<li><p><strong>Fs</strong> -- sampling frequency of Ei [Hz]</p></li>
+<li><p><strong>paramCh</strong> -- object with physical parameters of the optical channel</p></li>
+</ul>
+</dd>
+<dt class="field-even">ParamCh.Ltotal<span class="colon">:</span></dt>
+<dd class="field-even"><p>total fiber length [km][default: 400 km]</p>
+</dd>
+<dt class="field-odd">ParamCh.Lspan<span class="colon">:</span></dt>
+<dd class="field-odd"><p>span length [km][default: 80 km]</p>
+</dd>
+<dt class="field-even">ParamCh.hz<span class="colon">:</span></dt>
+<dd class="field-even"><p>step-size for the split-step Fourier method [km][default: 0.5 km]</p>
+</dd>
+<dt class="field-odd">ParamCh.alpha<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fiber attenuation parameter [dB/km][default: 0.2 dB/km]</p>
+</dd>
+<dt class="field-even">ParamCh.D<span class="colon">:</span></dt>
+<dd class="field-even"><p>chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]</p>
+</dd>
+<dt class="field-odd">ParamCh.gamma<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]</p>
+</dd>
+<dt class="field-even">ParamCh.Fc<span class="colon">:</span></dt>
+<dd class="field-even"><p>carrier frequency [Hz] [default: 193.1e12 Hz]</p>
+</dd>
+<dt class="field-odd">ParamCh.amp<span class="colon">:</span></dt>
+<dd class="field-odd"><p>'edfa', 'ideal', or 'None. [default:'edfa']</p>
+</dd>
+<dt class="field-even">ParamCh.NF<span class="colon">:</span></dt>
+<dd class="field-even"><p>edfa noise figure [dB] [default: 4.5 dB]</p>
+</dd>
+<dt class="field-odd">Return Ech<span class="colon">:</span></dt>
+<dd class="field-odd"><p>propagated signal</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="amplification">
+<h2>amplification<a class="headerlink" href="#amplification" title="Permalink to this heading">#</a></h2>
+<span class="target" id="module-optic.models.amplification"></span><dl class="py function">
+<dt class="sig sig-object py" id="optic.models.amplification.OSA">
+<span class="sig-prename descclassname"><span class="pre">optic.models.amplification.</span></span><span class="sig-name descname"><span class="pre">OSA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.amplification.OSA" title="Permalink to this definition">#</a></dt>
+<dd><p>Plot the optical spectrum of the signal in X and Y polarizations.</p>
+<section id="id29">
+<h3>Parameters<a class="headerlink" href="#id29" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>x<span class="classifier">np.array</span></dt><dd><p>Signal</p>
+</dd>
+<dt>Fs<span class="classifier">scalar</span></dt><dd><p>Sampling frequency in Hz.</p>
+</dd>
+<dt>Fc<span class="classifier">scalar, optional</span></dt><dd><p>Central optical frequency. The default is 193.1e12.</p>
+</dd>
+</dl>
+</section>
+<section id="id30">
+<h3>Returns<a class="headerlink" href="#id30" title="Permalink to this heading">#</a></h3>
+<p>plot</p>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.amplification.getN2Pop">
+<span class="sig-prename descclassname"><span class="pre">optic.models.amplification.</span></span><span class="sig-name descname"><span class="pre">getN2Pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.amplification.getN2Pop" title="Permalink to this definition">#</a></dt>
+<dd><p>Determines the number of carriers at the metastable level, considering the spectral and spatial Giles algorithm.</p>
+<section id="id31">
+<h3>Parameters<a class="headerlink" href="#id31" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>P<span class="classifier">np.array</span></dt><dd><p>Signal power (signal + pump + ASE).</p>
+</dd>
+</dl>
+<p>properties : object with constants and edfa parameters.</p>
+</section>
+<section id="id32">
+<h3>Returns<a class="headerlink" href="#id32" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>norm2<span class="classifier">np.array</span></dt><dd><p>Number of carriers at the metastable level.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.amplification.getOverlapInt">
+<span class="sig-prename descclassname"><span class="pre">optic.models.amplification.</span></span><span class="sig-name descname"><span class="pre">getOverlapInt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n2_norm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_edf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.amplification.getOverlapInt" title="Permalink to this definition">#</a></dt>
+<dd><p>Determines the overlap integral between the field envelope and the doping profile.</p>
+<section id="id33">
+<h3>Parameters<a class="headerlink" href="#id33" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>n2_norm<span class="classifier">np.array</span></dt><dd><p>Number of carriers at the metastable level.</p>
+</dd>
+<dt>properties<span class="classifier">object </span></dt><dd><p>With constants and edfa parameters.</p>
+</dd>
+<dt>param_edf<span class="classifier">object </span></dt><dd><p>With edf parameters.</p>
+</dd>
+</dl>
+</section>
+<section id="id34">
+<h3>Returns<a class="headerlink" href="#id34" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>overlapIntegral<span class="classifier">np.array</span></dt><dd><p>Overlap integral between the field envelope and the doping profile.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.amplification.get_spectrum">
+<span class="sig-prename descclassname"><span class="pre">optic.models.amplification.</span></span><span class="sig-name descname"><span class="pre">get_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xunits='m'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yunits='dBm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window=&lt;function</span> <span class="pre">window_none&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sides='twosided'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.amplification.get_spectrum" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculates the optical spectrum of the signal.</p>
+<section id="id35">
+<h3>Parameters<a class="headerlink" href="#id35" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>x<span class="classifier">np.array</span></dt><dd><p>Signal</p>
+</dd>
+<dt>Fs<span class="classifier">scalar</span></dt><dd><p>Sampling frequency in Hz.</p>
+</dd>
+<dt>Fc<span class="classifier">scalar, optional</span></dt><dd><p>Central optical frequency. The default is 193.1e12.</p>
+</dd>
+</dl>
+</section>
+<section id="id36">
+<h3>Returns<a class="headerlink" href="#id36" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>spectrum<span class="classifier">np.array</span></dt><dd><p>Signal's FFT</p>
+</dd>
+<dt>frequency: np.array</dt><dd><p>Frequency array &#64; Fc.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.amplification.gilesSpatial">
+<span class="sig-prename descclassname"><span class="pre">optic.models.amplification.</span></span><span class="sig-name descname"><span class="pre">gilesSpatial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_edf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.amplification.gilesSpatial" title="Permalink to this definition">#</a></dt>
+<dd><p>Routine used to solve the EDFA rate and propagation equations, considering the spatial Giles algorithm.</p>
+<section id="id37">
+<h3>Parameters<a class="headerlink" href="#id37" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>P<span class="classifier">np.array</span></dt><dd><p>Signal power (signal + pump + ASE).</p>
+</dd>
+<dt>z<span class="classifier">scalar (float)</span></dt><dd><p>Position - erbium doped fiber [0 - edf length].</p>
+</dd>
+</dl>
+<p>properties : object with constants and edfa parameters.
+param_edf  : object with constants and edf parameters.</p>
+</section>
+<section id="id38">
+<h3>Returns<a class="headerlink" href="#id38" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Eo<span class="classifier">np.array</span></dt><dd><p>Increment of the amplified optical signal.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.amplification.gilesSpectrum">
+<span class="sig-prename descclassname"><span class="pre">optic.models.amplification.</span></span><span class="sig-name descname"><span class="pre">gilesSpectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.amplification.gilesSpectrum" title="Permalink to this definition">#</a></dt>
+<dd><p>Routine used to solve the EDFA rate and propagation equations, considering the spectral Giles algorithm.</p>
+<section id="id39">
+<h3>Parameters<a class="headerlink" href="#id39" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>P<span class="classifier">np.array</span></dt><dd><p>Signal power (signal + pump + ASE).</p>
+</dd>
+<dt>z<span class="classifier">scalar (float)</span></dt><dd><p>Position - erbium doped fiber [0 - edf length].</p>
+</dd>
+</dl>
+<p>properties : object with constants and edfa parameters.</p>
+</section>
+<section id="id40">
+<h3>Returns<a class="headerlink" href="#id40" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Eo<span class="classifier">np.array</span></dt><dd><p>Increment of the amplified optical signal.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.amplification.power_meter">
+<span class="sig-prename descclassname"><span class="pre">optic.models.amplification.</span></span><span class="sig-name descname"><span class="pre">power_meter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.amplification.power_meter" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculate the total power of x.</p>
+<section id="id41">
+<h3>Parameters<a class="headerlink" href="#id41" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>x<span class="classifier">np.array</span></dt><dd><p>Signal.</p>
+</dd>
+</dl>
+</section>
+<section id="id42">
+<h3>Returns<a class="headerlink" href="#id42" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>scalar</dt><dd><p>Total signal power of x: P = sum(abs(x)**2).</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-optic.models.modelsGPU">
+<span id="modelsgpu"></span><h2>modelsGPU<a class="headerlink" href="#module-optic.models.modelsGPU" title="Permalink to this heading">#</a></h2>
+<p>Functions from models.py adapted to run with GPU (CuPy) processing.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.modelsGPU.edfa">
+<span class="sig-prename descclassname"><span class="pre">optic.models.modelsGPU.</span></span><span class="sig-name descname"><span class="pre">edfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G=20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NF=4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc=193100000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.complex128'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.modelsGPU.edfa" title="Permalink to this definition">#</a></dt>
+<dd><p>Implement simple EDFA model.</p>
+<section id="id43">
+<h3>Parameters<a class="headerlink" href="#id43" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ei<span class="classifier">np.array</span></dt><dd><p>Input signal field.</p>
+</dd>
+<dt>Fs<span class="classifier">scalar</span></dt><dd><p>Sampling frequency in Hz.</p>
+</dd>
+<dt>G<span class="classifier">scalar, optional</span></dt><dd><p>Amplifier gain in dB. The default is 20.</p>
+</dd>
+<dt>NF<span class="classifier">scalar, optional</span></dt><dd><p>EDFA noise figure in dB. The default is 4.5.</p>
+</dd>
+<dt>Fc<span class="classifier">scalar, optional</span></dt><dd><p>Central optical frequency. The default is 193.1e12.</p>
+</dd>
+</dl>
+</section>
+<section id="id44">
+<h3>Returns<a class="headerlink" href="#id44" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Eo<span class="classifier">np.array</span></dt><dd><p>Amplified noisy optical signal.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.modelsGPU.manakovDBP">
+<span class="sig-prename descclassname"><span class="pre">optic.models.modelsGPU.</span></span><span class="sig-name descname"><span class="pre">manakovDBP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.complex128'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.modelsGPU.manakovDBP" title="Permalink to this definition">#</a></dt>
+<dd><p>Run the Manakov SSF digital backpropagation (symmetric, dual-pol.).</p>
+<section id="id45">
+<h3>Parameters<a class="headerlink" href="#id45" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ei<span class="classifier">np.array</span></dt><dd><p>Input optical signal field.</p>
+</dd>
+<dt>Fs<span class="classifier">scalar</span></dt><dd><p>Sampling frequency in Hz.</p>
+</dd>
+<dt>paramCh<span class="classifier">parameter object  (struct)</span></dt><dd><p>Object with physical/simulation parameters of the optical channel.</p>
+</dd>
+</dl>
+<p>paramCh.Ltotal: total fiber length [km][default: 400 km]
+paramCh.Lspan: span length [km][default: 80 km]
+paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+paramCh.maxIter: max number of iter. in the trap. integration [default: 10]
+paramCh.tol: convergence tol. of the trap. integration.[default: 1e-5]
+paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
+paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
+paramCh.prgsBar: display progress bar? bolean variable [default:True]
+paramCh.saveSpanN: specify the span indexes to be output [default:[]]</p>
+</section>
+<section id="id46">
+<h3>Returns<a class="headerlink" href="#id46" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ech<span class="classifier">np.array</span></dt><dd><p>Optical signal after nonlinear backward propagation.</p>
+</dd>
+<dt>paramCh<span class="classifier">parameter object  (struct)</span></dt><dd><p>Object with physical/simulation parameters used in the split-step alg.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.modelsGPU.manakovSSF">
+<span class="sig-prename descclassname"><span class="pre">optic.models.modelsGPU.</span></span><span class="sig-name descname"><span class="pre">manakovSSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.complex128'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.modelsGPU.manakovSSF" title="Permalink to this definition">#</a></dt>
+<dd><p>Run the Manakov split-step Fourier model (symmetric, dual-pol.).</p>
+<section id="id47">
+<h3>Parameters<a class="headerlink" href="#id47" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ei<span class="classifier">np.array</span></dt><dd><p>Input optical signal field.</p>
+</dd>
+<dt>Fs<span class="classifier">scalar</span></dt><dd><p>Sampling frequency in Hz.</p>
+</dd>
+<dt>paramCh<span class="classifier">parameter object  (struct)</span></dt><dd><p>Object with physical/simulation parameters of the optical channel.</p>
+</dd>
+</dl>
+<p>paramCh.Ltotal: total fiber length [km][default: 400 km]
+paramCh.Lspan: span length [km][default: 80 km]
+paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+paramCh.maxIter: max number of iter. in the trap. integration [default: 10]
+paramCh.tol: convergence tol. of the trap. integration.[default: 1e-5]
+paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
+paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
+paramCh.prgsBar: display progress bar? bolean variable [default:True]
+paramCh.saveSpanN: specify the span indexes to be output [default:[]]</p>
+</section>
+<section id="id48">
+<h3>Returns<a class="headerlink" href="#id48" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ech<span class="classifier">np.array</span></dt><dd><p>Optical signal after nonlinear propagation.</p>
+</dd>
+<dt>paramCh<span class="classifier">parameter object  (struct)</span></dt><dd><p>Object with physical/simulation parameters used in the split-step alg.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.modelsGPU.nlinPhaseRot">
+<span class="sig-prename descclassname"><span class="pre">optic.models.modelsGPU.</span></span><span class="sig-name descname"><span class="pre">nlinPhaseRot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ey</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">γ</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.modelsGPU.nlinPhaseRot" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculate nonlinear phase-shift per step for the Manakov SSFM.</p>
+<section id="id49">
+<h3>Parameters<a class="headerlink" href="#id49" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ex<span class="classifier">np.array</span></dt><dd><p>Input optical signal field of x-polarization.</p>
+</dd>
+<dt>Ey<span class="classifier">np.array</span></dt><dd><p>Input optical signal field of y-polarization.</p>
+</dd>
+<dt>Pch<span class="classifier">np.array</span></dt><dd><p>Input optical power.</p>
+</dd>
+<dt>γ<span class="classifier">real scalar</span></dt><dd><p>fiber nonlinearity coefficient.</p>
+</dd>
+</dl>
+</section>
+<section id="id50">
+<h3>Returns<a class="headerlink" href="#id50" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>np.array</dt><dd><p>nonlinear phase-shift of each sample of the signal.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.modelsGPU.ssfm">
+<span class="sig-prename descclassname"><span class="pre">optic.models.modelsGPU.</span></span><span class="sig-name descname"><span class="pre">ssfm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.complex128'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.modelsGPU.ssfm" title="Permalink to this definition">#</a></dt>
+<dd><p>Run the split-step Fourier model (symmetric, single-pol.).</p>
+<section id="id51">
+<h3>Parameters<a class="headerlink" href="#id51" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ei<span class="classifier">np.array</span></dt><dd><p>Input optical signal field.</p>
+</dd>
+<dt>Fs<span class="classifier">scalar</span></dt><dd><p>Sampling frequency in Hz.</p>
+</dd>
+<dt>paramCh<span class="classifier">parameter object  (struct)</span></dt><dd><p>Object with physical/simulation parameters of the optical channel.</p>
+</dd>
+</dl>
+<p>paramCh.Ltotal: total fiber length [km][default: 400 km]
+paramCh.Lspan: span length [km][default: 80 km]
+paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+paramCh.prgsBar: display progress bar? bolean variable [default:True]
+paramCh.saveSpanN: specify the span indexes to be output [default:[]]</p>
+</section>
+<section id="id52">
+<h3>Returns<a class="headerlink" href="#id52" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>Ech<span class="classifier">np.array</span></dt><dd><p>Optical signal after nonlinear propagation.</p>
+</dd>
+<dt>paramCh<span class="classifier">parameter object  (struct)</span></dt><dd><p>Object with physical/simulation parameters used in the split-step alg.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-optic.models.tx">
+<span id="tx"></span><h2>tx<a class="headerlink" href="#module-optic.models.tx" title="Permalink to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.models.tx.simpleWDMTx">
+<span class="sig-prename descclassname"><span class="pre">optic.models.tx.</span></span><span class="sig-name descname"><span class="pre">simpleWDMTx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.tx.simpleWDMTx" title="Permalink to this definition">#</a></dt>
+<dd><p>Implement a simple WDM transmitter.</p>
+<p>Generates a complex baseband waveform representing a WDM signal with
+arbitrary number of carriers</p>
+<section id="id53">
+<h3>Parameters<a class="headerlink" href="#id53" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>param<span class="classifier">system parameters of the WDM transmitter.</span></dt><dd><p>optic.core.parameter object.</p>
+<ul class="simple">
+<li><p>param.M: modulation order [default: 16].</p></li>
+<li><p>param.constType: 'qam' or 'psk' [default: 'qam'].</p></li>
+<li><p>param.Rs: carrier baud rate [baud][default: 32e9].</p></li>
+<li><p>param.SpS: samples per symbol [default: 16].</p></li>
+<li><p>param.Nbits: total number of bits per carrier [default: 60000].</p></li>
+<li><p>param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc'].</p></li>
+<li><p>param.Ntaps: number of coefficients of the rrc filter [default: 4096].</p></li>
+<li><p>param.alphaRRC: rolloff do rrc filter [default: 0.01].</p></li>
+<li><p>param.Pch_dBm: launched power per WDM channel [dBm][default:-3 dBm].</p></li>
+<li><p>param.Nch: number of WDM channels [default: 5].</p></li>
+<li><p>param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz].</p></li>
+<li><p>param.lw: laser linewidth [Hz][default: 100 kHz].</p></li>
+<li><p>param.freqSpac: frequency spacing of the WDM grid [Hz][default: 40e9 Hz].</p></li>
+<li><p>param.Nmodes: number of polarization modes [default: 1].</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="id54">
+<h3>Returns<a class="headerlink" href="#id54" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>sigTxWDM<span class="classifier">np.array</span></dt><dd><p>WDM signal.</p>
+</dd>
+<dt>symbTxWDM<span class="classifier">np.array</span></dt><dd><p>Array of symbols per WDM carrier.</p>
+</dd>
+<dt>param<span class="classifier">optic.core.parameter object</span></dt><dd><p>System parameters for the WDM transmitter.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="dsp.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">dsp</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="comm.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">comm</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, Edson Porto da Silva, Adolfo Fernandes Herbster
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">models</a><ul>
+<li><a class="reference internal" href="#module-optic.models.devices">Devices</a><ul>
+<li><a class="reference internal" href="#optic.models.devices.balancedPD"><code class="docutils literal notranslate"><span class="pre">balancedPD()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.devices.coherentReceiver"><code class="docutils literal notranslate"><span class="pre">coherentReceiver()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.devices.edfa"><code class="docutils literal notranslate"><span class="pre">edfa()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.devices.hybrid_2x4_90deg"><code class="docutils literal notranslate"><span class="pre">hybrid_2x4_90deg()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.devices.iqm"><code class="docutils literal notranslate"><span class="pre">iqm()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.devices.mzm"><code class="docutils literal notranslate"><span class="pre">mzm()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.devices.pbs"><code class="docutils literal notranslate"><span class="pre">pbs()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.devices.pdmCoherentReceiver"><code class="docutils literal notranslate"><span class="pre">pdmCoherentReceiver()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.devices.photodiode"><code class="docutils literal notranslate"><span class="pre">photodiode()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.devices.pm"><code class="docutils literal notranslate"><span class="pre">pm()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-optic.models.channels">channels</a><ul>
+<li><a class="reference internal" href="#optic.models.channels.awgn"><code class="docutils literal notranslate"><span class="pre">awgn()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.channels.linFiberCh"><code class="docutils literal notranslate"><span class="pre">linFiberCh()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.channels.manakovSSF"><code class="docutils literal notranslate"><span class="pre">manakovSSF()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.channels.nlinPhaseRot"><code class="docutils literal notranslate"><span class="pre">nlinPhaseRot()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.channels.phaseNoise"><code class="docutils literal notranslate"><span class="pre">phaseNoise()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.channels.ssfm"><code class="docutils literal notranslate"><span class="pre">ssfm()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#amplification">amplification</a><ul>
+<li><a class="reference internal" href="#optic.models.amplification.OSA"><code class="docutils literal notranslate"><span class="pre">OSA()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.amplification.getN2Pop"><code class="docutils literal notranslate"><span class="pre">getN2Pop()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.amplification.getOverlapInt"><code class="docutils literal notranslate"><span class="pre">getOverlapInt()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.amplification.get_spectrum"><code class="docutils literal notranslate"><span class="pre">get_spectrum()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.amplification.gilesSpatial"><code class="docutils literal notranslate"><span class="pre">gilesSpatial()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.amplification.gilesSpectrum"><code class="docutils literal notranslate"><span class="pre">gilesSpectrum()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.amplification.power_meter"><code class="docutils literal notranslate"><span class="pre">power_meter()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-optic.models.modelsGPU">modelsGPU</a><ul>
+<li><a class="reference internal" href="#optic.models.modelsGPU.edfa"><code class="docutils literal notranslate"><span class="pre">edfa()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.modelsGPU.manakovDBP"><code class="docutils literal notranslate"><span class="pre">manakovDBP()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.modelsGPU.manakovSSF"><code class="docutils literal notranslate"><span class="pre">manakovSSF()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.modelsGPU.nlinPhaseRot"><code class="docutils literal notranslate"><span class="pre">nlinPhaseRot()</span></code></a></li>
+<li><a class="reference internal" href="#optic.models.modelsGPU.ssfm"><code class="docutils literal notranslate"><span class="pre">ssfm()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-optic.models.tx">tx</a><ul>
+<li><a class="reference internal" href="#optic.models.tx.simpleWDMTx"><code class="docutils literal notranslate"><span class="pre">simpleWDMTx()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    </body>
+</html>
