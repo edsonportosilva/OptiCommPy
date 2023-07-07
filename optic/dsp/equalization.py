@@ -50,18 +50,31 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
         Syncronized exact symbol sequence corresponding to the received input array x.
     paramEq : object, optional
         Parameter object containing the following attributes:
+        
         - numIter : int, number of pre-convergence iterations (default: 1)
+
         - nTaps : int, number of filter taps (default: 15)
+
         - mu : float or list of floats, step size parameter(s) (default: [1e-3])
+
         - lambdaRLS : float, RLS forgetting factor (default: 0.99)
+
         - SpS : int, samples per symbol (default: 2)
+
         - H : array-like, coefficient matrix (default: [])
+
         - L : int or list of ints, length of the output of the training section (default: [])
+
         - Hiter : list, history of coefficient matrices (default: [])
+
         - storeCoeff : bool, flag indicating whether to store coefficient matrices (default: False)
+
         - alg : str or list of strs, equalizer algorithm(s) (default: ['nlms'])
+
         - constType : str, constellation type (default: 'qam')
+
         - M : int, modulation order (default: 4)
+
         - prgsBar : bool, flag indicating whether to display progress bar (default: True)
 
     Returns
