@@ -459,9 +459,9 @@ def phaseNoise(lw, Nsamples, Ts):
 
 
 @njit
-def awgn(sig, snr, Fs=1, B=1):
+def awgn(sig, snr, Fs=1, B=1, complexNoise=True):
     """
-    Implement an AWGN channel.
+    Implement a basic AWGN channel model.
 
     Parameters
     ----------
@@ -473,6 +473,8 @@ def awgn(sig, snr, Fs=1, B=1):
         Sampling frequency. The default is 1.
     B : real scalar
         Signal bandwidth, defined as the length of the frequency interval [-B/2, B/2]. The default is 1.
+    complexNoise : bool
+        Generate complex-valued noise. The default is True.
 
     Returns
     -------
@@ -483,7 +485,11 @@ def awgn(sig, snr, Fs=1, B=1):
     snr_lin = 10 ** (snr / 10)
     noiseVar = sigPow(sig) / snr_lin
     σ = np.sqrt((Fs / B) * noiseVar)
-    noise = normal(0, σ, sig.shape) + 1j * normal(0, σ, sig.shape)
-    noise = 1 / np.sqrt(2) * noise
 
+    if complexNoise:
+        noise = normal(0, σ, sig.shape) + 1j * normal(0, σ, sig.shape)
+        noise = 1 / np.sqrt(2) * noise
+    else:
+        noise = normal(0, σ, sig.shape)
+        
     return sig + noise
