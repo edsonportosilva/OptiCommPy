@@ -11,12 +11,12 @@ MAINTAINER = 'Edson Porto da Silva'
 MAINTAINER_EMAIL = 'edsonporto88@gmail.com'
 URL = 'https://github.com/edsonportosilva/OptiCommPy'
 LICENSE = 'BSD 3-Clause'
-VERSION = '0.4.0'
+VERSION = '0.5.0'
 
 #This is a list of files to install, and where
 #(relative to the 'root' dir, where setup.py is)
 #You could be more specific.
-files = ["optic/*"]
+files = ["optic/*","optic/comm/*","optic/dsp/*", "optic/models/*", "optic/comm/fecParams/*","optic/models/ampParams/*"]
 
 setup(
     name=DISTNAME,
@@ -30,7 +30,8 @@ setup(
     #(If you have other packages (dirs) or modules (py files) then
     #put them into the package directory - they will be found
     #recursively.)
-    packages=['optic'],
+    packages=['optic', 'optic.comm', 'optic.models', 'optic.dsp','optic.models.ampParams','optic.comm.fecParams'],
+    #py_modules = ['plot', 'core', 'comm', 'dsp', 'models'],
     install_requires=[
           'numpy>=1.9.2',
           'scipy>=0.15.0',
