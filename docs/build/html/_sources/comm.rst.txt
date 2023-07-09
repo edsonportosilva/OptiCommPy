@@ -1,18 +1,15 @@
 
-Digital communications utilities
+Digital Communications Utilities
 =====
 
-modulation
-------------
 .. automodule:: optic.comm.modulation
     :members:
+    :noindex:
 
-metrics
-------------
 .. automodule:: optic.comm.metrics
     :members:
+    :noindex:
 
-ofdm
-------------
 .. automodule:: optic.comm.ofdm
     :members:
+    :noindex:

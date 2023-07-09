@@ -1,57 +1,96 @@
-<!DOCTYPE html>
-<html class="writer-html5" lang="English" >
-<head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Physical models &mdash; OptiCommPy 0.4.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="English" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="English" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Physical Models &mdash; OptiCommPy 0.6.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="optic.models.devices.pm" href="generated/optic.models.devices.pm.html" />
-    <link rel="prev" title="Digital communications utilities" href="comm.html" /> 
+    <link rel="prev" title="optic.comm.ofdm.demodulateOFDM" href="generated/optic.comm.ofdm.demodulateOFDM.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
 
           
+            <a href="index.html" class="icon icon-home"> OptiCommPy
           
-          <a href="index.html" class="icon icon-home">
-            OptiCommPy
+
+          
           </a>
+
+          
+            
+            
               <div class="version">
-                0.4
+                0.6
               </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-</ul>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital communications utilities</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Physical models</a><ul>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital Communications Utilities</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Physical Models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#models-for-optical-devices-optic-models-devices">Models for optical devices (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.devices</span></code>)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.pm.html">optic.models.devices.pm</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.models.devices.mzm.html">optic.models.devices.mzm</a></li>
@@ -74,39 +113,81 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="dsp.html">DSP</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plot.html">plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">Digital Signal Processing (DSP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Utilities</a></li>
 </ul>
 
+            
+          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">OptiCommPy</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Physical models</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Physical Models</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+            
             <a href="_sources/models.rst.txt" rel="nofollow"> View page source</a>
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
-  <section id="physical-models">
-<h1>Physical models<a class="headerlink" href="#physical-models" title="Permalink to this heading"></a></h1>
-<section id="models-for-optical-devices-optic-models-devices">
-<h2>Models for optical devices (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.devices</span></code>)<a class="headerlink" href="#models-for-optical-devices-optic-models-devices" title="Permalink to this heading"></a></h2>
+            
+  <div class="section" id="physical-models">
+<h1>Physical Models<a class="headerlink" href="#physical-models" title="Permalink to this heading">¶</a></h1>
+<div class="section" id="models-for-optical-devices-optic-models-devices">
+<h2>Models for optical devices (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.devices</span></code>)<a class="headerlink" href="#models-for-optical-devices-optic-models-devices" title="Permalink to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.models.devices.pm.html#optic.models.devices.pm" title="optic.models.devices.pm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pm</span></code></a>(Ai, u, Vπ)</p></td>
 <td><p>Optical Phase Modulator (PM).</p></td>
@@ -140,13 +221,12 @@
 </tr>
 </tbody>
 </table>
-</section>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">balancedPD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramPD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Balanced photodiode (BPD).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>E1</strong> (<em>np.array</em>) -- Input optical field.</p></li>
 <li><p><strong>E2</strong> (<em>np.array</em>) -- Input optical field.</p></li>
@@ -158,14 +238,14 @@
 <li><p><strong>[</strong><strong>Hz</strong><strong>]</strong><strong>[</strong><strong>default</strong> (<em>paramPD.B bandwidth</em>) -- </p></li>
 <li><p><strong>paramPD.Fs</strong> (<em>sampling frequency</em><em> [</em><em>Hz</em><em>] </em><em>[</em><em>default: 60e9 Hz</em><em>]</em>) -- </p></li>
 <li><p><strong>paramPD.fType</strong> (<em>frequency response type</em><em> [</em><em>default: 'rect'</em><em>]</em>) -- </p></li>
-<li><p><strong>paramPD.N</strong> (<em>number</em><em> of </em><em>the frequency resp. filter taps.</em><em> [</em><em>default: 8001</em><em>]</em>) -- </p></li>
+<li><p><strong>paramPD.N</strong> (<em>number of the frequency resp. filter taps.</em><em> [</em><em>default: 8001</em><em>]</em>) -- </p></li>
 <li><p><strong>paramPD.ideal</strong> (<em>ideal PD?</em><em>(</em><em>i.e. no noise</em><em>, </em><em>no frequency resp.</em><em>) </em><em>[</em><em>default: True</em><em>]</em>) -- </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>ibpd</strong> -- Balanced photocurrent.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -176,17 +256,17 @@
 <span class="sig-name descname"><span class="pre">coherentReceiver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Es</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramPD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Single polarization coherent optical front-end.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Es</strong> (<em>np.array</em>) -- Input signal optical field.</p></li>
 <li><p><strong>Elo</strong> (<em>np.array</em>) -- Input LO optical field.</p></li>
 <li><p><strong>paramPD</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- Parameters of the photodiodes.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>s</strong> -- Downconverted signal after balanced detection.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -197,7 +277,7 @@
 <span class="sig-name descname"><span class="pre">edfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Implement simple EDFA model.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input signal field.</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
@@ -206,10 +286,10 @@
 <li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Central optical frequency. The default is 193.1e12.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Amplified noisy optical signal.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -220,16 +300,16 @@
 <span class="sig-name descname"><span class="pre">hybrid_2x4_90deg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Es</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elo</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Optical 2 x 4 90° hybrid.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Es</strong> (<em>np.array</em>) -- Input signal optical field.</p></li>
 <li><p><strong>Elo</strong> (<em>np.array</em>) -- Input LO optical field.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Optical hybrid outputs.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -240,7 +320,7 @@
 <span class="sig-name descname"><span class="pre">iqm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ai</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vπ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">VbI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">VbQ</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Optical In-Phase/Quadrature Modulator (IQM).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ai</strong> (<em>scalar</em><em> or </em><em>np.array</em>) -- Amplitude of the optical field at the input of the IQM.</p></li>
 <li><p><strong>u</strong> (<em>complex-valued np.array</em>) -- Modulator's driving signal (complex-valued baseband).</p></li>
@@ -249,10 +329,10 @@
 <li><p><strong>VbQ</strong> (<em>scalar</em>) -- Q-MZM's bias voltage.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>Ao</strong> -- Modulated optical field at the output of the IQM.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>complex-valued np.array</p>
 </dd>
 </dl>
@@ -263,7 +343,7 @@
 <span class="sig-name descname"><span class="pre">mzm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ai</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vπ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vb</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Optical Mach-Zehnder Modulator (MZM).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ai</strong> (<em>scalar</em><em> or </em><em>np.array</em>) -- Amplitude of the optical field at the input of the MZM.</p></li>
 <li><p><strong>u</strong> (<em>np.array</em>) -- Electrical driving signal.</p></li>
@@ -271,10 +351,10 @@
 <li><p><strong>Vb</strong> (<em>scalar</em>) -- MZM's bias voltage.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>Ao</strong> -- Modulated optical field at the output of the MZM.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -286,33 +366,33 @@
 <dd><p>Draw random samples from a normal (Gaussian) distribution.</p>
 <p>The probability density function of the normal distribution, first
 derived by De Moivre and 200 years later by both Gauss and Laplace
-independently <a class="footnote-reference brackets" href="#id5" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>, is often called the bell curve because of
+independently <a class="footnote-reference brackets" href="#id5" id="id1">2</a>, is often called the bell curve because of
 its characteristic shape (see the example below).</p>
 <p>The normal distributions occurs often in nature.  For example, it
 describes the commonly occurring distribution of samples influenced
 by a large number of tiny, random disturbances, each with its own
-unique distribution <a class="footnote-reference brackets" href="#id5" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+unique distribution <a class="footnote-reference brackets" href="#id5" id="id2">2</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>New code should use the <code class="docutils literal notranslate"><span class="pre">normal</span></code> method of a <code class="docutils literal notranslate"><span class="pre">default_rng()</span></code>
 instance instead; please see the <span class="xref std std-ref">random-quick-start</span>.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>loc</strong> (<em>float</em><em> or </em><em>array_like</em><em> of </em><em>floats</em>) -- Mean (&quot;centre&quot;) of the distribution.</p></li>
-<li><p><strong>scale</strong> (<em>float</em><em> or </em><em>array_like</em><em> of </em><em>floats</em>) -- Standard deviation (spread or &quot;width&quot;) of the distribution. Must be
+<li><p><strong>loc</strong> (<em>float</em><em> or </em><em>array_like of floats</em>) -- Mean (&quot;centre&quot;) of the distribution.</p></li>
+<li><p><strong>scale</strong> (<em>float</em><em> or </em><em>array_like of floats</em>) -- Standard deviation (spread or &quot;width&quot;) of the distribution. Must be
 non-negative.</p></li>
-<li><p><strong>size</strong> (<em>int</em><em> or </em><em>tuple</em><em> of </em><em>ints</em><em>, </em><em>optional</em>) -- Output shape.  If the given shape is, e.g., <code class="docutils literal notranslate"><span class="pre">(m,</span> <span class="pre">n,</span> <span class="pre">k)</span></code>, then
+<li><p><strong>size</strong> (<em>int</em><em> or </em><em>tuple of ints</em><em>, </em><em>optional</em>) -- Output shape.  If the given shape is, e.g., <code class="docutils literal notranslate"><span class="pre">(m,</span> <span class="pre">n,</span> <span class="pre">k)</span></code>, then
 <code class="docutils literal notranslate"><span class="pre">m</span> <span class="pre">*</span> <span class="pre">n</span> <span class="pre">*</span> <span class="pre">k</span></code> samples are drawn.  If size is <code class="docutils literal notranslate"><span class="pre">None</span></code> (default),
 a single value is returned if <code class="docutils literal notranslate"><span class="pre">loc</span></code> and <code class="docutils literal notranslate"><span class="pre">scale</span></code> are both scalars.
 Otherwise, <code class="docutils literal notranslate"><span class="pre">np.broadcast(loc,</span> <span class="pre">scale).size</span></code> samples are drawn.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>out</strong> -- Drawn samples from the parameterized normal distribution.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>ndarray or scalar</p>
 </dd>
 </dl>
@@ -335,24 +415,21 @@ deviation. The square of the standard deviation, <span class="math notranslate n
 is called the variance.</p>
 <p>The function has its peak at the mean, and its &quot;spread&quot; increases with
 the standard deviation (the function reaches 0.607 times its maximum at
-<span class="math notranslate nohighlight">\(x + \sigma\)</span> and <span class="math notranslate nohighlight">\(x - \sigma\)</span> <a class="footnote-reference brackets" href="#id5" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>).  This implies that
+<span class="math notranslate nohighlight">\(x + \sigma\)</span> and <span class="math notranslate nohighlight">\(x - \sigma\)</span> <a class="footnote-reference brackets" href="#id5" id="id3">2</a>).  This implies that
 normal is more likely to return samples lying close to the mean, rather
 than those far away.</p>
 <p class="rubric">References</p>
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id4" role="note">
-<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
-<p>Wikipedia, &quot;Normal distribution&quot;,
+<dl class="footnote brackets">
+<dt class="label" id="id4"><span class="brackets">1</span></dt>
+<dd><p>Wikipedia, &quot;Normal distribution&quot;,
 <a class="reference external" href="https://en.wikipedia.org/wiki/Normal_distribution">https://en.wikipedia.org/wiki/Normal_distribution</a></p>
-</aside>
-<aside class="footnote brackets" id="id5" role="note">
-<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>,<a role="doc-backlink" href="#id3">3</a>)</span>
-<p>P. R. Peebles Jr., &quot;Central Limit Theorem&quot; in &quot;Probability,
+</dd>
+<dt class="label" id="id5"><span class="brackets">2</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id2">2</a>,<a href="#id3">3</a>)</span></dt>
+<dd><p>P. R. Peebles Jr., &quot;Central Limit Theorem&quot; in &quot;Probability,
 Random Variables and Random Signal Principles&quot;, 4th ed., 2001,
 pp. 51, 51, 125.</p>
-</aside>
-</aside>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <p>Draw samples from the distribution:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span> <span class="c1"># mean and standard deviation</span>
@@ -391,13 +468,13 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">pbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">θ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Polarization beam splitter (PBS).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>E</strong> (<em>(</em><em>N</em><em>,</em><em>2</em><em>) </em><em>np.array</em>) -- Input pol. multiplexed optical field.</p></li>
 <li><p><strong>θ</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Rotation angle of input field in radians. The default is 0.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>Ex</strong> (<em>(N,) np.array</em>) -- Ex output single pol. field.</p></li>
 <li><p><strong>Ey</strong> (<em>(N,) np.array</em>) -- Ey output single pol. field.</p></li>
@@ -412,7 +489,7 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">pdmCoherentReceiver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Es</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">θsig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramPD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Polarization multiplexed coherent optical front-end.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Es</strong> (<em>np.array</em>) -- Input signal optical field.</p></li>
 <li><p><strong>Elo</strong> (<em>np.array</em>) -- Input LO optical field.</p></li>
@@ -420,10 +497,10 @@ the probability density function:</p>
 <li><p><strong>paramPD</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- Parameters of the photodiodes.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>S</strong> -- Downconverted signal after balanced detection.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -434,7 +511,7 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">photodiode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramPD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Pin photodiode (PD).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>E</strong> (<em>np.array</em>) -- Input optical field.</p></li>
 <li><p><strong>paramPD</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- Parameters of the photodiode.</p></li>
@@ -445,14 +522,14 @@ the probability density function:</p>
 <li><p><strong>[</strong><strong>Hz</strong><strong>]</strong><strong>[</strong><strong>default</strong> (<em>paramPD.B bandwidth</em>) -- </p></li>
 <li><p><strong>paramPD.Fs</strong> (<em>sampling frequency</em><em> [</em><em>Hz</em><em>] </em><em>[</em><em>default: 60e9 Hz</em><em>]</em>) -- </p></li>
 <li><p><strong>paramPD.fType</strong> (<em>frequency response type</em><em> [</em><em>default: 'rect'</em><em>]</em>) -- </p></li>
-<li><p><strong>paramPD.N</strong> (<em>number</em><em> of </em><em>the frequency resp. filter taps.</em><em> [</em><em>default: 8001</em><em>]</em>) -- </p></li>
+<li><p><strong>paramPD.N</strong> (<em>number of the frequency resp. filter taps.</em><em> [</em><em>default: 8001</em><em>]</em>) -- </p></li>
 <li><p><strong>paramPD.ideal</strong> (<em>ideal PD?</em><em>(</em><em>i.e. no noise</em><em>, </em><em>no frequency resp.</em><em>) </em><em>[</em><em>default: True</em><em>]</em>) -- </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>ipd</strong> -- photocurrent.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -463,25 +540,30 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">pm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ai</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vπ</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Optical Phase Modulator (PM).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ai</strong> (<em>scalar</em><em> or </em><em>np.array</em>) -- Amplitude of the optical field at the input of the PM.</p></li>
 <li><p><strong>u</strong> (<em>np.array</em>) -- Electrical driving signal.</p></li>
 <li><p><strong>Vπ</strong> (<em>scalar</em>) -- PM's Vπ voltage.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>Ao</strong> -- Modulated optical field at the output of the PM.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
 
-<section id="models-for-fiber-optic-channels-optic-models-channels">
-<h2>Models for fiber optic channels (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.channels</span></code>)<a class="headerlink" href="#models-for-fiber-optic-channels-optic-models-channels" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="models-for-fiber-optic-channels-optic-models-channels">
+<h2>Models for fiber optic channels (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.channels</span></code>)<a class="headerlink" href="#models-for-fiber-optic-channels-optic-models-channels" title="Permalink to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.models.channels.linFiberCh.html#optic.models.channels.linFiberCh" title="optic.models.channels.linFiberCh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">linFiberCh</span></code></a>(Ei, L, alpha, D, Fc, Fs)</p></td>
 <td><p>Simulate signal propagation through a linear fiber channel.</p></td>
@@ -497,13 +579,12 @@ the probability density function:</p>
 </tr>
 </tbody>
 </table>
-</section>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">awgn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">complexNoise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Implement a basic AWGN channel model.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sig</strong> (<em>np.array</em>) -- Input signal.</p></li>
 <li><p><strong>snr</strong> (<em>scalar</em>) -- Signal-to-noise ratio in dB.</p></li>
@@ -512,10 +593,10 @@ the probability density function:</p>
 <li><p><strong>complexNoise</strong> (<em>bool</em>) -- Generate complex-valued noise. The default is True.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Input signal plus noise.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -526,7 +607,7 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">linFiberCh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Simulate signal propagation through a linear fiber channel.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical field.</p></li>
 <li><p><strong>L</strong> (<em>real scalar</em>) -- Length of the fiber.</p></li>
@@ -536,10 +617,10 @@ the probability density function:</p>
 <li><p><strong>Fs</strong> (<em>real scalar</em>) -- Sampling rate of the simulation.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Optical field at the output of the fiber.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -550,7 +631,7 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">manakovSSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.complex128'&gt;</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Run the Manakov split-step Fourier model (symmetric, dual-pol.).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical signal field.</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
@@ -575,7 +656,7 @@ the probability density function:</p>
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>Ech</strong> (<em>np.array</em>) -- Optical signal after nonlinear propagation.</p></li>
 <li><p><strong>paramCh</strong> (<em>parameter object  (struct)</em>) -- Object with physical/simulation parameters used in the split-step alg.</p></li>
@@ -590,17 +671,17 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">phaseNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nsamples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Generate realization of a random-walk phase-noise process.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>lw</strong> (<em>scalar</em>) -- laser linewidth.</p></li>
 <li><p><strong>Nsamples</strong> (<em>scalar</em>) -- number of samples to be draw.</p></li>
 <li><p><strong>Ts</strong> (<em>scalar</em>) -- sampling period.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>phi</strong> -- realization of the phase noise process.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -611,59 +692,60 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">ssfm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Split-step Fourier method (symmetric, single-pol.).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> -- input signal</p></li>
 <li><p><strong>Fs</strong> -- sampling frequency of Ei [Hz]</p></li>
 <li><p><strong>paramCh</strong> -- object with physical parameters of the optical channel</p></li>
 </ul>
 </dd>
-<dt class="field-even">ParamCh.Ltotal<span class="colon">:</span></dt>
+<dt class="field-even">ParamCh.Ltotal</dt>
 <dd class="field-even"><p>total fiber length [km][default: 400 km]</p>
 </dd>
-<dt class="field-odd">ParamCh.Lspan<span class="colon">:</span></dt>
+<dt class="field-odd">ParamCh.Lspan</dt>
 <dd class="field-odd"><p>span length [km][default: 80 km]</p>
 </dd>
-<dt class="field-even">ParamCh.hz<span class="colon">:</span></dt>
+<dt class="field-even">ParamCh.hz</dt>
 <dd class="field-even"><p>step-size for the split-step Fourier method [km][default: 0.5 km]</p>
 </dd>
-<dt class="field-odd">ParamCh.alpha<span class="colon">:</span></dt>
+<dt class="field-odd">ParamCh.alpha</dt>
 <dd class="field-odd"><p>fiber attenuation parameter [dB/km][default: 0.2 dB/km]</p>
 </dd>
-<dt class="field-even">ParamCh.D<span class="colon">:</span></dt>
+<dt class="field-even">ParamCh.D</dt>
 <dd class="field-even"><p>chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]</p>
 </dd>
-<dt class="field-odd">ParamCh.gamma<span class="colon">:</span></dt>
+<dt class="field-odd">ParamCh.gamma</dt>
 <dd class="field-odd"><p>fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]</p>
 </dd>
-<dt class="field-even">ParamCh.Fc<span class="colon">:</span></dt>
+<dt class="field-even">ParamCh.Fc</dt>
 <dd class="field-even"><p>carrier frequency [Hz] [default: 193.1e12 Hz]</p>
 </dd>
-<dt class="field-odd">ParamCh.amp<span class="colon">:</span></dt>
+<dt class="field-odd">ParamCh.amp</dt>
 <dd class="field-odd"><p>'edfa', 'ideal', or 'None. [default:'edfa']</p>
 </dd>
-<dt class="field-even">ParamCh.NF<span class="colon">:</span></dt>
+<dt class="field-even">ParamCh.NF</dt>
 <dd class="field-even"><p>edfa noise figure [dB] [default: 4.5 dB]</p>
 </dd>
-<dt class="field-odd">Return Ech<span class="colon">:</span></dt>
+<dt class="field-odd">Return Ech</dt>
 <dd class="field-odd"><p>propagated signal</p>
 </dd>
 </dl>
 </dd></dl>
 
+</div>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">OSA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Plot the optical spectrum of the signal in X and Y polarizations.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>np.array</em>) -- Signal</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
 <li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Central optical frequency. The default is 193.1e12.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dt class="field-even">Return type</dt>
 <dd class="field-even"><p>plot</p>
 </dd>
 </dl>
@@ -674,16 +756,16 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">getN2Pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Determines the number of carriers at the metastable level, considering the spectral and spatial Giles algorithm.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>P</strong> (<em>np.array</em>) -- Signal power (signal + pump + ASE).</p></li>
 <li><p><strong>properties</strong> (<em>object with constants and edfa parameters.</em>) -- </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>norm2</strong> -- Number of carriers at the metastable level.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -694,17 +776,17 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">getOverlapInt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n2_norm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_edf</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Determines the overlap integral between the field envelope and the doping profile.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n2_norm</strong> (<em>np.array</em>) -- Number of carriers at the metastable level.</p></li>
 <li><p><strong>properties</strong> (<em>object</em>) -- With constants and edfa parameters.</p></li>
 <li><p><strong>param_edf</strong> (<em>object</em>) -- With edf parameters.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>overlapIntegral</strong> -- Overlap integral between the field envelope and the doping profile.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -715,14 +797,14 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">get_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xunits='m'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yunits='dBm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window=&lt;function</span> <span class="pre">window_none&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sides='twosided'</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculates the optical spectrum of the signal.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>np.array</em>) -- Signal</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
 <li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Central optical frequency. The default is 193.1e12.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>spectrum</strong> (<em>np.array</em>) -- Signal's FFT</p></li>
 <li><p><strong>frequency</strong> (<em>np.array</em>) -- Frequency array &#64; Fc.</p></li>
@@ -737,7 +819,7 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">gilesSpatial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_edf</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Routine used to solve the EDFA rate and propagation equations, considering the spatial Giles algorithm.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>P</strong> (<em>np.array</em>) -- Signal power (signal + pump + ASE).</p></li>
 <li><p><strong>z</strong> (<em>scalar</em><em> (</em><em>float</em><em>)</em>) -- Position - erbium doped fiber [0 - edf length].</p></li>
@@ -745,10 +827,10 @@ the probability density function:</p>
 <li><p><strong>param_edf</strong> (<em>object with constants and edf parameters.</em>) -- </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Increment of the amplified optical signal.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -759,17 +841,17 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">gilesSpectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Routine used to solve the EDFA rate and propagation equations, considering the spectral Giles algorithm.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>P</strong> (<em>np.array</em>) -- Signal power (signal + pump + ASE).</p></li>
 <li><p><strong>z</strong> (<em>scalar</em><em> (</em><em>float</em><em>)</em>) -- Position - erbium doped fiber [0 - edf length].</p></li>
 <li><p><strong>properties</strong> (<em>object with constants and edfa parameters.</em>) -- </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Increment of the amplified optical signal.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -780,13 +862,13 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">power_meter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate the total power of x.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>np.array</em>) -- Signal.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Total signal power of x: P = sum(abs(x)**2).</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>scalar</p>
 </dd>
 </dl>
@@ -798,7 +880,7 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">edfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G=20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NF=4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc=193100000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.complex128'&gt;</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Implement simple EDFA model.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input signal field.</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
@@ -807,10 +889,10 @@ the probability density function:</p>
 <li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Central optical frequency. The default is 193.1e12.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Amplified noisy optical signal.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -821,7 +903,7 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">manakovDBP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.complex128'&gt;</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Run the Manakov SSF digital backpropagation (symmetric, dual-pol.).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical signal field.</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
@@ -835,15 +917,15 @@ the probability density function:</p>
 <li><p><strong>paramCh.Fc</strong> (<em>carrier frequency</em><em> [</em><em>Hz</em><em>] </em><em>[</em><em>default: 193.1e12 Hz</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.amp</strong> (<em>'edfa'</em><em>, </em><em>'ideal'</em><em>, or </em><em>'None.</em><em> [</em><em>default:'edfa'</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.NF</strong> (<em>edfa noise figure</em><em> [</em><em>dB</em><em>] </em><em>[</em><em>default: 4.5 dB</em><em>]</em>) -- </p></li>
-<li><p><strong>paramCh.maxIter</strong> (<em>max number</em><em> of </em><em>iter. in the trap. integration</em><em> [</em><em>default: 10</em><em>]</em>) -- </p></li>
-<li><p><strong>paramCh.tol</strong> (<em>convergence tol.</em><em> of </em><em>the trap. integration.</em><em>[</em><em>default: 1e-5</em><em>]</em>) -- </p></li>
+<li><p><strong>paramCh.maxIter</strong> (<em>max number of iter. in the trap. integration</em><em> [</em><em>default: 10</em><em>]</em>) -- </p></li>
+<li><p><strong>paramCh.tol</strong> (<em>convergence tol. of the trap. integration.</em><em>[</em><em>default: 1e-5</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.nlprMethod</strong> (<em>adap step-size based on nonl. phase rot.</em><em> [</em><em>default: True</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.maxNlinPhaseRot</strong> (<em>max nonl. phase rot. tolerance</em><em> [</em><em>rad</em><em>]</em><em>[</em><em>default: 2e-2</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.prgsBar</strong> (<em>display progress bar? bolean variable</em><em> [</em><em>default:True</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.saveSpanN</strong> (<em>specify the span indexes to be output</em><em> [</em><em>default:</em><em>[</em><em>]</em><em>]</em>) -- </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>Ech</strong> (<em>np.array</em>) -- Optical signal after nonlinear backward propagation.</p></li>
 <li><p><strong>paramCh</strong> (<em>parameter object  (struct)</em>) -- Object with physical/simulation parameters used in the split-step alg.</p></li>
@@ -858,7 +940,7 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">manakovSSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.complex128'&gt;</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Run the Manakov split-step Fourier model (symmetric, dual-pol.).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical signal field.</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
@@ -872,15 +954,15 @@ the probability density function:</p>
 <li><p><strong>paramCh.Fc</strong> (<em>carrier frequency</em><em> [</em><em>Hz</em><em>] </em><em>[</em><em>default: 193.1e12 Hz</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.amp</strong> (<em>'edfa'</em><em>, </em><em>'ideal'</em><em>, or </em><em>'None.</em><em> [</em><em>default:'edfa'</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.NF</strong> (<em>edfa noise figure</em><em> [</em><em>dB</em><em>] </em><em>[</em><em>default: 4.5 dB</em><em>]</em>) -- </p></li>
-<li><p><strong>paramCh.maxIter</strong> (<em>max number</em><em> of </em><em>iter. in the trap. integration</em><em> [</em><em>default: 10</em><em>]</em>) -- </p></li>
-<li><p><strong>paramCh.tol</strong> (<em>convergence tol.</em><em> of </em><em>the trap. integration.</em><em>[</em><em>default: 1e-5</em><em>]</em>) -- </p></li>
+<li><p><strong>paramCh.maxIter</strong> (<em>max number of iter. in the trap. integration</em><em> [</em><em>default: 10</em><em>]</em>) -- </p></li>
+<li><p><strong>paramCh.tol</strong> (<em>convergence tol. of the trap. integration.</em><em>[</em><em>default: 1e-5</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.nlprMethod</strong> (<em>adap step-size based on nonl. phase rot.</em><em> [</em><em>default: True</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.maxNlinPhaseRot</strong> (<em>max nonl. phase rot. tolerance</em><em> [</em><em>rad</em><em>]</em><em>[</em><em>default: 2e-2</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.prgsBar</strong> (<em>display progress bar? bolean variable</em><em> [</em><em>default:True</em><em>]</em>) -- </p></li>
 <li><p><strong>paramCh.saveSpanN</strong> (<em>specify the span indexes to be output</em><em> [</em><em>default:</em><em>[</em><em>]</em><em>]</em>) -- </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>Ech</strong> (<em>np.array</em>) -- Optical signal after nonlinear propagation.</p></li>
 <li><p><strong>paramCh</strong> (<em>parameter object  (struct)</em>) -- Object with physical/simulation parameters used in the split-step alg.</p></li>
@@ -895,7 +977,7 @@ the probability density function:</p>
 <span class="sig-name descname"><span class="pre">ssfm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.complex128'&gt;</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Run the split-step Fourier model (symmetric, single-pol.).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical signal field.</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
@@ -913,7 +995,7 @@ the probability density function:</p>
 <li><p><strong>paramCh.saveSpanN</strong> (<em>specify the span indexes to be output</em><em> [</em><em>default:</em><em>[</em><em>]</em><em>]</em>) -- </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>Ech</strong> (<em>np.array</em>) -- Optical signal after nonlinear propagation.</p></li>
 <li><p><strong>paramCh</strong> (<em>parameter object  (struct)</em>) -- Object with physical/simulation parameters used in the split-step alg.</p></li>
@@ -930,8 +1012,8 @@ the probability density function:</p>
 <p>Generates a complex baseband waveform representing a WDM signal with
 arbitrary number of carriers</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>param</strong> (<em>system parameters</em><em> of </em><em>the WDM transmitter.</em>) -- <p>optic.core.parameter object.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>system parameters of the WDM transmitter.</em>) -- <p>optic.core.parameter object.</p>
 <ul class="simple">
 <li><p>param.M: modulation order [default: 16].</p></li>
 <li><p>param.constType: 'qam' or 'psk' [default: 'qam'].</p></li>
@@ -950,7 +1032,7 @@ arbitrary number of carriers</p>
 </ul>
 </p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>sigTxWDM</strong> (<em>np.array</em>) -- WDM signal.</p></li>
 <li><p><strong>symbTxWDM</strong> (<em>np.array</em>) -- Array of symbols per WDM carrier.</p></li>
@@ -961,37 +1043,55 @@ arbitrary number of carriers</p>
 </dl>
 </dd></dl>
 
-</section>
+</div>
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="comm.html" class="btn btn-neutral float-left" title="Digital communications utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="generated/optic.models.devices.pm.html" class="btn btn-neutral float-right" title="optic.models.devices.pm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="generated/optic.models.devices.pm.html" class="btn btn-neutral float-right" title="optic.models.devices.pm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="generated/optic.comm.ofdm.demodulateOFDM.html" class="btn btn-neutral float-left" title="optic.comm.ofdm.demodulateOFDM" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
-  </div>
+    <p>
+        &copy; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

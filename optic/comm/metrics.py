@@ -1,3 +1,22 @@
+"""
+==================================================
+Metrics for signal and performance characterization (:mod:`optic.comm.metrics`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   fastBERcalc              -- Monte Carlo BER/SER/SNR calculation
+   calcLLR                  -- LLR calculation (circular AGWN channel)
+   monteCarloGMI            -- Monte Carlo based generalized mutual information (GMI) estimation
+   monteCarloGMI            --  Monte Carlo based mutual information (MI) estimation
+   Qfunc                    -- Calculate function Q(x)
+   calcEVM                  -- Calculate error vector magnitude (EVM) metrics
+   theoryBER                -- Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel
+   calcLinOSNR              -- Calculate the OSNR evolution in a multi-span fiber transmission system
+"""
+
+
 """Metrics for signal and performance characterization."""
 import logging as logg
 
@@ -413,7 +432,7 @@ def calcEVM(symb, M, constType, symbTx=None):
 
 def theoryBER(M, EbN0, constType):
     """
-    Theoretical (approx.) bit error probability for QAM/PSK in AWGN channel.
+    Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel.
 
     Parameters
     ----------
@@ -422,7 +441,7 @@ def theoryBER(M, EbN0, constType):
     EbN0 : scalar
         Signal-to-noise ratio (SNR) per bit in dB.
     constType : string
-        Modulation type: 'qam' or 'psk'
+        Modulation type: 'pam', 'qam' or 'psk'
 
     Returns
     -------

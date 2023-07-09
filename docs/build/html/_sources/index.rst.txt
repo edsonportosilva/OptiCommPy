@@ -12,6 +12,17 @@ components of fiber optic communication systems, for educational and research pu
 .. note::
 
    This project is under active development.
+   
+
+Reference
+---------
+
+.. toctree::
+    :maxdepth: 2
+
+    welcome
+    usage
+    api
 
 
 Indices and tables
@@ -20,20 +31,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-Contents
---------
-
-.. toctree::
-
-   usage
-   
-Reference
----------
-.. toctree::
-    :maxdepth: 2
-
-    comm
-    models
-    dsp
-    plot

@@ -21,7 +21,8 @@ extensions = ['sphinx.ext.autodoc',
 		         'sphinx.ext.mathjax', 
                'sphinx.ext.autosummary', 
                'sphinx.ext.intersphinx',
-               'sphinx.ext.napoleon']
+               'sphinx.ext.napoleon',
+               'sphinx_rtd_theme']
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -38,7 +39,7 @@ html_static_path = ['_static']
 source_suffix = '.rst'
 
 # The encoding of source files.
-#source_encoding = 'utf-8-sig'
+source_encoding = 'utf-8-sig'
 
 # The master toctree document.
 master_doc = 'index'
@@ -48,9 +49,9 @@ master_doc = 'index'
 # built documents.
 #
 # The short X.Y version.
-version = '0.4'
+version = '0.6'
 # The full version, including alpha/beta/rc tags.
-release = '0.4.0'
+release = '0.6.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -65,4 +66,7 @@ add_function_parentheses = False
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
 add_module_names = False
+
+autosummary_generate = True
+
 

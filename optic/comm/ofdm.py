@@ -1,3 +1,17 @@
+"""
+==================================================
+OFDM utilities (:mod:`optic.comm.ofdm`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   hermit                   -- Hermitian simmetry block.
+   calcSymbolRate           -- Calculate the symbol rate of a given OFDM configuration
+   modulateOFDM             -- OFDM symbols modulator
+   demodulateOFDM           -- OFDM symbols demodulator   
+"""
+
 import numpy as np
 
 from scipy.fftpack     import fft, ifft

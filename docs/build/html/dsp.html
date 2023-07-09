@@ -1,57 +1,96 @@
-<!DOCTYPE html>
-<html class="writer-html5" lang="English" >
-<head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DSP &mdash; OptiCommPy 0.4.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="English" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="English" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Digital Signal Processing (DSP) &mdash; OptiCommPy 0.6.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-    <script src="_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="optic.dsp.core.sigPow" href="generated/optic.dsp.core.sigPow.html" />
     <link rel="prev" title="optic.models.channels.phaseNoise" href="generated/optic.models.channels.phaseNoise.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
 
           
+            <a href="index.html" class="icon icon-home"> OptiCommPy
           
-          <a href="index.html" class="icon icon-home">
-            OptiCommPy
+
+          
           </a>
+
+          
+            
+            
               <div class="version">
-                0.4
+                0.6
               </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-</ul>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital communications utilities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="models.html">Physical models</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">DSP</a><ul>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital Communications Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Physical Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Digital Signal Processing (DSP)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#core-digital-signal-processing-utilities-optic-dsp-core">Core digital signal processing utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code>)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.sigPow.html">optic.dsp.core.sigPow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.signal_power.html">optic.dsp.core.signal_power</a></li>
@@ -79,38 +118,80 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="plot.html">plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Utilities</a></li>
 </ul>
 
+            
+          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">OptiCommPy</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">DSP</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Digital Signal Processing (DSP)</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+            
             <a href="_sources/dsp.rst.txt" rel="nofollow"> View page source</a>
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
-  <section id="dsp">
-<h1>DSP<a class="headerlink" href="#dsp" title="Permalink to this heading"></a></h1>
-<section id="core-digital-signal-processing-utilities-optic-dsp-core">
-<h2>Core digital signal processing utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code>)<a class="headerlink" href="#core-digital-signal-processing-utilities-optic-dsp-core" title="Permalink to this heading"></a></h2>
+            
+  <div class="section" id="digital-signal-processing-dsp">
+<h1>Digital Signal Processing (DSP)<a class="headerlink" href="#digital-signal-processing-dsp" title="Permalink to this heading">¶</a></h1>
+<div class="section" id="core-digital-signal-processing-utilities-optic-dsp-core">
+<h2>Core digital signal processing utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code>)<a class="headerlink" href="#core-digital-signal-processing-utilities-optic-dsp-core" title="Permalink to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.sigPow.html#optic.dsp.core.sigPow" title="optic.dsp.core.sigPow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sigPow</span></code></a>(x)</p></td>
 <td><p>Calculate the average power of x.</p></td>
@@ -144,13 +225,12 @@
 </tr>
 </tbody>
 </table>
-</section>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">decimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Decimate signal.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input signal.</p></li>
 <li><p><strong>param</strong> (<em>core.parameter</em>) -- <p>Decimation parameters:</p>
@@ -161,10 +241,10 @@
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Decimated signal.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -175,16 +255,16 @@
 <span class="sig-name descname"><span class="pre">finddelay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Find delay between x and y.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>np.array</em>) -- Signal 1.</p></li>
 <li><p><strong>y</strong> (<em>np.array</em>) -- Signal 2.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>d</strong> -- Delay between x and y, in samples.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>int</p>
 </dd>
 </dl>
@@ -195,17 +275,17 @@
 <span class="sig-name descname"><span class="pre">firFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Perform FIR filtering and compensate for filter delay.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>h</strong> (<em>np.array</em>) -- Coefficients of the FIR filter (impulse response, symmetric).</p></li>
 <li><p><strong>x</strong> (<em>np.array</em>) -- Input signal.</p></li>
 <li><p><strong>prec</strong> (<em>cp.dtype</em>) -- Size of the complex representation.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>y</strong> -- Output (filtered) signal.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -216,7 +296,7 @@
 <span class="sig-name descname"><span class="pre">lowPassFIR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typeF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rect'</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate FIR coefficients of a lowpass filter.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fc</strong> (<em>float</em>) -- Cutoff frequency.</p></li>
 <li><p><strong>fa</strong> (<em>float</em>) -- Sampling frequency.</p></li>
@@ -224,10 +304,10 @@
 <li><p><strong>typeF</strong> (<em>string</em><em>, </em><em>optional</em>) -- Type of response ('rect', 'gauss'). The default is &quot;rect&quot;.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>h</strong> -- Filter coefficients.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -238,13 +318,13 @@
 <span class="sig-name descname"><span class="pre">pnorm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Normalize the average power of each componennt of x.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>np.array</em>) -- Signal.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Signal x with each component normalized in power.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -255,7 +335,7 @@
 <span class="sig-name descname"><span class="pre">pulseShape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulseType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SpS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Generate a pulse shaping filter.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pulseType</strong> (<em>string</em><em> (</em><em>'rect'</em><em>,</em><em>'nrz'</em><em>,</em><em>'rrc'</em><em>)</em>) -- type of pulse shaping filter.</p></li>
 <li><p><strong>SpS</strong> (<em>int</em><em>, </em><em>optional</em>) -- Number of samples per symbol of input signal. The default is 2.</p></li>
@@ -264,10 +344,10 @@
 <li><p><strong>Ts</strong> (<em>float</em><em>, </em><em>optional</em>) -- Symbol period in seconds. The default is 1.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>filterCoeffs</strong> -- Array of filter coefficients (normalized).</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -278,7 +358,7 @@
 <span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Resample signal to a given sampling rate.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>ndarray</em>) -- Input signal.</p></li>
 <li><p><strong>param</strong> (<em>core.parameter</em>) -- <dl class="simple">
@@ -290,10 +370,10 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Resampled signal.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
@@ -304,13 +384,13 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <span class="sig-name descname"><span class="pre">sigPow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate the average power of x.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>np.array</em>) -- Signal.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Average power of x: P = Nmodes*mean(abs(x)**2).</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>scalar</p>
 </dd>
 </dl>
@@ -321,13 +401,13 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <span class="sig-name descname"><span class="pre">signal_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate the total average power of x.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>np.array</em>) -- Signal.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Total average power of x: P = Nmodes*mean(abs(x)**2).</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>scalar</p>
 </dd>
 </dl>
@@ -338,25 +418,30 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <span class="sig-name descname"><span class="pre">symbolSync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SpS</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'amp'</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Symbol synchronizer.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>rx</strong> (<em>np.array</em>) -- Received symbol sequence.</p></li>
 <li><p><strong>tx</strong> (<em>np.array</em>) -- Transmitted symbol sequence.</p></li>
 <li><p><strong>SpS</strong> (<em>int</em>) -- Samples per symbol of input signals.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>tx</strong> -- Transmitted sequence synchronized to rx.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
 </dd></dl>
 
-<section id="dsp-algorithms-for-equalization-optic-dsp-equalization">
-<h2>DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)<a class="headerlink" href="#dsp-algorithms-for-equalization-optic-dsp-equalization" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="dsp-algorithms-for-equalization-optic-dsp-equalization">
+<h2>DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)<a class="headerlink" href="#dsp-algorithms-for-equalization-optic-dsp-equalization" title="Permalink to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.equalization.edc.html#optic.dsp.equalization.edc" title="optic.dsp.equalization.edc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">edc</span></code></a>(Ei, L, D, Fc, Fs)</p></td>
 <td><p>Electronic chromatic dispersion compensation (EDC).</p></td>
@@ -366,13 +451,12 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </tr>
 </tbody>
 </table>
-</section>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">dbp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ltotal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lspan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Digital backpropagation (symmetric, single-pol.)</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> -- input signal</p></li>
 <li><p><strong>Ltotal</strong> -- total fiber length [km]</p></li>
@@ -385,7 +469,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <li><p><strong>Fs</strong> -- sampling frequency [Hz]</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return Ech<span class="colon">:</span></dt>
+<dt class="field-even">Return Ech</dt>
 <dd class="field-even"><p>backpropagated signal</p>
 </dd>
 </dl>
@@ -396,7 +480,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <span class="sig-name descname"><span class="pre">edc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Electronic chromatic dispersion compensation (EDC).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Dispersed signal.</p></li>
 <li><p><strong>L</strong> (<em>real scalar</em>) -- Fiber length [km].</p></li>
@@ -405,10 +489,10 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <li><p><strong>Fs</strong> (<em>real scalar</em>) -- Sampling frequency [Hz].</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p>CD compensated signal.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -419,7 +503,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <span class="sig-name descname"><span class="pre">mimoAdaptEqualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramEq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>N-by-N MIMO adaptive equalizer.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>array-like</em>) -- Input array.</p></li>
 <li><p><strong>dx</strong> (<em>array-like</em><em>, </em><em>optional</em>) -- Syncronized exact symbol sequence corresponding to the received input array x.</p></li>
@@ -442,7 +526,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>yEq</strong> (<em>array-like</em>) -- Equalized output array.</p></li>
 <li><p><strong>H</strong> (<em>array-like</em>) -- Coefficient matrix.</p></li>
@@ -454,9 +538,14 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </dl>
 </dd></dl>
 
-<section id="dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">
-<h2>DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)<a class="headerlink" href="#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">
+<h2>DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)<a class="headerlink" href="#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery" title="Permalink to this heading">¶</a></h2>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.carrierRecovery.bps.html#optic.dsp.carrierRecovery.bps" title="optic.dsp.carrierRecovery.bps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bps</span></code></a></p></td>
 <td><p>Blind phase search (BPS) algorithm</p></td>
@@ -472,13 +561,12 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </tr>
 </tbody>
 </table>
-</section>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">bps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Blind phase search (BPS) algorithm</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>complex-valued ndarray</em>) -- Received constellation symbols.</p></li>
 <li><p><strong>N</strong> (<em>int</em>) -- Half of the 2*N+1 average window.</p></li>
@@ -486,10 +574,10 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <li><p><strong>B</strong> (<em>int</em>) -- number of test phases.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>θ</strong> -- Time-varying estimated phase-shifts.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>real-valued ndarray</p>
 </dd>
 </dl>
@@ -500,7 +588,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <span class="sig-name descname"><span class="pre">cpr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCPR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Carrier phase recovery function (CPR)</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>complex-valued ndarray</em>) -- received constellation symbols.</p></li>
 <li><p><strong>symbTx</strong> (<em>complex-valued ndarray</em><em>, </em><em>optional</em>) -- Transmitted symbol sequence. The default is [].</p></li>
@@ -523,11 +611,11 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ValueError</strong> -- Error is generated if the CPR algorithm is not correctly
     passed.</p>
 </dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><ul class="simple">
 <li><p><strong>Eo</strong> (<em>complex-valued ndarray</em>) -- Phase-compensated signal.</p></li>
 <li><p><strong>θ</strong> (<em>real-valued ndarray</em>) -- Time-varying estimated phase-shifts.</p></li>
@@ -542,7 +630,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <span class="sig-name descname"><span class="pre">ddpll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pilotInd</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Decision-directed Phase-locked Loop (DDPLL) algorithm</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>complex-valued ndarray</em>) -- Received constellation symbols.</p></li>
 <li><p><strong>Ts</strong> (<em>float scalar</em>) -- Symbol period.</p></li>
@@ -554,10 +642,10 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <li><p><strong>pilotInd</strong> (<em>int ndarray</em>) -- Indexes of pilot-symbol locations.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>θ</strong> -- Time-varying estimated phase-shifts.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>real-valued ndarray</p>
 </dd>
 </dl>
@@ -571,57 +659,76 @@ estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.</p>
 <span class="sig-name descname"><span class="pre">fourthPowerFOE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotSpec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Estimate the frequency offset (FO) with the 4th-power method.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>ndarray</em>) -- Input signal.</p></li>
 <li><p><strong>Fs</strong> (<em>float</em>) -- Sampling frequency.</p></li>
 <li><p><strong>plotSpec</strong> (<em>bool</em><em>, </em><em>optional</em>) -- Whether to plot the spectrum. Default is False.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p>The output signal after applying frequency offset correction.</p></li>
 <li><p>The estimated frequency offset.</p></li>
 </ul>
 </p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>ndarray, float</p>
 </dd>
 </dl>
 </dd></dl>
 
-</section>
+</div>
+</div>
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="generated/optic.models.channels.phaseNoise.html" class="btn btn-neutral float-left" title="optic.models.channels.phaseNoise" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="generated/optic.dsp.core.sigPow.html" class="btn btn-neutral float-right" title="optic.dsp.core.sigPow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="generated/optic.dsp.core.sigPow.html" class="btn btn-neutral float-right" title="optic.dsp.core.sigPow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="generated/optic.models.channels.phaseNoise.html" class="btn btn-neutral float-left" title="optic.models.channels.phaseNoise" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
-  </div>
+    <p>
+        &copy; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
