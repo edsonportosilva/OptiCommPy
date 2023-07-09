@@ -9,7 +9,7 @@
 project = 'OptiCommPy'
 copyright = '2023, Edson P. da Silva, Adolfo F. Herbster'
 author = 'Edson P. da Silva, Adolfo F. Herbster, Carlos D. F. da Silva, Joaquin Matres'
-release = '0.4.0'
+release = '0.6.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -68,5 +68,10 @@ add_function_parentheses = False
 add_module_names = False
 
 autosummary_generate = True
+
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath('OptiCommPy'))
 
 
