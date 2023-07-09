@@ -1,3 +1,5 @@
+With OptiCommPy you can design and run simulations of optical communications systems at the physical layer level.
+A broad range of configurations can be assembled with several different features.
 
 Available features
 ===================

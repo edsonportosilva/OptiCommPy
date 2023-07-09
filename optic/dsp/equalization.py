@@ -55,6 +55,8 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
     """
     N-by-N MIMO adaptive equalizer.
 
+    Algorithms available: 'cma', 'rde', 'nlms', 'dd-lms', 'da-rde', 'rls', 'dd-rls', 'static'.
+
     Parameters
     ----------
     x : array-like
@@ -82,7 +84,7 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
 
         - storeCoeff : bool, flag indicating whether to store coefficient matrices (default: False)
 
-        - alg : str or list of strs, equalizer algorithm(s) (default: ['nlms'])
+        - alg : str or list of strs, specifying the equalizer algorithm(s) (default: ['nlms'])
 
         - constType : str, constellation type (default: 'qam')
 

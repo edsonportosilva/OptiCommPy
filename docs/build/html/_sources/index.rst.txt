@@ -13,16 +13,21 @@ components of fiber optic communication systems, for educational and research pu
 
    This project is under active development.
    
-
-Reference
----------
-
 .. toctree::
     :maxdepth: 2
+    :caption: Reference
 
     welcome
     usage
-    api
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Package documentation  
+
+    comm
+    dsp
+    models
+    plot
 
 
 Indices and tables
