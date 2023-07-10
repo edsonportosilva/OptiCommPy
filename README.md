@@ -74,6 +74,4 @@ $ pip install .
 We are continuously making efforts to improve the code documentation. You can find the latest documentation in [opticommpy.readthedocs.io](https://opticommpy.readthedocs.io/en/latest/index.html).
 ## Citing this repository
 
-Edson Porto da Silva, Adolfo Herbster, & Joaquin Matres. (2022). edsonportosilva/OptiCommPy: v0.2.0-alpha (v0.2.0-alpha). https://doi.org/10.5281/zenodo.7425071
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7425071.svg)](https://doi.org/10.5281/zenodo.7425071)
+Edson Porto da Silva, Adolfo Herbster, Carlos Daniel Fontes da Silva, & Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.6.0-alpha (v0.6.0-alpha). [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8125665.svg)](https://doi.org/10.5281/zenodo.8125665)
