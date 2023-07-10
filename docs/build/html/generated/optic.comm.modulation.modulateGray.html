@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -59,7 +59,10 @@
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.GrayMapping.html">optic.comm.modulation.GrayMapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.minEuclid.html">optic.comm.modulation.minEuclid</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.demap.html">optic.comm.modulation.demap</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.comm.modulation.modulateGray</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.comm.modulation.modulateGray</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optic.comm.modulation.modulateGray"><code class="docutils literal notranslate"><span class="pre">modulateGray</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.demodulateGray.html">optic.comm.modulation.demodulateGray</a></li>
 </ul>
 </li>
@@ -106,7 +109,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>bits</strong> (<em>array of ints</em>) -- sequence of data bits.</p></li>
+<li><p><strong>bits</strong> (<em>array</em><em> of </em><em>ints</em>) -- sequence of data bits.</p></li>
 <li><p><strong>M</strong> (<em>int</em>) -- order of the modulation format.</p></li>
 <li><p><strong>constType</strong> (<em>string</em>) -- 'qam', 'psk', 'pam' or 'ook'.</p></li>
 </ul>

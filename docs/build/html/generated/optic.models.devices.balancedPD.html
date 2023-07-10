@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -63,13 +63,17 @@
 <li class="toctree-l3"><a class="reference internal" href="optic.models.devices.pbs.html">optic.models.devices.pbs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.models.devices.hybrid_2x4_90deg.html">optic.models.devices.hybrid_2x4_90deg</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.models.devices.photodiode.html">optic.models.devices.photodiode</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.models.devices.balancedPD</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.models.devices.balancedPD</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optic.models.devices.balancedPD"><code class="docutils literal notranslate"><span class="pre">balancedPD</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="optic.models.devices.coherentReceiver.html">optic.models.devices.coherentReceiver</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.models.devices.pdmCoherentReceiver.html">optic.models.devices.pdmCoherentReceiver</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.models.devices.edfa.html">optic.models.devices.edfa</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../models.html#models-for-fiber-optic-channels-optic-models-channels">Models for fiber optic channels (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.channels</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../models.html#models-for-optical-amplifiers-optic-models-amplification">Models for optical amplifiers (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.amplification</span></code>)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
@@ -119,7 +123,7 @@
 <li><p><strong>[</strong><strong>Hz</strong><strong>]</strong><strong>[</strong><strong>default</strong> (<em>paramPD.B bandwidth</em>) -- </p></li>
 <li><p><strong>paramPD.Fs</strong> (<em>sampling frequency</em><em> [</em><em>Hz</em><em>] </em><em>[</em><em>default: 60e9 Hz</em><em>]</em>) -- </p></li>
 <li><p><strong>paramPD.fType</strong> (<em>frequency response type</em><em> [</em><em>default: 'rect'</em><em>]</em>) -- </p></li>
-<li><p><strong>paramPD.N</strong> (<em>number of the frequency resp. filter taps.</em><em> [</em><em>default: 8001</em><em>]</em>) -- </p></li>
+<li><p><strong>paramPD.N</strong> (<em>number</em><em> of </em><em>the frequency resp. filter taps.</em><em> [</em><em>default: 8001</em><em>]</em>) -- </p></li>
 <li><p><strong>paramPD.ideal</strong> (<em>ideal PD?</em><em>(</em><em>i.e. no noise</em><em>, </em><em>no frequency resp.</em><em>) </em><em>[</em><em>default: True</em><em>]</em>) -- </p></li>
 </ul>
 </dd>

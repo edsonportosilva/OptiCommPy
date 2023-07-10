@@ -1,3 +1,23 @@
+"""
+==================================================
+Models for optical amplifiers (:mod:`optic.models.amplification`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   OSA                  -- Plot the optical spectrum of the signal in X and Y polarizations.
+   get_spectrum         -- Calculates the optical spectrum of the signal.
+   gilesSpectrum        -- Routine used to solve the EDFA rate and propagation equations, considering the spectral Giles algorithm.
+   gilesSpatial         -- Routine used to solve the EDFA rate and propagation equations, considering the spatial Giles algorithm.
+   getN2Pop             -- Determines the number of carriers at the metastable level, considering the spectral and spatial Giles algorithm.
+   getOverlapInt        -- Determines the overlap integral between the field envelope and the doping profile.
+   get_mode_radius      -- 
+   edfParams            --
+   edfaArgs             --
+   edfaSM               --
+"""
+
 import os
 
 import numpy as np
@@ -23,23 +43,24 @@ import logging as logg
 import copy
 
 from optic.core import parameters
+from optic.dsp.core import signal_power as power_meter
 
-def power_meter(x):
-    """
-    Calculate the total power of x.
+# def power_meter(x):
+#     """
+#     Calculate the total power of x.
 
-    Parameters
-    ----------
-    x : np.array
-        Signal.
+#     Parameters
+#     ----------
+#     x : np.array
+#         Signal.
 
-    Returns
-    -------
-    scalar
-        Total signal power of x: P = sum(abs(x)**2).
+#     Returns
+#     -------
+#     scalar
+#         Total signal power of x: P = sum(abs(x)**2).
 
-    """
-    return np.sum(np.mean(x * np.conj(x), axis=0).real)
+#     """
+#     return np.sum(np.mean(x * np.conj(x), axis=0).real)
 
 def OSA(x, Fs, Fc=193.1e12):
     """

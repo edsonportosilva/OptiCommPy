@@ -11,11 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -138,6 +138,7 @@
 </tr>
 </tbody>
 </table>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">GrayCode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span></dt>
@@ -183,7 +184,7 @@ Gray bit sequence as integer decimal).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>indSymb</strong> (<em>np.array of ints</em>) -- Indexes of received symbol sequence.</p></li>
+<li><p><strong>indSymb</strong> (<em>np.array</em><em> of </em><em>ints</em>) -- Indexes of received symbol sequence.</p></li>
 <li><p><strong>bitMap</strong> (<em>(</em><em>M</em><em>, </em><em>log2</em><em>(</em><em>M</em><em>)</em><em>) </em><em>np.array</em>) -- bit-to-symbol mapping.</p></li>
 </ul>
 </dd>
@@ -204,7 +205,7 @@ Gray bit sequence as integer decimal).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symb</strong> (<em>array of complex constellation symbols</em>) -- sequence of constellation symbols to be demodulated.</p></li>
+<li><p><strong>symb</strong> (<em>array</em><em> of </em><em>complex constellation symbols</em>) -- sequence of constellation symbols to be demodulated.</p></li>
 <li><p><strong>M</strong> (<em>int</em>) -- order of the modulation format.</p></li>
 <li><p><strong>constType</strong> (<em>string</em>) -- 'qam', 'psk', 'pam' or 'ook'.</p></li>
 </ul>
@@ -247,7 +248,7 @@ complex plane.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>bits</strong> (<em>array of ints</em>) -- sequence of data bits.</p></li>
+<li><p><strong>bits</strong> (<em>array</em><em> of </em><em>ints</em>) -- sequence of data bits.</p></li>
 <li><p><strong>M</strong> (<em>int</em>) -- order of the modulation format.</p></li>
 <li><p><strong>constType</strong> (<em>string</em>) -- 'qam', 'psk', 'pam' or 'ook'.</p></li>
 </ul>
@@ -261,7 +262,6 @@ complex plane.</p>
 </dl>
 </dd></dl>
 
-</section>
 <section id="metrics-for-signal-and-performance-characterization-optic-comm-metrics">
 <h2>Metrics for signal and performance characterization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.metrics</span></code>)<a class="headerlink" href="#metrics-for-signal-and-performance-characterization-optic-comm-metrics" title="Permalink to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
@@ -292,6 +292,7 @@ complex plane.</p>
 </tr>
 </tbody>
 </table>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">Qfunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
@@ -495,7 +496,6 @@ complex plane.</p>
 </dl>
 </dd></dl>
 
-</section>
 <section id="ofdm-utilities-optic-comm-ofdm">
 <h2>OFDM utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.ofdm</span></code>)<a class="headerlink" href="#ofdm-utilities-optic-comm-ofdm" title="Permalink to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
@@ -514,6 +514,7 @@ complex plane.</p>
 </tr>
 </tbody>
 </table>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">calcSymbolRate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nfft</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Np</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hermitSym</span></span></em><span class="sig-paren">)</span></dt>
@@ -603,7 +604,6 @@ complex plane.</p>
 </dl>
 </dd></dl>
 
-</section>
 </section>
 
 

@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -60,7 +60,10 @@
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.minEuclid.html">optic.comm.modulation.minEuclid</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.demap.html">optic.comm.modulation.demap</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.modulateGray.html">optic.comm.modulation.modulateGray</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.comm.modulation.demodulateGray</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.comm.modulation.demodulateGray</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optic.comm.modulation.demodulateGray"><code class="docutils literal notranslate"><span class="pre">demodulateGray</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../comm.html#metrics-for-signal-and-performance-characterization-optic-comm-metrics">Metrics for signal and performance characterization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.metrics</span></code>)</a></li>
@@ -107,7 +110,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symb</strong> (<em>array of complex constellation symbols</em>) -- sequence of constellation symbols to be demodulated.</p></li>
+<li><p><strong>symb</strong> (<em>array</em><em> of </em><em>complex constellation symbols</em>) -- sequence of constellation symbols to be demodulated.</p></li>
 <li><p><strong>M</strong> (<em>int</em>) -- order of the modulation format.</p></li>
 <li><p><strong>constType</strong> (<em>string</em>) -- 'qam', 'psk', 'pam' or 'ook'.</p></li>
 </ul>
