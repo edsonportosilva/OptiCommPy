@@ -29,7 +29,7 @@ from scipy import signal
 @njit
 def sigPow(x):
     """
-    Calculate the average power of x.
+    Calculate the average power of x per mode.
 
     Parameters
     ----------
@@ -39,14 +39,15 @@ def sigPow(x):
     Returns
     -------
     scalar
-        Average power of x: P = Nmodes*mean(abs(x)**2).
+        Average power of x: P = mean(abs(x)**2).
 
     """        
     return np.mean(np.abs(x) ** 2)
 
+@njit
 def signal_power(x):
     """
-    Calculate the total average power of x.
+    Calculate the total power of x.
 
     Parameters
     ----------
@@ -56,15 +57,10 @@ def signal_power(x):
     Returns
     -------
     scalar
-        Total average power of x: P = Nmodes*mean(abs(x)**2).
+        Total power of x: P = sum(abs(x)**2).
 
-    """
-    try:
-        Nmodes = x.shape[1]
-    except IndexError:
-        Nmodes = 1
-        
-    return Nmodes*sigPow(x)
+    """           
+    return np.sum(np.mean(x * np.conj(x), axis=0).real)
 
 def firFilter(h, x):
     """

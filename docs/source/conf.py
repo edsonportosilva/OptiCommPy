@@ -67,7 +67,7 @@ add_function_parentheses = False
 # unit titles (such as .. function::).
 add_module_names = False
 
-autosummary_generate = True
+autosummary_generate = True  # Turn on sphinx.ext.autosummary
 
 import os
 import sys

@@ -29,7 +29,6 @@ components of fiber optic communication systems, for educational and research pu
     models
     plot
 
-
 Indices and tables
 ==================
 

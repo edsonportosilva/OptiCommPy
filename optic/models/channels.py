@@ -7,7 +7,8 @@ Models for fiber optic channels (:mod:`optic.models.channels`)
    :toctree: generated/
 
    linFiberCh           -- Linear optical fiber channel model.
-   manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.
+   ssfm                 -- Nonlinear fiber optic channel model based on the NLSE equation.
+   manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.   
    awgn                 -- AWGN channel model.
    phaseNoise           -- Phase noise model.
 """
@@ -21,7 +22,6 @@ import scipy.constants as const
 from scipy.linalg import norm
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
-from numpy.random import normal
 from tqdm.notebook import tqdm
 
 from optic.dsp.core import lowPassFIR, signal_power, sigPow
@@ -91,21 +91,42 @@ def ssfm(Ei, Fs, paramCh):
     """
     Split-step Fourier method (symmetric, single-pol.).
 
-    :param Ei: input signal
-    :param Fs: sampling frequency of Ei [Hz]
-    :param paramCh: object with physical parameters of the optical channel
+    Parameters
+    ----------
+    Ei : np.array
+        Input optical signal field.
+    Fs : scalar
+        Sampling frequency in Hz.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters of the optical channel.
 
-    :paramCh.Ltotal: total fiber length [km][default: 400 km]
-    :paramCh.Lspan: span length [km][default: 80 km]
-    :paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-    :paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-    :paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-    :paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-    :paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-    :paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-    :paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+        - paramCh.Ltotal: total fiber length [km][default: 400 km]
 
-    :return Ech: propagated signal
+        - paramCh.Lspan: span length [km][default: 80 km]
+
+        - paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+
+        - paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+
+        - paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+
+        - paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+
+        - paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+
+        - paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+
+        - paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+
+        - paramCh.prgsBar: display progress bar? bolean variable [default:True]
+  
+    Returns
+    -------
+    Ech : np.array
+        Optical signal after nonlinear propagation.
+    paramCh : parameter object  (struct)
+        Object with physical/simulation parameters used in the split-step alg.
+
     """
     # check input parameters
     paramCh.Ltotal = getattr(paramCh, "Ltotal", 400)
@@ -178,12 +199,7 @@ def ssfm(Ei, Fs, paramCh):
         elif amp is None:
             Ech = Ech * np.exp(0)
 
-    return (
-        Ech.reshape(
-            len(Ech),
-        ),
-        paramCh,
-    )
+    return Ech.reshape(len(Ech),), paramCh
 
 
 def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
@@ -468,7 +484,7 @@ def phaseNoise(lw, Nsamples, Ts):
     phi = np.zeros(Nsamples)
 
     for ind in range(Nsamples - 1):
-        phi[ind + 1] = phi[ind] + normal(0, np.sqrt(σ2))
+        phi[ind + 1] = phi[ind] + np.random.normal(0, np.sqrt(σ2))
 
     return phi
 
@@ -502,9 +518,9 @@ def awgn(sig, snr, Fs=1, B=1, complexNoise=True):
     σ = np.sqrt((Fs / B) * noiseVar)
 
     if complexNoise:
-        noise = normal(0, σ, sig.shape) + 1j * normal(0, σ, sig.shape)
+        noise = np.random.normal(0, σ, sig.shape) + 1j * np.random.normal(0, σ, sig.shape)
         noise = 1 / np.sqrt(2) * noise
     else:
-        noise = normal(0, σ, sig.shape)
+        noise = np.random.normal(0, σ, sig.shape)
         
     return sig + noise

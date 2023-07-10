@@ -11,11 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -117,10 +117,10 @@
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.sigPow.html#optic.dsp.core.sigPow" title="optic.dsp.core.sigPow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sigPow</span></code></a>(x)</p></td>
-<td><p>Calculate the average power of x.</p></td>
+<td><p>Calculate the average power of x per mode.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.signal_power.html#optic.dsp.core.signal_power" title="optic.dsp.core.signal_power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">signal_power</span></code></a>(x)</p></td>
-<td><p>Calculate the total average power of x.</p></td>
+<td><p>Calculate the total power of x.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.firFilter.html#optic.dsp.core.firFilter" title="optic.dsp.core.firFilter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">firFilter</span></code></a>(h, x)</p></td>
 <td><p>Perform FIR filtering and compensate for filter delay.</p></td>
@@ -148,6 +148,7 @@
 </tr>
 </tbody>
 </table>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">decimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
@@ -305,13 +306,13 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">sigPow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Calculate the average power of x.</p>
+<dd><p>Calculate the average power of x per mode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>np.array</em>) -- Signal.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Average power of x: P = Nmodes*mean(abs(x)**2).</p>
+<dd class="field-even"><p>Average power of x: P = mean(abs(x)**2).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>scalar</p>
@@ -322,13 +323,13 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">signal_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Calculate the total average power of x.</p>
+<dd><p>Calculate the total power of x.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>np.array</em>) -- Signal.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Total average power of x: P = Nmodes*mean(abs(x)**2).</p>
+<dd class="field-even"><p>Total power of x: P = sum(abs(x)**2).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>scalar</p>
@@ -357,7 +358,6 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </dl>
 </dd></dl>
 
-</section>
 <section id="dsp-algorithms-for-equalization-optic-dsp-equalization">
 <h2>DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)<a class="headerlink" href="#dsp-algorithms-for-equalization-optic-dsp-equalization" title="Permalink to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
@@ -370,6 +370,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </tr>
 </tbody>
 </table>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">dbp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ltotal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lspan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em><span class="sig-paren">)</span></dt>
@@ -458,7 +459,6 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </dl>
 </dd></dl>
 
-</section>
 <section id="dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">
 <h2>DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)<a class="headerlink" href="#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery" title="Permalink to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
@@ -477,6 +477,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </tr>
 </tbody>
 </table>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">bps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em><span class="sig-paren">)</span></dt>
@@ -595,7 +596,6 @@ estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.</p>
 </dl>
 </dd></dl>
 
-</section>
 </section>
 
 

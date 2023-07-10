@@ -27,7 +27,6 @@ import scipy.constants as const
 from scipy.linalg import norm
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
-from numpy.random import normal
 from tqdm.notebook import tqdm
 
 from optic.dsp.core import lowPassFIR, signal_power
@@ -202,15 +201,23 @@ def photodiode(E, paramPD=None):
     paramPD : parameter object (struct), optional
         Parameters of the photodiode.
 
-    paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
-    paramPD.Tc: temperature [°C][default: 25°C]
-    paramPD.Id: dark current [A][default: 5e-9 A]
-    paramPD.RL: impedance load [Ω] [default: 50Ω]
-    paramPD.B bandwidth [Hz][default: 30e9 Hz]
-    paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
-    paramPD.fType: frequency response type [default: 'rect']
-    paramPD.N: number of the frequency resp. filter taps. [default: 8001]
-    paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
+        - paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
+
+        - paramPD.Tc: temperature [°C][default: 25°C]
+
+        - paramPD.Id: dark current [A][default: 5e-9 A]
+
+        - paramPD.RL: impedance load [Ω] [default: 50Ω]
+
+        - paramPD.B bandwidth [Hz][default: 30e9 Hz]
+
+        - paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
+
+        - paramPD.fType: frequency response type [default: 'rect']
+
+        - paramPD.N: number of the frequency resp. filter taps. [default: 8001]
+
+        - paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
 
     Returns
     -------
@@ -253,8 +260,8 @@ def photodiode(E, paramPD=None):
         σ2_T = 4 * kB * T * B / RL  # thermal noise variance
 
         # add noise sources to the p-i-n receiver
-        Is = normal(0, np.sqrt(Fs * (σ2_s / (2 * B))), ipd.size)
-        It = normal(0, np.sqrt(Fs * (σ2_T / (2 * B))), ipd.size)
+        Is = np.random.normal(0, np.sqrt(Fs * (σ2_s / (2 * B))), ipd.size)
+        It = np.random.normal(0, np.sqrt(Fs * (σ2_T / (2 * B))), ipd.size)
 
         ipd += Is + It
 
@@ -278,15 +285,15 @@ def balancedPD(E1, E2, paramPD=None):
     paramPD : parameter object (struct), optional
         Parameters of the photodiodes.
 
-    paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
-    paramPD.Tc: temperature [°C][default: 25°C]
-    paramPD.Id: dark current [A][default: 5e-9 A]
-    paramPD.RL: impedance load [Ω] [default: 50Ω]
-    paramPD.B bandwidth [Hz][default: 30e9 Hz]
-    paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
-    paramPD.fType: frequency response type [default: 'rect']
-    paramPD.N: number of the frequency resp. filter taps. [default: 8001]
-    paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
+        - paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
+        - paramPD.Tc: temperature [°C][default: 25°C]
+        - paramPD.Id: dark current [A][default: 5e-9 A]
+        - paramPD.RL: impedance load [Ω] [default: 50Ω]
+        - paramPD.B bandwidth [Hz][default: 30e9 Hz]
+        - paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
+        - paramPD.fType: frequency response type [default: 'rect']
+        - paramPD.N: number of the frequency resp. filter taps. [default: 8001]
+        - paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
 
     Returns
     -------
@@ -446,7 +453,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     N_ase = (G_lin - 1) * nsp * const.h * Fc
     p_noise = N_ase * Fs
 
-    noise = normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * normal(
+    noise = np.random.normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * np.random.normal(
         0, np.sqrt(p_noise / 2), Ei.shape
     )
     return Ei * np.sqrt(G_lin) + noise

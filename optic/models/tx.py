@@ -1,3 +1,14 @@
+"""
+==================================================
+Advanced models for optical transmitters (:mod:`optic.models.tx`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   simpleWDMTx          -- Implement a simple WDM transmitter.
+"""
+
 import numpy as np
 from commpy.utilities import upsample
 from tqdm.notebook import tqdm

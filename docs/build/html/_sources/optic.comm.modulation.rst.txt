@@ -1,0 +1,34 @@
+﻿optic.comm.modulation
+=====================
+
+.. automodule:: optic.comm.modulation
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      GrayCode
+      GrayMapping
+      demap
+      demodulateGray
+      minEuclid
+      modulateGray
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
