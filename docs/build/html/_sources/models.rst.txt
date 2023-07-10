@@ -7,7 +7,7 @@ Physical Models
 
 .. automodule:: optic.models.channels
     :members:
-    :exclude-members: normal, convergenceCondition, nlinPhaseRot
+    :exclude-members: convergenceCondition, nlinPhaseRot
     :noindex:
 
 .. automodule:: optic.models.amplification

@@ -1,0 +1,39 @@
+﻿optic.dsp.core
+==============
+
+.. automodule:: optic.dsp.core
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      decimate
+      finddelay
+      firFilter
+      lowPassFIR
+      pnorm
+      pulseShape
+      resample
+      sigPow
+      signal_power
+      sincInterp
+      symbolSync
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

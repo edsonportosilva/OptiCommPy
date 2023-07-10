@@ -116,16 +116,19 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>E</strong> (<em>np.array</em>) -- Input optical field.</p></li>
-<li><p><strong>paramPD</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- Parameters of the photodiode.</p></li>
-<li><p><strong>paramPD.R</strong> (<em>photodiode responsivity</em><em> [</em><em>A/W</em><em>]</em><em>[</em><em>default: 1 A/W</em><em>]</em>) -- </p></li>
-<li><p><strong>paramPD.Tc</strong> (<em>temperature</em><em> [</em><em>°C</em><em>]</em><em>[</em><em>default: 25°C</em><em>]</em>) -- </p></li>
-<li><p><strong>paramPD.Id</strong> (<em>dark current</em><em> [</em><em>A</em><em>]</em><em>[</em><em>default: 5e-9 A</em><em>]</em>) -- </p></li>
-<li><p><strong>paramPD.RL</strong> (<em>impedance load</em><em> [</em><em>Ω</em><em>] </em><em>[</em><em>default: 50Ω</em><em>]</em>) -- </p></li>
-<li><p><strong>[</strong><strong>Hz</strong><strong>]</strong><strong>[</strong><strong>default</strong> (<em>paramPD.B bandwidth</em>) -- </p></li>
-<li><p><strong>paramPD.Fs</strong> (<em>sampling frequency</em><em> [</em><em>Hz</em><em>] </em><em>[</em><em>default: 60e9 Hz</em><em>]</em>) -- </p></li>
-<li><p><strong>paramPD.fType</strong> (<em>frequency response type</em><em> [</em><em>default: 'rect'</em><em>]</em>) -- </p></li>
-<li><p><strong>paramPD.N</strong> (<em>number</em><em> of </em><em>the frequency resp. filter taps.</em><em> [</em><em>default: 8001</em><em>]</em>) -- </p></li>
-<li><p><strong>paramPD.ideal</strong> (<em>ideal PD?</em><em>(</em><em>i.e. no noise</em><em>, </em><em>no frequency resp.</em><em>) </em><em>[</em><em>default: True</em><em>]</em>) -- </p></li>
+<li><p><strong>paramPD</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- <p>Parameters of the photodiode.</p>
+<ul>
+<li><p>paramPD.R: photodiode responsivity [A/W][default: 1 A/W]</p></li>
+<li><p>paramPD.Tc: temperature [°C][default: 25°C]</p></li>
+<li><p>paramPD.Id: dark current [A][default: 5e-9 A]</p></li>
+<li><p>paramPD.RL: impedance load [Ω] [default: 50Ω]</p></li>
+<li><p>paramPD.B bandwidth [Hz][default: 30e9 Hz]</p></li>
+<li><p>paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]</p></li>
+<li><p>paramPD.fType: frequency response type [default: 'rect']</p></li>
+<li><p>paramPD.N: number of the frequency resp. filter taps. [default: 8001]</p></li>
+<li><p>paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]</p></li>
+</ul>
+</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

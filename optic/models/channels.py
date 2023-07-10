@@ -22,7 +22,6 @@ import scipy.constants as const
 from scipy.linalg import norm
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
-from numpy.random import normal
 from tqdm.notebook import tqdm
 
 from optic.dsp.core import lowPassFIR, signal_power, sigPow
@@ -485,7 +484,7 @@ def phaseNoise(lw, Nsamples, Ts):
     phi = np.zeros(Nsamples)
 
     for ind in range(Nsamples - 1):
-        phi[ind + 1] = phi[ind] + normal(0, np.sqrt(σ2))
+        phi[ind + 1] = phi[ind] + np.random.normal(0, np.sqrt(σ2))
 
     return phi
 
@@ -519,9 +518,9 @@ def awgn(sig, snr, Fs=1, B=1, complexNoise=True):
     σ = np.sqrt((Fs / B) * noiseVar)
 
     if complexNoise:
-        noise = normal(0, σ, sig.shape) + 1j * normal(0, σ, sig.shape)
+        noise = np.random.normal(0, σ, sig.shape) + 1j * np.random.normal(0, σ, sig.shape)
         noise = 1 / np.sqrt(2) * noise
     else:
-        noise = normal(0, σ, sig.shape)
+        noise = np.random.normal(0, σ, sig.shape)
         
     return sig + noise

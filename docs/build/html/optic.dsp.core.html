@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>optic.dsp.core &mdash; OptiCommPy 0.6.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OptiCommPy
+          </a>
+              <div class="version">
+                0.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="welcome.html">Available features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital Communications Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">Digital Signal Processing (DSP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Physical Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OptiCommPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">optic.dsp.core</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/optic.dsp.core.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-optic.dsp.core">
+<span id="optic-dsp-core"></span><h1>optic.dsp.core<a class="headerlink" href="#module-optic.dsp.core" title="Permalink to this heading"></a></h1>
+<section id="core-digital-signal-processing-utilities-optic-dsp-core">
+<h2>Core digital signal processing utilities (<a class="reference internal" href="#module-optic.dsp.core" title="optic.dsp.core"><code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code></a>)<a class="headerlink" href="#core-digital-signal-processing-utilities-optic-dsp-core" title="Permalink to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.sigPow.html#optic.dsp.core.sigPow" title="optic.dsp.core.sigPow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sigPow</span></code></a>(x)</p></td>
+<td><p>Calculate the average power of x per mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.signal_power.html#optic.dsp.core.signal_power" title="optic.dsp.core.signal_power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">signal_power</span></code></a>(x)</p></td>
+<td><p>Calculate the total power of x.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.firFilter.html#optic.dsp.core.firFilter" title="optic.dsp.core.firFilter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">firFilter</span></code></a>(h, x)</p></td>
+<td><p>Perform FIR filtering and compensate for filter delay.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.pulseShape.html#optic.dsp.core.pulseShape" title="optic.dsp.core.pulseShape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pulseShape</span></code></a>(pulseType[, SpS, N, alpha, Ts])</p></td>
+<td><p>Generate a pulse shaping filter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.lowPassFIR.html#optic.dsp.core.lowPassFIR" title="optic.dsp.core.lowPassFIR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lowPassFIR</span></code></a>(fc, fa, N[, typeF])</p></td>
+<td><p>Calculate FIR coefficients of a lowpass filter.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.decimate.html#optic.dsp.core.decimate" title="optic.dsp.core.decimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decimate</span></code></a>(Ei, param)</p></td>
+<td><p>Decimate signal.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.resample.html#optic.dsp.core.resample" title="optic.dsp.core.resample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample</span></code></a>(Ei, param)</p></td>
+<td><p>Resample signal to a given sampling rate.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.symbolSync.html#optic.dsp.core.symbolSync" title="optic.dsp.core.symbolSync"><code class="xref py py-obj docutils literal notranslate"><span class="pre">symbolSync</span></code></a>(rx, tx, SpS[, mode])</p></td>
+<td><p>Symbol synchronizer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.finddelay.html#optic.dsp.core.finddelay" title="optic.dsp.core.finddelay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finddelay</span></code></a>(x, y)</p></td>
+<td><p>Find delay between x and y.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.pnorm.html#optic.dsp.core.pnorm" title="optic.dsp.core.pnorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pnorm</span></code></a>(x)</p></td>
+<td><p>Normalize the average power of each componennt of x.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.decimate.html#optic.dsp.core.decimate" title="optic.dsp.core.decimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decimate</span></code></a>(Ei, param)</p></td>
+<td><p>Decimate signal.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.finddelay.html#optic.dsp.core.finddelay" title="optic.dsp.core.finddelay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finddelay</span></code></a>(x, y)</p></td>
+<td><p>Find delay between x and y.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.firFilter.html#optic.dsp.core.firFilter" title="optic.dsp.core.firFilter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">firFilter</span></code></a>(h, x)</p></td>
+<td><p>Perform FIR filtering and compensate for filter delay.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.lowPassFIR.html#optic.dsp.core.lowPassFIR" title="optic.dsp.core.lowPassFIR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lowPassFIR</span></code></a>(fc, fa, N[, typeF])</p></td>
+<td><p>Calculate FIR coefficients of a lowpass filter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.pnorm.html#optic.dsp.core.pnorm" title="optic.dsp.core.pnorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pnorm</span></code></a>(x)</p></td>
+<td><p>Normalize the average power of each componennt of x.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.pulseShape.html#optic.dsp.core.pulseShape" title="optic.dsp.core.pulseShape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pulseShape</span></code></a>(pulseType[, SpS, N, alpha, Ts])</p></td>
+<td><p>Generate a pulse shaping filter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.resample.html#optic.dsp.core.resample" title="optic.dsp.core.resample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample</span></code></a>(Ei, param)</p></td>
+<td><p>Resample signal to a given sampling rate.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.sigPow.html#optic.dsp.core.sigPow" title="optic.dsp.core.sigPow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sigPow</span></code></a>(x)</p></td>
+<td><p>Calculate the average power of x per mode.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.signal_power.html#optic.dsp.core.signal_power" title="optic.dsp.core.signal_power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">signal_power</span></code></a>(x)</p></td>
+<td><p>Calculate the total power of x.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sincInterp</span></code>(x, fa)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.symbolSync.html#optic.dsp.core.symbolSync" title="optic.dsp.core.symbolSync"><code class="xref py py-obj docutils literal notranslate"><span class="pre">symbolSync</span></code></a>(rx, tx, SpS[, mode])</p></td>
+<td><p>Symbol synchronizer.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
