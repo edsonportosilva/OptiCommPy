@@ -27,7 +27,6 @@ import scipy.constants as const
 from scipy.linalg import norm
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
-from numpy.random import normal
 from tqdm.notebook import tqdm
 
 from optic.dsp.core import lowPassFIR, signal_power
@@ -253,8 +252,8 @@ def photodiode(E, paramPD=None):
         σ2_T = 4 * kB * T * B / RL  # thermal noise variance
 
         # add noise sources to the p-i-n receiver
-        Is = normal(0, np.sqrt(Fs * (σ2_s / (2 * B))), ipd.size)
-        It = normal(0, np.sqrt(Fs * (σ2_T / (2 * B))), ipd.size)
+        Is = np.random.normal(0, np.sqrt(Fs * (σ2_s / (2 * B))), ipd.size)
+        It = np.random.normal(0, np.sqrt(Fs * (σ2_T / (2 * B))), ipd.size)
 
         ipd += Is + It
 
@@ -446,7 +445,7 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     N_ase = (G_lin - 1) * nsp * const.h * Fc
     p_noise = N_ase * Fs
 
-    noise = normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * normal(
+    noise = np.random.normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * np.random.normal(
         0, np.sqrt(p_noise / 2), Ei.shape
     )
     return Ei * np.sqrt(G_lin) + noise

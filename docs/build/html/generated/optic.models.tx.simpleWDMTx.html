@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>optic.models.channels.phaseNoise &mdash; OptiCommPy 0.6.0 documentation</title>
+  <title>optic.models.tx.simpleWDMTx &mdash; OptiCommPy 0.6.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,8 +19,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="optic.models.amplification.OSA" href="optic.models.amplification.OSA.html" />
-    <link rel="prev" title="optic.models.channels.awgn" href="optic.models.channels.awgn.html" /> 
+    <link rel="next" title="Plot Utilities" href="../plot.html" />
+    <link rel="prev" title="optic.models.modelsGPU.edfa" href="optic.models.modelsGPU.edfa.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -57,19 +57,16 @@
 <li class="toctree-l1"><a class="reference internal" href="../dsp.html">Digital Signal Processing (DSP)</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../models.html">Physical Models</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../models.html#models-for-optical-devices-optic-models-devices">Models for optical devices (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.devices</span></code>)</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="../models.html#models-for-fiber-optic-channels-optic-models-channels">Models for fiber optic channels (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.channels</span></code>)</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="optic.models.channels.linFiberCh.html">optic.models.channels.linFiberCh</a></li>
-<li class="toctree-l3"><a class="reference internal" href="optic.models.channels.ssfm.html">optic.models.channels.ssfm</a></li>
-<li class="toctree-l3"><a class="reference internal" href="optic.models.channels.manakovSSF.html">optic.models.channels.manakovSSF</a></li>
-<li class="toctree-l3"><a class="reference internal" href="optic.models.channels.awgn.html">optic.models.channels.awgn</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.models.channels.phaseNoise</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#optic.models.channels.phaseNoise"><code class="docutils literal notranslate"><span class="pre">phaseNoise</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="../models.html#models-for-fiber-optic-channels-optic-models-channels">Models for fiber optic channels (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.channels</span></code>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../models.html#models-for-optical-amplifiers-optic-models-amplification">Models for optical amplifiers (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.amplification</span></code>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../models.html#functions-adapted-to-run-with-gpu-cupy-processing-optic-models-modelsgpu">Functions adapted to run with GPU (CuPy) processing (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.modelsGPU</span></code>)</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../models.html#advanced-models-for-optical-transmitters-optic-models-tx">Advanced models for optical transmitters (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.tx</span></code>)</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.models.tx.simpleWDMTx</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optic.models.tx.simpleWDMTx"><code class="docutils literal notranslate"><span class="pre">simpleWDMTx</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
@@ -90,9 +87,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../models.html">Physical Models</a></li>
-      <li class="breadcrumb-item active">optic.models.channels.phaseNoise</li>
+      <li class="breadcrumb-item active">optic.models.tx.simpleWDMTx</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/optic.models.channels.phaseNoise.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/optic.models.tx.simpleWDMTx.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -100,25 +97,42 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="optic-models-channels-phasenoise">
-<h1>optic.models.channels.phaseNoise<a class="headerlink" href="#optic-models-channels-phasenoise" title="Permalink to this heading"></a></h1>
+  <section id="optic-models-tx-simplewdmtx">
+<h1>optic.models.tx.simpleWDMTx<a class="headerlink" href="#optic-models-tx-simplewdmtx" title="Permalink to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="optic.models.channels.phaseNoise">
-<span class="sig-name descname"><span class="pre">phaseNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nsamples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.channels.phaseNoise" title="Permalink to this definition"></a></dt>
-<dd><p>Generate realization of a random-walk phase-noise process.</p>
+<dt class="sig sig-object py" id="optic.models.tx.simpleWDMTx">
+<span class="sig-name descname"><span class="pre">simpleWDMTx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.tx.simpleWDMTx" title="Permalink to this definition"></a></dt>
+<dd><p>Implement a simple WDM transmitter.</p>
+<p>Generates a complex baseband waveform representing a WDM signal with
+arbitrary number of carriers</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>lw</strong> (<em>scalar</em>) -- laser linewidth.</p></li>
-<li><p><strong>Nsamples</strong> (<em>scalar</em>) -- number of samples to be draw.</p></li>
-<li><p><strong>Ts</strong> (<em>scalar</em>) -- sampling period.</p></li>
+<dd class="field-odd"><p><strong>param</strong> (<em>system parameters</em><em> of </em><em>the WDM transmitter.</em>) -- <p>optic.core.parameter object.</p>
+<ul class="simple">
+<li><p>param.M: modulation order [default: 16].</p></li>
+<li><p>param.constType: 'qam' or 'psk' [default: 'qam'].</p></li>
+<li><p>param.Rs: carrier baud rate [baud][default: 32e9].</p></li>
+<li><p>param.SpS: samples per symbol [default: 16].</p></li>
+<li><p>param.Nbits: total number of bits per carrier [default: 60000].</p></li>
+<li><p>param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc'].</p></li>
+<li><p>param.Ntaps: number of coefficients of the rrc filter [default: 4096].</p></li>
+<li><p>param.alphaRRC: rolloff do rrc filter [default: 0.01].</p></li>
+<li><p>param.Pch_dBm: launched power per WDM channel [dBm][default:-3 dBm].</p></li>
+<li><p>param.Nch: number of WDM channels [default: 5].</p></li>
+<li><p>param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz].</p></li>
+<li><p>param.lw: laser linewidth [Hz][default: 100 kHz].</p></li>
+<li><p>param.freqSpac: frequency spacing of the WDM grid [Hz][default: 40e9 Hz].</p></li>
+<li><p>param.Nmodes: number of polarization modes [default: 1].</p></li>
 </ul>
+</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>phi</strong> -- realization of the phase noise process.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.array</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>sigTxWDM</strong> (<em>np.array</em>) -- WDM signal.</p></li>
+<li><p><strong>symbTxWDM</strong> (<em>np.array</em>) -- Array of symbols per WDM carrier.</p></li>
+<li><p><strong>param</strong> (<em>optic.core.parameter object</em>) -- System parameters for the WDM transmitter.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -129,8 +143,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="optic.models.channels.awgn.html" class="btn btn-neutral float-left" title="optic.models.channels.awgn" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="optic.models.amplification.OSA.html" class="btn btn-neutral float-right" title="optic.models.amplification.OSA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="optic.models.modelsGPU.edfa.html" class="btn btn-neutral float-left" title="optic.models.modelsGPU.edfa" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../plot.html" class="btn btn-neutral float-right" title="Plot Utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>optic.models.channels.manakovSSF &mdash; OptiCommPy 0.6.0 documentation</title>
+  <title>optic.models.channels.ssfm &mdash; OptiCommPy 0.6.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,8 +19,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="optic.models.channels.awgn" href="optic.models.channels.awgn.html" />
-    <link rel="prev" title="optic.models.channels.ssfm" href="optic.models.channels.ssfm.html" /> 
+    <link rel="next" title="optic.models.channels.manakovSSF" href="optic.models.channels.manakovSSF.html" />
+    <link rel="prev" title="optic.models.channels.linFiberCh" href="optic.models.channels.linFiberCh.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -59,11 +59,11 @@
 <li class="toctree-l2"><a class="reference internal" href="../models.html#models-for-optical-devices-optic-models-devices">Models for optical devices (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.devices</span></code>)</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../models.html#models-for-fiber-optic-channels-optic-models-channels">Models for fiber optic channels (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.channels</span></code>)</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="optic.models.channels.linFiberCh.html">optic.models.channels.linFiberCh</a></li>
-<li class="toctree-l3"><a class="reference internal" href="optic.models.channels.ssfm.html">optic.models.channels.ssfm</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.models.channels.manakovSSF</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#optic.models.channels.manakovSSF"><code class="docutils literal notranslate"><span class="pre">manakovSSF</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.models.channels.ssfm</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optic.models.channels.ssfm"><code class="docutils literal notranslate"><span class="pre">ssfm</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="optic.models.channels.manakovSSF.html">optic.models.channels.manakovSSF</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.models.channels.awgn.html">optic.models.channels.awgn</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.models.channels.phaseNoise.html">optic.models.channels.phaseNoise</a></li>
 </ul>
@@ -90,9 +90,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../models.html">Physical Models</a></li>
-      <li class="breadcrumb-item active">optic.models.channels.manakovSSF</li>
+      <li class="breadcrumb-item active">optic.models.channels.ssfm</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/optic.models.channels.manakovSSF.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/optic.models.channels.ssfm.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -100,12 +100,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="optic-models-channels-manakovssf">
-<h1>optic.models.channels.manakovSSF<a class="headerlink" href="#optic-models-channels-manakovssf" title="Permalink to this heading"></a></h1>
+  <section id="optic-models-channels-ssfm">
+<h1>optic.models.channels.ssfm<a class="headerlink" href="#optic-models-channels-ssfm" title="Permalink to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="optic.models.channels.manakovSSF">
-<span class="sig-name descname"><span class="pre">manakovSSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.complex128'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.channels.manakovSSF" title="Permalink to this definition"></a></dt>
-<dd><p>Run the Manakov split-step Fourier model (symmetric, dual-pol.).</p>
+<dt class="sig sig-object py" id="optic.models.channels.ssfm">
+<span class="sig-name descname"><span class="pre">ssfm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.channels.ssfm" title="Permalink to this definition"></a></dt>
+<dd><p>Split-step Fourier method (symmetric, single-pol.).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -122,12 +122,7 @@
 <li><p>paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]</p></li>
 <li><p>paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']</p></li>
 <li><p>paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]</p></li>
-<li><p>paramCh.maxIter: max number of iter. in the trap. integration [default: 10]</p></li>
-<li><p>paramCh.tol: convergence tol. of the trap. integration.[default: 1e-5]</p></li>
-<li><p>paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]</p></li>
-<li><p>paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]</p></li>
 <li><p>paramCh.prgsBar: display progress bar? bolean variable [default:True]</p></li>
-<li><p>paramCh.saveSpanN: specify the span indexes to be outputted [default:[]]</p></li>
 </ul>
 </p></li>
 </ul>
@@ -148,8 +143,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="optic.models.channels.ssfm.html" class="btn btn-neutral float-left" title="optic.models.channels.ssfm" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="optic.models.channels.awgn.html" class="btn btn-neutral float-right" title="optic.models.channels.awgn" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="optic.models.channels.linFiberCh.html" class="btn btn-neutral float-left" title="optic.models.channels.linFiberCh" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="optic.models.channels.manakovSSF.html" class="btn btn-neutral float-right" title="optic.models.channels.manakovSSF" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -7,7 +7,8 @@ Models for fiber optic channels (:mod:`optic.models.channels`)
    :toctree: generated/
 
    linFiberCh           -- Linear optical fiber channel model.
-   manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.
+   ssfm                 -- Nonlinear fiber optic channel model based on the NLSE equation.
+   manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.   
    awgn                 -- AWGN channel model.
    phaseNoise           -- Phase noise model.
 """
