@@ -8,7 +8,7 @@ Simulate optical communications systems with Python. This repository is a Python
 
 </p>
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommPy/HEAD?urlpath=lab) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommPy/HEAD?urlpath=lab) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8125665.svg)](https://doi.org/10.5281/zenodo.8125665)
 
 
 ## Available features
@@ -72,6 +72,7 @@ $ pip install .
 ```
 ## Documentation
 We are continuously making efforts to improve the code documentation. You can find the latest documentation in [opticommpy.readthedocs.io](https://opticommpy.readthedocs.io/en/latest/index.html).
+
 ## Citing this repository
 
-Edson Porto da Silva, Adolfo Herbster, Carlos Daniel Fontes da Silva, & Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.6.0-alpha (v0.6.0-alpha). [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8125665.svg)](https://doi.org/10.5281/zenodo.8125665)
+Edson Porto da Silva, Adolfo Herbster, Carlos Daniel Fontes da Silva, & Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.6.0-alpha (v0.6.0-alpha). Zenodo. https://doi.org/10.5281/zenodo.8125665
