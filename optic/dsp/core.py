@@ -44,7 +44,7 @@ def sigPow(x):
     """        
     return np.mean(np.abs(x) ** 2)
 
-@njit
+
 def signal_power(x):
     """
     Calculate the total power of x.
