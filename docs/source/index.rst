@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. image:: logo_OptiCommpy.jpg
+.. image:: _static/logo_OptiCommpy.jpg
    :width: 500px  
    :align: center
 
