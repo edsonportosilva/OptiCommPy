@@ -141,28 +141,61 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     return filterCoeffs
 
 
-def sincInterp(x, fa):
+def clockInterp(Ei, param):
+    """
+    Interpolate signal to a given sampling rate.
 
-    fa_sinc = 32 * fa
-    Ta_sinc = 1 / fa_sinc
-    Ta = 1 / fa
-    t = np.arange(0, x.size * 32) * Ta_sinc
+    Parameters
+    ----------
+    Ei : ndarray
+        Input signal.
+    param : core.parameter
+        Resampling parameters:            
+            param.Fs_in  : sampling frequency of the input signal.
+            param.Fs_out : sampling frequency of the output signal.
+            param.jitter_rms:
 
-    plt.figure()
-    y = upsample(x, 32)
-    y[y == 0] = np.nan
-    plt.plot(t, y.real, "ko", label="x[k]")
+    Returns
+    -------
+    Eo : ndarray
+        Resampled signal.
 
-    x_sum = 0
-    for k in range(x.size):
-        xk_interp = x[k] * np.sinc((t - k * Ta) / Ta)
-        x_sum += xk_interp
-        plt.plot(t, xk_interp)
-    plt.legend(loc="upper right")
-    plt.xlim(min(t), max(t))
-    plt.grid()
+    """
+    try:
+        Ei.shape[1]
+    except IndexError:
+        Ei = Ei.reshape(len(Ei), 1)
+    nModes = Ei.shape[1]
+    
+    inTs = 1/param.Fs_in
+    outTs = 1/param.Fs_out
 
-    return x_sum, t
+    tin = np.arange(0, Ei.shape[0]) * inTs
+    tout = np.arange(0, Ei.shape[0] * inTs, outTs)
+    
+    jitter = np.random.normal(0, param.jitter_rms, tout.shape)
+    tout += jitter
+    
+    Eo = np.zeros((len(tout), Ei.shape[1]), dtype="complex")
+    
+    if param.AAF:
+        # Anti-aliasing filters:
+        N = min(Ei.shape[0], 202)
+        hi = lowPassFIR(param.Fs_in / 2, param.Fs_in, N, typeF="rect")
+        ho = lowPassFIR(param.Fs_out / 2, param.Fs_out, N, typeF="rect")
+
+        Ei = firFilter(hi, Ei)
+
+    if nModes == 1:
+        Ei = Ei.reshape(len(Ei), 1)
+        
+    for k in range(nModes):
+        Eo[:, k] = np.interp(tout, tin, Ei[:, k])
+    
+    if param.AAF:
+        Eo = firFilter(ho, Eo)
+
+    return Eo
 
 
 def lowPassFIR(fc, fa, N, typeF="rect"):
@@ -281,7 +314,7 @@ def resample(Ei, param):
 
     Eo = np.zeros((len(tout), Ei.shape[1]), dtype="complex")
     # Anti-aliasing filters:
-    N = min(Ei.shape[0], 2048)
+    N = min(Ei.shape[0], 202)
     hi = lowPassFIR(inFs / 2, inFs, N, typeF="rect")
     ho = lowPassFIR(outFs / 2, outFs, N, typeF="rect")
 
