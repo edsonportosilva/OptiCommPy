@@ -1,6 +1,9 @@
-# OptiCommPy: Fiber Optic Communications with Python
+<p align="center">
+<img src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/logo_OptiCommPy.jpg" width="500">
+</p>
 
-Simulate optical communications systems with Python. This repository is a Python-based framework to simulate systems, subsystems, and components of fiber optic communication systems, for educational and research purposes.
+This repository is a Python-based framework to simulate systems, subsystems, and components of fiber optic communication systems, for educational and research purposes.
+
 <p align="center">
 <img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/eyeDisp.gif" width="400">  <img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/40GOOK_spectrum.jpg" width="400">
 
@@ -8,7 +11,8 @@ Simulate optical communications systems with Python. This repository is a Python
 
 </p>
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommPy/HEAD?urlpath=lab)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommPy/HEAD?urlpath=lab) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8125665.svg)](https://doi.org/10.5281/zenodo.8125665)
+
 
 ## Available features
 
@@ -69,9 +73,9 @@ $ git clone https://github.com/edsonportosilva/OptiCommPy.git
 $ cd OptiCommPy
 $ pip install .
 ```
+## Documentation
+We are continuously making efforts to improve the code documentation. You can find the latest documentation in [opticommpy.readthedocs.io](https://opticommpy.readthedocs.io/en/latest/index.html).
 
 ## Citing this repository
 
-Edson Porto da Silva, Adolfo Herbster, & Joaquin Matres. (2022). edsonportosilva/OptiCommPy: v0.2.0-alpha (v0.2.0-alpha). https://doi.org/10.5281/zenodo.7425071
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7425071.svg)](https://doi.org/10.5281/zenodo.7425071)
+Edson Porto da Silva, Adolfo Herbster, Carlos Daniel Fontes da Silva, & Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.6.0-alpha (v0.6.0-alpha). Zenodo. https://doi.org/10.5281/zenodo.8125665

@@ -1,3 +1,20 @@
+"""
+==================================================
+Digital modulation utilities (:mod:`optic.comm.modulation`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   GrayCode                 -- Gray code generator
+   GrayMapping              -- Gray Mapping for digital modulations
+   minEuclid                -- Find minimum Euclidean distance
+   demap                    -- Contellation symbol index to bit sequence demapping
+   modulateGray             -- Modulate bit sequences to constellation symbol sequences (w/ Gray mapping)
+   demodulateGray           -- Demodulate symbol sequences (minEuclid + hard decisions) to bit sequences (assuming Gray mapping)
+"""
+
+
 """Digital modulation utilities."""
 import logging as logg
 

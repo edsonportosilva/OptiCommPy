@@ -1,3 +1,17 @@
+"""
+==================================================
+OFDM utilities (:mod:`optic.comm.ofdm`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   hermit                   -- Hermitian simmetry block.
+   calcSymbolRate           -- Calculate the symbol rate of a given OFDM configuration
+   modulateOFDM             -- OFDM symbols modulator
+   demodulateOFDM           -- OFDM symbols demodulator   
+"""
+
 import numpy as np
 
 from scipy.fftpack     import fft, ifft
@@ -6,6 +20,7 @@ from scipy.interpolate import interp1d
 def hermit(V):
     """
     Hermitian simmetry block.
+
     Parameters
     ----------
     V : complex-valued np.array
@@ -14,7 +29,7 @@ def hermit(V):
     Returns
     -------
     Vh : complex-valued np.array
-         vector with hermitian simmetry
+        vector with hermitian simmetry
     """
     
     Vh = np.zeros(2*len(V) + 2, complex)
@@ -30,6 +45,7 @@ def hermit(V):
 def calcSymbolRate(M, Rb, Nfft, Np, G, hermitSym):
     """    
     Calculate the symbol rate of a given OFDM configuration.
+
     Parameters
     ----------
     M         : scalar
@@ -43,13 +59,13 @@ def calcSymbolRate(M, Rb, Nfft, Np, G, hermitSym):
     G         : scalar
                 cyclic prefix length
     hermitSym : boolean
-                True: Real OFDM symbols / False: Complex OFDM symbols 
+                True: Real OFDM symbols / False: Complex OFDM symbols
+
     Returns
     -------
     Rs        : scalar
                 OFDM symbol rate
-    """
-    
+    """    
     nDataSymbols = (Nfft//2 - 1 - Np) if hermitSym else (Nfft - Np)
     return Rb / (nDataSymbols/(Nfft + G) * np.log2(M))
 
@@ -57,6 +73,7 @@ def calcSymbolRate(M, Rb, Nfft, Np, G, hermitSym):
 def modulateOFDM(Nfft, G, pilot, pilotCarriers, symbTx, hermitSym):
     """
     OFDM symbols modulator.
+
     Parameters
     ----------
     Nfft          : scalar
@@ -71,6 +88,7 @@ def modulateOFDM(Nfft, G, pilot, pilotCarriers, symbTx, hermitSym):
                     symbols sequency transmitted
     hermitSym     : boolean
                     True-> Real OFDM symbols / False: Complex OFDM symbols 
+    
     Returns
     -------
     symbTx_OFDM   : complex-valued np.array
@@ -112,6 +130,7 @@ def modulateOFDM(Nfft, G, pilot, pilotCarriers, symbTx, hermitSym):
 def demodulateOFDM(Nfft, G, pilot, pilotCarriers, symbRx_OFDM, hermitSym):
     """
     OFDM symbols demodulator.
+
     Parameters
     ----------
     Nfft          : scalar
@@ -126,7 +145,7 @@ def demodulateOFDM(Nfft, G, pilot, pilotCarriers, symbRx_OFDM, hermitSym):
                     indexes of pilot subcarriers
     symbRx_OFDM   : complex-valued array
                     OFDM symbols sequency received
-                    
+    
     Returns
     -------
     symbRx        : complex np.array

@@ -1,3 +1,22 @@
+"""
+==================================================
+Core digital signal processing utilities (:mod:`optic.dsp.core`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   sigPow                 -- Calculate the average power of x
+   signal_power           -- Calculate the total average power of x
+   firFilter              -- Perform FIR filtering and compensate for filter delay
+   pulseShape             -- Generate a pulse shaping filter
+   lowPassFIR             -- Calculate FIR coefficients of a lowpass filter
+   decimate               -- Decimate signal
+   resample               -- Signal resampling
+   symbolSync             -- Synchronizer delayed sequences of symbols
+   finddelay              -- Estimate the delay between sequences of symbols
+   pnorm                  -- Normalize the average power of each componennt of x
+"""
 """Digital signal processing utilities."""
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,7 +29,7 @@ from scipy import signal
 @njit
 def sigPow(x):
     """
-    Calculate the average power of x.
+    Calculate the average power of x per mode.
 
     Parameters
     ----------
@@ -20,14 +39,15 @@ def sigPow(x):
     Returns
     -------
     scalar
-        Average power of x: P = Nmodes*mean(abs(x)**2).
+        Average power of x: P = mean(abs(x)**2).
 
     """        
     return np.mean(np.abs(x) ** 2)
 
+
 def signal_power(x):
     """
-    Calculate the total average power of x.
+    Calculate the total power of x.
 
     Parameters
     ----------
@@ -37,15 +57,10 @@ def signal_power(x):
     Returns
     -------
     scalar
-        Total average power of x: P = Nmodes*mean(abs(x)**2).
+        Total power of x: P = sum(abs(x)**2).
 
-    """
-    try:
-        Nmodes = x.shape[1]
-    except IndexError:
-        Nmodes = 1
-        
-    return Nmodes*sigPow(x)
+    """           
+    return np.sum(np.mean(x * np.conj(x), axis=0).real)
 
 def firFilter(h, x):
     """
@@ -196,9 +211,11 @@ def decimate(Ei, param):
     Ei : np.array
         Input signal.
     param : core.parameter
-    Decimation parameters:
-            param.SpS_in  : samples per symbol of the input signal.
-            param.SpS_out : samples per symbol of the output signal.
+        Decimation parameters:
+        
+        - param.SpS_in  : samples per symbol of the input signal.
+
+        - param.SpS_out : samples per symbol of the output signal.
 
     Returns
     -------
