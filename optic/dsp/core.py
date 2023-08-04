@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from commpy.filters import rcosfilter, rrcosfilter
 from commpy.utilities import upsample
-from numba import njit
+from numba import njit, prange
 from scipy import signal
 
 
@@ -140,62 +140,79 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
 
     return filterCoeffs
 
-
-def clockInterp(Ei, param):
+@njit(parallel=True)
+def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
     """
     Interpolate signal to a given sampling rate.
 
     Parameters
     ----------
-    Ei : ndarray
+    x : ndarray
         Input signal.
     param : core.parameter
         Resampling parameters:            
             param.Fs_in  : sampling frequency of the input signal.
             param.Fs_out : sampling frequency of the output signal.
-            param.jitter_rms:
+            param.jitter_rms: standard deviation of the time jitter.
 
     Returns
     -------
-    Eo : ndarray
+    y : ndarray
         Resampled signal.
 
     """
-    try:
-        Ei.shape[1]
-    except IndexError:
-        Ei = Ei.reshape(len(Ei), 1)
-    nModes = Ei.shape[1]
+    nModes = x.shape[1]
     
-    inTs = 1/param.Fs_in
-    outTs = 1/param.Fs_out
+    inTs = 1/Fs_in
+    outTs = 1/Fs_out
 
-    tin = np.arange(0, Ei.shape[0]) * inTs
-    tout = np.arange(0, Ei.shape[0] * inTs, outTs)
+    tin = np.arange(0, x.shape[0]) * inTs
+    tout = np.arange(0, x.shape[0] * inTs, outTs)
     
-    jitter = np.random.normal(0, param.jitter_rms, tout.shape)
+    jitter = np.random.normal(0, jitter_rms, tout.shape)
     tout += jitter
     
-    Eo = np.zeros((len(tout), Ei.shape[1]), dtype="complex")
-    
-    if param.AAF:
-        # Anti-aliasing filters:
-        N = min(Ei.shape[0], 202)
-        hi = lowPassFIR(param.Fs_in / 2, param.Fs_in, N, typeF="rect")
-        ho = lowPassFIR(param.Fs_out / 2, param.Fs_out, N, typeF="rect")
+    y = np.zeros((len(tout), x.shape[1]))
+                
+    for k in prange(nModes):
+        y[:, k] = np.interp(tout, tin, x[:, k])
 
-        Ei = firFilter(hi, Ei)
+    return y
 
-    if nModes == 1:
-        Ei = Ei.reshape(len(Ei), 1)
-        
-    for k in range(nModes):
-        Eo[:, k] = np.interp(tout, tin, Ei[:, k])
-    
-    if param.AAF:
-        Eo = firFilter(ho, Eo)
 
-    return Eo
+@njit(parallel=True)
+def quantizer(x, nBits=16, maxV=1, minV=-1):
+    """
+    Quantize the input signal using a uniform quantizer with the specified precision.
+
+    Parameters
+    ----------
+    x : np.array
+        The input signal to be quantized.
+    nBits : int
+        Number of bits used for quantization. The quantizer will have 2^nBits levels.
+    maxV : float, optional
+        Maximum value for the quantizer's full-scale range (default is 1).
+    minV : float, optional
+        Minimum value for the quantizer's full-scale range (default is -1).
+
+    Returns
+    -------
+    np.array
+        The quantized output signal with the same shape as 'x', quantized using 'nBits' levels.
+  
+    """
+    Δ = (maxV - minV) / (2 ** nBits - 1)
+
+    d = np.arange(minV, maxV + Δ, Δ)
+
+    y = np.zeros(x.shape, dtype=np.float64)
+
+    for indMode in prange(x.shape[1]):
+        for idx in prange(len(x)):
+            y[idx, indMode] = d[int(np.argmin(np.abs(x[idx, indMode] - d)))]
+
+    return y
 
 
 def lowPassFIR(fc, fa, N, typeF="rect"):
