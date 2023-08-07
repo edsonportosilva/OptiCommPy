@@ -34,47 +34,6 @@ from numba import njit
 # %load_ext autoreload
 # %autoreload 2
 
-# +
-# @njit
-# def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
-#     """
-#     Interpolate signal to a given sampling rate.
-
-#     Parameters
-#     ----------
-#     x : ndarray
-#         Input signal.
-#     param : core.parameter
-#         Resampling parameters:            
-#             param.Fs_in  : sampling frequency of the input signal.
-#             param.Fs_out : sampling frequency of the output signal.
-#             param.jitter_rms:
-
-#     Returns
-#     -------
-#     y : ndarray
-#         Resampled signal.
-
-#     """
-#     nModes = x.shape[1]
-    
-#     inTs = 1/Fs_in
-#     outTs = 1/Fs_out
-
-#     tin = np.arange(0, x.shape[0]) * inTs
-#     tout = np.arange(0, x.shape[0] * inTs, outTs)
-    
-#     jitter = np.random.normal(0, jitter_rms, tout.shape)
-#     tout += jitter
-    
-#     y = np.zeros((len(tout), x.shape[1]))
-                
-#     for k in range(nModes):
-#         y[:, k] = np.interp(tout, tin, x[:, k])
-
-#     return y
-# -
-
 # ## Test rational resample
 
 # +
@@ -140,7 +99,7 @@ t = np.arange(0, 300000)*(1/Fs)
 π = np.pi
 
 # generate sinusoidal signal
-sig = np.sin(2*π*fc*t)
+sig = np.sin(2*π*fc*t) #+ np.sin(6*π*fc*t)/3 + np.sin(10*π*fc*t)/5
 
 plt.plot(t, sig,'-o',markersize=4);
 plt.xlim(min(t), max(t))
@@ -169,12 +128,12 @@ def adc(Ei, param):
         Resampling parameters:
             param.Fs_in  : sampling frequency of the input signal.
             param.Fs_out : sampling frequency of the output signal.
-            param.jitter_rms : Root mean square (RMS) value of the jitter in seconds.
-            param.nBits : Number of bits used for quantization.
-            param.Vmax : Maximum value for the ADC's full-scale range.
-            param.Vmin : Minimum value for the ADC's full-scale range.
-            param.AAF : Flag indicating whether to use anti-aliasing filters (True/False).
-            param.N : Number of taps of the anti-aliasing filters.
+            param.jitter_rms : root mean square (RMS) value of the jitter in seconds.
+            param.nBits : number of bits used for quantization.
+            param.Vmax : maximum value for the ADC's full-scale range.
+            param.Vmin : minimum value for the ADC's full-scale range.
+            param.AAF : flag indicating whether to use anti-aliasing filters (True/False).
+            param.N : number of taps of the anti-aliasing filters.
 
     Returns
     -------
@@ -215,8 +174,8 @@ def adc(Ei, param):
     if AAF:
         # Anti-aliasing filters:
         Ntaps = min(Ei.shape[0], N)
-        hi = lowPassFIR(param.Fs_in / 2, param.Fs_in, Ntaps, typeF="rect")
-        ho = lowPassFIR(param.Fs_out / 2, param.Fs_out, Ntaps, typeF="rect")
+        hi = lowPassFIR(param.Fs_out/2, param.Fs_in, Ntaps, typeF="rect")
+        ho = lowPassFIR(param.Fs_in/2, param.Fs_out, Ntaps, typeF="rect")
 
         Ei = firFilter(hi, Ei)
 
@@ -235,9 +194,9 @@ def adc(Ei, param):
 
 # +
 Fs = 3200
-fc = 800
+fc = 100
 
-t = np.arange(0, 30000)*(1/Fs)
+t = np.arange(0, 10000)*(1/Fs)
 π = np.pi
 
 # generate sinusoidal signal
@@ -247,18 +206,16 @@ sig = np.array([np.sin(2*π*fc*t), np.cos(2*π*fc*t), np.sin(2*π*fc*t)+np.cos(2
 param = parameters()
 param.Fs_in = Fs
 param.Fs_out = Fs
-param.jitter_rms = 2e-6
+param.jitter_rms = 5e-5
 param.nBits =  16
-param.Vmax = 2
-param.Vmin = -2
-param.AAF = False
+param.Vmax = 1
+param.Vmin = -1
+param.AAF = True
+param.N = 512
 
-sig_adc = adc(2*sig, param)
+sig_adc = adc(sig, param)
 
 plt.plot(sig_adc)
 plt.xlim(0,100);
 
 eyediagram(sig_adc[:,0], sig_adc.shape[0], int(param.Fs_out//fc), n=3, ptype='fast', plotlabel=None)
-# -
-
-
