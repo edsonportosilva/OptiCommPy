@@ -180,7 +180,7 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
                         f"{runAlg} pre-convergence training iteration #%d", indIter
                     )
                     yEq[nStart:nEnd, :], H, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
-                        x[nStart * SpS : nEnd * SpS, :],
+                        x[nStart * SpS : (nEnd + 2*Lpad) * SpS, :],
                         dx[nStart:nEnd, :],
                         SpS,
                         H,
@@ -197,7 +197,7 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
                     )
             else:
                 yEq[nStart:nEnd, :], H, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
-                    x[nStart * SpS : nEnd * SpS, :],
+                    x[nStart * SpS : (nEnd + 2*Lpad) * SpS, :],
                     dx[nStart:nEnd, :],
                     SpS,
                     H,
@@ -302,14 +302,12 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSy
         indIn = indTaps + ind * SpS  # simplify indexing and improve speed
 
         # pass signal sequence through the equalizer:
-        for N in range(nModes):
-            inEq = x[indIn, N].reshape(
-                len(indIn), 1
-            )  # slice input coming from the Nth mode
+        for N in range(nModes):            
+            inEq = x[indIn, N:N+1]  # slice input coming from the Nth mode
             outEq += (
                 H[indMode + N * nModes, :] @ inEq
             )  # add contribution from the Nth mode to the equalizer's output
-        yEq[ind, :] = outEq.T
+        yEq[ind, :] = outEq.T      
 
         # update equalizer taps acording to the specified
         # algorithm and save squared error:
@@ -340,7 +338,7 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSy
         if storeCoeff:
             Hiter[:, :, ind] = H
         else:
-            Hiter[:, :, 1] = H
+            Hiter[:, :, 0] = H
     return yEq, H, errSq, Hiter
 
 
