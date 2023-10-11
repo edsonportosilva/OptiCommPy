@@ -4,7 +4,7 @@ from commpy.utilities  import upsample
 from optic.models.devices import mzm, photodiode
 from optic.models.channels import linFiberCh
 from optic.comm.modulation import modulateGray
-from optic.dsp.core import firFilter, pulseShape, pnorm, signal_power
+from optic.dsp.core import firFilter, pulseShape, signal_power
 from optic.core import parameters
 from scipy.special import erfc
 
@@ -15,16 +15,17 @@ SpS = 16    # samples per symbol
 M = 2       # order of the modulation format
 Rs = 10e9   # Symbol rate
 Fs = SpS*Rs # Signal sampling frequency (samples/second)
+np.random.seed(seed=123)
 
 # MZM parameters
-Vπ = 2
-Vb = -Vπ/2
+Vpi = 2
+Vb = -Vpi/2
 Pi_dBm = 0 # laser optical power at the input of the MZM in dBm
 Pi = 10**(Pi_dBm/10)*1e-3 # convert from dBm to W
 
 # linear fiber optical channel parameters
 L = 90         # total link distance [km]
-α = 0.2        # fiber loss parameter [dB/km]
+alpha = 0.2        # fiber loss parameter [dB/km]
 D = 16         # fiber dispersion parameter [ps/nm/km]
 Fc = 193.1e12  # central optical frequency [Hz]
 
@@ -48,19 +49,17 @@ symbolsUp = upsample(symbTx, SpS)
 
 # typical NRZ pulse
 pulse = pulseShape('nrz', SpS)
-pulse = pulse/max(abs(pulse))
+pulse = pulse/max(abs(pulse)) # normalize to 1 Vpp
 
 # pulse shaping
 sigTx = firFilter(pulse, symbolsUp)
 
 # optical modulation
 Ai = np.sqrt(Pi)*np.ones(sigTx.size) # ideal cw laser envelope
-sigTxo = mzm(Ai, sigTx, Vπ, Vb)
-
-print('\nAverage power of the transmitted optical signal [dBm]: %.3f dBm'%(10*np.log10(signal_power(sigTxo)/1e-3)))
+sigTxo = mzm(Ai, sigTx, Vpi, Vb)
 
 # Linear fiber channel model 
-sigCh = linFiberCh(sigTxo, L, α, D, Fc, Fs)
+sigCh = linFiberCh(sigTxo, L, alpha, D, Fc, Fs)
 
 # Direct-detection (DD) pin receiver model
 
@@ -102,4 +101,3 @@ Pb = 0.5*erfc(Q/np.sqrt(2)) # theoretical error probability
 print('Number of counted errors = %d '%(err.sum()))
 print('BER = %.2e '%(BER))
 print('Pb = %.2e '%(Pb))
-print('\nSimulation ended')
