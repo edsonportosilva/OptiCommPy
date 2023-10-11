@@ -42,7 +42,6 @@ bitsTx = np.random.randint(2, size=100000)
 
 # generate 2-PAM modulated symbol sequence
 symbTx = modulateGray(bitsTx, M, 'pam')    
-symbTx = pnorm(symbTx) # power normalization
 
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
