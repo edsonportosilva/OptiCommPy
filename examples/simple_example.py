@@ -28,8 +28,15 @@ L = 90         # total link distance [km]
 D = 16         # fiber dispersion parameter [ps/nm/km]
 Fc = 193.1e12  # central optical frequency [Hz]
 
+# photodiode parameters
+paramPD = parameters()
+paramPD.ideal = False
+paramPD.B = Rs
+paramPD.Fs = Fs
+
 ## Simulation
 print('\nStarting simulation...')
+
 # generate pseudo-random bit sequence
 bitsTx = np.random.randint(2, size=100000)
 
@@ -48,7 +55,7 @@ pulse = pulse/max(abs(pulse))
 sigTx = firFilter(pulse, symbolsUp)
 
 # optical modulation
-Ai = np.sqrt(Pi)*np.ones(sigTx.size)
+Ai = np.sqrt(Pi)*np.ones(sigTx.size) # ideal cw laser envelope
 sigTxo = mzm(Ai, sigTx, Vπ, Vb)
 
 print('\nAverage power of the transmitted optical signal [dBm]: %.3f dBm'%(10*np.log10(signal_power(sigTxo)/1e-3)))
@@ -59,11 +66,6 @@ sigCh = linFiberCh(sigTxo, L, α, D, Fc, Fs)
 # Direct-detection (DD) pin receiver model
 
 # noisy photodiode (thermal noise + shot noise + bandwidth limitation)
-paramPD = parameters()
-paramPD.ideal = False
-paramPD.B = Rs
-paramPD.Fs = Fs
-
 I_Rx = photodiode(sigCh, paramPD)
 I_Rx = I_Rx/np.std(I_Rx)
 
@@ -86,8 +88,7 @@ bitsRx[I_Rx> Id] = 1
 bitsRx[I_Rx<= Id] = 0
 
 # calculate the BER
-discard = 0
-err = np.logical_xor(bitsRx[discard:bitsRx.size-discard], bitsTx[discard:bitsTx.size-discard])
+err = np.logical_xor(bitsRx, bitsTx)
 BER = np.mean(err) 
 
 print('\nReceived signal parameters:')
