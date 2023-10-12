@@ -20,16 +20,9 @@ Models for optical devices (:mod:`optic.models.devices`)
 
 
 """Basic physical models for optical devices."""
-import logging as logg
-
 import numpy as np
 import scipy.constants as const
-from scipy.linalg import norm
-from numba import njit
-from numpy.fft import fft, fftfreq, ifft
-from tqdm.notebook import tqdm
-
-from optic.dsp.core import lowPassFIR, signal_power
+from optic.dsp.core import lowPassFIR
 
 try:
     from optic.dsp.coreGPU import firFilter
