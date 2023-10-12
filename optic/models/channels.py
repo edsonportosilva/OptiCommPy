@@ -23,14 +23,8 @@ from scipy.linalg import norm
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-
-from optic.dsp.core import lowPassFIR, signal_power, sigPow
+from optic.dsp.core import sigPow
 from optic.models.devices import edfa
-
-try:
-    from optic.dsp.coreGPU import firFilter
-except ImportError:
-    from optic.dsp.core import firFilter
 
 
 def linFiberCh(Ei, L, alpha, D, Fc, Fs):
