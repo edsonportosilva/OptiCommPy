@@ -183,7 +183,7 @@ def pbs(E, θ=0):
     return Ex, Ey
 
 
-def photodiode(E, paramPD=None):
+def photodiode(E, param=None):
     """
     Pin photodiode (PD).
 
@@ -191,26 +191,26 @@ def photodiode(E, paramPD=None):
     ----------
     E : np.array
         Input optical field.
-    paramPD : parameter object (struct), optional
+    param : parameter object (struct), optional
         Parameters of the photodiode.
 
-        - paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
+        - param.R: photodiode responsivity [A/W][default: 1 A/W]
 
-        - paramPD.Tc: temperature [°C][default: 25°C]
+        - param.Tc: temperature [°C][default: 25°C]
 
-        - paramPD.Id: dark current [A][default: 5e-9 A]
+        - param.Id: dark current [A][default: 5e-9 A]
 
-        - paramPD.RL: impedance load [Ω] [default: 50Ω]
+        - param.RL: impedance load [Ω] [default: 50Ω]
 
-        - paramPD.B bandwidth [Hz][default: 30e9 Hz]
+        - param.B bandwidth [Hz][default: 30e9 Hz]
 
-        - paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
+        - param.Fs: sampling frequency [Hz] [default: 60e9 Hz]
 
-        - paramPD.fType: frequency response type [default: 'rect']
+        - param.fType: frequency response type [default: 'rect']
 
-        - paramPD.N: number of the frequency resp. filter taps. [default: 8001]
+        - param.N: number of the frequency resp. filter taps. [default: 8001]
 
-        - paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
+        - param.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
 
     Returns
     -------
@@ -218,21 +218,21 @@ def photodiode(E, paramPD=None):
           photocurrent.
 
     """
-    if paramPD is None:
-        paramPD = []
+    if param is None:
+        param = []
     kB = const.value("Boltzmann constant")
     q = const.value("elementary charge")
 
     # check input parameters
-    R = getattr(paramPD, "R", 1)
-    Tc = getattr(paramPD, "Tc", 25)
-    Id = getattr(paramPD, "Id", 5e-9)
-    RL = getattr(paramPD, "RL", 50)
-    B = getattr(paramPD, "B", 30e9)
-    Fs = getattr(paramPD, "Fs", 60e9)
-    N = getattr(paramPD, "N", 8000)
-    fType = getattr(paramPD, "fType", "rect")
-    ideal = getattr(paramPD, "ideal", True)
+    R = getattr(param, "R", 1)
+    Tc = getattr(param, "Tc", 25)
+    Id = getattr(param, "Id", 5e-9)
+    RL = getattr(param, "RL", 50)
+    B = getattr(param, "B", 30e9)
+    Fs = getattr(param, "Fs", 60e9)
+    N = getattr(param, "N", 8000)
+    fType = getattr(param, "fType", "rect")
+    ideal = getattr(param, "ideal", True)
 
     assert R > 0, "PD responsivity should be a positive scalar"
     assert (
@@ -265,7 +265,7 @@ def photodiode(E, paramPD=None):
     return ipd.real
 
 
-def balancedPD(E1, E2, paramPD=None):
+def balancedPD(E1, E2, param=None):
     """
     Balanced photodiode (BPD).
 
@@ -275,18 +275,18 @@ def balancedPD(E1, E2, paramPD=None):
         Input optical field.
     E2 : np.array
         Input optical field.
-    paramPD : parameter object (struct), optional
+    param : parameter object (struct), optional
         Parameters of the photodiodes.
 
-        - paramPD.R: photodiode responsivity [A/W][default: 1 A/W]
-        - paramPD.Tc: temperature [°C][default: 25°C]
-        - paramPD.Id: dark current [A][default: 5e-9 A]
-        - paramPD.RL: impedance load [Ω] [default: 50Ω]
-        - paramPD.B bandwidth [Hz][default: 30e9 Hz]
-        - paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]
-        - paramPD.fType: frequency response type [default: 'rect']
-        - paramPD.N: number of the frequency resp. filter taps. [default: 8001]
-        - paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
+        - param.R: photodiode responsivity [A/W][default: 1 A/W]
+        - param.Tc: temperature [°C][default: 25°C]
+        - param.Id: dark current [A][default: 5e-9 A]
+        - param.RL: impedance load [Ω] [default: 50Ω]
+        - param.B bandwidth [Hz][default: 30e9 Hz]
+        - param.Fs: sampling frequency [Hz] [default: 60e9 Hz]
+        - param.fType: frequency response type [default: 'rect']
+        - param.N: number of the frequency resp. filter taps. [default: 8001]
+        - param.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
 
     Returns
     -------
@@ -294,12 +294,12 @@ def balancedPD(E1, E2, paramPD=None):
            Balanced photocurrent.
 
     """
-    if paramPD is None:
-        paramPD = []
+    if param is None:
+        param = []
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
-    i1 = photodiode(E1, paramPD)
-    i2 = photodiode(E2, paramPD)
+    i1 = photodiode(E1, param)
+    i2 = photodiode(E2, param)
     return i1 - i2
 
 
@@ -339,7 +339,7 @@ def hybrid_2x4_90deg(Es, Elo):
     return T @ Ei
 
 
-def coherentReceiver(Es, Elo, paramPD=None):
+def coherentReceiver(Es, Elo, param=None):
     """
     Single polarization coherent optical front-end.
 
@@ -349,7 +349,7 @@ def coherentReceiver(Es, Elo, paramPD=None):
         Input signal optical field.
     Elo : np.array
         Input LO optical field.
-    paramPD : parameter object (struct), optional
+    param : parameter object (struct), optional
         Parameters of the photodiodes.
 
     Returns
@@ -358,8 +358,8 @@ def coherentReceiver(Es, Elo, paramPD=None):
         Downconverted signal after balanced detection.
 
     """
-    if paramPD is None:
-        paramPD = []
+    if param is None:
+        param = []
     assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
     assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
@@ -368,13 +368,13 @@ def coherentReceiver(Es, Elo, paramPD=None):
     Eo = hybrid_2x4_90deg(Es, Elo)
 
     # balanced photodetection
-    sI = balancedPD(Eo[1, :], Eo[0, :], paramPD)
-    sQ = balancedPD(Eo[2, :], Eo[3, :], paramPD)
+    sI = balancedPD(Eo[1, :], Eo[0, :], param)
+    sQ = balancedPD(Eo[2, :], Eo[3, :], param)
 
     return sI + 1j * sQ
 
 
-def pdmCoherentReceiver(Es, Elo, θsig=0, paramPD=None):
+def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     """
     Polarization multiplexed coherent optical front-end.
 
@@ -386,7 +386,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, paramPD=None):
         Input LO optical field.
     θsig : scalar, optional
         Input polarization rotation angle in rad. The default is 0.
-    paramPD : parameter object (struct), optional
+    param : parameter object (struct), optional
         Parameters of the photodiodes.
 
     Returns
@@ -395,15 +395,15 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, paramPD=None):
         Downconverted signal after balanced detection.
 
     """
-    if paramPD is None:
-        paramPD = []
+    if param is None:
+        param = []
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
     Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
     Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orth. polarizations
 
-    Sx = coherentReceiver(Esx, Elox, paramPD)  # coherent detection of pol.X
-    Sy = coherentReceiver(Esy, Eloy, paramPD)  # coherent detection of pol.Y
+    Sx = coherentReceiver(Esx, Elox, param)  # coherent detection of pol.X
+    Sy = coherentReceiver(Esy, Eloy, param)  # coherent detection of pol.Y
 
     return np.array([Sx, Sy]).T
 
