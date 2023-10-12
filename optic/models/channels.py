@@ -27,7 +27,7 @@ from optic.dsp.core import sigPow
 from optic.models.devices import edfa
 
 
-def linearFiberChannel(Ei, paramCh):
+def linearFiberChannel(Ei, param=None):
     """
     Simulate signal propagation through a linear fiber channel.
 
@@ -35,18 +35,18 @@ def linearFiberChannel(Ei, paramCh):
     ----------
     Ei : np.array
         Input optical field.   
-    paramCh : parameter object  (struct)
+    param : parameter object  (struct)
         Object with physical/simulation parameters of the optical channel.
 
-        - paramCh.L: total fiber length [km][default: 50 km]   
+        - param.L: total fiber length [km][default: 50 km]   
 
-        - paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
 
-        - paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
 
-        - paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
 
-        - paramCh.Fs: sampling frequency [Hz] [default: []]
+        - param.Fs: sampling frequency [Hz] [default: []]
 
     Returns
     -------
@@ -54,18 +54,21 @@ def linearFiberChannel(Ei, paramCh):
         Optical field at the output of the fiber.
 
     """
-    # check input parameters
-    paramCh.L = getattr(paramCh, "L", 50) 
-    paramCh.alpha = getattr(paramCh, "alpha", 0.2)
-    paramCh.D = getattr(paramCh, "D", 16)    
-    paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
-    paramCh.Fs = getattr(paramCh, "Fs", [])
+    if param is None:
+        param = []
 
-    L = paramCh.L   
-    alpha = paramCh.alpha
-    D = paramCh.D  
-    Fc = paramCh.Fc
-    Fs = paramCh.Fs
+    # check input parameters
+    param.L = getattr(param, "L", 50) 
+    param.alpha = getattr(param, "alpha", 0.2)
+    param.D = getattr(param, "D", 16)    
+    param.Fc = getattr(param, "Fc", 193.1e12)
+    param.Fs = getattr(param, "Fs", [])
+
+    L = param.L   
+    alpha = param.alpha
+    D = param.D  
+    Fc = param.Fc
+    Fs = param.Fs
 
     # c  = 299792458   # speed of light [m/s](vacuum)
     c_kms = const.c / 1e3
@@ -96,7 +99,7 @@ def linearFiberChannel(Ei, paramCh):
 
     return Eo
 
-def ssfm(Ei, Fs, paramCh):
+def ssfm(Ei, Fs, param):
     """
     Split-step Fourier method (symmetric, single-pol.).
 
@@ -106,59 +109,59 @@ def ssfm(Ei, Fs, paramCh):
         Input optical signal field.
     Fs : scalar
         Sampling frequency in Hz.
-    paramCh : parameter object  (struct)
+    param : parameter object  (struct)
         Object with physical/simulation parameters of the optical channel.
 
-        - paramCh.Ltotal: total fiber length [km][default: 400 km]
+        - param.Ltotal: total fiber length [km][default: 400 km]
 
-        - paramCh.Lspan: span length [km][default: 80 km]
+        - param.Lspan: span length [km][default: 80 km]
 
-        - paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+        - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
 
-        - paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
 
-        - paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
 
-        - paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+        - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
 
-        - paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
 
-        - paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+        - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
 
-        - paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+        - param.NF: edfa noise figure [dB] [default: 4.5 dB]
 
-        - paramCh.prgsBar: display progress bar? bolean variable [default:True]
+        - param.prgsBar: display progress bar? bolean variable [default:True]
   
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
-    paramCh : parameter object  (struct)
+    param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
 
     """
     # check input parameters
-    paramCh.Ltotal = getattr(paramCh, "Ltotal", 400)
-    paramCh.Lspan = getattr(paramCh, "Lspan", 80)
-    paramCh.hz = getattr(paramCh, "hz", 0.5)
-    paramCh.alpha = getattr(paramCh, "alpha", 0.2)
-    paramCh.D = getattr(paramCh, "D", 16)
-    paramCh.gamma = getattr(paramCh, "gamma", 1.3)
-    paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
-    paramCh.amp = getattr(paramCh, "amp", "edfa")
-    paramCh.NF = getattr(paramCh, "NF", 4.5)
-    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
+    param.Ltotal = getattr(param, "Ltotal", 400)
+    param.Lspan = getattr(param, "Lspan", 80)
+    param.hz = getattr(param, "hz", 0.5)
+    param.alpha = getattr(param, "alpha", 0.2)
+    param.D = getattr(param, "D", 16)
+    param.gamma = getattr(param, "gamma", 1.3)
+    param.Fc = getattr(param, "Fc", 193.1e12)
+    param.amp = getattr(param, "amp", "edfa")
+    param.NF = getattr(param, "NF", 4.5)
+    param.prgsBar = getattr(param, "prgsBar", True)
 
-    Ltotal = paramCh.Ltotal
-    Lspan = paramCh.Lspan
-    hz = paramCh.hz
-    alpha = paramCh.alpha
-    D = paramCh.D
-    gamma = paramCh.gamma
-    Fc = paramCh.Fc
-    amp = paramCh.amp
-    NF = paramCh.NF
-    prgsBar = paramCh.prgsBar
+    Ltotal = param.Ltotal
+    Lspan = param.Lspan
+    hz = param.hz
+    alpha = param.alpha
+    D = param.D
+    gamma = param.gamma
+    Fc = param.Fc
+    amp = param.amp
+    NF = param.NF
+    prgsBar = param.prgsBar
 
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
@@ -208,10 +211,10 @@ def ssfm(Ei, Fs, paramCh):
         elif amp is None:
             Ech = Ech * np.exp(0)
 
-    return Ech.reshape(len(Ech),), paramCh
+    return Ech.reshape(len(Ech),), param
 
 
-def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
+def manakovSSF(Ei, Fs, param, prec=np.complex128):
     """
     Run the Manakov split-step Fourier model (symmetric, dual-pol.).
 
@@ -221,81 +224,81 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
         Input optical signal field.
     Fs : scalar
         Sampling frequency in Hz.
-    paramCh : parameter object  (struct)
+    param : parameter object  (struct)
         Object with physical/simulation parameters of the optical channel.
 
-        - paramCh.Ltotal: total fiber length [km][default: 400 km]
+        - param.Ltotal: total fiber length [km][default: 400 km]
 
-        - paramCh.Lspan: span length [km][default: 80 km]
+        - param.Lspan: span length [km][default: 80 km]
 
-        - paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+        - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
 
-        - paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
 
-        - paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
 
-        - paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+        - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
 
-        - paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
 
-        - paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+        - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
 
-        - paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+        - param.NF: edfa noise figure [dB] [default: 4.5 dB]
 
-        - paramCh.maxIter: max number of iter. in the trap. integration [default: 10]
+        - param.maxIter: max number of iter. in the trap. integration [default: 10]
 
-        - paramCh.tol: convergence tol. of the trap. integration.[default: 1e-5]
+        - param.tol: convergence tol. of the trap. integration.[default: 1e-5]
 
-        - paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
+        - param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
 
-        - paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
+        - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
 
-        - paramCh.prgsBar: display progress bar? bolean variable [default:True]
+        - param.prgsBar: display progress bar? bolean variable [default:True]
 
-        - paramCh.saveSpanN: specify the span indexes to be outputted [default:[]]
+        - param.saveSpanN: specify the span indexes to be outputted [default:[]]
 
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
-    paramCh : parameter object  (struct)
+    param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
 
     """
     # check input parameters
-    paramCh.Ltotal = getattr(paramCh, "Ltotal", 400)
-    paramCh.Lspan = getattr(paramCh, "Lspan", 80)
-    paramCh.hz = getattr(paramCh, "hz", 0.5)
-    paramCh.alpha = getattr(paramCh, "alpha", 0.2)
-    paramCh.D = getattr(paramCh, "D", 16)
-    paramCh.gamma = getattr(paramCh, "gamma", 1.3)
-    paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
-    paramCh.amp = getattr(paramCh, "amp", "edfa")
-    paramCh.NF = getattr(paramCh, "NF", 4.5)
-    paramCh.maxIter = getattr(paramCh, "maxIter", 10)
-    paramCh.tol = getattr(paramCh, "tol", 1e-5)
-    paramCh.nlprMethod = getattr(paramCh, "nlprMethod", True)
-    paramCh.maxNlinPhaseRot = getattr(paramCh, "maxNlinPhaseRot", 2e-2)
-    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
-    paramCh.saveSpanN = getattr(
-        paramCh, "saveSpanN", [paramCh.Ltotal // paramCh.Lspan]
+    param.Ltotal = getattr(param, "Ltotal", 400)
+    param.Lspan = getattr(param, "Lspan", 80)
+    param.hz = getattr(param, "hz", 0.5)
+    param.alpha = getattr(param, "alpha", 0.2)
+    param.D = getattr(param, "D", 16)
+    param.gamma = getattr(param, "gamma", 1.3)
+    param.Fc = getattr(param, "Fc", 193.1e12)
+    param.amp = getattr(param, "amp", "edfa")
+    param.NF = getattr(param, "NF", 4.5)
+    param.maxIter = getattr(param, "maxIter", 10)
+    param.tol = getattr(param, "tol", 1e-5)
+    param.nlprMethod = getattr(param, "nlprMethod", True)
+    param.maxNlinPhaseRot = getattr(param, "maxNlinPhaseRot", 2e-2)
+    param.prgsBar = getattr(param, "prgsBar", True)
+    param.saveSpanN = getattr(
+        param, "saveSpanN", [param.Ltotal // param.Lspan]
     )
 
-    Ltotal = paramCh.Ltotal
-    Lspan = paramCh.Lspan
-    hz = paramCh.hz
-    alpha = paramCh.alpha
-    D = paramCh.D
-    gamma = paramCh.gamma
-    Fc = paramCh.Fc
-    amp = paramCh.amp
-    NF = paramCh.NF
-    maxIter = paramCh.maxIter
-    tol = paramCh.tol
-    prgsBar = paramCh.prgsBar
-    saveSpanN = paramCh.saveSpanN
-    nlprMethod = paramCh.nlprMethod
-    maxNlinPhaseRot = paramCh.maxNlinPhaseRot
+    Ltotal = param.Ltotal
+    Lspan = param.Lspan
+    hz = param.hz
+    alpha = param.alpha
+    D = param.D
+    gamma = param.gamma
+    Fc = param.Fc
+    amp = param.amp
+    NF = param.NF
+    maxIter = param.maxIter
+    tol = param.tol
+    prgsBar = param.prgsBar
+    saveSpanN = param.saveSpanN
+    nlprMethod = param.nlprMethod
+    maxNlinPhaseRot = param.maxNlinPhaseRot
 
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
@@ -416,7 +419,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
 
-    return Ech, paramCh
+    return Ech, param
 
 
 def nlinPhaseRot(Ex, Ey, Pch, γ):
