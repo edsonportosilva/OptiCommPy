@@ -15,7 +15,7 @@ SpS = 16    # samples per symbol
 M = 2       # order of the modulation format
 Rs = 10e9   # Symbol rate
 Fs = SpS*Rs # Signal sampling frequency (samples/second)
-np.random.seed(seed=123)
+np.random.seed(seed=123) # fixing the seed to get reproducible results
 
 # MZM parameters
 Vpi = 2
@@ -90,14 +90,14 @@ err = np.logical_xor(bitsRx, bitsTx)
 BER = np.mean(err) 
 
 print('\nReceived signal parameters:')
-print('I0 = %.2f '%(I0))
-print('I1 = %.2f '%(I1))
-print('σ0 = %.2f '%(σ0))
-print('σ1 = %.2f '%(σ1))
-print('Optimal decision threshold Id = %.2f '%(Id))
-print('Q = %.2f \n'%(Q))
+print(f'I0 = {I0:.2f}')
+print(f'I1 = {I1:.2f}')
+print(f'σ0 = {σ0:.2f}')
+print(f'σ1 = {σ1:.2f}')
+print(f'Optimal decision threshold Id = {Id:.2f}')
+print(f'Q = {Q:.2f} \n')
 
-Pb = 0.5*erfc(Q/np.sqrt(2)) # theoretical error probability
-print('Number of counted errors = %d '%(err.sum()))
-print('BER = %.2e '%(BER))
-print('Pb = %.2e '%(Pb))
+Pb = 0.5 * erfc(Q / np.sqrt(2))  # theoretical error probability
+print(f'Number of counted errors = {err.sum()}')
+print(f'BER = {BER:.2e}')
+print(f'Pb = {Pb:.2e}')
