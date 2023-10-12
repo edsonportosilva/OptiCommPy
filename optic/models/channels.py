@@ -27,16 +27,14 @@ from optic.dsp.core import sigPow
 from optic.models.devices import edfa
 
 
-def linFiberCh(Ei, Fs, paramCh):
+def linearFiberChannel(Ei, paramCh):
     """
     Simulate signal propagation through a linear fiber channel.
 
     Parameters
     ----------
     Ei : np.array
-        Input optical field.
-    Fs : scalar
-        Sampling frequency in Hz.
+        Input optical field.   
     paramCh : parameter object  (struct)
         Object with physical/simulation parameters of the optical channel.
 
@@ -47,6 +45,8 @@ def linFiberCh(Ei, Fs, paramCh):
         - paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
 
         - paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+
+        - paramCh.Fs: sampling frequency [Hz] [default: []]
 
     Returns
     -------
@@ -59,11 +59,13 @@ def linFiberCh(Ei, Fs, paramCh):
     paramCh.alpha = getattr(paramCh, "alpha", 0.2)
     paramCh.D = getattr(paramCh, "D", 16)    
     paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
+    paramCh.Fs = getattr(paramCh, "Fs", [])
 
     L = paramCh.L   
     alpha = paramCh.alpha
     D = paramCh.D  
     Fc = paramCh.Fc
+    Fs = paramCh.Fs
 
     # c  = 299792458   # speed of light [m/s](vacuum)
     c_kms = const.c / 1e3
