@@ -52,7 +52,12 @@ def ook_BERT(Irx, bitsTx=None, seed=123):
     bitsRx[Irx> Id] = 1
     bitsRx[Irx<= Id] = 0
 
-    return bitsRx, Q
+    # calculate the BER
+    err = np.logical_xor(bitsRx, bitsTx)
+
+    BER = np.mean(err)
+
+    return BER, Q
 
 def fastBERcalc(rx, tx, M, constType):
     """
