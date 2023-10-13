@@ -22,12 +22,13 @@ Models for optical devices (:mod:`optic.models.devices`)
 """Basic physical models for optical devices."""
 import numpy as np
 import scipy.constants as const
-from optic.dsp.core import lowPassFIR
+from optic.dsp.core import lowPassFIR, gaussianComplexNoise
 
 try:
     from optic.dsp.coreGPU import firFilter
 except ImportError:
     from optic.dsp.core import firFilter
+
 
 def pm(Ai, u, Vπ):
     """
@@ -56,14 +57,13 @@ def pm(Ai, u, Vπ):
         if Ai.shape == () and u.shape != ():
             Ai = Ai * np.ones(u.shape)
         else:
-            assert (
-                Ai.shape == u.shape
-            ), "Ai and u need to have the same dimensions"
+            assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
     π = np.pi
-    return Ai * np.exp(1j* (u / Vπ) * π)
+    return Ai * np.exp(1j * (u / Vπ) * π)
+
 
 def mzm(Ai, u, Vπ, Vb):
     """
@@ -95,9 +95,7 @@ def mzm(Ai, u, Vπ, Vb):
         if Ai.shape == () and u.shape != ():
             Ai = Ai * np.ones(u.shape)
         else:
-            assert (
-                Ai.shape == u.shape
-            ), "Ai and u need to have the same dimensions"
+            assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
@@ -137,9 +135,7 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
         if Ai.shape == () and u.shape != ():
             Ai = Ai * np.ones(u.shape)
         else:
-            assert (
-                Ai.shape == u.shape
-            ), "Ai and u need to have the same dimensions"
+            assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
@@ -235,14 +231,11 @@ def photodiode(E, param=None):
     ideal = getattr(param, "ideal", True)
 
     assert R > 0, "PD responsivity should be a positive scalar"
-    assert (
-        Fs >= 2 * B
-    ), "Sampling frequency Fs needs to be at least twice of B."
+    assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
 
     ipd = R * E * np.conj(E)  # ideal fotodetected current
 
     if not (ideal):
-
         Pin = (np.abs(E) ** 2).mean()
 
         # shot noise
@@ -446,7 +439,6 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     N_ase = (G_lin - 1) * nsp * const.h * Fc
     p_noise = N_ase * Fs
 
-    noise = np.random.normal(0, np.sqrt(p_noise / 2), Ei.shape) + 1j * np.random.normal(
-        0, np.sqrt(p_noise / 2), Ei.shape
-    )
+    noise = gaussianComplexNoise(Ei.shape, p_noise)
+
     return Ei * np.sqrt(G_lin) + noise
