@@ -32,7 +32,7 @@ from optic.comm.modulation import GrayMapping, demodulateGray, minEuclid
 def ook_BERT(Irx, bitsTx=None, seed=123):
 
     if bitsTx is None:
-        np.random.seed(seed=123) # fixing the seed 
+        np.random.seed(seed=seed) # fixing the seed 
 
         # generate reference pseudo-random bit sequence
         bitsTx = np.random.randint(2, size=Irx.size)
@@ -45,7 +45,7 @@ def ook_BERT(Irx, bitsTx=None, seed=123):
     std0 = np.std(Irx[bitsTx==0]) # standard deviation std0 of I0
 
     Id = (std1*I0 + std0*I1)/(std1 + std0) # optimal decision threshold
-    Q = (I1-I0)/(std1 + std0) # Q factor 
+    Q = (I1-I0)/(std1 + std0) # Qfactor 
 
     # apply the optimal decision rule
     bitsRx = np.empty(bitsTx.size)
