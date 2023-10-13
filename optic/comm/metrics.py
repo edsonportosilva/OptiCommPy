@@ -30,7 +30,57 @@ from optic.comm.modulation import GrayMapping, demodulateGray, minEuclid
 
 
 def ook_BERT(Irx, bitsTx=None, seed=123):
+    """
+    Calculate Bit Error Rate (BER) and Q-factor for optical communication using On-Off Keying (OOK).
 
+    Parameters
+    ----------
+    Irx : numpy.ndarray
+        Received signal intensity values.
+
+    bitsTx : numpy.ndarray, optional
+        Transmitted bit sequence. If not provided, a random bit sequence is generated.
+
+    seed : int, optional
+        Random seed for bit sequence generation when bitsTx is not provided.
+
+    Returns
+    -------
+    BER : float
+        Bit Error Rate, a measure of the number of erroneous bits relative to the total bits.
+
+    Q : float
+        Q-factor, a measure of signal quality in the communication system.
+
+    Notes
+    -----
+    This function calculates the BER and Q-factor for an optical communication system using On-Off Keying (OOK) modulation.
+    The received signal intensity `Irx` and an optional transmitted bit sequence `bitsTx` are required. If `bitsTx` is not provided,
+    a random bit sequence is generated using the specified `seed`.
+
+    The following statistics are calculated for the received signal:
+    - `I1`: The average value of the signal when the transmitted bit is 1.
+    - `I0`: The average value of the signal when the transmitted bit is 0.
+    - `std1`: The standard deviation of the signal when the transmitted bit is 1.
+    - `std0`: The standard deviation of the signal when the transmitted bit is 0.
+
+    The optimal decision threshold `Id` and the Q-factor are calculated based on the signal statistics.
+
+    The function then applies the optimal decision rule to estimate the received bit sequence `bitsRx`. The Bit Error Rate (BER) is calculated
+    by comparing `bitsRx` to `bitsTx`.
+
+    Example
+    -------
+    >>> Irx = np.array([0.1, 0.8, 0.2, 0.7, 0.3])
+    >>> bitsTx = np.array([0, 1, 0, 1, 0])
+    >>> BER, Q = ook_BERT(Irx, bitsTx)
+    >>> print(f"BER: {BER}, Q-factor: {Q}")
+
+    References
+    ----------
+    Agrawal, Govind P. Fiber-optic communication systems. John Wiley & Sons, 2012.
+
+    """
     if bitsTx is None:
         np.random.seed(seed=seed) # fixing the seed 
 
