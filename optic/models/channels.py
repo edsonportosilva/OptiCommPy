@@ -23,6 +23,7 @@ from scipy.linalg import norm
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
+from optic.core import parameters
 from optic.dsp.core import sigPow, gaussianComplexNoise, gaussianNoise
 from optic.models.devices import edfa
 
@@ -100,7 +101,7 @@ def linearFiberChannel(Ei, param=None):
     return Eo
 
 
-def ssfm(Ei, Fs, param):
+def ssfm(Ei, param=None):
     """
     Split-step Fourier method (symmetric, single-pol.).
 
@@ -127,6 +128,10 @@ def ssfm(Ei, Fs, param):
 
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
 
+        - param.Fs: simulation sampling frequency [samples/second][default: None]
+
+        - param.prec: numerical precision [default: np.complex128]
+
         - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
 
         - param.NF: edfa noise figure [dB] [default: 4.5 dB]
@@ -149,9 +154,14 @@ def ssfm(Ei, Fs, param):
     param.D = getattr(param, "D", 16)
     param.gamma = getattr(param, "gamma", 1.3)
     param.Fc = getattr(param, "Fc", 193.1e12)
+    param.Fs = getattr(param, "Fs", None)
+    param.prec = getattr(param, "prec", np.complex128)
     param.amp = getattr(param, "amp", "edfa")
     param.NF = getattr(param, "NF", 4.5)
     param.prgsBar = getattr(param, "prgsBar", True)
+
+    if param.Fs is None:
+        logg.error("Simulation sampling frequency not provided.")
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -160,6 +170,8 @@ def ssfm(Ei, Fs, param):
     D = param.D
     gamma = param.gamma
     Fc = param.Fc
+    Fs = param.Fs
+    prec = param.prec
     amp = param.amp
     NF = param.NF
     prgsBar = param.prgsBar
@@ -170,6 +182,13 @@ def ssfm(Ei, Fs, param):
     α = alpha / (10 * np.log10(np.exp(1)))
     β2 = -(D * λ**2) / (2 * np.pi * c_kms)
     γ = gamma
+
+    # edfa parameters
+    paramAmp = parameters()
+    paramAmp.G = alpha * Lspan
+    paramAmp.NF = NF
+    paramAmp.Fc = Fc
+    paramAmp.Fs = Fs
 
     # generate frequency axis
     Nfft = len(Ei)
@@ -204,7 +223,7 @@ def ssfm(Ei, Fs, param):
         # amplification step
         Ech = ifft(Ech)
         if amp == "edfa":
-            Ech = edfa(Ech, Fs, alpha * Lspan, NF, Fc)
+            Ech = edfa(Ech, paramAmp)
         elif amp == "ideal":
             Ech = Ech * np.exp(α / 2 * Nsteps * hz)
         elif amp is None:
@@ -218,7 +237,7 @@ def ssfm(Ei, Fs, param):
     )
 
 
-def manakovSSF(Ei, Fs, param, prec=np.complex128):
+def manakovSSF(Ei, param):
     """
     Run the Manakov split-step Fourier model (symmetric, dual-pol.).
 
@@ -244,6 +263,10 @@ def manakovSSF(Ei, Fs, param, prec=np.complex128):
         - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
 
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+
+        - param.Fs: simulation sampling frequency [samples/second][default: None]
+
+        - param.prec: numerical precision [default: np.complex128]
 
         - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
 
@@ -277,6 +300,8 @@ def manakovSSF(Ei, Fs, param, prec=np.complex128):
     param.D = getattr(param, "D", 16)
     param.gamma = getattr(param, "gamma", 1.3)
     param.Fc = getattr(param, "Fc", 193.1e12)
+    param.Fs = getattr(param, "Fs", None)
+    param.prec = getattr(param, "prec", np.complex128)
     param.amp = getattr(param, "amp", "edfa")
     param.NF = getattr(param, "NF", 4.5)
     param.maxIter = getattr(param, "maxIter", 10)
@@ -285,6 +310,9 @@ def manakovSSF(Ei, Fs, param, prec=np.complex128):
     param.maxNlinPhaseRot = getattr(param, "maxNlinPhaseRot", 2e-2)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
+
+    if param.Fs is None:
+        logg.error("Simulation sampling frequency not provided.")
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -295,6 +323,8 @@ def manakovSSF(Ei, Fs, param, prec=np.complex128):
     Fc = param.Fc
     amp = param.amp
     NF = param.NF
+    Fs = param.Fs
+    prec = param.prec
     maxIter = param.maxIter
     tol = param.tol
     prgsBar = param.prgsBar
@@ -308,6 +338,13 @@ def manakovSSF(Ei, Fs, param, prec=np.complex128):
     α = alpha / (10 * np.log10(np.exp(1)))
     β2 = -(D * λ**2) / (2 * np.pi * c_kms)
     γ = gamma
+
+    # edfa parameters
+    paramAmp = parameters()
+    paramAmp.G = alpha * Lspan
+    paramAmp.NF = NF
+    paramAmp.Fc = Fc
+    paramAmp.Fs = Fs
 
     # generate frequency axis
     Nfft = len(Ei)
@@ -394,8 +431,8 @@ def manakovSSF(Ei, Fs, param, prec=np.complex128):
             z_current += hz_  # update propagated distance
         # amplification step
         if amp == "edfa":
-            Ech_x = edfa(Ech_x, Fs, alpha * Lspan, NF, Fc)
-            Ech_y = edfa(Ech_y, Fs, alpha * Lspan, NF, Fc)
+            Ech_x = edfa(Ech_x, paramAmp)
+            Ech_y = edfa(Ech_y, paramAmp)
         elif amp == "ideal":
             Ech_x = Ech_x * np.exp(α / 2 * Lspan)
             Ech_y = Ech_y * np.exp(α / 2 * Lspan)
