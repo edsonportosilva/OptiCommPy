@@ -16,7 +16,7 @@ SpS = 16    # samples per symbol
 M = 2       # order of the modulation format
 Rs = 10e9   # Symbol rate
 Fs = SpS*Rs # Signal sampling frequency (samples/second)
-np.random.seed(seed=256) # fixing the seed to get reproducible results
+np.random.seed(seed=123) # fixing the seed to get reproducible results
 
 # typical NRZ pulse
 pulse = pulseShape('nrz', SpS)
@@ -72,7 +72,7 @@ I_Rx = I_Rx/np.std(I_Rx)
 I_Rx = I_Rx[0::SpS]
 
 # calculate the BER and Q-factor
-BER, Q = ook_BERT(I_Rx,seed=256)
+BER, Q = ook_BERT(I_Rx)
 
 print('\nReceived signal parameters:')
 print(f'Q-factor = {Q:.2f} ')
