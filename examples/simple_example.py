@@ -71,16 +71,13 @@ I_Rx = I_Rx/np.std(I_Rx)
 # capture samples in the middle of signaling intervals
 I_Rx = I_Rx[0::SpS]
 
-bitsRx, Q = ook_BERT(I_Rx)
-
-# calculate the BER
-err = np.logical_xor(bitsRx, bitsTx)
-BER = np.mean(err) 
+# calculate the BER and Q-factor
+BER, Q = ook_BERT(I_Rx)
 
 print('\nReceived signal parameters:')
-print(f'Q factor = {Q:.2f} \n')
-
-Pb = 0.5 * erfc(Q / np.sqrt(2))  # theoretical error probability
-print(f'Number of counted errors = {err.sum()}')
+print(f'Q-factor = {Q:.2f} ')
 print(f'BER = {BER:.2e}')
-print(f'Pb = {Pb:.2e}')
+
+# theoretical error probability from Q-factor
+Pb = 0.5 * erfc(Q / np.sqrt(2))  
+print(f'Pb = {Pb:.2e}\n')
