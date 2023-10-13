@@ -20,6 +20,8 @@ Models for optical devices (:mod:`optic.models.devices`)
 
 
 """Basic physical models for optical devices."""
+import logging as logg
+
 import numpy as np
 import scipy.constants as const
 from optic.dsp.core import lowPassFIR, gaussianComplexNoise
@@ -200,7 +202,7 @@ def photodiode(E, param=None):
 
         - param.B bandwidth [Hz][default: 30e9 Hz]
 
-        - param.Fs: sampling frequency [Hz] [default: 60e9 Hz]
+        - param.Fs: sampling frequency [Hz] [default: None]
 
         - param.fType: frequency response type [default: 'rect']
 
@@ -225,10 +227,13 @@ def photodiode(E, param=None):
     Id = getattr(param, "Id", 5e-9)
     RL = getattr(param, "RL", 50)
     B = getattr(param, "B", 30e9)
-    Fs = getattr(param, "Fs", 60e9)
+    Fs = getattr(param, "Fs", None)
     N = getattr(param, "N", 8000)
     fType = getattr(param, "fType", "rect")
     ideal = getattr(param, "ideal", True)
+
+    if Fs is None:
+        logg.error("Simulation sampling frequency not provided.")
 
     assert R > 0, "PD responsivity should be a positive scalar"
     assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
@@ -401,7 +406,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     return np.array([Sx, Sy]).T
 
 
-def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
+def edfa(Ei, param):
     """
     Implement simple EDFA model.
 
@@ -409,14 +414,13 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
     ----------
     Ei : np.array
         Input signal field.
-    Fs : scalar
-        Sampling frequency in Hz.
-    G : scalar, optional
-        Amplifier gain in dB. The default is 20.
-    NF : scalar, optional
-        EDFA noise figure in dB. The default is 4.5.
-    Fc : scalar, optional
-        Central optical frequency. The default is 193.1e12.
+    param : parameter object (struct), optional
+        Parameters of the edfa.
+
+        - param.G : amplifier gain in dB. The default is 20.
+        - param.NF : EDFA noise figure in dB. The default is 4.5.
+        - param.Fc : central optical frequency. The default is 193.1e12.
+        - param.Fs : sampling frequency in samples/second.
 
     Returns
     -------
@@ -424,6 +428,18 @@ def edfa(Ei, Fs, G=20, NF=4.5, Fc=193.1e12):
         Amplified noisy optical signal.
 
     """
+    if param is None:
+        param = []
+
+    # check input parameters
+    G = getattr(param, "G", 20)
+    NF = getattr(param, "NF", 4.5)
+    Fc = getattr(param, "Fc", 193.1e12)
+    Fs = getattr(param, "Fs", None)
+
+    if Fs is None:
+        logg.error("Simulation sampling frequency not provided.")
+
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
 
