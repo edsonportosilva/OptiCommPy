@@ -4,6 +4,7 @@ from commpy.utilities  import upsample
 from optic.models.devices import mzm, photodiode
 from optic.models.channels import linearFiberChannel
 from optic.comm.modulation import modulateGray
+from optic.comm.metrics import ook_BERT
 from optic.dsp.core import firFilter, pulseShape
 from optic.core import parameters
 from scipy.special import erfc
@@ -70,32 +71,14 @@ I_Rx = I_Rx/np.std(I_Rx)
 # capture samples in the middle of signaling intervals
 I_Rx = I_Rx[0::SpS]
 
-# get received signal statistics
-I1 = np.mean(I_Rx[bitsTx==1]) # average value of I1
-I0 = np.mean(I_Rx[bitsTx==0]) # average value of I0
-
-std1 = np.std(I_Rx[bitsTx==1]) # standard deviation std1 of I1
-std0 = np.std(I_Rx[bitsTx==0]) # standard deviation std0 of I0
-
-Id = (std1*I0 + std0*I1)/(std1 + std0) # optimal decision threshold
-Q = (I1-I0)/(std1 + std0) # Q factor 
-
-# apply the optimal decision rule
-bitsRx = np.empty(bitsTx.size)
-bitsRx[I_Rx> Id] = 1
-bitsRx[I_Rx<= Id] = 0
+bitsRx, Q = ook_BERT(I_Rx)
 
 # calculate the BER
 err = np.logical_xor(bitsRx, bitsTx)
 BER = np.mean(err) 
 
 print('\nReceived signal parameters:')
-print(f'I0 = {I0:.2f}')
-print(f'I1 = {I1:.2f}')
-print(f'std0 = {std0:.2f}')
-print(f'std1 = {std1:.2f}')
-print(f'Optimal decision threshold Id = {Id:.2f}')
-print(f'Q = {Q:.2f} \n')
+print(f'Q factor = {Q:.2f} \n')
 
 Pb = 0.5 * erfc(Q / np.sqrt(2))  # theoretical error probability
 print(f'Number of counted errors = {err.sum()}')
