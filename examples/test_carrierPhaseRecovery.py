@@ -33,7 +33,7 @@ from optic.models.devices import pdmCoherentReceiver
 from optic.models.channels import awgn, phaseNoise
 from optic.models.tx import simpleWDMTx
 from optic.dsp.carrierRecovery import cpr
-from optic.utils import parameters
+from optic.utils import parameters, dBm2W
 from optic.comm.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, calcEVM
 from optic.plot import pconst
 
@@ -118,7 +118,7 @@ FO      = 150e6                 # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
 lw      = 100e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
-Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
+Plo     = dBm2W(Plo_dBm)        # power in W
 ϕ_lo    = 0                     # initial phase in rad    
 
 print('Local oscillator P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz\n'\
