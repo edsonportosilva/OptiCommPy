@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -28,7 +28,7 @@ import numpy as np
 from commpy.utilities  import upsample
 from optic.models.devices import mzm, photodiode
 from optic.dsp.core import signal_power, firFilter, pulseShape
-from optic.core import parameters
+from optic.utils import parameters, dBm2W
 from optic.plot import eyediagram
 import matplotlib.pyplot as plt
 from scipy.special import erfc
@@ -63,18 +63,19 @@ figsize(10, 3)
 # +
 # simulation parameters
 SpS = 8
-
 Rs = 10e9 # Symbol rate (for OOK case Rs = Rb)
-Tsymb = 1/Rs # Symbol period in seconds
-Fs = 1/(Tsymb/SpS) # Signal sampling frequency (samples/second)
+Fs = SpS*Rs # Signal sampling frequency (samples/second)
 Ts = 1/Fs # Sampling period
 
-Pi_dBm = -16 # optical signal power at modulator input in dBm
+
+# Laser power
+Pi_dBm = -16        # laser optical power at the input of the MZM in dBm
+Pi = dBm2W(Pi_dBm) # convert from dBm to W
 
 # MZM parameters
-Vπ = 2
-Vb = -Vπ/2
-Pi = 10**(Pi_dBm/10)*1e-3 # optical signal power in W at the MZM input
+paramMZM = parameters()
+paramMZM.Vpi = 2
+paramMZM.Vb = -paramMZM.Vpi/2
 
 # generate pseudo-random bit sequence
 bitsTx = np.random.randint(2, size=100000)
@@ -95,8 +96,8 @@ pulse = pulse/max(abs(pulse))
 sigTx = firFilter(pulse, symbolsUp)
 
 # optical modulation
-Ai = np.sqrt(Pi)*np.ones(sigTx.size)
-sigTxo = mzm(Ai, sigTx, Vπ, Vb)
+Ai = np.sqrt(Pi)
+sigTxo = mzm(Ai, sigTx, paramMZM)
 
 print('Average power of the modulated optical signal [mW]: %.3f mW'%(signal_power(sigTxo)/1e-3))
 print('Average power of the modulated optical signal [dBm]: %.3f dBm'%(10*np.log10(signal_power(sigTxo)/1e-3)))
