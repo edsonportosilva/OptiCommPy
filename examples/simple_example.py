@@ -16,17 +16,17 @@ SpS = 16    # samples per symbol
 M = 2       # order of the modulation format
 Rs = 10e9   # Symbol rate
 Fs = SpS*Rs # Signal sampling frequency (samples/second)
-np.random.seed(seed=123) # fixing the seed to get reproducible results
+Pi_dBm = 0  # laser optical power at the input of the MZM in dBm
+Pi = 10**(Pi_dBm/10)*1e-3 # convert from dBm to W
 
 # typical NRZ pulse
 pulse = pulseShape('nrz', SpS)
 pulse = pulse/max(abs(pulse)) # normalize to 1 Vpp
 
 # MZM parameters
-Vpi = 2
-Vb = -Vpi/2
-Pi_dBm = 0 # laser optical power at the input of the MZM in dBm
-Pi = 10**(Pi_dBm/10)*1e-3 # convert from dBm to W
+paramMZM = parameters()
+paramMZM.Vpi = 2
+paramMZM.Vb = -paramMZM.Vpi/2
 
 # linear fiber optical channel parameters
 paramCh = parameters()
@@ -43,9 +43,10 @@ paramPD.B = Rs
 paramPD.Fs = Fs
 
 ## Simulation
-print('\nStarting simulation...')
+print('\nStarting simulation...', end="")
 
 # generate pseudo-random bit sequence
+np.random.seed(seed=123) # fixing the seed to get reproducible results
 bitsTx = np.random.randint(2, size=100000)
 
 # generate 2-PAM modulated symbol sequence
@@ -58,13 +59,13 @@ symbolsUp = upsample(symbTx, SpS)
 sigTx = firFilter(pulse, symbolsUp)
 
 # optical modulation
-Ai = np.sqrt(Pi)*np.ones(sigTx.size) # ideal cw laser envelope
-sigTxo = mzm(Ai, sigTx, Vpi, Vb)
+Ai = np.sqrt(Pi) # ideal cw laser constant envelope
+sigTxo = mzm(Ai, sigTx, paramMZM)
 
 # linear fiber channel model
 sigCh = linearFiberChannel(sigTxo, paramCh)
 
-# noisy photodiode (thermal noise + shot noise + bandwidth limitation)
+# noisy PD (thermal noise + shot noise + bandwidth limit)
 I_Rx = photodiode(sigCh, paramPD)
 I_Rx = I_Rx/np.std(I_Rx)
 
@@ -73,6 +74,7 @@ I_Rx = I_Rx[0::SpS]
 
 # calculate the BER and Q-factor
 BER, Q = ook_BERT(I_Rx)
+print('simulation completed.')
 
 print('\nReceived signal parameters:')
 print(f'Q-factor = {Q:.2f} ')
