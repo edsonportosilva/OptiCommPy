@@ -13,8 +13,7 @@ import numpy as np
 from commpy.utilities import upsample
 from tqdm.notebook import tqdm
 
-from optic.dsp.core import pnorm, pulseShape
-from optic.dsp.core import signal_power
+from optic.dsp.core import pnorm, pulseShape, signal_power
 from optic.models.devices import iqm
 from optic.models.channels import phaseNoise
 from optic.comm.modulation import GrayMapping, modulateGray

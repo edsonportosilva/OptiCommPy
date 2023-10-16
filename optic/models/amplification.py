@@ -42,7 +42,7 @@ from simple_pid import PID
 import logging as logg
 import copy
 
-from optic.core import parameters
+from optic.utils import parameters
 from optic.dsp.core import signal_power as power_meter
 
 # def power_meter(x):
