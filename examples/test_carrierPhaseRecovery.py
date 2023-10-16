@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -33,7 +33,7 @@ from optic.models.devices import pdmCoherentReceiver
 from optic.models.channels import awgn, phaseNoise
 from optic.models.tx import simpleWDMTx
 from optic.dsp.carrierRecovery import cpr
-from optic.core import parameters
+from optic.utils import parameters
 from optic.comm.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, calcEVM
 from optic.plot import pconst
 
