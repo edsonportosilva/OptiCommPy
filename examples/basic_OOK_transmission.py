@@ -142,7 +142,7 @@ axs[1].grid()
 # +
 # linear optical channel
 paramCh = parameters()
-paramCh.L = 50         # total link distance [km]
+paramCh.L = 90         # total link distance [km]
 paramCh.α = 0.2        # fiber loss parameter [dB/km]
 paramCh.D = 16         # fiber dispersion parameter [ps/nm/km]
 paramCh.Fc = 193.1e12  # central optical frequency [Hz]
