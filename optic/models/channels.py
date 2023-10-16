@@ -47,7 +47,7 @@ def linearFiberChannel(Ei, param=None):
 
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
 
-        - param.Fs: sampling frequency [Hz] [default: []]
+        - param.Fs: sampling frequency [Hz] [default: None]
 
     Returns
     -------
@@ -63,7 +63,10 @@ def linearFiberChannel(Ei, param=None):
     param.alpha = getattr(param, "alpha", 0.2)
     param.D = getattr(param, "D", 16)
     param.Fc = getattr(param, "Fc", 193.1e12)
-    param.Fs = getattr(param, "Fs", [])
+    param.Fs = getattr(param, "Fs", None)
+
+    if param.Fs is None:
+        logg.error("Simulation sampling frequency not provided.")
 
     L = param.L
     alpha = param.alpha
