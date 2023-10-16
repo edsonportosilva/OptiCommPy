@@ -6,7 +6,7 @@ from optic.models.channels import linearFiberChannel
 from optic.comm.modulation import modulateGray
 from optic.comm.metrics import ook_BERT
 from optic.dsp.core import firFilter, pulseShape
-from optic.core import parameters
+from optic.utils import parameters, dBm2W
 from scipy.special import erfc
 
 ## Intensity modulation (IM) with On-Off Keying (OOK)
@@ -17,7 +17,7 @@ M = 2       # order of the modulation format
 Rs = 10e9   # Symbol rate
 Fs = SpS*Rs # Signal sampling frequency (samples/second)
 Pi_dBm = 0  # laser optical power at the input of the MZM in dBm
-Pi = 10**(Pi_dBm/10)*1e-3 # convert from dBm to W
+Pi = dBm2W(Pi_dBm) # convert from dBm to W
 
 # typical NRZ pulse
 pulse = pulseShape('nrz', SpS)
@@ -67,7 +67,6 @@ sigCh = linearFiberChannel(sigTxo, paramCh)
 
 # noisy PD (thermal noise + shot noise + bandwidth limit)
 I_Rx = photodiode(sigCh, paramPD)
-I_Rx = I_Rx/np.std(I_Rx)
 
 # capture samples in the middle of signaling intervals
 I_Rx = I_Rx[0::SpS]
