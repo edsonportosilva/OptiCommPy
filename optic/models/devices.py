@@ -24,7 +24,7 @@ import logging as logg
 
 import numpy as np
 import scipy.constants as const
-from optic.core import parameters
+from optic.utils import parameters
 from optic.dsp.core import lowPassFIR, gaussianComplexNoise
 
 try:

@@ -22,7 +22,7 @@ from cupy.random import normal
 from cupyx.scipy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
-from optic.core import parameters
+from optic.utils import parameters
 from optic.dsp.core import signal_power
 
 

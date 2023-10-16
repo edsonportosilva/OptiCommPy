@@ -23,7 +23,7 @@ from scipy.linalg import norm
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-from optic.core import parameters
+from optic.utils import parameters
 from optic.dsp.core import sigPow, gaussianComplexNoise, gaussianNoise
 from optic.models.devices import edfa
 
