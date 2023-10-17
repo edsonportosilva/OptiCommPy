@@ -135,7 +135,7 @@ def iqm(Ai, u, param=None):
         - param.VbQ: Q-MZM's bias voltage [V][default: -2 V]
 
         - param.Vphi: PM bias voltage [V][default: 1 V]
-        
+
     Returns
     -------
     Ao : complex-valued np.array
@@ -143,7 +143,7 @@ def iqm(Ai, u, param=None):
 
     """
     if param is None:
-       param = []
+        param = []
 
     # check input parameters
     Vpi = getattr(param, "Vpi", 2)
@@ -174,8 +174,9 @@ def iqm(Ai, u, param=None):
     paramQ.Vpi = Vpi
     paramQ.Vb = VbQ
 
-    return mzm(Ai / np.sqrt(2), u.real, paramI) + pm(mzm(Ai / np.sqrt(2), 
-        u.imag, paramQ), Vphi * np.ones(u.shape), Vpi)
+    return mzm(Ai / np.sqrt(2), u.real, paramI) + pm(
+        mzm(Ai / np.sqrt(2), u.imag, paramQ), Vphi * np.ones(u.shape), Vpi
+    )
 
 
 def pbs(E, θ=0):
@@ -262,10 +263,10 @@ def photodiode(E, param=None):
     Fs = getattr(param, "Fs", None)
     N = getattr(param, "N", 8000)
     fType = getattr(param, "fType", "rect")
-    ideal = getattr(param, "ideal", True)   
+    ideal = getattr(param, "ideal", True)
 
     assert R > 0, "PD responsivity should be a positive scalar"
-    
+
     ipd = R * E * np.conj(E)  # ideal fotodetected current
 
     if not (ideal):
@@ -325,8 +326,6 @@ def balancedPD(E1, E2, param=None):
            Balanced photocurrent.
 
     """
-    if param is None:
-        param = []
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
     i1 = photodiode(E1, param)
@@ -424,8 +423,6 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
         Downconverted signal after balanced detection.
 
     """
-    if param is None:
-        param = []
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
     Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
