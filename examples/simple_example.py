@@ -15,7 +15,7 @@ SpS = 16  # samples per symbol
 M = 2  # order of the modulation format
 Rs = 10e9  # Symbol rate
 Fs = SpS * Rs  # Signal sampling frequency (samples/second)
-Pi_dBm = 0  # laser optical power at the input of the MZM in dBm
+Pi_dBm = 3  # laser optical power at the input of the MZM in dBm
 Pi = dBm2W(Pi_dBm)  # convert from dBm to W
 
 # typical NRZ pulse
@@ -29,9 +29,9 @@ paramMZM.Vb = -paramMZM.Vpi / 2
 
 # linear fiber optical channel parameters
 paramCh = parameters()
-paramCh.L = 90  # total link distance [km]
-paramCh.alpha = 0.2  # fiber loss parameter [dB/km]
-paramCh.D = 16  # fiber dispersion parameter [ps/nm/km]
+paramCh.L = 100        # total link distance [km]
+paramCh.alpha = 0.2    # fiber loss parameter [dB/km]
+paramCh.D = 16         # fiber dispersion parameter [ps/nm/km]
 paramCh.Fc = 193.1e12  # central optical frequency [Hz]
 paramCh.Fs = Fs
 
@@ -82,91 +82,114 @@ print(f"BER = {BER:.2e}")
 Pb = 0.5 * erfc(Q / np.sqrt(2))
 print(f"Pb = {Pb:.2e}\n")
 
-# Generate BER vs Pin curve
 
-# simulation parameters
-SpS = 16        # Samples per symbol
-M = 2           # order of the modulation format
-Rs = 10e9       # Symbol rate (for the OOK case, Rs = Rb)
-Fs = SpS*Rs     # Signal sampling frequency (samples/second)
-Ts = 1/Fs       # Sampling period
+# # Generate BER vs Pin curve
 
-# MZM parameters
-paramMZM = parameters()
-paramMZM.Vpi = 2
-paramMZM.Vb = -paramMZM.Vpi/2
+# # simulation parameters
+# SpS = 16        # Samples per symbol
+# M = 2           # order of the modulation format
+# Rs = 10e9       # Symbol rate (for the OOK case, Rs = Rb)
+# Fs = SpS*Rs     # Signal sampling frequency (samples/second)
+# Ts = 1/Fs       # Sampling period
 
-# typical NRZ pulse
-pulse = pulseShape('nrz', SpS)
-pulse = pulse/max(abs(pulse))
+# # MZM parameters
+# paramMZM = parameters()
+# paramMZM.Vpi = 2
+# paramMZM.Vb = -paramMZM.Vpi/2
 
-# photodiode parameters
-paramPD = parameters()
-paramPD.ideal = False
-paramPD.B = Rs
-paramPD.Fs = Fs
-   
-powerValues = np.arange(-30,-14) # power values at the input of the pin receiver
-BER = np.zeros(powerValues.shape)
-Q = np.zeros(powerValues.shape)
+# # typical NRZ pulse
+# pulse = pulseShape('nrz', SpS)
+# pulse = pulse/max(abs(pulse))
 
-for indPi, Pi_dBm in enumerate(powerValues):
-    
-    Pi = dBm2W(Pi_dBm+3) # optical signal power in W at the MZM input
+# # linear fiber optical channel parameters
+# paramCh = parameters()
+# paramCh.L = 100  # total link distance [km]
+# paramCh.alpha = 0.2  # fiber loss parameter [dB/km]
+# paramCh.D = 16  # fiber dispersion parameter [ps/nm/km]
+# paramCh.Fc = 193.1e12  # central optical frequency [Hz]
+# paramCh.Fs = Fs
 
-    # generate pseudo-random bit sequence
-    np.random.seed(seed=123)  # fixing the seed to get reproducible results
-    bitsTx = np.random.randint(2, size=10**5)
-    n = np.arange(0, bitsTx.size)
+# # photodiode parameters
+# paramPD = parameters()
+# paramPD.ideal = False
+# paramPD.B = Rs
+# paramPD.Fs = Fs
 
-    # generate ook modulated symbol sequence
-    symbTx = modulateGray(bitsTx, M, 'pam')    
-    symbTx = pnorm(symbTx) # power normalization
+# powerValues = np.arange(-30, -9) # power values at the input of the pin receiver
+# distances = np.arange(100,160,10)
 
-    # upsampling
-    symbolsUp = upsample(symbTx, SpS)
+# BER = np.zeros((len(distances), len(powerValues)))
+# Q = np.zeros((len(distances), len(powerValues)))
 
-    # pulse formatting
-    sigTx = firFilter(pulse, symbolsUp)
+# for indL, L in enumerate(distances):
+#     paramCh.L = L  # total link distance [km]
+#     for indPi, Pi_dBm in enumerate(powerValues):        
+#         Pi = dBm2W(Pi_dBm + L*paramCh.alpha + 3) # optical signal power in W at the MZM input
 
-    # optical modulation
-    Ai = np.sqrt(Pi)
-    sigTxo = mzm(Ai, sigTx, paramMZM)
+#         # generate pseudo-random bit sequence
+#         np.random.seed(seed=123)  # fixing the seed to get reproducible results
+#         bitsTx = np.random.randint(2, size=10**5)
+#         n = np.arange(0, bitsTx.size)
 
-    # pin receiver
-    I_Rx = photodiode(sigTxo.real, paramPD)
-    I_Rx = I_Rx/np.std(I_Rx)
+#         # generate ook modulated symbol sequence
+#         symbTx = modulateGray(bitsTx, M, 'pam')    
+#         symbTx = pnorm(symbTx) # power normalization
 
-    # capture samples in the middle of signaling intervals
-    I_Rx = I_Rx[0::SpS]
+#         # upsampling
+#         symbolsUp = upsample(symbTx, SpS)
 
-    # calculate the BER and Q-factor
-    BER[indPi], Q[indPi] = ook_BERT(I_Rx)
+#         # pulse formatting
+#         sigTx = firFilter(pulse, symbolsUp)
 
-    print(f'\nPin = {Pi_dBm:.2f} dBm')
-    print('\nReceived signal parameters:')
-    print(f'Q-factor = {Q[indPi]:.2f} ')
-    print(f'BER = {BER[indPi]:.2e}')
+#         # optical modulation
+#         Ai = np.sqrt(Pi)
+#         sigTxo = mzm(Ai, sigTx, paramMZM)
 
+#         # linear fiber channel model
+#         sigCh = linearFiberChannel(sigTxo, paramCh)
 
-plt.figure()
-plt.plot(powerValues, np.log10(BER),'-o',label='BER')
-plt.grid()
-plt.ylabel('log10(BER)')
-plt.xlabel('Pin (dBm)')
-plt.title('Bit-error performance vs input power at the pin receiver')
-plt.legend()
-plt.ylim(-10,0)
-plt.xlim(min(powerValues), max(powerValues))
-plt.show()
+#         # pin receiver
+#         I_Rx = photodiode(sigCh.real, paramPD)
+#         I_Rx = I_Rx/np.std(I_Rx)
 
-plt.figure()
-plt.plot(powerValues, 10*np.log10(Q),'-o',label='Q-factor')
-plt.grid()
-plt.ylabel('Q-factor (dB)')
-plt.xlabel('Pin (dBm)')
-plt.title('Q-factor performance vs input power at the pin receiver')
-plt.legend()
-#plt.ylim(-10,0)
-plt.xlim(min(powerValues), max(powerValues))
-plt.show()
+#         # capture samples in the middle of signaling intervals
+#         I_Rx = I_Rx[0::SpS]
+
+#         # calculate the BER and Q-factor
+#         BER[indL, indPi], Q[indL, indPi] = ook_BERT(I_Rx)
+
+#         print(f'\nPin = {Pi_dBm:.2f} dBm')
+#         print('\nReceived signal parameters:')
+#         print(f'Q-factor = {Q[indL, indPi]:.2f} ')
+#         print(f'BER = {BER[indL, indPi]:.2e}')
+
+# markers = ['o','>','x','*','d','^']
+# Prx = powerValues #- paramCh.L*paramCh.alpha
+
+# plt.figure()
+# for indL, L in enumerate(distances):
+#    # Prx = powerValues - L*paramCh.alpha
+#     plt.plot(Prx, np.log10(BER[indL,:]),'--', marker=markers[indL], label=f'{L} km')
+
+# plt.grid()
+# plt.ylabel('log10(BER)')
+# plt.xlabel('$P_{RX}$ [dBm]')
+# plt.title('BER vs input power at the receiver')
+# plt.legend()
+# plt.ylim(-10,0)
+# plt.xlim(min(Prx), max(Prx))
+# plt.show()
+
+# plt.figure()
+# for indL, L in enumerate(distances):
+#    # Prx = powerValues - L*paramCh.alpha
+#     plt.plot(Prx, 10*np.log10(Q[indL,:]),'--', marker=markers[indL], label=f'{L} km')
+
+# plt.grid()
+# plt.ylabel('Q-factor [dB]')
+# plt.xlabel('$P_{RX}$ [dBm]')
+# plt.title('Q-factor vs input power at the receiver')
+# plt.legend()
+# #plt.ylim(-10,0)
+# plt.xlim(min(Prx), max(Prx))
+# plt.show()
