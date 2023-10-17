@@ -105,11 +105,6 @@ def simpleWDMTx(param):
     if (param.Nch % 2) == 0:
         freqGrid += param.freqSpac / 2
 
-    # IQM parameters
-    Ai = 1
-    Vπ = 2
-    Vb = -Vπ
-
     if type(param.Pch_dBm) == list:
         assert (
             len(param.Pch_dBm) == param.Nch
@@ -177,7 +172,7 @@ def simpleWDMTx(param):
             # optical modulation
             if indMode == 0:  # generate LO field with phase noise
                 ϕ_pn_lo = phaseNoise(param.lw, len(sigTx), 1 / Fs)
-                sigLO = Ai * np.exp(1j * ϕ_pn_lo)
+                sigLO = np.exp(1j * ϕ_pn_lo)
 
             sigTxCh = iqm(sigLO, 0.5 * sigTx)
             sigTxCh = np.sqrt(Pch[indCh] / param.Nmodes) * pnorm(sigTxCh)
