@@ -260,7 +260,7 @@ def photodiode(E, param=None):
     Id = getattr(param, "Id", 5e-9)
     RL = getattr(param, "RL", 50)
     B = getattr(param, "B", 30e9)
-    ipd_sat = getattr(param, "ipd_sat", 10e-3)
+    ipd_sat = getattr(param, "ipd_sat", 5e-3)
     Fs = getattr(param, "Fs", None)
     N = getattr(param, "N", 8000)
     fType = getattr(param, "fType", "rect")
@@ -268,7 +268,7 @@ def photodiode(E, param=None):
 
     assert R > 0, "PD responsivity should be a positive scalar"
 
-    ipd = R * E * np.conj(E)  # ideal fotodetected current
+    ipd = R * E * np.conj(E)  # ideal photocurrent
 
     if not (ideal):
         if Fs is None:
@@ -276,12 +276,12 @@ def photodiode(E, param=None):
 
         assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
 
-        ipd[ipd<ipd_sat] = ipd_sat
+        ipd[ipd > ipd_sat] = ipd_sat # saturation of the photocurrent
         
-        Pin = (np.abs(E) ** 2).mean()
+        ipd_mean = ipd.mean().real
 
         # shot noise
-        σ2_s = 2 * q * (R * Pin + Id) * B  # shot noise variance
+        σ2_s = 2 * q * (ipd_mean + Id) * B  # shot noise variance
 
         # thermal noise
         T = Tc + 273.15  # temperature in Kelvin
