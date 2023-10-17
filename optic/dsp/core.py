@@ -21,7 +21,6 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
 import matplotlib.pyplot as plt
 import numpy as np
 from commpy.filters import rcosfilter, rrcosfilter
-from commpy.utilities import upsample
 from numba import njit, prange
 from scipy import signal
 
