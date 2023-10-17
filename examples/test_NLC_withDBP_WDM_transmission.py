@@ -121,6 +121,7 @@ paramCh.tol = 1e-5       # error tolerance per step
 paramCh.nlprMethod = True # use adaptive step-size based o maximum nonlinear phase-shift?
 paramCh.maxNlinPhaseRot = 2e-2 # maximum nonlinear phase-shift per step
 paramCh.prgsBar = False   # show progress bar?
+paramCh.Fs = paramTx.Rs*paramTx.SpS # sampling rate
 #paramCh.saveSpanN = [1, 5, 9, 14]
 Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
@@ -164,7 +165,7 @@ for indP, G in enumerate(tqdm(scale)):
     # nonlinear signal propagation
     G_lin = dB2lin(G)
 
-    sigWDM, paramCh = manakovSSF(np.sqrt(G_lin)*sigWDM_Tx, Fs, paramCh)
+    sigWDM, paramCh = manakovSSF(np.sqrt(G_lin)*sigWDM_Tx, paramCh)
     print('Fiber launch power per WDM channel: ', round(10*np.log10(signal_power(sigWDM)/paramTx.Nch /1e-3),2),'dBm')
     
     ### WDM channels coherent detection and demodulation
@@ -214,7 +215,12 @@ for indP, G in enumerate(tqdm(scale)):
 
             sigRx,_ = manakovDBP(sigRx, Fs, paramDBP)    
         else:
-            sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
+            paramEDC = parameters()
+            paramEDC.L = paramCh.Ltotal
+            paramEDC.D = paramCh.D
+            paramEDC.Fc = Fc-Δf_lo
+            paramEDC.Fs = Fs
+            sigRx = edc(sigRx, paramEDC)
 
         ### Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences
 
@@ -347,3 +353,6 @@ ax[3].set_xlim(min(Powers), max(Powers));
 
 #fig.tight_layout()
 #fig.set_size_inches(15, 20)
+# -
+
+
