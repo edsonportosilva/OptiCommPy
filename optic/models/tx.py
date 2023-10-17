@@ -10,10 +10,9 @@ Advanced models for optical transmitters (:mod:`optic.models.tx`)
 """
 
 import numpy as np
-from commpy.utilities import upsample
 from tqdm.notebook import tqdm
 
-from optic.dsp.core import pnorm, pulseShape, signal_power
+from optic.dsp.core import pnorm, pulseShape, signal_power, upsample
 from optic.models.devices import iqm
 from optic.models.channels import phaseNoise
 from optic.comm.modulation import GrayMapping, modulateGray
@@ -37,7 +36,7 @@ def simpleWDMTx(param):
     ----------
     param : system parameters of the WDM transmitter.
         optic.core.parameter object.
-        
+
         - param.M: modulation order [default: 16].
 
         - param.constType: 'qam' or 'psk' [default: 'qam'].
@@ -75,7 +74,7 @@ def simpleWDMTx(param):
     param : optic.core.parameter object
         System parameters for the WDM transmitter.
 
-    """    
+    """
     # check input parameters
     param.M = getattr(param, "M", 16)
     param.constType = getattr(param, "constType", "qam")
@@ -105,11 +104,6 @@ def simpleWDMTx(param):
 
     if (param.Nch % 2) == 0:
         freqGrid += param.freqSpac / 2
-
-    # IQM parameters
-    Ai = 1
-    Vπ = 2
-    Vb = -Vπ
 
     if type(param.Pch_dBm) == list:
         assert (
@@ -142,17 +136,13 @@ def simpleWDMTx(param):
     if param.pulse == "nrz":
         pulse = pulseShape("nrz", param.SpS)
     elif param.pulse == "rrc":
-        pulse = pulseShape(
-            "rrc", param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts
-        )
+        pulse = pulseShape("rrc", param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts)
 
     pulse = pulse / np.max(np.abs(pulse))
 
     for indCh in tqdm(range(param.Nch), disable=not (param.prgsBar)):
-
         logg.info(
-            "channel %d\t fc : %3.4f THz"
-            % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
+            "channel %d\t fc : %3.4f THz" % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
         )
 
         Pmode = 0
@@ -182,7 +172,7 @@ def simpleWDMTx(param):
             # optical modulation
             if indMode == 0:  # generate LO field with phase noise
                 ϕ_pn_lo = phaseNoise(param.lw, len(sigTx), 1 / Fs)
-                sigLO = Ai * np.exp(1j * ϕ_pn_lo)
+                sigLO = np.exp(1j * ϕ_pn_lo)
 
             sigTxCh = iqm(sigLO, 0.5 * sigTx)
             sigTxCh = np.sqrt(Pch[indCh] / param.Nmodes) * pnorm(sigTxCh)
@@ -196,13 +186,10 @@ def simpleWDMTx(param):
         Psig += Pmode
 
         logg.info(
-            "channel %d\t power: %.2f dBm\n"
-            % (indCh, 10 * np.log10(Pmode / 1e-3))
+            "channel %d\t power: %.2f dBm\n" % (indCh, 10 * np.log10(Pmode / 1e-3))
         )
 
-    logg.info(
-        "total WDM signal power: %.2f dBm" % (10 * np.log10(Psig / 1e-3))
-    )
+    logg.info("total WDM signal power: %.2f dBm" % (10 * np.log10(Psig / 1e-3)))
 
     param.freqGrid = freqGrid
 
