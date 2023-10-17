@@ -23,17 +23,12 @@ from scipy.linalg import norm
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-
-from optic.dsp.core import lowPassFIR, signal_power, sigPow
+from optic.core import parameters
+from optic.dsp.core import sigPow, gaussianComplexNoise, gaussianNoise
 from optic.models.devices import edfa
 
-try:
-    from optic.dsp.coreGPU import firFilter
-except ImportError:
-    from optic.dsp.core import firFilter
 
-
-def linFiberCh(Ei, L, alpha, D, Fc, Fs):
+def linearFiberChannel(Ei, param=None):
     """
     Simulate signal propagation through a linear fiber channel.
 
@@ -41,16 +36,18 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
     ----------
     Ei : np.array
         Input optical field.
-    L : real scalar
-        Length of the fiber.
-    alpha : real scalar
-        Fiber's attenuation coefficient in dB/km.
-    D : real scalar
-        Fiber's chromatic dispersion (2nd order) coefficient in ps/nm/km.
-    Fc : real scalar
-        Optical carrier frequency in Hz.
-    Fs : real scalar
-        Sampling rate of the simulation.
+    param : parameter object  (struct)
+        Object with physical/simulation parameters of the optical channel.
+
+        - param.L: total fiber length [km][default: 50 km]
+
+        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+
+        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+
+        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+
+        - param.Fs: sampling frequency [Hz] [default: None]
 
     Returns
     -------
@@ -58,6 +55,25 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
         Optical field at the output of the fiber.
 
     """
+    if param is None:
+        param = []
+
+    # check input parameters
+    param.L = getattr(param, "L", 50)
+    param.alpha = getattr(param, "alpha", 0.2)
+    param.D = getattr(param, "D", 16)
+    param.Fc = getattr(param, "Fc", 193.1e12)
+    param.Fs = getattr(param, "Fs", None)
+
+    if param.Fs is None:
+        logg.error("Simulation sampling frequency not provided.")
+
+    L = param.L
+    alpha = param.alpha
+    D = param.D
+    Fc = param.Fc
+    Fs = param.Fs
+
     # c  = 299792458   # speed of light [m/s](vacuum)
     c_kms = const.c / 1e3
     λ = c_kms / Fc
@@ -77,7 +93,7 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
 
     ω = np.tile(ω, (1, Nmodes))
     Eo = ifft(
-        fft(Ei, axis=0) * np.exp(-α/2 * L + 1j * (β2 / 2) * (ω**2) * L), axis=0
+        fft(Ei, axis=0) * np.exp(-α / 2 * L + 1j * (β2 / 2) * (ω**2) * L), axis=0
     )
 
     if Nmodes == 1:
@@ -87,7 +103,8 @@ def linFiberCh(Ei, L, alpha, D, Fc, Fs):
 
     return Eo
 
-def ssfm(Ei, Fs, paramCh):
+
+def ssfm(Ei, param=None):
     """
     Split-step Fourier method (symmetric, single-pol.).
 
@@ -97,59 +114,70 @@ def ssfm(Ei, Fs, paramCh):
         Input optical signal field.
     Fs : scalar
         Sampling frequency in Hz.
-    paramCh : parameter object  (struct)
+    param : parameter object  (struct)
         Object with physical/simulation parameters of the optical channel.
 
-        - paramCh.Ltotal: total fiber length [km][default: 400 km]
+        - param.Ltotal: total fiber length [km][default: 400 km]
 
-        - paramCh.Lspan: span length [km][default: 80 km]
+        - param.Lspan: span length [km][default: 80 km]
 
-        - paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+        - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
 
-        - paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
 
-        - paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
 
-        - paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+        - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
 
-        - paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
 
-        - paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+        - param.Fs: simulation sampling frequency [samples/second][default: None]
 
-        - paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+        - param.prec: numerical precision [default: np.complex128]
 
-        - paramCh.prgsBar: display progress bar? bolean variable [default:True]
-  
+        - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+
+        - param.NF: edfa noise figure [dB] [default: 4.5 dB]
+
+        - param.prgsBar: display progress bar? bolean variable [default:True]
+
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
-    paramCh : parameter object  (struct)
+    param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
 
     """
     # check input parameters
-    paramCh.Ltotal = getattr(paramCh, "Ltotal", 400)
-    paramCh.Lspan = getattr(paramCh, "Lspan", 80)
-    paramCh.hz = getattr(paramCh, "hz", 0.5)
-    paramCh.alpha = getattr(paramCh, "alpha", 0.2)
-    paramCh.D = getattr(paramCh, "D", 16)
-    paramCh.gamma = getattr(paramCh, "gamma", 1.3)
-    paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
-    paramCh.amp = getattr(paramCh, "amp", "edfa")
-    paramCh.NF = getattr(paramCh, "NF", 4.5)
-    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
+    param.Ltotal = getattr(param, "Ltotal", 400)
+    param.Lspan = getattr(param, "Lspan", 80)
+    param.hz = getattr(param, "hz", 0.5)
+    param.alpha = getattr(param, "alpha", 0.2)
+    param.D = getattr(param, "D", 16)
+    param.gamma = getattr(param, "gamma", 1.3)
+    param.Fc = getattr(param, "Fc", 193.1e12)
+    param.Fs = getattr(param, "Fs", None)
+    param.prec = getattr(param, "prec", np.complex128)
+    param.amp = getattr(param, "amp", "edfa")
+    param.NF = getattr(param, "NF", 4.5)
+    param.prgsBar = getattr(param, "prgsBar", True)
 
-    Ltotal = paramCh.Ltotal
-    Lspan = paramCh.Lspan
-    hz = paramCh.hz
-    alpha = paramCh.alpha
-    D = paramCh.D
-    gamma = paramCh.gamma
-    Fc = paramCh.Fc
-    amp = paramCh.amp
-    NF = paramCh.NF
-    prgsBar = paramCh.prgsBar
+    if param.Fs is None:
+        logg.error("Simulation sampling frequency not provided.")
+
+    Ltotal = param.Ltotal
+    Lspan = param.Lspan
+    hz = param.hz
+    alpha = param.alpha
+    D = param.D
+    gamma = param.gamma
+    Fc = param.Fc
+    Fs = param.Fs
+    prec = param.prec
+    amp = param.amp
+    NF = param.NF
+    prgsBar = param.prgsBar
 
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
@@ -157,6 +185,13 @@ def ssfm(Ei, Fs, paramCh):
     α = alpha / (10 * np.log10(np.exp(1)))
     β2 = -(D * λ**2) / (2 * np.pi * c_kms)
     γ = gamma
+
+    # edfa parameters
+    paramAmp = parameters()
+    paramAmp.G = alpha * Lspan
+    paramAmp.NF = NF
+    paramAmp.Fc = Fc
+    paramAmp.Fs = Fs
 
     # generate frequency axis
     Nfft = len(Ei)
@@ -170,9 +205,7 @@ def ssfm(Ei, Fs, paramCh):
     )
 
     # define linear operator
-    linOperator = np.exp(
-        -(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2)
-    )
+    linOperator = np.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2))
 
     for _ in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
         Ech = fft(Ech)  # single-polarization field
@@ -193,16 +226,21 @@ def ssfm(Ei, Fs, paramCh):
         # amplification step
         Ech = ifft(Ech)
         if amp == "edfa":
-            Ech = edfa(Ech, Fs, alpha * Lspan, NF, Fc)
+            Ech = edfa(Ech, paramAmp)
         elif amp == "ideal":
             Ech = Ech * np.exp(α / 2 * Nsteps * hz)
         elif amp is None:
             Ech = Ech * np.exp(0)
 
-    return Ech.reshape(len(Ech),), paramCh
+    return (
+        Ech.reshape(
+            len(Ech),
+        ),
+        param,
+    )
 
 
-def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
+def manakovSSF(Ei, param):
     """
     Run the Manakov split-step Fourier model (symmetric, dual-pol.).
 
@@ -212,81 +250,90 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
         Input optical signal field.
     Fs : scalar
         Sampling frequency in Hz.
-    paramCh : parameter object  (struct)
+    param : parameter object  (struct)
         Object with physical/simulation parameters of the optical channel.
 
-        - paramCh.Ltotal: total fiber length [km][default: 400 km]
+        - param.Ltotal: total fiber length [km][default: 400 km]
 
-        - paramCh.Lspan: span length [km][default: 80 km]
+        - param.Lspan: span length [km][default: 80 km]
 
-        - paramCh.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+        - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
 
-        - paramCh.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
 
-        - paramCh.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
 
-        - paramCh.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+        - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
 
-        - paramCh.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
 
-        - paramCh.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+        - param.Fs: simulation sampling frequency [samples/second][default: None]
 
-        - paramCh.NF: edfa noise figure [dB] [default: 4.5 dB]
+        - param.prec: numerical precision [default: np.complex128]
 
-        - paramCh.maxIter: max number of iter. in the trap. integration [default: 10]
+        - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
 
-        - paramCh.tol: convergence tol. of the trap. integration.[default: 1e-5]
+        - param.NF: edfa noise figure [dB] [default: 4.5 dB]
 
-        - paramCh.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
+        - param.maxIter: max number of iter. in the trap. integration [default: 10]
 
-        - paramCh.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
+        - param.tol: convergence tol. of the trap. integration.[default: 1e-5]
 
-        - paramCh.prgsBar: display progress bar? bolean variable [default:True]
+        - param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
 
-        - paramCh.saveSpanN: specify the span indexes to be outputted [default:[]]
+        - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
+
+        - param.prgsBar: display progress bar? bolean variable [default:True]
+
+        - param.saveSpanN: specify the span indexes to be outputted [default:[]]
 
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
-    paramCh : parameter object  (struct)
+    param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
 
     """
     # check input parameters
-    paramCh.Ltotal = getattr(paramCh, "Ltotal", 400)
-    paramCh.Lspan = getattr(paramCh, "Lspan", 80)
-    paramCh.hz = getattr(paramCh, "hz", 0.5)
-    paramCh.alpha = getattr(paramCh, "alpha", 0.2)
-    paramCh.D = getattr(paramCh, "D", 16)
-    paramCh.gamma = getattr(paramCh, "gamma", 1.3)
-    paramCh.Fc = getattr(paramCh, "Fc", 193.1e12)
-    paramCh.amp = getattr(paramCh, "amp", "edfa")
-    paramCh.NF = getattr(paramCh, "NF", 4.5)
-    paramCh.maxIter = getattr(paramCh, "maxIter", 10)
-    paramCh.tol = getattr(paramCh, "tol", 1e-5)
-    paramCh.nlprMethod = getattr(paramCh, "nlprMethod", True)
-    paramCh.maxNlinPhaseRot = getattr(paramCh, "maxNlinPhaseRot", 2e-2)
-    paramCh.prgsBar = getattr(paramCh, "prgsBar", True)
-    paramCh.saveSpanN = getattr(
-        paramCh, "saveSpanN", [paramCh.Ltotal // paramCh.Lspan]
-    )
+    param.Ltotal = getattr(param, "Ltotal", 400)
+    param.Lspan = getattr(param, "Lspan", 80)
+    param.hz = getattr(param, "hz", 0.5)
+    param.alpha = getattr(param, "alpha", 0.2)
+    param.D = getattr(param, "D", 16)
+    param.gamma = getattr(param, "gamma", 1.3)
+    param.Fc = getattr(param, "Fc", 193.1e12)
+    param.Fs = getattr(param, "Fs", None)
+    param.prec = getattr(param, "prec", np.complex128)
+    param.amp = getattr(param, "amp", "edfa")
+    param.NF = getattr(param, "NF", 4.5)
+    param.maxIter = getattr(param, "maxIter", 10)
+    param.tol = getattr(param, "tol", 1e-5)
+    param.nlprMethod = getattr(param, "nlprMethod", True)
+    param.maxNlinPhaseRot = getattr(param, "maxNlinPhaseRot", 2e-2)
+    param.prgsBar = getattr(param, "prgsBar", True)
+    param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
 
-    Ltotal = paramCh.Ltotal
-    Lspan = paramCh.Lspan
-    hz = paramCh.hz
-    alpha = paramCh.alpha
-    D = paramCh.D
-    gamma = paramCh.gamma
-    Fc = paramCh.Fc
-    amp = paramCh.amp
-    NF = paramCh.NF
-    maxIter = paramCh.maxIter
-    tol = paramCh.tol
-    prgsBar = paramCh.prgsBar
-    saveSpanN = paramCh.saveSpanN
-    nlprMethod = paramCh.nlprMethod
-    maxNlinPhaseRot = paramCh.maxNlinPhaseRot
+    if param.Fs is None:
+        logg.error("Simulation sampling frequency not provided.")
+
+    Ltotal = param.Ltotal
+    Lspan = param.Lspan
+    hz = param.hz
+    alpha = param.alpha
+    D = param.D
+    gamma = param.gamma
+    Fc = param.Fc
+    amp = param.amp
+    NF = param.NF
+    Fs = param.Fs
+    prec = param.prec
+    maxIter = param.maxIter
+    tol = param.tol
+    prgsBar = param.prgsBar
+    saveSpanN = param.saveSpanN
+    nlprMethod = param.nlprMethod
+    maxNlinPhaseRot = param.maxNlinPhaseRot
 
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
@@ -294,6 +341,13 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
     α = alpha / (10 * np.log10(np.exp(1)))
     β2 = -(D * λ**2) / (2 * np.pi * c_kms)
     γ = gamma
+
+    # edfa parameters
+    paramAmp = parameters()
+    paramAmp.G = alpha * Lspan
+    paramAmp.NF = NF
+    paramAmp.Fc = Fc
+    paramAmp.Fs = Fs
 
     # generate frequency axis
     Nfft = len(Ei)
@@ -313,13 +367,10 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
         argLimOp = argLimOp.reshape(1, -1)
 
     if saveSpanN:
-        Ech_spans = np.zeros(
-            (Ei.shape[0], Ei.shape[1] * len(saveSpanN))
-        ).astype(prec)
+        Ech_spans = np.zeros((Ei.shape[0], Ei.shape[1] * len(saveSpanN))).astype(prec)
         indRecSpan = 0
 
     for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
-
         Ex_conv = Ech_x.copy()
         Ey_conv = Ech_y.copy()
 
@@ -327,7 +378,6 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
 
         # fiber propagation steps
         while z_current < Lspan:
-
             Pch = Ech_x * np.conj(Ech_x) + Ech_y * np.conj(Ech_y)
 
             phiRot = nlinPhaseRot(Ex_conv, Ey_conv, Pch, γ)
@@ -364,9 +414,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
                 Ech_y_fd = ifft(fft(Ech_y_fd) * linOperator)
 
                 # check convergence o trapezoidal integration in phiRot
-                lim = convergenceCondition(
-                    Ech_x_fd, Ech_y_fd, Ex_conv, Ey_conv
-                )
+                lim = convergenceCondition(Ech_x_fd, Ech_y_fd, Ex_conv, Ey_conv)
 
                 Ex_conv = Ech_x_fd.copy()
                 Ey_conv = Ech_y_fd.copy()
@@ -386,8 +434,8 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
             z_current += hz_  # update propagated distance
         # amplification step
         if amp == "edfa":
-            Ech_x = edfa(Ech_x, Fs, alpha * Lspan, NF, Fc)
-            Ech_y = edfa(Ech_y, Fs, alpha * Lspan, NF, Fc)
+            Ech_x = edfa(Ech_x, paramAmp)
+            Ech_y = edfa(Ech_y, paramAmp)
         elif amp == "ideal":
             Ech_x = Ech_x * np.exp(α / 2 * Lspan)
             Ech_y = Ech_y * np.exp(α / 2 * Lspan)
@@ -396,8 +444,8 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
             Ech_y = Ech_y * np.exp(0)
 
         if spanN in saveSpanN:
-            Ech_spans[:, 2 * indRecSpan: 2 * indRecSpan + 1] = Ech_x.T
-            Ech_spans[:, 2 * indRecSpan + 1: 2 * indRecSpan + 2] = Ech_y.T
+            Ech_spans[:, 2 * indRecSpan : 2 * indRecSpan + 1] = Ech_x.T
+            Ech_spans[:, 2 * indRecSpan + 1 : 2 * indRecSpan + 2] = Ech_y.T
             indRecSpan += 1
 
     if saveSpanN:
@@ -407,7 +455,7 @@ def manakovSSF(Ei, Fs, paramCh, prec=np.complex128):
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
 
-    return Ech, paramCh
+    return Ech, param
 
 
 def nlinPhaseRot(Ex, Ey, Pch, γ):
@@ -455,9 +503,9 @@ def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
         squared root of the MSE normalized by the power of the fields.
 
     """
-    return np.sqrt(
-        norm(Ex_fd - Ex_conv) ** 2 + norm(Ey_fd - Ey_conv) ** 2
-    ) / np.sqrt(norm(Ex_conv) ** 2 + norm(Ey_conv) ** 2)
+    return np.sqrt(norm(Ex_fd - Ex_conv) ** 2 + norm(Ey_fd - Ey_conv) ** 2) / np.sqrt(
+        norm(Ex_conv) ** 2 + norm(Ey_conv) ** 2
+    )
 
 
 @njit
@@ -489,7 +537,6 @@ def phaseNoise(lw, Nsamples, Ts):
     return phi
 
 
-@njit
 def awgn(sig, snr, Fs=1, B=1, complexNoise=True):
     """
     Implement a basic AWGN channel model.
@@ -515,12 +562,11 @@ def awgn(sig, snr, Fs=1, B=1, complexNoise=True):
     """
     snr_lin = 10 ** (snr / 10)
     noiseVar = sigPow(sig) / snr_lin
-    σ = np.sqrt((Fs / B) * noiseVar)
+    σ2 = (Fs / B) * noiseVar
 
     if complexNoise:
-        noise = np.random.normal(0, σ, sig.shape) + 1j * np.random.normal(0, σ, sig.shape)
-        noise = 1 / np.sqrt(2) * noise
+        noise = gaussianComplexNoise(sig.shape, σ2)
     else:
-        noise = np.random.normal(0, σ, sig.shape)
-        
+        noise = gaussianNoise(sig.shape, σ2)
+
     return sig + noise

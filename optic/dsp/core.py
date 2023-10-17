@@ -41,7 +41,7 @@ def sigPow(x):
     scalar
         Average power of x: P = mean(abs(x)**2).
 
-    """        
+    """
     return np.mean(np.abs(x) ** 2)
 
 
@@ -59,8 +59,9 @@ def signal_power(x):
     scalar
         Total power of x: P = sum(abs(x)**2).
 
-    """           
+    """
     return np.sum(np.mean(x * np.conj(x), axis=0).real)
+
 
 def firFilter(h, x):
     """
@@ -129,16 +130,17 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     elif pulseType == "nrz":
         filterCoeffs = np.convolve(
             np.ones(SpS),
-            2 / (np.sqrt(np.pi) * Te) * np.exp(-(t ** 2) / Te),
+            2 / (np.sqrt(np.pi) * Te) * np.exp(-(t**2) / Te),
             mode="full",
         )
     elif pulseType == "rrc":
         tindex, filterCoeffs = rrcosfilter(N, alpha, Ts, fa)
     elif pulseType == "rc":
         tindex, filterCoeffs = rcosfilter(N, alpha, Ts, fa)
-    filterCoeffs = filterCoeffs / np.sqrt(np.sum(filterCoeffs ** 2))
+    filterCoeffs = filterCoeffs / np.sqrt(np.sum(filterCoeffs**2))
 
     return filterCoeffs
+
 
 @njit(parallel=True)
 def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
@@ -150,7 +152,7 @@ def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
     x : ndarray
         Input signal.
     param : core.parameter
-        Resampling parameters:            
+        Resampling parameters:
             param.Fs_in  : sampling frequency of the input signal.
             param.Fs_out : sampling frequency of the output signal.
             param.jitter_rms: standard deviation of the time jitter.
@@ -162,18 +164,18 @@ def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
 
     """
     nModes = x.shape[1]
-    
-    inTs = 1/Fs_in
-    outTs = 1/Fs_out
+
+    inTs = 1 / Fs_in
+    outTs = 1 / Fs_out
 
     tin = np.arange(0, x.shape[0]) * inTs
     tout = np.arange(0, x.shape[0] * inTs, outTs)
-    
+
     jitter = np.random.normal(0, jitter_rms, tout.shape)
     tout += jitter
-    
+
     y = np.zeros((len(tout), x.shape[1]))
-                
+
     for k in prange(nModes):
         y[:, k] = np.interp(tout, tin, x[:, k])
 
@@ -200,9 +202,9 @@ def quantizer(x, nBits=16, maxV=1, minV=-1):
     -------
     np.array
         The quantized output signal with the same shape as 'x', quantized using 'nBits' levels.
-  
+
     """
-    Δ = (maxV - minV) / (2 ** nBits - 1)
+    Δ = (maxV - minV) / (2**nBits - 1)
 
     d = np.arange(minV, maxV + Δ, Δ)
 
@@ -262,7 +264,7 @@ def decimate(Ei, param):
         Input signal.
     param : core.parameter
         Decimation parameters:
-        
+
         - param.SpS_in  : samples per symbol of the input signal.
 
         - param.SpS_out : samples per symbol of the output signal.
@@ -346,7 +348,7 @@ def resample(Ei, param):
     return Eo
 
 
-def symbolSync(rx, tx, SpS, mode='amp'):
+def symbolSync(rx, tx, SpS, mode="amp"):
     """
     Symbol synchronizer.
 
@@ -373,33 +375,32 @@ def symbolSync(rx, tx, SpS, mode='amp'):
     delay = np.zeros(nModes)
 
     corrMatrix = np.zeros((nModes, nModes))
-    
-    if mode == 'amp':
+
+    if mode == "amp":
         for n in range(nModes):
             for m in range(nModes):
                 corrMatrix[m, n] = np.max(
                     np.abs(signal.correlate(np.abs(tx[:, m]), np.abs(rx[:, n])))
                 )
         swap = np.argmax(corrMatrix, axis=0)
-    
+
         tx = tx[:, swap]
-    
+
         for k in range(nModes):
             delay[k] = finddelay(np.abs(tx[:, k]), np.abs(rx[:, k]))
-    elif mode == 'real':
+    elif mode == "real":
         for n in range(nModes):
             for m in range(nModes):
                 corrMatrix[m, n] = np.max(
                     np.abs(signal.correlate(np.real(tx[:, m]), np.real(rx[:, n])))
                 )
         swap = np.argmax(corrMatrix, axis=0)
-    
+
         tx = tx[:, swap]
-    
+
         for k in range(nModes):
             delay[k] = finddelay(np.real(tx[:, k]), np.real(rx[:, k]))
-        
-        
+
     # compensate time delay
     for k in range(nModes):
         tx[:, k] = np.roll(tx[:, k], -int(delay[k]))
@@ -443,3 +444,45 @@ def pnorm(x):
 
     """
     return x / np.sqrt(np.mean(x * np.conj(x)).real)
+
+
+@njit
+def gaussianComplexNoise(shapeOut, σ2=1.0):
+    """
+    Generate complex circular Gaussian noise.
+
+    Parameters:
+    -----------
+    shapeOut : tuple of int
+        Shape of ndarray to be generated.
+    σ2 : float, optional
+        Variance of the noise (default is 1).
+
+    Returns:
+    --------
+    noise : ndarray
+        Generated complex circular Gaussian noise.
+    """
+    return np.random.normal(0, np.sqrt(σ2 / 2), shapeOut) + 1j * np.random.normal(
+        0, np.sqrt(σ2 / 2), shapeOut
+    )
+
+
+@njit
+def gaussianNoise(shapeOut, σ2=1.0):
+    """
+    Generate Gaussian noise.
+
+    Parameters:
+    -----------
+    shapeOut : tuple of int
+        Shape of ndarray to be generated.
+    σ2 : float, optional
+        Variance of the noise (default is 1).
+
+    Returns:
+    --------
+    noise : ndarray
+        Generated Gaussian noise.
+    """
+    return np.random.normal(0, np.sqrt(σ2), shapeOut)

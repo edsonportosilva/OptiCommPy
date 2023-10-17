@@ -19,28 +19,30 @@ import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-
+from optic.core import parameters
 from optic.dsp.core import pnorm
-from optic.models.channels import linFiberCh
+from optic.models.channels import linearFiberChannel
 from optic.comm.modulation import GrayMapping
 
 
-def edc(Ei, L, D, Fc, Fs):
+def edc(Ei, param=None):
     """
     Electronic chromatic dispersion compensation (EDC).
 
     Parameters
     ----------
     Ei : np.array
-        Dispersed signal.
-    L : real scalar
-        Fiber length [km].
-    D : real scalar
-        Chromatic dispersion parameter [ps/nm/km].
-    Fc : real scalar
-        Carrier frequency [Hz].
-    Fs : real scalar
-        Sampling frequency [Hz].
+        Input optical field.
+    param : parameter object  (struct)
+        Object with physical/simulation parameters of the optical channel.
+
+        - param.L: total fiber length [km][default: 50 km]
+
+        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+
+        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+
+        - param.Fs: sampling frequency [Hz] [default: []]
 
     Returns
     -------
@@ -48,7 +50,19 @@ def edc(Ei, L, D, Fc, Fs):
         CD compensated signal.
 
     """
-    return linFiberCh(Ei, L, 0, -D, Fc, Fs)
+    if param is None:
+        param = []
+
+    # check input parameters
+    param.L = getattr(param, "L", 50)
+    param.D = getattr(param, "D", 16)
+    param.Fc = getattr(param, "Fc", 193.1e12)
+    param.Fs = getattr(param, "Fs", [])
+
+    param.alpha = 0
+    param.D = -param.D
+
+    return linearFiberChannel(Ei, param)
 
 
 def mimoAdaptEqualizer(x, dx=None, paramEq=None):
@@ -65,7 +79,7 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
         Syncronized exact symbol sequence corresponding to the received input array x.
     paramEq : object, optional
         Parameter object containing the following attributes:
-        
+
         - numIter : int, number of pre-convergence iterations (default: 1)
 
         - nTaps : int, number of filter taps (default: 15)
@@ -156,7 +170,7 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
             totalNumSymb
         ]  # Length of the output (1 sample/symbol) of the training section
     if not H:  # if H is not defined
-        H = np.zeros((nModes ** 2, nTaps), dtype="complex")
+        H = np.zeros((nModes**2, nTaps), dtype="complex")
 
         for initH in range(nModes):  # initialize filters' taps
             H[
@@ -164,7 +178,6 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
             ] = 1  # Central spike initialization
     # Equalizer training:
     if type(alg) == list:
-
         yEq = np.zeros((totalNumSymb, x.shape[1]), dtype="complex")
         errSq = np.zeros((totalNumSymb, x.shape[1])).T
 
@@ -180,7 +193,7 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
                         f"{runAlg} pre-convergence training iteration #%d", indIter
                     )
                     yEq[nStart:nEnd, :], H, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
-                        x[nStart * SpS : nEnd * SpS, :],
+                        x[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
                         dx[nStart:nEnd, :],
                         SpS,
                         H,
@@ -197,7 +210,7 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
                     )
             else:
                 yEq[nStart:nEnd, :], H, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
-                    x[nStart * SpS : nEnd * SpS, :],
+                    x[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
                     dx[nStart:nEnd, :],
                     SpS,
                     H,
@@ -276,14 +289,14 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSy
     if storeCoeff:
         Hiter = (
             np.array([[0 + 1j * 0]])
-            .repeat((nModes ** 2) * nTaps * L)
-            .reshape(nModes ** 2, nTaps, L)
+            .repeat((nModes**2) * nTaps * L)
+            .reshape(nModes**2, nTaps, L)
         )
     else:
         Hiter = (
             np.array([[0 + 1j * 0]])
-            .repeat((nModes ** 2) * nTaps)
-            .reshape(nModes ** 2, nTaps, 1)
+            .repeat((nModes**2) * nTaps)
+            .reshape(nModes**2, nTaps, 1)
         )
     if alg == "rls":
         Sd = np.eye(nTaps, dtype=np.complex128)
@@ -303,9 +316,7 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSy
 
         # pass signal sequence through the equalizer:
         for N in range(nModes):
-            inEq = x[indIn, N].reshape(
-                len(indIn), 1
-            )  # slice input coming from the Nth mode
+            inEq = x[indIn, N : N + 1]  # slice input coming from the Nth mode
             outEq += (
                 H[indMode + N * nModes, :] @ inEq
             )  # add contribution from the Nth mode to the equalizer's output
@@ -340,7 +351,7 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSy
         if storeCoeff:
             Hiter[:, :, ind] = H
         else:
-            Hiter[:, :, 1] = H
+            Hiter[:, :, 0] = H
     return yEq, H, errSq, Hiter
 
 
@@ -660,7 +671,7 @@ def rdeUp(x, R, outEq, mu, H, nModes):
         indR = np.argmin(np.abs(R - np.abs(outEq[0, k])))
         decidedR[0, k] = R[indR]
     err = (
-        decidedR ** 2 - np.abs(outEq) ** 2
+        decidedR**2 - np.abs(outEq) ** 2
     )  # calculate output error for the RDE algorithm
 
     prodErrOut = np.diag(err[0]) @ np.diag(outEq[0])  # define diagonal matrix
@@ -714,7 +725,7 @@ def dardeUp(x, dx, outEq, mu, H, nModes):
     for k in range(nModes):
         decidedR[0, k] = np.abs(dx[k])
     err = (
-        decidedR ** 2 - np.abs(outEq) ** 2
+        decidedR**2 - np.abs(outEq) ** 2
     )  # calculate output error for the RDE algorithm
 
     prodErrOut = np.diag(err[0]) @ np.diag(outEq[0])  # define diagonal matrix
@@ -752,7 +763,7 @@ def dbp(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12):
     c_kms = const.c / 1e3
     λ = c_kms / Fc
     α = -alpha / (10 * np.log10(np.exp(1)))
-    β2 = (D * λ ** 2) / (2 * np.pi * c_kms)
+    β2 = (D * λ**2) / (2 * np.pi * c_kms)
     γ = -gamma
 
     Nfft = len(Ei)
@@ -762,10 +773,12 @@ def dbp(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12):
     Nspans = int(np.floor(Ltotal / Lspan))
     Nsteps = int(np.floor(Lspan / hz))
 
-    Ech = Ei.reshape(len(Ei),)
+    Ech = Ei.reshape(
+        len(Ei),
+    )
     Ech = fft(Ech)  # single-polarization field
 
-    linOperator = np.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω ** 2) * (hz / 2))
+    linOperator = np.exp(-(α / 2) * (hz / 2) + 1j * (β2 / 2) * (ω**2) * (hz / 2))
 
     for _ in tqdm(range(Nspans)):
         Ech = Ech * np.exp((α / 2) * Nsteps * hz)
@@ -783,4 +796,6 @@ def dbp(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12):
             Ech = Ech * linOperator
     Ech = ifft(Ech)
 
-    return Ech.reshape(len(Ech),)
+    return Ech.reshape(
+        len(Ech),
+    )
