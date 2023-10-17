@@ -1,6 +1,4 @@
 import numpy as np
-
-# from commpy.utilities  import upsample
 from optic.models.devices import mzm, photodiode
 from optic.models.channels import linearFiberChannel
 from optic.comm.modulation import modulateGray
@@ -75,7 +73,7 @@ I_Rx = I_Rx[0::SpS]
 BER, Q = ook_BERT(I_Rx)
 print("simulation completed.")
 
-print("\nReceived signal parameters:")
+print("\nTransmission performance metrics:")
 print(f"Q-factor = {Q:.2f} ")
 print(f"BER = {BER:.2e}")
 
