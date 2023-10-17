@@ -260,6 +260,7 @@ def photodiode(E, param=None):
     Id = getattr(param, "Id", 5e-9)
     RL = getattr(param, "RL", 50)
     B = getattr(param, "B", 30e9)
+    ipd_sat = getattr(param, "ipd_sat", 10e-3)
     Fs = getattr(param, "Fs", None)
     N = getattr(param, "N", 8000)
     fType = getattr(param, "fType", "rect")
@@ -275,6 +276,8 @@ def photodiode(E, param=None):
 
         assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
 
+        ipd[ipd<ipd_sat] = ipd_sat
+        
         Pin = (np.abs(E) ** 2).mean()
 
         # shot noise
@@ -292,7 +295,7 @@ def photodiode(E, param=None):
 
         # lowpass filtering
         h = lowPassFIR(B, Fs, N, typeF=fType)
-        ipd = firFilter(h, ipd)
+        ipd = firFilter(h, ipd)        
 
     return ipd.real
 
