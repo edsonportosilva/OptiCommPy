@@ -18,7 +18,6 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    pnorm                  -- Normalize the average power of each componennt of x
 """
 """Digital signal processing utilities."""
-import matplotlib.pyplot as plt
 import numpy as np
 from commpy.filters import rcosfilter, rrcosfilter
 from numba import njit, prange
@@ -251,6 +250,42 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
             * np.exp(-(2 / np.log(2)) * (np.pi * fu * (n - d)) ** 2)
         )
     return h
+
+
+def upsample(x, factor):
+    """
+    Upsample a signal by inserting zeros between samples.
+
+    Parameters
+    ----------
+    x : array-like
+        Input signal to upsample.
+    factor : int
+        Upsampling factor. The signal will be upsampled by inserting
+        `factor - 1` zeros between each original sample.
+
+    Returns
+    -------
+    xUp : array-like
+        The upsampled signal with zeros inserted between samples.
+
+    Notes
+    -----
+    This function inserts zeros between the samples of the input signal to
+    increase its sampling rate. The upsampling factor determines how many
+    zeros are inserted between each original sample.
+
+    If the input signal is a 2D array, the upsampling is performed
+    column-wise.
+    """
+    try:
+        xUp = np.zeros((factor * x.shape[0], x.shape[1]), dtype=x.dtype)
+        xUp[0::factor, :] = x
+    except IndexError:
+        xUp = np.zeros(factor * x.shape[0], dtype=x.dtype)
+        xUp[0::factor] = x
+
+    return xUp
 
 
 def decimate(Ei, param):
