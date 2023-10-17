@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.5
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -32,7 +32,7 @@ from optic.comm.metrics import monteCarloGMI, monteCarloMI, fastBERcalc, theoryB
 from optic.models.channels import awgn
 from optic.dsp.core import pnorm, signal_power
 from optic.plot import pconst
-from optic.core import parameters
+from optic.utils import parameters
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp

@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -41,7 +41,7 @@ except:
     from optic.models.channels import manakovSSF
 
 from optic.models.tx import simpleWDMTx
-from optic.core import parameters
+from optic.utils import parameters, dBm2W, dB2lin
 from optic.dsp.equalization import edc, mimoAdaptEqualizer
 from optic.dsp.carrierRecovery import cpr
 from optic.comm.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, calcEVM
@@ -140,7 +140,7 @@ freqGrid = paramTx.freqGrid
 FO      = 150e6                 # frequency offset
 lw      = 100e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
-Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
+Plo     = dBm2W(Plo_dBm)        # power in W
 ϕ_lo    = 0                     # initial phase in rad    
 
 ## photodiodes parameters
@@ -162,7 +162,7 @@ EVM = np.zeros((4,len(Powers)))
 
 for indP, G in enumerate(tqdm(scale)):
     # nonlinear signal propagation
-    G_lin = 10**(G/10)
+    G_lin = dB2lin(G)
 
     sigWDM, paramCh = manakovSSF(np.sqrt(G_lin)*sigWDM_Tx, Fs, paramCh)
     print('Fiber launch power per WDM channel: ', round(10*np.log10(signal_power(sigWDM)/paramTx.Nch /1e-3),2),'dBm')
@@ -208,7 +208,7 @@ for indP, G in enumerate(tqdm(scale)):
 
         # CD compensation/digital backpropagation
         if runDBP:
-            Pch = 10**((G + paramTx.Pch_dBm)/10)*1e-3
+            Pch = dBm2W(G + paramTx.Pch_dBm)
             sigRx = np.sqrt(Pch/2)*pnorm(sigRx)
             #print('channel input power (DBP): ', round(10*np.log10(signal_power(sigRx)/1e-3),3),'dBm')
 

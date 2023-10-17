@@ -42,7 +42,7 @@ from simple_pid import PID
 import logging as logg
 import copy
 
-from optic.core import parameters
+from optic.utils import parameters
 from optic.dsp.core import signal_power as power_meter
 
 # def power_meter(x):
@@ -616,14 +616,14 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     # Create signal noise
     noiseb = np.concatenate(
         [
-            np.sqrt(f1_noiseb(freqSgn), dtype=np.complex),
-            np.sqrt(f2_noiseb(freqSgn), dtype=np.complex),
+            np.sqrt(f1_noiseb(freqSgn), dtype=np.complex128),
+            np.sqrt(f2_noiseb(freqSgn), dtype=np.complex128),
         ]
     )
     noisef = np.concatenate(
         [
-            np.sqrt(f1_noisef(freqSgn), dtype=np.complex),
-            np.sqrt(f2_noisef(freqSgn), dtype=np.complex),
+            np.sqrt(f1_noisef(freqSgn), dtype=np.complex128),
+            np.sqrt(f2_noisef(freqSgn), dtype=np.complex128),
         ]
     )
     noiseF = (
@@ -635,7 +635,7 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
     ## Update amplified optical signal
     # Update optical signal by adding noise
     Eout = np.reshape(
-        np.sqrt(Pout[idxPS, -1], dtype=np.complex), (lenFqSg, isy), order="F"
+        np.sqrt(Pout[idxPS, -1], dtype=np.complex128), (lenFqSg, isy), order="F"
     )
     Eout = Eout * np.exp(1j * np.angle(EiFt)) + np.reshape(
         noiseF, (lenFqSg, isy), order="F"

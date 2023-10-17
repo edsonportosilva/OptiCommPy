@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -41,7 +41,7 @@ except:
     from optic.models.channels import manakovSSF
 
 from optic.models.tx import simpleWDMTx
-from optic.core import parameters
+from optic.utils import parameters, dBm2W
 from optic.dsp.equalization import edc, mimoAdaptEqualizer
 from optic.dsp.carrierRecovery import cpr
 from optic.comm.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, calcEVM
@@ -119,16 +119,17 @@ paramCh.nlprMethod = True # use adaptive step-size based o maximum nonlinear pha
 paramCh.maxNlinPhaseRot = 2e-2 # maximum nonlinear phase-shift per step
 paramCh.prgsBar = True   # show progress bar?
 #paramCh.saveSpanN = [1, 5, 9, 14]
-Fs = paramTx.Rs*paramTx.SpS # sampling rate
+paramCh.Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
 # nonlinear signal propagation
-sigWDM, paramCh = manakovSSF(sigWDM_Tx, Fs, paramCh)
+sigWDM, paramCh = manakovSSF(sigWDM_Tx, paramCh)
 
 # + [markdown] id="45da6d22"
 # **Optical WDM spectrum before and after transmission**
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 241} id="489a01ea" outputId="a50a47a0-e564-4b88-de4d-21440eab470c"
 # plot psd
+Fs = paramCh.Fs
 fig,_ = plotPSD(sigWDM_Tx, Fs, paramCh.Fc, label='Tx'); 
 fig, ax = plotPSD(sigWDM, Fs, paramCh.Fc, fig=fig, label='Rx');
 fig.set_figheight(3)
@@ -155,11 +156,11 @@ print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 150e6                # frequency offset
+FO      = 150e6                 # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
 lw      = 100e3                 # linewidth
 Plo_dBm = 10                    # power in dBm
-Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
+Plo     = dBm2W(Plo_dBm)        # power in W
 ϕ_lo    = 0                     # initial phase in rad    
 
 print('Local oscillator P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz\n'\
@@ -204,7 +205,13 @@ sigRx = firFilter(pulse, sigRx)
 pconst(sigRx[0::paramTx.SpS,:], R=3)
 
 # CD compensation
-sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
+paramEDC = parameters()
+paramEDC.L = paramCh.Ltotal
+paramEDC.D = paramCh.D
+paramEDC.Fc = Fc-Δf_lo
+paramEDC.Fs = Fs
+
+sigRx = edc(sigRx, paramEDC)
 
 # plot constellations after CD compensation
 pconst(sigRx[0::paramTx.SpS,:], R=3);
@@ -249,7 +256,7 @@ else:
     paramEq.alg = ['da-rde','rde'] # M-QAM
     paramEq.mu = [5e-3, 2e-4] 
     
-y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
+y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, d, paramEq)
 
 #plot constellations after adaptive equalization
 discard = 5000
@@ -266,7 +273,7 @@ paramCPR.N   = 75
 paramCPR.B   = 64
 paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
 
-y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
+y_CPR, θ = cpr(y_EQ, d, paramCPR)
 
 y_CPR = pnorm(y_CPR)
 
@@ -319,3 +326,6 @@ print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
 print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
+# -
+
+

@@ -19,7 +19,7 @@ import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-from optic.core import parameters
+from optic.utils import parameters
 from optic.dsp.core import pnorm
 from optic.models.channels import linearFiberChannel
 from optic.comm.modulation import GrayMapping

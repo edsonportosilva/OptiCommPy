@@ -24,6 +24,7 @@ import logging as logg
 
 import numpy as np
 import scipy.constants as const
+from optic.utils import parameters
 from optic.dsp.core import lowPassFIR, gaussianComplexNoise
 
 try:
@@ -67,7 +68,7 @@ def pm(Ai, u, Vπ):
     return Ai * np.exp(1j * (u / Vπ) * π)
 
 
-def mzm(Ai, u, Vπ, Vb):
+def mzm(Ai, u, param=None):
     """
     Optical Mach-Zehnder Modulator (MZM).
 
@@ -77,10 +78,12 @@ def mzm(Ai, u, Vπ, Vb):
         Amplitude of the optical field at the input of the MZM.
     u : np.array
         Electrical driving signal.
-    Vπ : scalar
-        MZM's Vπ voltage.
-    Vb : scalar
-        MZM's bias voltage.
+    param : parameter object  (struct)
+        Object with physical/simulation parameters of the mzm.
+
+        - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
+
+        - param.Vb: MZM's bias voltage [V][default: -1 V]
 
     Returns
     -------
@@ -88,6 +91,13 @@ def mzm(Ai, u, Vπ, Vb):
         Modulated optical field at the output of the MZM.
 
     """
+    if param is None:
+        param = []
+
+    # check input parameters
+    Vpi = getattr(param, "Vpi", 2)
+    Vb = getattr(param, "Vb", -1)
+
     try:
         u.shape
     except AttributeError:
@@ -102,10 +112,10 @@ def mzm(Ai, u, Vπ, Vb):
         Ai = Ai * np.ones(u.shape)
 
     π = np.pi
-    return Ai * np.cos(0.5 / Vπ * (u + Vb) * π)
+    return Ai * np.cos(0.5 / Vpi * (u + Vb) * π)
 
 
-def iqm(Ai, u, Vπ, VbI, VbQ):
+def iqm(Ai, u, param=None):
     """
     Optical In-Phase/Quadrature Modulator (IQM).
 
@@ -115,12 +125,16 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
         Amplitude of the optical field at the input of the IQM.
     u : complex-valued np.array
         Modulator's driving signal (complex-valued baseband).
-    Vπ : scalar
-        MZM Vπ-voltage.
-    VbI : scalar
-        I-MZM's bias voltage.
-    VbQ : scalar
-        Q-MZM's bias voltage.
+    param : parameter object  (struct)
+        Object with physical/simulation parameters of the mzm.
+
+        - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
+
+        - param.VbI: I-MZM's bias voltage [V][default: -2 V]
+
+        - param.VbQ: Q-MZM's bias voltage [V][default: -2 V]
+
+        - param.Vphi: PM bias voltage [V][default: 1 V]
 
     Returns
     -------
@@ -128,6 +142,15 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
         Modulated optical field at the output of the IQM.
 
     """
+    if param is None:
+        param = []
+
+    # check input parameters
+    Vpi = getattr(param, "Vpi", 2)
+    VbI = getattr(param, "VbI", -2)
+    VbQ = getattr(param, "VbQ", -2)
+    Vphi = getattr(param, "Vphi", 1)
+
     try:
         u.shape
     except AttributeError:
@@ -141,8 +164,18 @@ def iqm(Ai, u, Vπ, VbI, VbQ):
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
-    return mzm(Ai / np.sqrt(2), u.real, Vπ, VbI) + 1j * mzm(
-        Ai / np.sqrt(2), u.imag, Vπ, VbQ
+    # define parameters for the I-MZM:
+    paramI = parameters()
+    paramI.Vpi = Vpi
+    paramI.Vb = VbI
+
+    # define parameters for the Q-MZM:
+    paramQ = parameters()
+    paramQ.Vpi = Vpi
+    paramQ.Vb = VbQ
+
+    return mzm(Ai / np.sqrt(2), u.real, paramI) + pm(
+        mzm(Ai / np.sqrt(2), u.imag, paramQ), Vphi * np.ones(u.shape), Vpi
     )
 
 
@@ -232,15 +265,16 @@ def photodiode(E, param=None):
     fType = getattr(param, "fType", "rect")
     ideal = getattr(param, "ideal", True)
 
-    if Fs is None:
-        logg.error("Simulation sampling frequency not provided.")
-
     assert R > 0, "PD responsivity should be a positive scalar"
-    assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
 
     ipd = R * E * np.conj(E)  # ideal fotodetected current
 
     if not (ideal):
+        if Fs is None:
+            logg.error("Simulation sampling frequency not provided.")
+
+        assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
+
         Pin = (np.abs(E) ** 2).mean()
 
         # shot noise
@@ -292,8 +326,6 @@ def balancedPD(E1, E2, param=None):
            Balanced photocurrent.
 
     """
-    if param is None:
-        param = []
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
     i1 = photodiode(E1, param)
@@ -356,8 +388,6 @@ def coherentReceiver(Es, Elo, param=None):
         Downconverted signal after balanced detection.
 
     """
-    if param is None:
-        param = []
     assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
     assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
@@ -393,8 +423,6 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
         Downconverted signal after balanced detection.
 
     """
-    if param is None:
-        param = []
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
     Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations

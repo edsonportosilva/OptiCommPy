@@ -13,8 +13,7 @@ import numpy as np
 from commpy.utilities import upsample
 from tqdm.notebook import tqdm
 
-from optic.dsp.core import pnorm, pulseShape
-from optic.dsp.core import signal_power
+from optic.dsp.core import pnorm, pulseShape, signal_power
 from optic.models.devices import iqm
 from optic.models.channels import phaseNoise
 from optic.comm.modulation import GrayMapping, modulateGray
@@ -185,7 +184,7 @@ def simpleWDMTx(param):
                 ϕ_pn_lo = phaseNoise(param.lw, len(sigTx), 1 / Fs)
                 sigLO = Ai * np.exp(1j * ϕ_pn_lo)
 
-            sigTxCh = iqm(sigLO, 0.5 * sigTx, Vπ, Vb, Vb)
+            sigTxCh = iqm(sigLO, 0.5 * sigTx)
             sigTxCh = np.sqrt(Pch[indCh] / param.Nmodes) * pnorm(sigTxCh)
 
             sigTxWDM[:, indMode] += sigTxCh * np.exp(
