@@ -1,3 +1,20 @@
+"""
+==================================================
+General utilities (:mod:`optic.utils`)
+==================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   parameters             -- Class to be used as a struct of parameters
+   lin2dB                 -- Convert linear value to dB (decibels)
+   dB2lin                 -- Convert dB (decibels) to a linear value
+   dBm2W                  -- Convert dBm to Watts
+   dec2bitarray           -- Convert decimals to arrays of bits
+   decimal2bitarray       -- Convert decimal to array of bits
+   bitarray2dec           -- Convert array of bits to decimal
+"""
+"""General utilities."""
 import numpy as np
 
 
@@ -70,7 +87,7 @@ def dec2bitarray(x, bit_width):
 
     if isinstance(x, int):
         return decimal2bitarray(x, bit_width)
-    result = np.zeros((len(x), bit_width), dtype=np.int)
+    result = np.zeros((len(x), bit_width), dtype=np.int64)
     for pox, number in enumerate(x):
         result[pox] = decimal2bitarray(number, bit_width)
     return result
@@ -95,7 +112,7 @@ def decimal2bitarray(x, bit_width):
         Array containing the binary representation of the input decimal.
 
     """
-    result = np.zeros(bit_width, dtype=np.int)
+    result = np.zeros(bit_width, dtype=np.int64)
     i = 1
     pox = 0
     while i <= x:
@@ -112,7 +129,7 @@ def bitarray2dec(x_bitarray):
 
     Parameters
     ----------
-    x_bitarray : 1D or 2D NumPy array of int
+    x_bitarray : 1D array of int
         Input NumPy array of bits.
 
     Returns
@@ -120,16 +137,9 @@ def bitarray2dec(x_bitarray):
     number : int or array of int
         Integer representation(s) of the input bit array(s).
     """
+    number = 0
 
-    if x_bitarray.ndim == 1:
-        number = 0
-        for i in range(len(x_bitarray)):
-            number += x_bitarray[i] * 2 ** (len(x_bitarray) - 1 - i)
-        return number
-    elif x_bitarray.ndim == 2:
-        numbers = np.zeros(x_bitarray.shape[0], dtype=np.int)
-        for j in range(x_bitarray.shape[0]):
-            numbers[j] = bitarray2dec(x_bitarray[j])
-        return numbers
-    else:
-        raise ValueError("Input array must be 1D or 2D.")
+    for i in range(len(x_bitarray)):
+        number = number + x_bitarray[i] * pow(2, len(x_bitarray) - 1 - i)
+
+    return number
