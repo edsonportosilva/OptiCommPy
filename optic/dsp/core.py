@@ -20,7 +20,6 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
 """Digital signal processing utilities."""
 import numpy as np
 from commpy.filters import rcosfilter, rrcosfilter
-from commpy.utilities import upsample
 from numba import njit
 from scipy import signal
 
