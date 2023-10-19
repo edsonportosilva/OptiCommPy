@@ -19,7 +19,7 @@ Digital modulation utilities (:mod:`optic.comm.modulation`)
 import logging as logg
 
 import numpy as np
-from commpy.utilities import bitarray2dec, dec2bitarray
+from optic.utils import bitarray2dec, dec2bitarray
 from numba import njit, prange
 
 
@@ -102,9 +102,7 @@ def GrayMapping(M, constType):
 
     for ind in range(M):
         const_[ind, 0] = const[ind, 0]  # complex constellation symbol
-        const_[ind, 1] = int(
-            code[ind], 2
-        )  # mapped bit sequence (as integer decimal)
+        const_[ind, 1] = int(code[ind], 2)  # mapped bit sequence (as integer decimal)
     # sort complex symbols column according to their mapped bit sequence (as integer decimal)
     const = const_[const_[:, 1].real.argsort()]
     const = const[:, 0]
