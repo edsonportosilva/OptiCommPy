@@ -144,7 +144,7 @@ def rrcFilterTaps(t, alpha, Ts):
 
 
 @njit
-def rrcFilterTaps(t, alpha, Ts):
+def rcFilterTaps(t, alpha, Ts):
     """
     Generate Raised Cosine (RC) filter coefficients.
 
@@ -170,8 +170,9 @@ def rrcFilterTaps(t, alpha, Ts):
     π = np.pi
 
     for i, t_i in enumerate(t):
-        if t_i == 0:
-            coeffs[i] = 1 / (4 * Ts) * np.sinc(1 / (2 * alpha * Ts))
+        t_abs = abs(t_i)
+        if t_abs == Ts / (2 * alpha):
+            coeffs[i] = π / (4 * Ts) * np.sinc(1 / (2 * alpha))
         else:
             coeffs[i] = (
                 (1 / Ts)
@@ -226,7 +227,7 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
 
     elif pulseType == "rc":
         t = np.linspace(-N // 2, N // 2, N) * (1 / fa)
-        filterCoeffs = rrcFilterTaps(N, alpha, Ts)
+        filterCoeffs = rcFilterTaps(t, alpha, Ts)
 
     filterCoeffs = filterCoeffs / np.sqrt(np.sum(filterCoeffs**2))
 
