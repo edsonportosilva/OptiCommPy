@@ -437,7 +437,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     return np.array([Sx, Sy]).T
 
 
-def edfa(Ei, param):
+def edfa(Ei, param=None):
     """
     Implement simple EDFA model.
 
