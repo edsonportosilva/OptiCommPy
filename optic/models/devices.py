@@ -276,8 +276,8 @@ def photodiode(E, param=None):
 
         assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
 
-        ipd[ipd > ipd_sat] = ipd_sat # saturation of the photocurrent
-        
+        ipd[ipd > ipd_sat] = ipd_sat  # saturation of the photocurrent
+
         ipd_mean = ipd.mean().real
 
         # shot noise
@@ -295,7 +295,7 @@ def photodiode(E, param=None):
 
         # lowpass filtering
         h = lowPassFIR(B, Fs, N, typeF=fType)
-        ipd = firFilter(h, ipd)        
+        ipd = firFilter(h, ipd)
 
     return ipd.real
 
