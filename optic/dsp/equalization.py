@@ -19,13 +19,12 @@ import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-from optic.utils import parameters
 from optic.dsp.core import pnorm
 from optic.models.channels import linearFiberChannel
 from optic.comm.modulation import GrayMapping
 
 
-def edc(Ei, param=None):
+def edc(Ei, param):
     """
     Electronic chromatic dispersion compensation (EDC).
 
@@ -50,14 +49,15 @@ def edc(Ei, param=None):
         CD compensated signal.
 
     """
-    if param is None:
-        param = []
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
 
     # check input parameters
     param.L = getattr(param, "L", 50)
     param.D = getattr(param, "D", 16)
     param.Fc = getattr(param, "Fc", 193.1e12)
-    param.Fs = getattr(param, "Fs", [])
 
     param.alpha = 0
     param.D = -param.D
