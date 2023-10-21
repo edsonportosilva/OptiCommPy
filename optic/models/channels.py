@@ -28,7 +28,7 @@ from optic.dsp.core import sigPow, gaussianComplexNoise, gaussianNoise
 from optic.models.devices import edfa
 
 
-def linearFiberChannel(Ei, param=None):
+def linearFiberChannel(Ei, param):
     """
     Simulate signal propagation through a linear fiber channel.
 
@@ -55,24 +55,21 @@ def linearFiberChannel(Ei, param=None):
         Optical field at the output of the fiber.
 
     """
-    if param is None:
-        param = []
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
 
     # check input parameters
     param.L = getattr(param, "L", 50)
     param.alpha = getattr(param, "alpha", 0.2)
     param.D = getattr(param, "D", 16)
     param.Fc = getattr(param, "Fc", 193.1e12)
-    param.Fs = getattr(param, "Fs", None)
-
-    if param.Fs is None:
-        logg.error("Simulation sampling frequency not provided.")
 
     L = param.L
     alpha = param.alpha
     D = param.D
     Fc = param.Fc
-    Fs = param.Fs
 
     # c  = 299792458   # speed of light [m/s](vacuum)
     c_kms = const.c / 1e3
@@ -149,6 +146,11 @@ def ssfm(Ei, param=None):
         Object with physical/simulation parameters used in the split-step alg.
 
     """
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
+
     # check input parameters
     param.Ltotal = getattr(param, "Ltotal", 400)
     param.Lspan = getattr(param, "Lspan", 80)
@@ -157,14 +159,10 @@ def ssfm(Ei, param=None):
     param.D = getattr(param, "D", 16)
     param.gamma = getattr(param, "gamma", 1.3)
     param.Fc = getattr(param, "Fc", 193.1e12)
-    param.Fs = getattr(param, "Fs", None)
     param.prec = getattr(param, "prec", np.complex128)
     param.amp = getattr(param, "amp", "edfa")
     param.NF = getattr(param, "NF", 4.5)
     param.prgsBar = getattr(param, "prgsBar", True)
-
-    if param.Fs is None:
-        logg.error("Simulation sampling frequency not provided.")
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -173,7 +171,6 @@ def ssfm(Ei, param=None):
     D = param.D
     gamma = param.gamma
     Fc = param.Fc
-    Fs = param.Fs
     prec = param.prec
     amp = param.amp
     NF = param.NF
@@ -295,6 +292,11 @@ def manakovSSF(Ei, param):
         Object with physical/simulation parameters used in the split-step alg.
 
     """
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
+
     # check input parameters
     param.Ltotal = getattr(param, "Ltotal", 400)
     param.Lspan = getattr(param, "Lspan", 80)
@@ -303,7 +305,6 @@ def manakovSSF(Ei, param):
     param.D = getattr(param, "D", 16)
     param.gamma = getattr(param, "gamma", 1.3)
     param.Fc = getattr(param, "Fc", 193.1e12)
-    param.Fs = getattr(param, "Fs", None)
     param.prec = getattr(param, "prec", np.complex128)
     param.amp = getattr(param, "amp", "edfa")
     param.NF = getattr(param, "NF", 4.5)
@@ -314,9 +315,6 @@ def manakovSSF(Ei, param):
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
 
-    if param.Fs is None:
-        logg.error("Simulation sampling frequency not provided.")
-
     Ltotal = param.Ltotal
     Lspan = param.Lspan
     hz = param.hz
@@ -326,7 +324,6 @@ def manakovSSF(Ei, param):
     Fc = param.Fc
     amp = param.amp
     NF = param.NF
-    Fs = param.Fs
     prec = param.prec
     maxIter = param.maxIter
     tol = param.tol

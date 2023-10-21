@@ -261,7 +261,6 @@ def photodiode(E, param=None):
     RL = getattr(param, "RL", 50)
     B = getattr(param, "B", 30e9)
     ipd_sat = getattr(param, "ipd_sat", 5e-3)
-    Fs = getattr(param, "Fs", None)
     N = getattr(param, "N", 8000)
     fType = getattr(param, "fType", "rect")
     ideal = getattr(param, "ideal", True)
@@ -271,8 +270,10 @@ def photodiode(E, param=None):
     ipd = R * E * np.conj(E)  # ideal photocurrent
 
     if not (ideal):
-        if Fs is None:
-            logg.error("Simulation sampling frequency not provided.")
+        try:
+            Fs = param.Fs
+        except AttributeError:
+            logg.error("Simulation sampling frequency (Fs) not provided.")
 
         assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
 
@@ -437,7 +438,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     return np.array([Sx, Sy]).T
 
 
-def edfa(Ei, param):
+def edfa(Ei, param=None):
     """
     Implement simple EDFA model.
 
@@ -459,17 +460,15 @@ def edfa(Ei, param):
         Amplified noisy optical signal.
 
     """
-    if param is None:
-        param = []
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
 
     # check input parameters
     G = getattr(param, "G", 20)
     NF = getattr(param, "NF", 4.5)
     Fc = getattr(param, "Fc", 193.1e12)
-    Fs = getattr(param, "Fs", None)
-
-    if Fs is None:
-        logg.error("Simulation sampling frequency not provided.")
 
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
