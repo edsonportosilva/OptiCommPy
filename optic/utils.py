@@ -21,9 +21,21 @@ import numpy as np
 class parameters:
     """
     Basic class to be used as a struct of parameters
+
     """
 
     pass
+
+    def view(self):
+        """
+        Prints the attributes and their values in either standard or scientific notation.
+
+        """
+        for attr, value in self.__dict__.items():
+            if isinstance(value, (int, float)) and value > 1000:
+                print(f"{attr}: {value:.2e}")
+            else:
+                print(f"{attr}: {value}")
 
 
 def lin2dB(x):
