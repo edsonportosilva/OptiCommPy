@@ -29,7 +29,7 @@ from optic.dsp.core import pnorm, signal_power
 from optic.comm.modulation import GrayMapping, demodulateGray, minEuclid
 
 
-def ook_BERT(Irx, bitsTx=None, seed=123):
+def bert(Irx, bitsTx=None, seed=123):
     """
     Calculate Bit Error Rate (BER) and Q-factor for optical communication using On-Off Keying (OOK).
 
