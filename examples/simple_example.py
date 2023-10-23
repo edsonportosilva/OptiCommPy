@@ -2,7 +2,7 @@ import numpy as np
 from optic.models.devices import mzm, photodiode
 from optic.models.channels import linearFiberChannel
 from optic.comm.modulation import modulateGray
-from optic.comm.metrics import ook_BERT
+from optic.comm.metrics import bert
 from optic.dsp.core import firFilter, pulseShape, upsample, pnorm
 from optic.utils import parameters, dBm2W
 from scipy.special import erfc
@@ -71,7 +71,7 @@ I_Rx = photodiode(sigCh, paramPD)
 I_Rx = I_Rx[0::SpS]
 
 # calculate the BER and Q-factor
-BER, Q = ook_BERT(I_Rx)
+BER, Q = bert(I_Rx)
 print("simulation completed.")
 
 print("\nTransmission performance metrics:")
