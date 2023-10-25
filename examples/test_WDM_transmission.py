@@ -32,8 +32,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from optic.dsp.core import pulseShape, firFilter, decimate, symbolSync, pnorm, signal_power
-from optic.models.devices import pdmCoherentReceiver
-from optic.models.channels import phaseNoise
+from optic.models.devices import pdmCoherentReceiver, basicLaserModel
 
 try:
     from optic.models.modelsGPU import manakovSSF
@@ -149,6 +148,8 @@ chIndex  = int(np.floor(paramTx.Nch/2))      # index of the channel to be demodu
 Fc = paramCh.Fc
 Ts = 1/Fs
 freqGrid = paramTx.freqGrid
+π  = np.pi
+t  = np.arange(0, len(sigWDM))*Ts
 
 print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
       %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
@@ -158,19 +159,20 @@ symbTx = symbTx_[:,:,chIndex]
 # local oscillator (LO) parameters:
 FO      = 150e6                 # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 100e3                 # linewidth
-Plo_dBm = 10                    # power in dBm
-Plo     = dBm2W(Plo_dBm)        # power in W
-ϕ_lo    = 0                     # initial phase in rad    
+
+# generate CW laser LO field
+paramLO = parameters()
+paramLO.P = 10              # power in dBm
+paramLO.lw = 100e3          # laser linewidth
+paramLO.RIN_var = 0
+paramLO.Ns = len(sigWDM)
+paramLO.Fs = Fs
+
+sigLO = basicLaserModel(paramLO)
+sigLO = sigLO*np.exp(1j*2*π*Δf_lo*t) # add frequency offset
 
 print('Local oscillator P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz\n'\
-      %(Plo_dBm, lw/1e3, FO/1e6))
-
-# generate LO field
-π       = np.pi
-t       = np.arange(0, len(sigWDM))*Ts
-ϕ_pn_lo = phaseNoise(lw, len(sigWDM), Ts)
-sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
+      %(paramLO.P, paramLO.lw/1e3, FO/1e6))
 
 # polarization multiplexed coherent optical receiver
 
@@ -326,6 +328,3 @@ print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
 print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
-# -
-
-
