@@ -505,35 +505,6 @@ def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
     )
 
 
-@njit
-def phaseNoise(lw, Nsamples, Ts):
-    """
-    Generate realization of a random-walk phase-noise process.
-
-    Parameters
-    ----------
-    lw : scalar
-        laser linewidth.
-    Nsamples : scalar
-        number of samples to be draw.
-    Ts : scalar
-        sampling period.
-
-    Returns
-    -------
-    phi : np.array
-        realization of the phase noise process.
-
-    """
-    σ2 = 2 * np.pi * lw * Ts
-    phi = np.zeros(Nsamples)
-
-    for ind in range(Nsamples - 1):
-        phi[ind + 1] = phi[ind] + np.random.normal(0, np.sqrt(σ2))
-
-    return phi
-
-
 def awgn(sig, snr, Fs=1, B=1, complexNoise=True):
     """
     Implement a basic AWGN channel model.

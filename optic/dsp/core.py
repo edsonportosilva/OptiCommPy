@@ -558,3 +558,31 @@ def gaussianNoise(shapeOut, σ2=1.0):
         Generated Gaussian noise.
     """
     return np.random.normal(0, np.sqrt(σ2), shapeOut)
+
+@njit
+def phaseNoise(lw, Nsamples, Ts):
+    """
+    Generate realization of a random-walk phase-noise process.
+
+    Parameters
+    ----------
+    lw : scalar
+        laser linewidth.
+    Nsamples : scalar
+        number of samples to be draw.
+    Ts : scalar
+        sampling period.
+
+    Returns
+    -------
+    phi : np.array
+        realization of the phase noise process.
+
+    """
+    σ2 = 2 * np.pi * lw * Ts
+    phi = np.zeros(Nsamples)
+
+    for ind in range(Nsamples - 1):
+        phi[ind + 1] = phi[ind] + np.random.normal(0, np.sqrt(σ2))
+
+    return phi
