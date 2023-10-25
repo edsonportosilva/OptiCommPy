@@ -11,15 +11,15 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=db0e1f0c"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="optic.models.channels.linFiberCh" href="optic.models.channels.linFiberCh.html" />
+    <link rel="next" title="optic.models.channels.linearFiberChannel" href="optic.models.channels.linearFiberChannel.html" />
     <link rel="prev" title="optic.models.devices.pdmCoherentReceiver" href="optic.models.devices.pdmCoherentReceiver.html" /> 
 </head>
 
@@ -79,6 +79,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">General utilities</a></li>
 </ul>
 
         </div>
@@ -107,19 +108,23 @@
            <div itemprop="articleBody">
              
   <section id="optic-models-devices-edfa">
-<h1>optic.models.devices.edfa<a class="headerlink" href="#optic-models-devices-edfa" title="Permalink to this heading"></a></h1>
+<h1>optic.models.devices.edfa<a class="headerlink" href="#optic-models-devices-edfa" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.models.devices.edfa">
-<span class="sig-name descname"><span class="pre">edfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.edfa" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">edfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.edfa" title="Link to this definition"></a></dt>
 <dd><p>Implement simple EDFA model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input signal field.</p></li>
-<li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
-<li><p><strong>G</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Amplifier gain in dB. The default is 20.</p></li>
-<li><p><strong>NF</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- EDFA noise figure in dB. The default is 4.5.</p></li>
-<li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Central optical frequency. The default is 193.1e12.</p></li>
+<li><p><strong>param</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- <p>Parameters of the edfa.</p>
+<ul>
+<li><p>param.G : amplifier gain in dB. The default is 20.</p></li>
+<li><p>param.NF : EDFA noise figure in dB. The default is 4.5.</p></li>
+<li><p>param.Fc : central optical frequency. The default is 193.1e12.</p></li>
+<li><p>param.Fs : sampling frequency in samples/second.</p></li>
+</ul>
+</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -138,7 +143,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="optic.models.devices.pdmCoherentReceiver.html" class="btn btn-neutral float-left" title="optic.models.devices.pdmCoherentReceiver" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="optic.models.channels.linFiberCh.html" class="btn btn-neutral float-right" title="optic.models.channels.linFiberCh" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="optic.models.channels.linearFiberChannel.html" class="btn btn-neutral float-right" title="optic.models.channels.linearFiberChannel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

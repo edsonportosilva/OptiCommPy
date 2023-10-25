@@ -32,6 +32,7 @@ components of fiber optic communication systems, for educational and research pu
     dsp
     models
     plot
+    utils
 
 Indices and tables
 ==================

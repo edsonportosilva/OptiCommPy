@@ -1,6 +1,6 @@
 
 Digital Signal Processing (DSP)
-=======
+===============================
 
 .. automodule:: optic.dsp.core
     :members:
