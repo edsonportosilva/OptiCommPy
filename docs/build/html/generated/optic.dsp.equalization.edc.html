@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=db0e1f0c"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -69,6 +69,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../models.html">Physical Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">General utilities</a></li>
 </ul>
 
         </div>
@@ -97,19 +98,23 @@
            <div itemprop="articleBody">
              
   <section id="optic-dsp-equalization-edc">
-<h1>optic.dsp.equalization.edc<a class="headerlink" href="#optic-dsp-equalization-edc" title="Permalink to this heading"></a></h1>
+<h1>optic.dsp.equalization.edc<a class="headerlink" href="#optic-dsp-equalization-edc" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.equalization.edc">
-<span class="sig-name descname"><span class="pre">edc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.edc" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">edc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.edc" title="Link to this definition"></a></dt>
 <dd><p>Electronic chromatic dispersion compensation (EDC).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Ei</strong> (<em>np.array</em>) -- Dispersed signal.</p></li>
-<li><p><strong>L</strong> (<em>real scalar</em>) -- Fiber length [km].</p></li>
-<li><p><strong>D</strong> (<em>real scalar</em>) -- Chromatic dispersion parameter [ps/nm/km].</p></li>
-<li><p><strong>Fc</strong> (<em>real scalar</em>) -- Carrier frequency [Hz].</p></li>
-<li><p><strong>Fs</strong> (<em>real scalar</em>) -- Sampling frequency [Hz].</p></li>
+<li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical field.</p></li>
+<li><p><strong>param</strong> (<em>parameter object</em><em>  (</em><em>struct</em><em>)</em>) -- <p>Object with physical/simulation parameters of the optical channel.</p>
+<ul>
+<li><p>param.L: total fiber length [km][default: 50 km]</p></li>
+<li><p>param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]</p></li>
+<li><p>param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]</p></li>
+<li><p>param.Fs: sampling frequency [Hz] [default: []]</p></li>
+</ul>
+</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

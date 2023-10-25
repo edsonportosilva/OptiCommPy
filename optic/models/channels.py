@@ -1,12 +1,12 @@
 """
-==================================================
+==============================================================
 Models for fiber optic channels (:mod:`optic.models.channels`)
-==================================================
+==============================================================
 
 .. autosummary::
    :toctree: generated/
 
-   linFiberCh           -- Linear optical fiber channel model.
+   linearFiberChannel   -- Linear optical fiber channel model.
    ssfm                 -- Nonlinear fiber optic channel model based on the NLSE equation.
    manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.   
    awgn                 -- AWGN channel model.

@@ -1,19 +1,20 @@
-"""
-==================================================
-General utilities (:mod:`optic.utils`)
-==================================================
+# """
+# ======================================
+# General utilities (:mod:`optic.utils`)
+# ======================================
 
-.. autosummary::
-   :toctree: generated/
+# .. autosummary::
+#    :toctree: generated/
 
-   parameters             -- Class to be used as a struct of parameters
-   lin2dB                 -- Convert linear value to dB (decibels)
-   dB2lin                 -- Convert dB (decibels) to a linear value
-   dBm2W                  -- Convert dBm to Watts
-   dec2bitarray           -- Convert decimals to arrays of bits
-   decimal2bitarray       -- Convert decimal to array of bits
-   bitarray2dec           -- Convert array of bits to decimal
-"""
+#    parameters             -- Class to be used as a struct of parameters
+#    lin2dB                 -- Convert linear value to dB (decibels)
+#    dB2lin                 -- Convert dB (decibels) to a linear value
+#    dBm2W                  -- Convert dBm to Watts
+#    dec2bitarray           -- Convert decimals to arrays of bits
+#    decimal2bitarray       -- Convert decimal to array of bits
+#    bitarray2dec           -- Convert array of bits to decimal
+# """
+
 """General utilities."""
 import numpy as np
 
