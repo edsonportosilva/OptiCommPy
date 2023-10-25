@@ -56,19 +56,7 @@
 <li class="toctree-l1"><a class="reference internal" href="dsp.html">Digital Signal Processing (DSP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Physical Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Utilities</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">General utilities</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#optic.utils.bitarray2dec"><code class="docutils literal notranslate"><span class="pre">bitarray2dec</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#optic.utils.dB2lin"><code class="docutils literal notranslate"><span class="pre">dB2lin</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#optic.utils.dBm2W"><code class="docutils literal notranslate"><span class="pre">dBm2W</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#optic.utils.dec2bitarray"><code class="docutils literal notranslate"><span class="pre">dec2bitarray</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#optic.utils.decimal2bitarray"><code class="docutils literal notranslate"><span class="pre">decimal2bitarray</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#optic.utils.lin2dB"><code class="docutils literal notranslate"><span class="pre">lin2dB</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#optic.utils.parameters"><code class="docutils literal notranslate"><span class="pre">parameters</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#optic.utils.parameters.view"><code class="docutils literal notranslate"><span class="pre">parameters.view</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">General utilities</a></li>
 </ul>
 
         </div>
@@ -95,12 +83,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-optic.utils">
-<span id="general-utilities"></span><h1>General utilities<a class="headerlink" href="#module-optic.utils" title="Link to this heading"></a></h1>
+  <section id="general-utilities">
+<h1>General utilities<a class="headerlink" href="#general-utilities" title="Link to this heading"></a></h1>
 <p>General utilities.</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="optic.utils.bitarray2dec">
-<span class="sig-name descname"><span class="pre">bitarray2dec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_bitarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.utils.bitarray2dec" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">bitarray2dec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_bitarray</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Converts an input NumPy array of bits (0 and 1) to a decimal integer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -116,8 +104,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="optic.utils.dB2lin">
-<span class="sig-name descname"><span class="pre">dB2lin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.utils.dB2lin" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">dB2lin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Convert dB (decibels) to a linear value.</p>
 <p>Parameters:
 x (float): The value in dB to be converted to a linear value.</p>
@@ -126,8 +114,8 @@ float: The linear value.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="optic.utils.dBm2W">
-<span class="sig-name descname"><span class="pre">dBm2W</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.utils.dBm2W" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">dBm2W</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Convert dBm to Watts.</p>
 <p>Parameters:
 x (float): The power value in dBm to be converted to Watts.</p>
@@ -136,8 +124,8 @@ float: The power value in Watts.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="optic.utils.dec2bitarray">
-<span class="sig-name descname"><span class="pre">dec2bitarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_width</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.utils.dec2bitarray" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">dec2bitarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_width</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Converts a positive integer or an array-like of positive integers to a NumPy array of the specified size containing
 bits (0 and 1).</p>
 <dl class="field-list simple">
@@ -157,8 +145,8 @@ bits (0 and 1).</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="optic.utils.decimal2bitarray">
-<span class="sig-name descname"><span class="pre">decimal2bitarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_width</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.utils.decimal2bitarray" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">decimal2bitarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_width</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Converts a positive integer to a NumPy array of the specified size containing bits (0 and 1). This version is slightly
 quicker but only works for one integer.</p>
 <dl class="field-list simple">
@@ -178,8 +166,8 @@ quicker but only works for one integer.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="optic.utils.lin2dB">
-<span class="sig-name descname"><span class="pre">lin2dB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.utils.lin2dB" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">lin2dB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Convert linear value to dB (decibels).</p>
 <p>Parameters:
 x (float): The linear value to be converted to dB.</p>
@@ -188,12 +176,12 @@ float: The value in dB.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="optic.utils.parameters">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#optic.utils.parameters" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parameters</span></span></dt>
 <dd><p>Basic class to be used as a struct of parameters</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="optic.utils.parameters.view">
-<span class="sig-name descname"><span class="pre">view</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optic.utils.parameters.view" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">view</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Prints the attributes and their values in either standard or scientific notation.</p>
 </dd></dl>
 
