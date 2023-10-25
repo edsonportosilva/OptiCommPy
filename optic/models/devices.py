@@ -231,6 +231,8 @@ def photodiode(E, param=None):
 
         - param.Id: dark current [A][default: 5e-9 A]
 
+        - param.Ipd_sat: saturation value of the photocurrent [A][default: 5e-3 A]
+
         - param.RL: impedance load [Ω] [default: 50Ω]
 
         - param.B bandwidth [Hz][default: 30e9 Hz]
@@ -260,7 +262,7 @@ def photodiode(E, param=None):
     Id = getattr(param, "Id", 5e-9)
     RL = getattr(param, "RL", 50)
     B = getattr(param, "B", 30e9)
-    ipd_sat = getattr(param, "ipd_sat", 5e-3)
+    Ipd_sat = getattr(param, "Ipd_sat", 5e-3)
     N = getattr(param, "N", 8000)
     fType = getattr(param, "fType", "rect")
     ideal = getattr(param, "ideal", True)
@@ -277,7 +279,7 @@ def photodiode(E, param=None):
 
         assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
 
-        ipd[ipd > ipd_sat] = ipd_sat  # saturation of the photocurrent
+        ipd[ipd > Ipd_sat] = Ipd_sat  # saturation of the photocurrent
 
         ipd_mean = ipd.mean().real
 
