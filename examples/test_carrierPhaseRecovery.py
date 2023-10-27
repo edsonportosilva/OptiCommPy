@@ -101,17 +101,14 @@ sigCh = awgn(sigTx, SNR, Fs, paramTx.Rs)
 # Receiver
 
 # parameters
-chIndex  = 0     # index of the channel to be demodulated
-plotPSD  = True
+chIndex  = 0    # index of the channel to be demodulated
 
-Fc = paramTx.Fc
-Ts = 1/Fs
 freqGrid = paramTx.freqGrid
 π  = np.pi
-t  = np.arange(0, len(sigCh))*Ts
+t  = np.arange(0, len(sigCh))*1/Fs 
 
 print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
-      %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
+      %(chIndex, (paramTx.Fc + freqGrid[chIndex])/1e12, const.c/(paramTx.Fc + freqGrid[chIndex])/1e-9))
 
 symbTx = symbTx_[:,:,chIndex]
 
@@ -153,9 +150,6 @@ elif paramTx.pulse == 'rrc':
     
 pulse = pulse/np.max(np.abs(pulse))            
 sigRx = firFilter(pulse, sigRx)
-
-# plot constellation
-pconst(sigRx[0::paramTx.SpS,:], R=1.75, cmap=constCMAP);
 # -
 
 # ### Downsample to 1 sample/symbol and power normalization
