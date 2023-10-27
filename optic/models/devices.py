@@ -24,8 +24,8 @@ import logging as logg
 
 import numpy as np
 import scipy.constants as const
-from optic.utils import parameters
-from optic.dsp.core import lowPassFIR, gaussianComplexNoise
+from optic.utils import parameters, dBm2W
+from optic.dsp.core import lowPassFIR, gaussianComplexNoise, phaseNoise
 
 try:
     from optic.dsp.coreGPU import firFilter
@@ -490,3 +490,45 @@ def edfa(Ei, param=None):
     noise = gaussianComplexNoise(Ei.shape, p_noise)
 
     return Ei * np.sqrt(G_lin) + noise
+
+def basicLaserModel(param=None):
+    """
+    Laser model with Maxwellian random walk phase noise and RIN.
+
+    Parameters
+    ----------  
+    param : parameter object (struct), optional
+        Parameters of the laser.
+
+        - param.P: laser power [W]
+        - param.lambda: laser wavelength [m]
+        - param.lw: laser linewidth [Hz]
+        - param.Fs: sampling rate [Hz]
+        - param.Ns: number of signal samples
+
+    Returns
+    -------
+    optical_signal : np.array
+          Optical signal with phase noise and RIN.
+
+    """
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
+  
+    P = getattr(param,"P", 10)                # Laser power in dBm    
+    lw = getattr(param,"lw", 1e3)             # Linewidth in Hz
+    RIN_var = getattr(param,"RIN_var", 1e-20) # RIN variance    
+    Ns = getattr(param,"Ns", 1000)            # Number of samples of the signal
+
+    t = np.arange(0, Ns)* 1 / Fs
+    
+    # Simulate Maxwellian random walk phase noise    
+    pn = phaseNoise(lw, Ns, 1/Fs)
+
+    # Simulate relative intensity noise  (RIN)[todo:check correct model]
+    deltaP = gaussianComplexNoise(pn.shape, RIN_var)
+    
+    # Return optical signal       
+    return np.sqrt(dBm2W(P))*np.exp(1j*pn) + deltaP
