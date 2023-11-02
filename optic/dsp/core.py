@@ -404,10 +404,10 @@ def resample(Ei, param):
 
     Eo = np.zeros((len(tout), Ei.shape[1]), dtype="complex")
 
-    # Anti-aliasing filters:
+    # Anti-aliasing filter:
     N = 2048
-    hi = lowPassFIR(inFs / 2, inFs, N, typeF="rect")
-    ho = lowPassFIR(outFs / 2, outFs, N, typeF="rect")
+    #hi = lowPassFIR(inFs / 2, inFs, N, typeF="rect")
+    hi = lowPassFIR(outFs / 2, inFs, N, typeF="rect")
 
     Ei = firFilter(hi, Ei)
 
@@ -415,7 +415,7 @@ def resample(Ei, param):
         Ei = Ei.reshape(len(Ei), 1)
     for k in range(nModes):
         Eo[:, k] = np.interp(tout, tin, Ei[:, k])
-    Eo = firFilter(ho, Eo)
+    #Eo = firFilter(ho, Eo)
 
     return Eo
 
