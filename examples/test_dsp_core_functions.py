@@ -24,9 +24,10 @@ if 'google.colab' in str(get_ipython()):
     cd('/content/OptiCommPy/')
     # ! pip install . 
 
-from optic.dsp.core import pnorm, signal_power, decimate, resample, lowPassFIR, firFilter, clockSamplingInterp, quantizer
+from optic.dsp.core import pnorm, signal_power, decimate, resample, lowPassFIR, firFilter, clockSamplingInterp, quantizer, upsample, pulseShape
 from optic.utils import parameters
 from optic.plot import eyediagram
+from optic.comm.modulation import modulateGray
 import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
@@ -219,3 +220,53 @@ plt.plot(sig_adc)
 plt.xlim(0,100);
 
 eyediagram(sig_adc[:,0], sig_adc.shape[0], int(param.Fs_out//fc), n=3, ptype='fast', plotlabel=None)
+
+# +
+import numpy as np
+
+def gardner_ted(signal):
+    ted_values = []
+    
+    for i in range(1, len(signal) - 1):               
+        # Acumulação
+        ted = signal[i]*(signal[i+1]-signal[i-1])
+        ted_values.append(ted)
+
+    return ted_values
+
+# simulation parameters
+SpS = 16            # samples per symbol
+M = 4              # order of the modulation format
+Rs = 10e9          # Symbol rate (for OOK case Rs = Rb)
+Fs = SpS*Rs        # Sampling frequency in samples/second
+Ts = 1/Fs          # Sampling period
+
+# generate pseudo-random bit sequence
+bitsTx = np.random.randint(2, size=int(np.log2(M)*4e2))
+
+# generate ook modulated symbol sequence
+symbTx = modulateGray(bitsTx, M, 'pam')    
+symbTx = pnorm(symbTx) # power normalization
+
+# upsampling
+symbolsUp = upsample(symbTx, SpS)
+
+# typical NRZ pulse
+pulse = pulseShape('nrz', SpS)
+pulse = pulse/max(abs(pulse))
+
+# pulse shaping
+sigTx = firFilter(pulse, symbolsUp)
+sigRx = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8.01, 0)
+
+ted_values = gardner_ted(sigRx)
+#print("TED Values:", ted_values)
+
+plt.plot(ted_values)
+# -
+
+plt.plot(sigRx)
+plt.figure()
+plt.plot(sigTx)
+
+
