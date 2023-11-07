@@ -1,7 +1,7 @@
 """
-==================================================
+====================================================================================
 Functions adapted to run with GPU (CuPy) processing (:mod:`optic.models.modelsGPU`)
-==================================================
+====================================================================================
 
 .. autosummary::
    :toctree: generated/
@@ -69,18 +69,16 @@ def edfa(Ei, param):
         Amplified noisy optical signal.
 
     """
-    if param is None:
-        param = []
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
 
     # check input parameters
     G = getattr(param, "G", 20)
     NF = getattr(param, "NF", 4.5)
     Fc = getattr(param, "Fc", 193.1e12)
-    Fs = getattr(param, "Fs", None)
     prec = getattr(param, "prec", cp.complex128)
-
-    if param.Fs is None:
-        logg.error("Simulation sampling frequency not provided.")
 
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
@@ -103,7 +101,7 @@ def edfa(Ei, param):
     return Ei * np.sqrt(G_lin) + noise
 
 
-def ssfm(Ei, param=None):
+def ssfm(Ei, param):
     """
     Split-step Fourier method (symmetric, single-pol.).
 
@@ -111,8 +109,6 @@ def ssfm(Ei, param=None):
     ----------
     Ei : np.array
         Input optical signal field.
-    Fs : scalar
-        Sampling frequency in Hz.
     param : parameter object  (struct)
         Object with physical/simulation parameters of the optical channel.
 
@@ -148,6 +144,11 @@ def ssfm(Ei, param=None):
         Object with physical/simulation parameters used in the split-step alg.
 
     """
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
+
     # check input parameters
     param.Ltotal = getattr(param, "Ltotal", 400)
     param.Lspan = getattr(param, "Lspan", 80)
@@ -156,15 +157,11 @@ def ssfm(Ei, param=None):
     param.D = getattr(param, "D", 16)
     param.gamma = getattr(param, "gamma", 1.3)
     param.Fc = getattr(param, "Fc", 193.1e12)
-    param.Fs = getattr(param, "Fs", None)
     param.prec = getattr(param, "prec", cp.complex128)
     param.amp = getattr(param, "amp", "edfa")
     param.NF = getattr(param, "NF", 4.5)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
-
-    if param.Fs is None:
-        logg.error("Simulation sampling frequency not provided.")
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -175,7 +172,6 @@ def ssfm(Ei, param=None):
     amp = param.amp
     NF = param.NF
     Fc = param.Fc
-    Fs = param.Fs
     prec = param.prec
     prgsBar = param.prgsBar
     saveSpanN = param.saveSpanN
@@ -263,7 +259,7 @@ def ssfm(Ei, param=None):
     return Ech, param
 
 
-def manakovSSF(Ei, param=None):
+def manakovSSF(Ei, param):
     """
     Run the Manakov split-step Fourier model (symmetric, dual-pol.).
 
@@ -271,8 +267,7 @@ def manakovSSF(Ei, param=None):
     ----------
     Ei : np.array
         Input optical signal field.
-    Fs : scalar
-        Sampling frequency in Hz.
+
     param : parameter object  (struct)
         Object with physical/simulation parameters of the optical channel.
 
@@ -318,6 +313,11 @@ def manakovSSF(Ei, param=None):
         Object with physical/simulation parameters used in the split-step alg.
 
     """
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
+
     # check input parameters
     param.Ltotal = getattr(param, "Ltotal", 400)
     param.Lspan = getattr(param, "Lspan", 80)
@@ -326,7 +326,6 @@ def manakovSSF(Ei, param=None):
     param.D = getattr(param, "D", 16)
     param.gamma = getattr(param, "gamma", 1.3)
     param.Fc = getattr(param, "Fc", 193.1e12)
-    param.Fs = getattr(param, "Fs", None)
     param.prec = getattr(param, "prec", cp.complex128)
     param.amp = getattr(param, "amp", "edfa")
     param.NF = getattr(param, "NF", 4.5)
@@ -346,7 +345,6 @@ def manakovSSF(Ei, param=None):
     amp = param.amp
     NF = param.NF
     Fc = param.Fc
-    Fs = param.Fs
     prec = param.prec
     maxIter = param.maxIter
     tol = param.tol
@@ -542,7 +540,7 @@ def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
     )
 
 
-def manakovDBP(Ei, Fs, param, prec=cp.complex128):
+def manakovDBP(Ei, param):
     """
     Run the Manakov SSF digital backpropagation (symmetric, dual-pol.).
 
@@ -550,8 +548,6 @@ def manakovDBP(Ei, Fs, param, prec=cp.complex128):
     ----------
     Ei : np.array
         Input optical signal field.
-    Fs : scalar
-        Sampling frequency in Hz.
     param : parameter object  (struct)
         Object with physical/simulation parameters of the optical channel.
 
@@ -569,9 +565,11 @@ def manakovDBP(Ei, Fs, param, prec=cp.complex128):
 
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
 
-        - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+        - param.Fs: simulation sampling frequency [samples/second][default: None]
 
-        - param.NF: edfa noise figure [dB] [default: 4.5 dB]
+        - param.prec: numerical precision [default: cp.complex128]
+
+        - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
 
         - param.maxIter: max number of iter. in the trap. integration [default: 10]
 
@@ -593,6 +591,11 @@ def manakovDBP(Ei, Fs, param, prec=cp.complex128):
         Object with physical/simulation parameters used in the split-step alg.
 
     """
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
+
     # check input parameters
     param.Ltotal = getattr(param, "Ltotal", 400)
     param.Lspan = getattr(param, "Lspan", 80)
@@ -601,6 +604,7 @@ def manakovDBP(Ei, Fs, param, prec=cp.complex128):
     param.D = getattr(param, "D", 16)
     param.gamma = getattr(param, "gamma", 1.3)
     param.Fc = getattr(param, "Fc", 193.1e12)
+    param.prec = getattr(param, "prec", cp.complex128)
     param.amp = getattr(param, "amp", "edfa")
     param.maxIter = getattr(param, "maxIter", 10)
     param.tol = getattr(param, "tol", 1e-5)
@@ -615,8 +619,9 @@ def manakovDBP(Ei, Fs, param, prec=cp.complex128):
     alpha = param.alpha
     D = param.D
     gamma = param.gamma
-    Fc = param.Fc
     amp = param.amp
+    Fc = param.Fc
+    prec = param.prec
     maxIter = param.maxIter
     tol = param.tol
     prgsBar = param.prgsBar

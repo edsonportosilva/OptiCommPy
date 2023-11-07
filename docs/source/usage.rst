@@ -29,3 +29,4 @@ Requirements/Dependencies
 * tqdm>=4.64.1
 * simple-pid>=1.0.1
 * mpl-scatter-density>=0.7.0
+* sphinx-rtd-theme>=1.2.2

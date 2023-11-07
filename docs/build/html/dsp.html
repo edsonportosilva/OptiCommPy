@@ -11,11 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=db0e1f0c"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -84,6 +84,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Physical Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">General utilities</a></li>
 </ul>
 
         </div>
@@ -111,9 +112,9 @@
            <div itemprop="articleBody">
              
   <section id="digital-signal-processing-dsp">
-<h1>Digital Signal Processing (DSP)<a class="headerlink" href="#digital-signal-processing-dsp" title="Permalink to this heading"></a></h1>
+<h1>Digital Signal Processing (DSP)<a class="headerlink" href="#digital-signal-processing-dsp" title="Link to this heading"></a></h1>
 <section id="core-digital-signal-processing-utilities-optic-dsp-core">
-<h2>Core digital signal processing utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code>)<a class="headerlink" href="#core-digital-signal-processing-utilities-optic-dsp-core" title="Permalink to this heading"></a></h2>
+<h2>Core digital signal processing utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code>)<a class="headerlink" href="#core-digital-signal-processing-utilities-optic-dsp-core" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.sigPow.html#optic.dsp.core.sigPow" title="optic.dsp.core.sigPow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sigPow</span></code></a>(x)</p></td>
@@ -217,6 +218,50 @@
 
 <dl class="py function">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">gaussianComplexNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapeOut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate complex circular Gaussian noise.</p>
+<section id="parameters">
+<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>shapeOut<span class="classifier">tuple of int</span></dt><dd><p>Shape of ndarray to be generated.</p>
+</dd>
+<dt>σ2<span class="classifier">float, optional</span></dt><dd><p>Variance of the noise (default is 1).</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>noise<span class="classifier">ndarray</span></dt><dd><p>Generated complex circular Gaussian noise.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">gaussianNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapeOut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate Gaussian noise.</p>
+<section id="id1">
+<h2>Parameters:<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>shapeOut<span class="classifier">tuple of int</span></dt><dd><p>Shape of ndarray to be generated.</p>
+</dd>
+<dt>σ2<span class="classifier">float, optional</span></dt><dd><p>Variance of the noise (default is 1).</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h2>Returns:<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>noise<span class="classifier">ndarray</span></dt><dd><p>Generated Gaussian noise.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">lowPassFIR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typeF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rect'</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate FIR coefficients of a lowpass filter.</p>
 <dl class="field-list simple">
@@ -279,6 +324,34 @@
 
 <dl class="py function">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">rcFilterTaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate Raised Cosine (RC) filter coefficients.</p>
+<section id="id3">
+<h2>Parameters:<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>t<span class="classifier">array-like</span></dt><dd><p>Time values.</p>
+</dd>
+<dt>alpha<span class="classifier">float</span></dt><dd><p>RC roll-off factor.</p>
+</dd>
+<dt>Ts<span class="classifier">float</span></dt><dd><p>Symbol period.</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h2>Returns:<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>coeffs<span class="classifier">ndarray</span></dt><dd><p>RC filter coefficients.</p>
+</dd>
+</dl>
+</section>
+<section id="references">
+<h2>References:<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Resample signal to a given sampling rate.</p>
 <dl class="field-list simple">
@@ -301,6 +374,34 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">rrcFilterTaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate Root-Raised Cosine (RRC) filter coefficients.</p>
+<section id="id5">
+<h2>Parameters:<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>t<span class="classifier">array-like</span></dt><dd><p>Time values.</p>
+</dd>
+<dt>alpha<span class="classifier">float</span></dt><dd><p>RRC roll-off factor.</p>
+</dd>
+<dt>Ts<span class="classifier">float</span></dt><dd><p>Symbol period.</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h2>Returns:<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>coeffs<span class="classifier">ndarray</span></dt><dd><p>RRC filter coefficients.</p>
+</dd>
+</dl>
+</section>
+<section id="id7">
+<h2>References:<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
+</section>
 </dd></dl>
 
 <dl class="py function">
@@ -358,11 +459,38 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">upsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Upsample a signal by inserting zeros between samples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like</em>) -- Input signal to upsample.</p></li>
+<li><p><strong>factor</strong> (<em>int</em>) -- Upsampling factor. The signal will be upsampled by inserting
+<em class="xref py py-obj">factor - 1</em> zeros between each original sample.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>xUp</strong> -- The upsampled signal with zeros inserted between samples.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function inserts zeros between the samples of the input signal to
+increase its sampling rate. The upsampling factor determines how many
+zeros are inserted between each original sample.</p>
+<p>If the input signal is a 2D array, the upsampling is performed
+column-wise.</p>
+</dd></dl>
+
 <section id="dsp-algorithms-for-equalization-optic-dsp-equalization">
-<h2>DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)<a class="headerlink" href="#dsp-algorithms-for-equalization-optic-dsp-equalization" title="Permalink to this heading"></a></h2>
+<h2>DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)<a class="headerlink" href="#dsp-algorithms-for-equalization-optic-dsp-equalization" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.equalization.edc.html#optic.dsp.equalization.edc" title="optic.dsp.equalization.edc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">edc</span></code></a>(Ei, L, D, Fc, Fs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.equalization.edc.html#optic.dsp.equalization.edc" title="optic.dsp.equalization.edc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">edc</span></code></a>(Ei, param)</p></td>
 <td><p>Electronic chromatic dispersion compensation (EDC).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.equalization.mimoAdaptEqualizer.html#optic.dsp.equalization.mimoAdaptEqualizer" title="optic.dsp.equalization.mimoAdaptEqualizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mimoAdaptEqualizer</span></code></a>(x[, dx, paramEq])</p></td>
@@ -397,16 +525,20 @@ param.SpS_out : samples per symbol of the output signal.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">edc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">edc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Electronic chromatic dispersion compensation (EDC).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Ei</strong> (<em>np.array</em>) -- Dispersed signal.</p></li>
-<li><p><strong>L</strong> (<em>real scalar</em>) -- Fiber length [km].</p></li>
-<li><p><strong>D</strong> (<em>real scalar</em>) -- Chromatic dispersion parameter [ps/nm/km].</p></li>
-<li><p><strong>Fc</strong> (<em>real scalar</em>) -- Carrier frequency [Hz].</p></li>
-<li><p><strong>Fs</strong> (<em>real scalar</em>) -- Sampling frequency [Hz].</p></li>
+<li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical field.</p></li>
+<li><p><strong>param</strong> (<em>parameter object</em><em>  (</em><em>struct</em><em>)</em>) -- <p>Object with physical/simulation parameters of the optical channel.</p>
+<ul>
+<li><p>param.L: total fiber length [km][default: 50 km]</p></li>
+<li><p>param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]</p></li>
+<li><p>param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]</p></li>
+<li><p>param.Fs: sampling frequency [Hz] [default: []]</p></li>
+</ul>
+</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -460,7 +592,7 @@ param.SpS_out : samples per symbol of the output signal.</p>
 </dd></dl>
 
 <section id="dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">
-<h2>DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)<a class="headerlink" href="#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery" title="Permalink to this heading"></a></h2>
+<h2>DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)<a class="headerlink" href="#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.carrierRecovery.bps.html#optic.dsp.carrierRecovery.bps" title="optic.dsp.carrierRecovery.bps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bps</span></code></a></p></td>

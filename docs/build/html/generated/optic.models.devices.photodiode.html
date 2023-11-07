@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=db0e1f0c"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -79,6 +79,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">General utilities</a></li>
 </ul>
 
         </div>
@@ -107,26 +108,26 @@
            <div itemprop="articleBody">
              
   <section id="optic-models-devices-photodiode">
-<h1>optic.models.devices.photodiode<a class="headerlink" href="#optic-models-devices-photodiode" title="Permalink to this heading"></a></h1>
+<h1>optic.models.devices.photodiode<a class="headerlink" href="#optic-models-devices-photodiode" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.models.devices.photodiode">
-<span class="sig-name descname"><span class="pre">photodiode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramPD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.photodiode" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">photodiode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.photodiode" title="Link to this definition"></a></dt>
 <dd><p>Pin photodiode (PD).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>E</strong> (<em>np.array</em>) -- Input optical field.</p></li>
-<li><p><strong>paramPD</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- <p>Parameters of the photodiode.</p>
+<li><p><strong>param</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- <p>Parameters of the photodiode.</p>
 <ul>
-<li><p>paramPD.R: photodiode responsivity [A/W][default: 1 A/W]</p></li>
-<li><p>paramPD.Tc: temperature [°C][default: 25°C]</p></li>
-<li><p>paramPD.Id: dark current [A][default: 5e-9 A]</p></li>
-<li><p>paramPD.RL: impedance load [Ω] [default: 50Ω]</p></li>
-<li><p>paramPD.B bandwidth [Hz][default: 30e9 Hz]</p></li>
-<li><p>paramPD.Fs: sampling frequency [Hz] [default: 60e9 Hz]</p></li>
-<li><p>paramPD.fType: frequency response type [default: 'rect']</p></li>
-<li><p>paramPD.N: number of the frequency resp. filter taps. [default: 8001]</p></li>
-<li><p>paramPD.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]</p></li>
+<li><p>param.R: photodiode responsivity [A/W][default: 1 A/W]</p></li>
+<li><p>param.Tc: temperature [°C][default: 25°C]</p></li>
+<li><p>param.Id: dark current [A][default: 5e-9 A]</p></li>
+<li><p>param.RL: impedance load [Ω] [default: 50Ω]</p></li>
+<li><p>param.B bandwidth [Hz][default: 30e9 Hz]</p></li>
+<li><p>param.Fs: sampling frequency [Hz] [default: None]</p></li>
+<li><p>param.fType: frequency response type [default: 'rect']</p></li>
+<li><p>param.N: number of the frequency resp. filter taps. [default: 8001]</p></li>
+<li><p>param.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]</p></li>
 </ul>
 </p></li>
 </ul>

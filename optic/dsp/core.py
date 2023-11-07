@@ -1,7 +1,7 @@
 """
-==================================================
+================================================================
 Core digital signal processing utilities (:mod:`optic.dsp.core`)
-==================================================
+================================================================
 
 .. autosummary::
    :toctree: generated/
@@ -19,8 +19,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
 """
 """Digital signal processing utilities."""
 import numpy as np
-from commpy.filters import rcosfilter, rrcosfilter
-from numba import njit, prange
+from numba import njit
 from scipy import signal
 
 
@@ -93,6 +92,98 @@ def firFilter(h, x):
     return y
 
 
+import numpy as np
+
+
+@njit
+def rrcFilterTaps(t, alpha, Ts):
+    """
+    Generate Root-Raised Cosine (RRC) filter coefficients.
+
+    Parameters:
+    -----------
+    t : array-like
+        Time values.
+    alpha : float
+        RRC roll-off factor.
+    Ts : float
+        Symbol period.
+
+    Returns:
+    --------
+    coeffs : ndarray
+        RRC filter coefficients.
+
+    References:
+    -----------
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
+    """
+    coeffs = np.zeros(len(t), dtype=np.float64)
+
+    for i, t_i in enumerate(t):
+        t_abs = abs(t_i)
+        if t_i == 0:
+            coeffs[i] = (1 / Ts) * (1 + alpha * (4 / np.pi - 1))
+        elif t_abs == Ts / (4 * alpha):
+            term1 = (1 + 2 / np.pi) * np.sin(np.pi / (4 * alpha))
+            term2 = (1 - 2 / np.pi) * np.cos(np.pi / (4 * alpha))
+            coeffs[i] = (alpha / (Ts * np.sqrt(2))) * (term1 + term2)
+        else:
+            t1 = np.pi * t_i / Ts
+            t2 = 4 * alpha * t_i / Ts
+            coeffs[i] = (
+                (1 / Ts)
+                * (
+                    np.sin(t1 * (1 - alpha))
+                    + 4 * alpha * t_i / Ts * np.cos(t1 * (1 + alpha))
+                )
+                / (np.pi * t_i * (1 - t2**2))
+            )
+
+    return coeffs
+
+
+@njit
+def rcFilterTaps(t, alpha, Ts):
+    """
+    Generate Raised Cosine (RC) filter coefficients.
+
+    Parameters:
+    -----------
+    t : array-like
+        Time values.
+    alpha : float
+        RC roll-off factor.
+    Ts : float
+        Symbol period.
+
+    Returns:
+    --------
+    coeffs : ndarray
+        RC filter coefficients.
+
+    References:
+    -----------
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
+    """
+    coeffs = np.zeros(len(t), dtype=np.float64)
+    π = np.pi
+
+    for i, t_i in enumerate(t):
+        t_abs = abs(t_i)
+        if t_abs == Ts / (2 * alpha):
+            coeffs[i] = π / (4 * Ts) * np.sinc(1 / (2 * alpha))
+        else:
+            coeffs[i] = (
+                (1 / Ts)
+                * np.sinc(t_i / Ts)
+                * np.cos(π * alpha * t_i / Ts)
+                / (1 - 4 * alpha**2 * t_i**2 / Ts**2)
+            )
+
+    return coeffs
+
+
 def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     """
     Generate a pulse shaping filter.
@@ -118,23 +209,26 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
     """
     fa = (1 / Ts) * SpS
 
-    t = np.linspace(-2, 2, SpS)
-    Te = 1
-
     if pulseType == "rect":
         filterCoeffs = np.concatenate(
             (np.zeros(int(SpS / 2)), np.ones(SpS), np.zeros(int(SpS / 2)))
         )
     elif pulseType == "nrz":
+        t = np.linspace(-2, 2, SpS)
+        Te = 1
         filterCoeffs = np.convolve(
             np.ones(SpS),
             2 / (np.sqrt(np.pi) * Te) * np.exp(-(t**2) / Te),
             mode="full",
         )
     elif pulseType == "rrc":
-        tindex, filterCoeffs = rrcosfilter(N, alpha, Ts, fa)
+        t = np.linspace(-N // 2, N // 2, N) * (1 / fa)
+        filterCoeffs = rrcFilterTaps(t, alpha, Ts)
+
     elif pulseType == "rc":
-        tindex, filterCoeffs = rcosfilter(N, alpha, Ts, fa)
+        t = np.linspace(-N // 2, N // 2, N) * (1 / fa)
+        filterCoeffs = rcFilterTaps(t, alpha, Ts)
+
     filterCoeffs = filterCoeffs / np.sqrt(np.sum(filterCoeffs**2))
 
     return filterCoeffs
@@ -520,3 +614,31 @@ def gaussianNoise(shapeOut, σ2=1.0):
         Generated Gaussian noise.
     """
     return np.random.normal(0, np.sqrt(σ2), shapeOut)
+
+@njit
+def phaseNoise(lw, Nsamples, Ts):
+    """
+    Generate realization of a random-walk phase-noise process.
+
+    Parameters
+    ----------
+    lw : scalar
+        laser linewidth.
+    Nsamples : scalar
+        number of samples to be draw.
+    Ts : scalar
+        sampling period.
+
+    Returns
+    -------
+    phi : np.array
+        realization of the phase noise process.
+
+    """
+    σ2 = 2 * np.pi * lw * Ts
+    phi = np.zeros(Nsamples)
+
+    for ind in range(Nsamples - 1):
+        phi[ind + 1] = phi[ind] + np.random.normal(0, np.sqrt(σ2))
+
+    return phi

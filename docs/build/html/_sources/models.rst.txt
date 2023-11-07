@@ -1,5 +1,5 @@
 Physical Models
-=====
+================
 
 .. automodule:: optic.models.devices
     :members:

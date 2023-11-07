@@ -1,6 +1,6 @@
 
 Digital Communications Utilities
-=====
+=================================
 
 .. automodule:: optic.comm.modulation
     :members:

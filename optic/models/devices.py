@@ -1,7 +1,7 @@
 """
-==================================================
+========================================================
 Models for optical devices (:mod:`optic.models.devices`)
-==================================================
+========================================================
 
 .. autosummary::
    :toctree: generated/
@@ -24,8 +24,8 @@ import logging as logg
 
 import numpy as np
 import scipy.constants as const
-from optic.utils import parameters
-from optic.dsp.core import lowPassFIR, gaussianComplexNoise
+from optic.utils import parameters, dBm2W
+from optic.dsp.core import lowPassFIR, gaussianComplexNoise, phaseNoise
 
 try:
     from optic.dsp.coreGPU import firFilter
@@ -231,6 +231,8 @@ def photodiode(E, param=None):
 
         - param.Id: dark current [A][default: 5e-9 A]
 
+        - param.Ipd_sat: saturation value of the photocurrent [A][default: 5e-3 A]
+
         - param.RL: impedance load [Ω] [default: 50Ω]
 
         - param.B bandwidth [Hz][default: 30e9 Hz]
@@ -260,25 +262,29 @@ def photodiode(E, param=None):
     Id = getattr(param, "Id", 5e-9)
     RL = getattr(param, "RL", 50)
     B = getattr(param, "B", 30e9)
-    Fs = getattr(param, "Fs", None)
+    Ipd_sat = getattr(param, "Ipd_sat", 5e-3)
     N = getattr(param, "N", 8000)
     fType = getattr(param, "fType", "rect")
     ideal = getattr(param, "ideal", True)
 
     assert R > 0, "PD responsivity should be a positive scalar"
 
-    ipd = R * E * np.conj(E)  # ideal fotodetected current
+    ipd = R * E * np.conj(E)  # ideal photocurrent
 
     if not (ideal):
-        if Fs is None:
-            logg.error("Simulation sampling frequency not provided.")
+        try:
+            Fs = param.Fs
+        except AttributeError:
+            logg.error("Simulation sampling frequency (Fs) not provided.")
 
         assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
 
-        Pin = (np.abs(E) ** 2).mean()
+        ipd[ipd > Ipd_sat] = Ipd_sat  # saturation of the photocurrent
+
+        ipd_mean = ipd.mean().real
 
         # shot noise
-        σ2_s = 2 * q * (R * Pin + Id) * B  # shot noise variance
+        σ2_s = 2 * q * (ipd_mean + Id) * B  # shot noise variance
 
         # thermal noise
         T = Tc + 273.15  # temperature in Kelvin
@@ -434,7 +440,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     return np.array([Sx, Sy]).T
 
 
-def edfa(Ei, param):
+def edfa(Ei, param=None):
     """
     Implement simple EDFA model.
 
@@ -456,17 +462,15 @@ def edfa(Ei, param):
         Amplified noisy optical signal.
 
     """
-    if param is None:
-        param = []
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
 
     # check input parameters
     G = getattr(param, "G", 20)
     NF = getattr(param, "NF", 4.5)
     Fc = getattr(param, "Fc", 193.1e12)
-    Fs = getattr(param, "Fs", None)
-
-    if Fs is None:
-        logg.error("Simulation sampling frequency not provided.")
 
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
@@ -486,3 +490,45 @@ def edfa(Ei, param):
     noise = gaussianComplexNoise(Ei.shape, p_noise)
 
     return Ei * np.sqrt(G_lin) + noise
+
+def basicLaserModel(param=None):
+    """
+    Laser model with Maxwellian random walk phase noise and RIN.
+
+    Parameters
+    ----------  
+    param : parameter object (struct), optional
+        Parameters of the laser.
+
+        - param.P: laser power [W]
+        - param.lambda: laser wavelength [m]
+        - param.lw: laser linewidth [Hz]
+        - param.Fs: sampling rate [Hz]
+        - param.Ns: number of signal samples
+
+    Returns
+    -------
+    optical_signal : np.array
+          Optical signal with phase noise and RIN.
+
+    """
+    try:
+        Fs = param.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
+  
+    P = getattr(param,"P", 10)                # Laser power in dBm    
+    lw = getattr(param,"lw", 1e3)             # Linewidth in Hz
+    RIN_var = getattr(param,"RIN_var", 1e-20) # RIN variance    
+    Ns = getattr(param,"Ns", 1000)            # Number of samples of the signal
+
+    t = np.arange(0, Ns)* 1 / Fs
+    
+    # Simulate Maxwellian random walk phase noise    
+    pn = phaseNoise(lw, Ns, 1/Fs)
+
+    # Simulate relative intensity noise  (RIN)[todo:check correct model]
+    deltaP = gaussianComplexNoise(pn.shape, RIN_var)
+    
+    # Return optical signal       
+    return np.sqrt(dBm2W(P))*np.exp(1j*pn) + deltaP
