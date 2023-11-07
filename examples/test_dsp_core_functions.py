@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.8
+#       jupytext_version: 1.14.5
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -25,7 +25,7 @@ if 'google.colab' in str(get_ipython()):
     # ! pip install . 
 
 from optic.dsp.core import pnorm, signal_power, decimate, resample, lowPassFIR, firFilter, clockSamplingInterp, quantizer
-from optic.core import parameters
+from optic.utils import parameters
 from optic.plot import eyediagram
 import matplotlib.pyplot as plt
 import numpy as np
