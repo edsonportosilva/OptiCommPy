@@ -19,7 +19,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
 """
 """Digital signal processing utilities."""
 import numpy as np
-from numba import njit
+from numba import njit, prange
 from scipy import signal
 
 
