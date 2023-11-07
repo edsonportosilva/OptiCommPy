@@ -224,13 +224,15 @@ eyediagram(sig_adc[:,0], sig_adc.shape[0], int(param.Fs_out//fc), n=3, ptype='fa
 # +
 import numpy as np
 
+def moving_average(x, w):
+    return np.convolve(x, np.ones(w), 'valid') / w
+
 def gardner_ted(signal):
-    ted_values = []
+    ted_values = np.zeros(signal.shape)
     
     for i in range(1, len(signal) - 1):               
         # Acumulação
-        ted = signal[i]*(signal[i+1]-signal[i-1])
-        ted_values.append(ted)
+        ted_values[i] = signal[i]*(signal[i+1]-signal[i-1])        
 
     return ted_values
 
@@ -262,7 +264,7 @@ sigRx = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8.01, 0)
 ted_values = gardner_ted(sigRx)
 #print("TED Values:", ted_values)
 
-plt.plot(ted_values)
+plt.plot(ted_values.reshape(-1,))
 # -
 
 plt.plot(sigRx)
