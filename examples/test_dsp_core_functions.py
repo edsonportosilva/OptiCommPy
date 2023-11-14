@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.14.5
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -26,7 +26,7 @@ if 'google.colab' in str(get_ipython()):
 
 from optic.dsp.core import pnorm, signal_power, decimate, resample, lowPassFIR, firFilter, clockSamplingInterp, quantizer, upsample, pulseShape
 from optic.utils import parameters
-from optic.plot import eyediagram
+from optic.plot import eyediagram, plotPSD
 from optic.comm.modulation import modulateGray
 import matplotlib.pyplot as plt
 import numpy as np
@@ -223,18 +223,35 @@ eyediagram(sig_adc[:,0], sig_adc.shape[0], int(param.Fs_out//fc), n=3, ptype='fa
 
 # +
 import numpy as np
+from scipy import interpolate
 
 def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'valid') / w
 
 def gardner_ted(signal):
-    ted_values = np.zeros(signal.shape)
+    ted_values = np.zeros(signal.shape[0])
     
-    for i in range(1, int(len(signal)/2) - 1):               
+    for i in range(1, len(signal) - 1):               
         # Acumulação
-        ted_values[2*i] = signal[2*i]*(signal[2*i+1]-signal[2*i-1])        
+        ted_values[i] = signal[i]*(signal[i+1]-signal[i-1])        
 
     return ted_values
+
+def clockRecovery(signal, kp = 1e-3):
+    
+    ted = gardner_ted(signal)
+    
+    tin = np.arange(0,len(signal)).reshape(-1,)
+    
+    print(tin.shape)
+    print(signal.shape)
+    tout = tin + kp*ted
+    
+    f = interpolate.interp1d(tin, signal.reshape(-1,))
+    
+    sigOut = f(tout).reshape(-1,1)
+    
+    return sigOut
 
 # simulation parameters
 SpS = 16           # samples per symbol
@@ -244,7 +261,7 @@ Fs = SpS*Rs        # Sampling frequency in samples/second
 Ts = 1/Fs          # Sampling period
 
 # generate pseudo-random bit sequence
-bitsTx = np.random.randint(2, size=int(np.log2(M)*16e2))
+bitsTx = np.random.randint(2, size=int(np.log2(M)*4e2))
 
 # generate ook modulated symbol sequence
 symbTx = modulateGray(bitsTx, M, 'pam')    
@@ -259,16 +276,19 @@ pulse = pulse/max(abs(pulse))
 
 # pulse shaping
 sigTx = firFilter(pulse, symbolsUp)
-sigRx = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8.05, 0)
+sigRx = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8.001, 0)
 
 ted_values = gardner_ted(sigRx)
 #print("TED Values:", ted_values)
 
-plt.plot( moving_average(ted_values.reshape(-1,),50))
-# -
+plt.plot(moving_average(ted_values.reshape(-1,),50)[0:400])
 
-plt.plot(sigRx)
-plt.figure()
-plt.plot(sigTx)
+# plotPSD( ted_values.reshape(-1,), Fs=Fs/8, Fc=0, NFFT=4096)
+# plt.xlim([0, Fs/200])
 
+# +
+sigOut = clockRecovery(sigRx, kp=-1.25)
 
+plt.plot(sigRx,'o', label='sigTx')
+plt.plot(sigOut,'x', label='sigOut')
+plt.legend()
