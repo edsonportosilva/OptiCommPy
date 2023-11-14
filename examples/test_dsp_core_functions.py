@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.5
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -230,21 +230,21 @@ def moving_average(x, w):
 def gardner_ted(signal):
     ted_values = np.zeros(signal.shape)
     
-    for i in range(1, len(signal) - 1):               
+    for i in range(1, int(len(signal)/2) - 1):               
         # Acumulação
-        ted_values[i] = signal[i]*(signal[i+1]-signal[i-1])        
+        ted_values[2*i] = signal[2*i]*(signal[2*i+1]-signal[2*i-1])        
 
     return ted_values
 
 # simulation parameters
-SpS = 16            # samples per symbol
-M = 4              # order of the modulation format
+SpS = 16           # samples per symbol
+M = 2              # order of the modulation format
 Rs = 10e9          # Symbol rate (for OOK case Rs = Rb)
 Fs = SpS*Rs        # Sampling frequency in samples/second
 Ts = 1/Fs          # Sampling period
 
 # generate pseudo-random bit sequence
-bitsTx = np.random.randint(2, size=int(np.log2(M)*4e2))
+bitsTx = np.random.randint(2, size=int(np.log2(M)*16e2))
 
 # generate ook modulated symbol sequence
 symbTx = modulateGray(bitsTx, M, 'pam')    
@@ -259,12 +259,12 @@ pulse = pulse/max(abs(pulse))
 
 # pulse shaping
 sigTx = firFilter(pulse, symbolsUp)
-sigRx = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8.01, 0)
+sigRx = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8.05, 0)
 
 ted_values = gardner_ted(sigRx)
 #print("TED Values:", ted_values)
 
-plt.plot(ted_values.reshape(-1,))
+plt.plot( moving_average(ted_values.reshape(-1,),50))
 # -
 
 plt.plot(sigRx)
