@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.5
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -231,40 +231,33 @@ def moving_average(x, w):
 def gardner_ted(signal):      
     return signal[1]*(signal[2]-signal[0]) 
 
-def interpolator(sigIn, mun):
-    # In[mn-2]: sigIn[0]
-    # In[mn-1]: sigIn[1]
-    # In[mn]: sigIn[2]
-    # In[mn+1]: sigIn[3]
-    
+def interpolator(sigIn, tnco):
     # Cubic interpolator with Farrow architecture:
-    sigOut = (
-        sigIn[0]*(-1/6 * mun**3 + 0 * mun**2 + 1/6 * mun + 0) +
-        sigIn[1]*(1/2 * mun**3 + 1/2 * mun**2 - 1 * mun + 0) +
-        sigIn[2]*(-1/2 * mun**3 - 1 * mun**2 + 1/2 * mun + 1) +
-        sigIn[3]*(1/6 * mun**3 + 1/2 * mun**2 + 1/3 * mun + 0)
-    )
+    sigOut =  sigIn[0]*(-1/6 * tnco**3 + 1/6 * tnco + 0) +\
+              sigIn[1]*(1/2  * tnco**3 + 1/2 * tnco**2 -   1 * tnco) +\
+              sigIn[2]*(-1/2 * tnco**3 - 1 * tnco**2 + 1/2 * tnco + 1) +\
+              sigIn[3]*(1/6  * tnco**3 + 1/2 * tnco**2 + 1/3 * tnco)    
 
     return sigOut
 
 def clockRecovery(sigIn, kp = 1e-3, ki=1e-4):
     
-    # Initializing variables:
-    Etamn = 0.5
-    intPart = 1
-    mun = 0
-    mn = 2  
+    # Initializing variables:    
+    intPart = 0
+    t_nco = 0
     
     L = len(sigIn)    
     outInterp = sigIn.copy()
+    
     ted = 0
     loopFilterOut = 0
     ted_values = []
-    for n in range(2,L):
-        if mn+2>L:
-            break
-        
-        outInterp[n] = interpolator(sigIn[mn-2:mn+2], mun)
+    
+    n = 2
+    m = 2
+ 
+    while n < L-1 and m < L-2:               
+        outInterp[n] = interpolator(sigIn[m-2:m+2], t_nco)
         
         if n%2==0:
             ted = gardner_ted(outInterp[n-2:n+1])
@@ -274,17 +267,22 @@ def clockRecovery(sigIn, kp = 1e-3, ki=1e-4):
             propPart = kp * ted
             loopFilterOut = propPart + intPart
             
-        ted_values.append(loopFilterOut)
+            t_nco -= loopFilterOut
         
-        # NCO - Base point 'mk' and fractional interval 'mu_n':
-        if -1 < (Etamn - loopFilterOut) and (Etamn - loopFilterOut) < 0:
-            mn = mn + 1
-        elif (Etamn - loopFilterOut) >= 0:
-            mn = mn + 2
-
-        Etamn = np.mod(Etamn - loopFilterOut, 1)
-        mun = Etamn / loopFilterOut
-                   
+        n += 1
+        m += 1
+        
+        # NCO
+        if t_nco > 0:
+            t_nco -= 1
+            m -= 1
+            
+        elif t_nco < -1:
+            t_nco += 1
+            m += 1
+            
+        ted_values.append(t_nco)    
+                            
     return outInterp, ted_values
 
 
@@ -297,7 +295,7 @@ Fs = SpS*Rs        # Sampling frequency in samples/second
 Ts = 1/Fs          # Sampling period
 
 # generate pseudo-random bit sequence
-bitsTx = np.random.randint(2, size=int(np.log2(M)*16e2))
+bitsTx = np.random.randint(2, size=int(np.log2(M)*64e3))
 
 # generate ook modulated symbol sequence
 symbTx = modulateGray(bitsTx, M, 'pam')    
@@ -312,26 +310,34 @@ pulse = pulse/max(abs(pulse))
 
 # pulse shaping
 sigTx = firFilter(pulse, symbolsUp)
-sigRx = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8.01, 0)
-sigRxRef = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8.000, 0)
+downSample = 7.999
+sigRx = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/downSample, 0)
+sigRxRef = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8, 0)
 
 
-outCLK, ted_values = clockRecovery(sigRx.reshape(-1,), kp = 0.1, ki=1e-4)#print("TED Values:", ted_values)
+outCLK, ted_values = clockRecovery(sigRx.reshape(-1,), kp=1e-3, ki=1e-6)#print("TED Values:", ted_values)
+0
 
-plt.plot(sigRxRef[200:400])
-#plt.plot(sigRx[200:400])
-plt.plot(outCLK[200:400])
+plt.plot(sigRx,'k.', label=f'SpS = {SpS/downSample}')
+plt.plot(outCLK,'b.', label= 'Out clock recovery')
+plt.plot(sigRxRef,'r.', label='SpS = 2')
+plt.xlabel('sample')
+plt.grid()
+plt.xlim([0, len(sigRx)])
+plt.legend()
 
-
-#plt.plot(ted_values)
+plt.figure()
+plt.plot( moving_average(ted_values, 10), label = 'timing')
+plt.xlabel('sample')
+plt.grid()
+plt.xlim([0, len(sigRx)])
+plt.legend()
 
 # plotPSD( ted_values.reshape(-1,), Fs=Fs/8, Fc=0, NFFT=4096)
 # plt.xlim([0, Fs/200])
 # -
 
-#pconst(sigTx[0::SpS])
-#pconst(sigRx[0::2])
-pconst(outCLK[0::2])
+pconst(outCLK[200:-2:2],pType='fast')
 
 # +
 import numpy as np
@@ -399,7 +405,7 @@ def clock_recovery(In, PSType, NSymb, ParamCR):
         Out[n] = (
             In[mn - 2] * (-1 / 6 * mun**3 + 0 * mun**2 + 1 / 6 * mun + 0) +
             In[mn - 1] * (1 / 2 * mun**3 + 1 / 2 * mun**2 - 1 * mun + 0) +
-            In[mn] * (-1 / 2 * mun**3 - 1 * mun**2 + 1 / 2 * mun + 1) +
+            In[mn]     * (-1 / 2 * mun**3 - 1 * mun**2 + 1 / 2 * mun + 1) +
             In[mn + 1] * (1 / 6 * mun**3 + 1 / 2 * mun**2 + 1 / 3 * mun + 0)
         )
 
