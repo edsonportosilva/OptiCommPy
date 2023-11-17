@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.5
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -228,29 +228,58 @@ from scipy import interpolate
 def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'valid') / w
 
-def gardner_ted(signal):
-    ted_values = np.zeros(signal.shape[0])
-    
-    for i in range(1, len(signal) - 1):               
-        # Acumulação
-        ted_values[i] = signal[i]*(signal[i+1]-signal[i-1])        
+def gardner_ted(signal):      
+    return signal[0]*(signal[2]-signal[0]) 
 
-    return ted_values
+def interpolator(sigIn, mun):
+    # In[mn-2]: sigIn[0]
+    # In[mn-1]: sigIn[1]
+    # In[mn]: sigIn[2]
+    # In[mn+1]: sigIn[3]
+    
+        # Cubic interpolator with Farrow architecture:
+        sigOut = (
+            sigIn[0]*(-1/6 * mun**3 + 0 * mun**2 + 1/6 * mun + 0) +
+            sigIn[1]*(1/2 * mun**3 + 1/2 * mun**2 - 1 * mun + 0) +
+            sigIn[2]*(-1/2 * mun**3 - 1 * mun**2 + 1/2 * mun + 1) +
+            sigIn[3]*(1/6 * mun**3 + 1/2 * mun**2 + 1/3 * mun + 0)
+        )
+
+    return sigOut
 
 def clockRecovery(signal, kp = 1e-3):
     
-    ted = gardner_ted(signal)
+    # Initializing variables:
+    Etamn = 0.5 ; 
+    Wk = 1 ; 
+    intPart = Wk ; 
+    mun = 0 ; 
+    n  = 3 ; 
+    mn = n;   
     
-    tin = np.arange(0,len(signal)).reshape(-1,)
+    L = len(signal)
     
-    print(tin.shape)
-    print(signal.shape)
-    tout = tin + kp*ted
+    out = np.zeros_like(signal.shape)
     
-    f = interpolate.interp1d(tin, signal.reshape(-1,))
-    
-    sigOut = f(tout).reshape(-1,1)
-    
+    for n in range(2,L):        
+        out[n] = interpolator(sigIn[n-2:n+2], mun)
+        
+        ted = gardner_ted(out[n-1:n+2])
+
+        # Loop PI Filter:
+        intPart = ki* ted + intPart
+        propPart = kp * ted
+        loopFilterOut = propPart + intPart
+
+        # NCO - Base point 'mk' and fractional interval 'mu_n':
+        if -1 < (Etamn - loopFilterOut) and (Etamn - loopFilterOut) < 0:
+            mn = mn + 1
+        elif (Etamn - loopFilterOut) >= 0:
+            mn = mn + 2
+
+        Etamn = np.mod(Etamn - loopFilterOut, 1)
+        mun = Etamn / loopFilterOut
+                   
     return sigOut
 
 # simulation parameters
@@ -292,3 +321,123 @@ sigOut = clockRecovery(sigRx, kp=-1.25)
 plt.plot(sigRx,'o', label='sigTx')
 plt.plot(sigOut,'x', label='sigOut')
 plt.legend()
+
+# +
+import numpy as np
+
+def interpolator(sigIn, t):
+    # In[mn-2]: sigIn[0]
+    # In[mn-1]: sigIn[1]
+    # In[mn]: sigIn[2]
+    # In[mn+1]: sigIn[3]
+    
+        # Cubic interpolator with Farrow architecture:
+        sigOut = (
+            sigIn[0]*(-1/6 * mun**3 + 0 * mun**2 + 1/6 * mun + 0) +
+            sigIn[1]*(1/2 * mun**3 + 1/2 * mun**2 - 1 * mun + 0) +
+            sigIn[2]*(-1/2 * mun**3 - 1 * mun**2 + 1/2 * mun + 1) +
+            sigIn[3]*(1/6 * mun**3 + 1/2 * mun**2 + 1/3 * mun + 0)
+        )
+
+    return sigOut
+
+# Example usage:
+parallelization_value = 4
+timing_value = 0.01
+buffer_pointer_value = 4
+
+input_data = np.array([1, 2, 3, 4, 5, 6])
+buffer_data = np.zeros(11)
+result, updated_buffer = interpolator(input_data, buffer_data, buffer_pointer_value, parallelization_value, timing_value)
+
+print("Result:", result)
+print("Updated Buffer:", updated_buffer)
+
+
+
+# +
+import numpy as np
+
+def clock_recovery(In, PSType, NSymb, ParamCR):
+    ki = ParamCR['ki']
+    kp = ParamCR['kp']
+
+    Etamn = 0.5
+    Wk = 1
+    LF_I = Wk
+    mun = 0
+    n = 3
+    mn = n
+    LIn = len(In)
+
+    Out = np.zeros_like(In)
+    Out[:3] = In[:3]
+
+    if ParamCR['DPLLVarOut']:
+        WkVec = []
+        EtamnVec = []
+        munVec = []
+        mnVec = []
+        ekVec = []
+
+    while mn <= LIn:
+        if mn == LIn:
+            In[mn] = 0
+
+        # Cubic interpolator with Farrow architecture:
+        Out[n] = (
+            In[mn - 2] * (-1 / 6 * mun**3 + 0 * mun**2 + 1 / 6 * mun + 0) +
+            In[mn - 1] * (1 / 2 * mun**3 + 1 / 2 * mun**2 - 1 * mun + 0) +
+            In[mn] * (-1 / 2 * mun**3 - 1 * mun**2 + 1 / 2 * mun + 1) +
+            In[mn + 1] * (1 / 6 * mun**3 + 1 / 2 * mun**2 + 1 / 3 * mun + 0)
+        )
+
+        # Generating the Ts-spaced timing error indication signal 'e_n':
+        if n % 2 == 1:
+            if PSType == 'Nyquist':
+                # TED - Nyquist pulses:
+                ek = np.abs(Out[n - 1])**2 * (np.abs(Out[n - 2])**2 - np.abs(Out[n])**2)
+            elif PSType == 'NRZ':
+                # TED - NRZ pulses:
+                ek = np.real(np.conj(Out[n - 1]) * (Out[n] - Out[n - 2]))
+
+            # Loop Filter:
+            LF_I = ki * ek + LF_I
+            LF_P = kp * ek
+            Wk = LF_P + LF_I
+
+            # Parameters of the DPLL:
+            if ParamCR['DPLLVarOut']:
+                WkVec.append(Wk)
+                EtamnVec.append(Etamn)
+                munVec.append(mun)
+                mnVec.append(mn)
+                ekVec.append(ek)
+
+        # NCO - Base point 'mk' and fractional interval 'mu_n':
+        if -1 < (Etamn - Wk) and (Etamn - Wk) < 0:
+            mn = mn + 1
+        elif (Etamn - Wk) >= 0:
+            mn = mn + 2
+
+        Etamn = np.mod(Etamn - Wk, 1)
+        mun = Etamn / Wk
+
+        # Updating the temporal index 'n':
+        n = n + 1
+
+    # Limiting the length of the output to NSymb*2:
+    if NSymb * 2 < len(Out):
+        Out = Out[:NSymb * 2]
+    else:
+        Out = Out
+
+    # Parameters of the DPLL:
+    if ParamCR['DPLLVarOut']:
+        return Out, np.array(WkVec), np.array(EtamnVec), np.array(munVec), np.array(mnVec), np.array(ekVec)
+    else:
+        return Out
+
+# -
+
+
