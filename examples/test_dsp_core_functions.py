@@ -310,13 +310,11 @@ pulse = pulse/max(abs(pulse))
 
 # pulse shaping
 sigTx = firFilter(pulse, symbolsUp)
-downSample = 7.999
+downSample = 7.9999
 sigRx = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/downSample, 0)
 sigRxRef = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8, 0)
 
-
 outCLK, ted_values = clockRecovery(sigRx.reshape(-1,), kp=1e-3, ki=1e-6)#print("TED Values:", ted_values)
-0
 
 plt.plot(sigRx,'k.', label=f'SpS = {SpS/downSample}')
 plt.plot(outCLK,'b.', label= 'Out clock recovery')
@@ -338,123 +336,3 @@ plt.legend()
 # -
 
 pconst(outCLK[200:-2:2],pType='fast')
-
-# +
-import numpy as np
-
-def interpolator(sigIn, t):
-    # In[mn-2]: sigIn[0]
-    # In[mn-1]: sigIn[1]
-    # In[mn]: sigIn[2]
-    # In[mn+1]: sigIn[3]
-    
-        # Cubic interpolator with Farrow architecture:
-        sigOut = (
-            sigIn[0]*(-1/6 * mun**3 + 0 * mun**2 + 1/6 * mun + 0) +
-            sigIn[1]*(1/2 * mun**3 + 1/2 * mun**2 - 1 * mun + 0) +
-            sigIn[2]*(-1/2 * mun**3 - 1 * mun**2 + 1/2 * mun + 1) +
-            sigIn[3]*(1/6 * mun**3 + 1/2 * mun**2 + 1/3 * mun + 0)
-        )
-
-    return sigOut
-
-# Example usage:
-parallelization_value = 4
-timing_value = 0.01
-buffer_pointer_value = 4
-
-input_data = np.array([1, 2, 3, 4, 5, 6])
-buffer_data = np.zeros(11)
-result, updated_buffer = interpolator(input_data, buffer_data, buffer_pointer_value, parallelization_value, timing_value)
-
-print("Result:", result)
-print("Updated Buffer:", updated_buffer)
-
-
-
-# +
-import numpy as np
-
-def clock_recovery(In, PSType, NSymb, ParamCR):
-    ki = ParamCR['ki']
-    kp = ParamCR['kp']
-
-    Etamn = 0.5
-    Wk = 1
-    LF_I = Wk
-    mun = 0
-    n = 3
-    mn = n
-    LIn = len(In)
-
-    Out = np.zeros_like(In)
-    Out[:3] = In[:3]
-
-    if ParamCR['DPLLVarOut']:
-        WkVec = []
-        EtamnVec = []
-        munVec = []
-        mnVec = []
-        ekVec = []
-
-    while mn <= LIn:
-        if mn == LIn:
-            In[mn] = 0
-
-        # Cubic interpolator with Farrow architecture:
-        Out[n] = (
-            In[mn - 2] * (-1 / 6 * mun**3 + 0 * mun**2 + 1 / 6 * mun + 0) +
-            In[mn - 1] * (1 / 2 * mun**3 + 1 / 2 * mun**2 - 1 * mun + 0) +
-            In[mn]     * (-1 / 2 * mun**3 - 1 * mun**2 + 1 / 2 * mun + 1) +
-            In[mn + 1] * (1 / 6 * mun**3 + 1 / 2 * mun**2 + 1 / 3 * mun + 0)
-        )
-
-        # Generating the Ts-spaced timing error indication signal 'e_n':
-        if n % 2 == 1:
-            if PSType == 'Nyquist':
-                # TED - Nyquist pulses:
-                ek = np.abs(Out[n - 1])**2 * (np.abs(Out[n - 2])**2 - np.abs(Out[n])**2)
-            elif PSType == 'NRZ':
-                # TED - NRZ pulses:
-                ek = np.real(np.conj(Out[n - 1]) * (Out[n] - Out[n - 2]))
-
-            # Loop Filter:
-            LF_I = ki * ek + LF_I
-            LF_P = kp * ek
-            Wk = LF_P + LF_I
-
-            # Parameters of the DPLL:
-            if ParamCR['DPLLVarOut']:
-                WkVec.append(Wk)
-                EtamnVec.append(Etamn)
-                munVec.append(mun)
-                mnVec.append(mn)
-                ekVec.append(ek)
-
-        # NCO - Base point 'mk' and fractional interval 'mu_n':
-        if -1 < (Etamn - Wk) and (Etamn - Wk) < 0:
-            mn = mn + 1
-        elif (Etamn - Wk) >= 0:
-            mn = mn + 2
-
-        Etamn = np.mod(Etamn - Wk, 1)
-        mun = Etamn / Wk
-
-        # Updating the temporal index 'n':
-        n = n + 1
-
-    # Limiting the length of the output to NSymb*2:
-    if NSymb * 2 < len(Out):
-        Out = Out[:NSymb * 2]
-    else:
-        Out = Out
-
-    # Parameters of the DPLL:
-    if ParamCR['DPLLVarOut']:
-        return Out, np.array(WkVec), np.array(EtamnVec), np.array(munVec), np.array(mnVec), np.array(ekVec)
-    else:
-        return Out
-
-# -
-
-
