@@ -266,7 +266,7 @@ def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
     jitter = np.random.normal(0, jitter_rms, tout.shape)
     tout += jitter
 
-    y = np.zeros((len(tout), x.shape[1]))
+    y = np.zeros((len(tout), x.shape[1]), dtype=x.dtype)
 
     for k in prange(nModes):
         y[:, k] = np.interp(tout, tin, x[:, k])
@@ -614,6 +614,7 @@ def gaussianNoise(shapeOut, σ2=1.0):
         Generated Gaussian noise.
     """
     return np.random.normal(0, np.sqrt(σ2), shapeOut)
+
 
 @njit
 def phaseNoise(lw, Nsamples, Ts):
