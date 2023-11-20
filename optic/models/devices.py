@@ -1,7 +1,7 @@
 """
-========================================================
-Models for optical devices (:mod:`optic.models.devices`)
-========================================================
+=======================================================================
+Models for optoelectronic devices (:mod:`optic.models.devices`)
+=======================================================================
 
 .. autosummary::
    :toctree: generated/
@@ -16,16 +16,18 @@ Models for optical devices (:mod:`optic.models.devices`)
    coherentReceiver      -- Optical coherent receiver (single polarization)
    pdmCoherentReceiver   -- Optical polarization-multiplexed coherent receiver
    edfa                  -- Simple EDFA model (gain + AWGN noise)
+   basicLaserModel       -- Laser model with Maxwellian random walk phase noise and RIN
+   adc                   -- Analog-to-digital converter (ADC) model
 """
 
 
-"""Basic physical models for optical devices."""
+"""Basic physical models for optical/electronic devices."""
 import logging as logg
 
 import numpy as np
 import scipy.constants as const
 from optic.utils import parameters, dBm2W
-from optic.dsp.core import lowPassFIR, gaussianComplexNoise, phaseNoise
+from optic.dsp.core import lowPassFIR, gaussianComplexNoise, phaseNoise, clockSamplingInterp, quantizer
 
 try:
     from optic.dsp.coreGPU import firFilter
@@ -532,3 +534,85 @@ def basicLaserModel(param=None):
     
     # Return optical signal       
     return np.sqrt(dBm2W(P))*np.exp(1j*pn) + deltaP
+
+def adc(Ei, param):
+    """
+    Analog-to-digital converter (ADC) model.
+
+    Parameters
+    ----------
+    Ei : ndarray
+        Input signal.
+    param : core.parameter
+        Resampling parameters:
+            - param.Fs_in  : sampling frequency of the input signal.
+            - param.Fs_out : sampling frequency of the output signal.
+            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds.
+            - param.nBits : number of bits used for quantization.
+            - param.Vmax : maximum value for the ADC's full-scale range.
+            - param.Vmin : minimum value for the ADC's full-scale range.
+            - param.AAF : flag indicating whether to use anti-aliasing filters (True/False).
+            - param.N : number of taps of the anti-aliasing filters.
+
+    Returns
+    -------
+    Eo : ndarray
+        Resampled and quantized signal.
+
+    """
+    # Check and set default values for input parameters
+    param.Fs_in = getattr(param, "Fs_in", 1)
+    param.Fs_out = getattr(param, "Fs_out", 1)
+    param.jitter_rms = getattr(param, "jitter_rms", 0)
+    param.nBits = getattr(param, "nBits", 8)
+    param.Vmax = getattr(param, "Vmax", 1)
+    param.Vmin = getattr(param, "Vmin", -1)
+    param.AAF = getattr(param, "AAF", True)
+    param.N   = getattr(param, "N", 201)
+
+    # Extract individual parameters for ease of use
+    Fs_in = param.Fs_in
+    Fs_out = param.Fs_out
+    jitter_rms = param.jitter_rms
+    nBits = param.nBits
+    Vmax = param.Vmax
+    Vmin = param.Vmin
+    AAF = param.AAF
+    N = param.N
+
+    # Reshape the input signal if needed to handle single-dimensional inputs
+    try:
+        Ei.shape[1]
+    except IndexError:
+        Ei = Ei.reshape(len(Ei), 1)
+
+    # Get the number of modes (columns) in the input signal
+    nModes = Ei.shape[1]
+   
+    # Apply anti-aliasing filters if AAF is enabled
+    if AAF:
+        # Anti-aliasing filters:
+        Ntaps = min(Ei.shape[0], N)
+        hi = lowPassFIR(param.Fs_out/2, param.Fs_in, Ntaps, typeF="rect")
+        ho = lowPassFIR(param.Fs_out/2, param.Fs_out, Ntaps, typeF="rect")
+
+        Ei = firFilter(hi, Ei)
+        
+    if np.iscomplexobj(Ei):
+        # Signal interpolation to the ADC's sampling frequency
+        Eo = clockSamplingInterp(Ei.reshape(-1,nModes).real, Fs_in, Fs_out, jitter_rms)+1j*clockSamplingInterp(Ei.reshape(-1,nModes).imag, Fs_in, Fs_out, jitter_rms)
+
+        # Uniform quantization of the signal according to the number of bits of the ADC
+        Eo = quantizer(Eo.real, nBits, Vmax, Vmin) + 1j*quantizer(Eo.imag, nBits, Vmax, Vmin)
+    else: 
+        # Signal interpolation to the ADC's sampling frequency
+        Eo = clockSamplingInterp(Ei.reshape(-1,nModes), Fs_in, Fs_out, jitter_rms)
+
+        # Uniform quantization of the signal according to the number of bits of the ADC
+        Eo = quantizer(Eo, nBits, Vmax, Vmin)
+
+    # Apply anti-aliasing filters to the output if AAF is enabled
+    if AAF:
+        Eo = firFilter(ho, Eo)    
+    
+    return Eo
