@@ -24,7 +24,7 @@ if 'google.colab' in str(get_ipython()):
     cd('/content/OptiCommPy/')
     # ! pip install . 
 
-from optic.dsp.core import pnorm, signal_power, decimate, resample, lowPassFIR, firFilter, clockSamplingInterp, quantizer, upsample, pulseShape
+from optic.dsp.core import pnorm, signal_power, decimate, resample, lowPassFIR, firFilter, clockSamplingInterp, quantizer, upsample, pulseShape, finddelay
 from optic.utils import parameters
 from optic.plot import eyediagram, plotPSD, pconst
 from optic.comm.modulation import modulateGray
@@ -150,7 +150,7 @@ def adc(Ei, param):
     param.Vmax = getattr(param, "Vmax", 1)
     param.Vmin = getattr(param, "Vmin", -1)
     param.AAF = getattr(param, "AAF", True)
-    param.N   = getattr(param, "N", 202)
+    param.N   = getattr(param, "N", 201)
 
     # Extract individual parameters for ease of use
     Fs_in = param.Fs_in
@@ -170,26 +170,26 @@ def adc(Ei, param):
 
     # Get the number of modes (columns) in the input signal
     nModes = Ei.shape[1]
-
+   
     # Apply anti-aliasing filters if AAF is enabled
     if AAF:
         # Anti-aliasing filters:
         Ntaps = min(Ei.shape[0], N)
         hi = lowPassFIR(param.Fs_out/2, param.Fs_in, Ntaps, typeF="rect")
-        ho = lowPassFIR(param.Fs_in/2, param.Fs_out, Ntaps, typeF="rect")
+        ho = lowPassFIR(param.Fs_out/2, param.Fs_out, Ntaps, typeF="rect")
 
         Ei = firFilter(hi, Ei)
 
     # Signal interpolation to the ADC's sampling frequency
-    Eo = clockSamplingInterp(Ei, Fs_in, Fs_out, jitter_rms)
+    Eo = clockSamplingInterp(Ei.reshape(-1,nModes), Fs_in, Fs_out, jitter_rms)
 
     # Uniform quantization of the signal according to the number of bits of the ADC
     Eo = quantizer(Eo, nBits, Vmax, Vmin)
 
     # Apply anti-aliasing filters to the output if AAF is enabled
     if AAF:
-        Eo = firFilter(ho, Eo)
-
+        Eo = firFilter(ho, Eo)    
+    
     return Eo
 
 
@@ -228,93 +228,183 @@ from scipy import interpolate
 def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'valid') / w
 
-def gardner_ted(signal):      
-    return signal[1]*(signal[2]-signal[0]) 
+def gardner_ted_nyquist(x):        
+    return np.abs(x[1])**2 * (np.abs(x[0])**2 - np.abs(x[2])**2)
 
-def interpolator(sigIn, tnco):
-    # Cubic interpolator with Farrow architecture:
-    sigOut =  sigIn[0]*(-1/6 * tnco**3 + 1/6 * tnco + 0) +\
-              sigIn[1]*(1/2  * tnco**3 + 1/2 * tnco**2 -   1 * tnco) +\
-              sigIn[2]*(-1/2 * tnco**3 - 1 * tnco**2 + 1/2 * tnco + 1) +\
-              sigIn[3]*(1/6  * tnco**3 + 1/2 * tnco**2 + 1/3 * tnco)    
+def gardner_ted(x):
+    """
+    Calculate the timing error using the Gardner timing error detector.
 
-    return sigOut
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Input array of size 3 representing a segment of the received signal.
 
-def clockRecovery(sigIn, kp = 1e-3, ki=1e-4):
+    Returns
+    -------
+    float
+        Gardner timing error detector (TED) value.
+    """
+    return np.real(np.conj(x[1]) * (x[2] - x[0]))
+
+
+def interpolator(x, t):
+    """
+    Perform cubic interpolation using the Farrow structure.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Input array of size 4 representing the values for cubic interpolation.
+    t : float
+        Interpolation parameter.
+
+    Returns
+    -------
+    y : float
+        Interpolated signal value.
+    """
+    y = x[0] * (-1/6 * t**3 + 1/6 * t) + \
+        x[1] * (1/2 * t**3 + 1/2 * t**2 - 1 * t) + \
+        x[2] * (-1/2 * t**3 - 1 * t**2 + 1/2 * t + 1) + \
+        x[3] * (1/6 * t**3 + 1/2 * t**2 + 1/3 * t)
+
+    return y
+
+
+def clockRecovery(Ei, param=None):
+    """
+    Perform clock recovery using Gardner's algorithm with a loop PI filter.
+
+    Parameters
+    ----------
+    Ei : numpy.ndarray
+        Input array representing the received signal.        
+    param : core.parameter
+        Resampling parameters:
+            kp : Proportional gain for the loop filter. Default is 1e-3.
+            ki : Integral gain for the loop filter. Default is 1e-4.
+            isNyquist: is the pulse shape a Nyquist pulse? Default is True.
+            returnTiming: return estimated timing values. Default is False.
+
+    Returns
+    -------
+    tuple
+        Tuple containing the recovered signal (Eo) and the timing values.
+    """    
+    # Check and set default values for input parameters
+    kp = getattr(param, "kp", 1e-3)
+    ki = getattr(param, "ki", 1e-6)
+    isNyquist = getattr(param, "isNyquist", True)
+    returnTiming = getattr(param, "returnTiming", False)
     
-    # Initializing variables:    
+    # Initializing variables:
     intPart = 0
     t_nco = 0
-    
-    L = len(sigIn)    
-    outInterp = sigIn.copy()
-    
+
+    L = Ei.shape[0]
+    Eo = Ei.copy()
+
     ted = 0
     loopFilterOut = 0
-    ted_values = []
-    
+    timing_values = []
+
     n = 2
     m = 2
- 
-    while n < L-1 and m < L-2:               
-        outInterp[n] = interpolator(sigIn[m-2:m+2], t_nco)
-        
-        if n%2==0:
-            ted = gardner_ted(outInterp[n-2:n+1])
+
+    while n < L-1 and m < L-2:
+        Eo[n] = interpolator(Ei[m-2:m+2], t_nco)
+
+        if n % 2 == 0:
+            if isNyquist:
+                ted = gardner_ted_nyquist(Eo[n-2:n+1])
+            else:
+                ted = gardner_ted(Eo[n-2:n+1])
             
             # Loop PI Filter:
-            intPart = ki* ted + intPart
+            intPart = ki * ted + intPart
             propPart = kp * ted
             loopFilterOut = propPart + intPart
-            
+
             t_nco -= loopFilterOut
-        
+
         n += 1
         m += 1
-        
+
         # NCO
         if t_nco > 0:
             t_nco -= 1
             m -= 1
-            
         elif t_nco < -1:
             t_nco += 1
             m += 1
-            
-        ted_values.append(t_nco)    
-                            
-    return outInterp, ted_values
+
+        timing_values.append(t_nco)
+        
+    if returnTiming:
+        return Eo, timing_values
+    else:
+        return Eo
 
 
 # +
 # simulation parameters
-SpS = 16           # samples per symbol
-M = 2              # order of the modulation format
-Rs = 10e9          # Symbol rate (for OOK case Rs = Rb)
-Fs = SpS*Rs        # Sampling frequency in samples/second
-Ts = 1/Fs          # Sampling period
+SpS = 16          # samples per symbol
+M = 16            # order of the modulation format
+Rs = 32e9         # Symbol rate (for OOK case Rs = Rb)
+Fs = SpS*Rs       # Sampling frequency in samples/second
+Ts = 1/Fs         # Sampling period
 
 # generate pseudo-random bit sequence
 bitsTx = np.random.randint(2, size=int(np.log2(M)*64e3))
 
 # generate ook modulated symbol sequence
-symbTx = modulateGray(bitsTx, M, 'pam')    
+symbTx = modulateGray(bitsTx, M, 'qam')    
 symbTx = pnorm(symbTx) # power normalization
 
 # upsampling
 symbolsUp = upsample(symbTx, SpS)
 
 # typical NRZ pulse
-pulse = pulseShape('nrz', SpS)
+pulse = pulseShape('nrz', SpS, N=2001, alpha=0.01)
 pulse = pulse/max(abs(pulse))
 
 # pulse shaping
 sigTx = firFilter(pulse, symbolsUp)
-downSample = 7.9999
-sigRx = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/downSample, 0)
+
+downSample = 7.99955
+
+ΔFs = (Fs/downSample-Fs/8)/(Fs/8)*1e6
+
+print(f'ΔFs = {ΔFs:.2f} ppm')
+
+#sigRx = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/downSample, 1e-12)
 sigRxRef = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8, 0)
 
-outCLK, ted_values = clockRecovery(sigRx.reshape(-1,), kp=1e-3, ki=1e-6)#print("TED Values:", ted_values)
+# matched filter
+#sigRxRef = firFilter(mf, sigRxRef)
+
+# ADC input parameters
+paramADC = parameters()
+paramADC.Fs_in = Fs
+paramADC.Fs_out = Fs/downSample
+paramADC.jitter_rms = 0.00e-12
+paramADC.nBits =  10
+paramADC.Vmax = 1.5
+paramADC.Vmin = -1.5
+paramADC.AAF = False
+paramADC.N = 4001
+
+sigRx = adc(sigTx.real, paramADC) + 1j*adc(sigTx.imag, paramADC)
+
+paramCLKREC = parameters()
+paramCLKREC.isNyquist = False
+paramCLKREC.returnTiming = True
+paramCLKREC.ki = 1e-6
+outCLK, ted_values = clockRecovery(sigRx.reshape(-1,), paramCLKREC)
+
+# matched filter
+#outCLK = firFilter(mf, outCLK)
 
 plt.plot(sigRx,'k.', label=f'SpS = {SpS/downSample}')
 plt.plot(outCLK,'b.', label= 'Out clock recovery')
@@ -325,14 +415,24 @@ plt.xlim([0, len(sigRx)])
 plt.legend()
 
 plt.figure()
-plt.plot( moving_average(ted_values, 10), label = 'timing')
+plt.plot( ted_values, label = 'timing')
 plt.xlabel('sample')
 plt.grid()
 plt.xlim([0, len(sigRx)])
 plt.legend()
-
-# plotPSD( ted_values.reshape(-1,), Fs=Fs/8, Fc=0, NFFT=4096)
-# plt.xlim([0, Fs/200])
 # -
 
-pconst(outCLK[200:-2:2],pType='fast')
+pconst(outCLK[2000:-2:2],pType='fancy');
+pconst(sigRx[2000:-2:2], pType='fancy');
+
+#plt.plot(sigRx[10000:10050],'kx', label=f'SpS = {SpS/downSample}')
+plt.plot(outCLK[20000:20200:2],'bo', label= 'Out clock recovery')
+plt.plot(np.roll(sigRxRef,4)[20000:20200:2],'r.', label='SpS = 2')
+plt.xlabel('sample')
+plt.grid()
+#plt.xlim([0, len(sigRx[0:50])])
+plt.legend()
+
+finddelay(outCLK[::2], sigRxRef[::2].reshape(-1,))
+
+
