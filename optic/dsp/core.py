@@ -471,7 +471,7 @@ def resample(Ei, param):
         Ei = Ei.reshape(len(Ei), 1)
     for k in range(nModes):
         Eo[:, k] = np.interp(tout, tin, Ei[:, k])
-    Eo = firFilter(ho, Eo)
+    #Eo = firFilter(ho, Eo)
 
     return Eo
 

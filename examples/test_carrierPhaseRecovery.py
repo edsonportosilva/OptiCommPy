@@ -29,8 +29,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from optic.dsp.core import pulseShape, firFilter, decimate, symbolSync, pnorm, signal_power
-from optic.models.devices import pdmCoherentReceiver
-from optic.models.channels import awgn, phaseNoise
+from optic.models.devices import pdmCoherentReceiver, basicLaserModel
+from optic.models.channels import awgn
 from optic.models.tx import simpleWDMTx
 from optic.dsp.carrierRecovery import cpr
 from optic.utils import parameters, dBm2W
@@ -101,34 +101,34 @@ sigCh = awgn(sigTx, SNR, Fs, paramTx.Rs)
 # Receiver
 
 # parameters
-chIndex  = 0     # index of the channel to be demodulated
-plotPSD  = True
-
-Fc = paramTx.Fc
-Ts = 1/(paramTx.SpS*paramTx.Rs)
+chIndex  = 0    # index of the channel to be demodulated
 
 freqGrid = paramTx.freqGrid
+π  = np.pi
+t  = np.arange(0, len(sigCh))*1/Fs 
+
 print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
-      %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
+      %(chIndex, (paramTx.Fc + freqGrid[chIndex])/1e12, const.c/(paramTx.Fc + freqGrid[chIndex])/1e-9))
 
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
 FO      = 150e6                 # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 100e3                 # linewidth
-Plo_dBm = 10                    # power in dBm
-Plo     = dBm2W(Plo_dBm)        # power in W
-ϕ_lo    = 0                     # initial phase in rad    
+
+# generate CW laser LO field
+paramLO = parameters()
+paramLO.P = 10              # power in dBm
+paramLO.lw = 100e3          # laser linewidth
+paramLO.RIN_var = 0
+paramLO.Ns = len(sigCh)
+paramLO.Fs = Fs
+
+sigLO = basicLaserModel(paramLO)
+sigLO = sigLO*np.exp(1j*2*π*Δf_lo*t) # add frequency offset
 
 print('Local oscillator P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz\n'\
-      %(Plo_dBm, lw/1e3, FO/1e6))
-
-# generate LO field
-π       = np.pi
-t       = np.arange(0, len(sigTx))*Ts
-ϕ_pn_lo = phaseNoise(lw, len(sigTx), Ts)
-sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
+      %(paramLO.P, paramLO.lw/1e3, FO/1e6))
 
 # polarization multiplexed coherent optical receiver
 sigRx = pdmCoherentReceiver(sigCh, sigLO, θsig = 0)
@@ -150,9 +150,6 @@ elif paramTx.pulse == 'rrc':
     
 pulse = pulse/np.max(np.abs(pulse))            
 sigRx = firFilter(pulse, sigRx)
-
-# plot constellation
-pconst(sigRx[0::paramTx.SpS,:], R=1.75, cmap=constCMAP);
 # -
 
 # ### Downsample to 1 sample/symbol and power normalization
