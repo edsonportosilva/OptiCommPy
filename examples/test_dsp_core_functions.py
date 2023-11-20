@@ -295,7 +295,7 @@ def interpolator(x, t):
     return y
 
 
-def clockRecovery(Ei, param=None):
+def gardnerClockRecovery(Ei, param=None):
     """
     Perform clock recovery using Gardner's algorithm with a loop PI filter.
 
@@ -431,7 +431,7 @@ paramCLKREC = parameters()
 paramCLKREC.isNyquist = True
 paramCLKREC.returnTiming = True
 paramCLKREC.ki = 1e-6
-outCLK, ted_values = clockRecovery(sigRx, paramCLKREC)
+outCLK, ted_values = gardnerClockRecovery(sigRx, paramCLKREC)
 
 
 plt.plot(sigRx,'k.', label=f'SpS = {SpS/downSample}')
