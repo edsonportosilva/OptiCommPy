@@ -212,7 +212,7 @@ paramCLKREC.kp = 1e-3
 
 outCLK, ted_values = gardnerClockRecovery(sigRx, paramCLKREC)
 
-
+# plot curve of estimated timmig error over time
 plt.figure()
 plt.plot(ted_values, label = 'timing')
 plt.xlabel('sample')
@@ -220,6 +220,7 @@ plt.grid()
 plt.xlim([0, len(sigRx)])
 plt.legend()
 
+# plot constellations with and without clock recovery
 discard = 10000
 pconst(outCLK[discard::2],pType='fancy');
 pconst(sigRx[discard::2], pType='fancy');
