@@ -115,8 +115,7 @@ plt.xlim(0, 10*1/fc)
 eyediagram(sig_dec.reshape(-1,), sig_dec.size, int(Fs//fc), n=3, ptype='fast', plotlabel=None)
 
 
-# -
-
+# +
 def adc(Ei, param):
     """
     Analog-to-digital converter (ADC) model.
@@ -176,7 +175,7 @@ def adc(Ei, param):
         # Anti-aliasing filters:
         Ntaps = min(Ei.shape[0], N)
         hi = lowPassFIR(param.Fs_out/2, param.Fs_in, Ntaps, typeF="rect")
-        ho = lowPassFIR(param.Fs_out/2, param.Fs_out, Ntaps, typeF="rect")
+       # ho = lowPassFIR(param.Fs_out/2, param.Fs_out, Ntaps, typeF="rect")
 
         Ei = firFilter(hi, Ei)
 
@@ -186,9 +185,9 @@ def adc(Ei, param):
     # Uniform quantization of the signal according to the number of bits of the ADC
     Eo = quantizer(Eo, nBits, Vmax, Vmin)
 
-    # Apply anti-aliasing filters to the output if AAF is enabled
-    if AAF:
-        Eo = firFilter(ho, Eo)    
+#     # Apply anti-aliasing filters to the output if AAF is enabled
+#     if AAF:
+#         Eo = firFilter(ho, Eo)    
     
     return Eo
 
@@ -372,7 +371,7 @@ pulse = pulse/max(abs(pulse))
 # pulse shaping
 sigTx = firFilter(pulse, symbolsUp)
 
-downSample = 7.99955
+downSample = 7.99755
 
 ΔFs = (Fs/downSample-Fs/8)/(Fs/8)*1e6
 
@@ -388,7 +387,7 @@ sigRxRef = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8, 0)
 paramADC = parameters()
 paramADC.Fs_in = Fs
 paramADC.Fs_out = Fs/downSample
-paramADC.jitter_rms = 0.00e-12
+paramADC.jitter_rms = 1e-12
 paramADC.nBits =  10
 paramADC.Vmax = 1.5
 paramADC.Vmin = -1.5
@@ -427,7 +426,7 @@ pconst(sigRx[2000:-2:2], pType='fancy');
 
 #plt.plot(sigRx[10000:10050],'kx', label=f'SpS = {SpS/downSample}')
 plt.plot(outCLK[20000:20200:2],'bo', label= 'Out clock recovery')
-plt.plot(np.roll(sigRxRef,4)[20000:20200:2],'r.', label='SpS = 2')
+plt.plot(np.roll(sigRxRef,15)[20001:20200:2],'r.', label='SpS = 2')
 plt.xlabel('sample')
 plt.grid()
 #plt.xlim([0, len(sigRx[0:50])])
