@@ -2,7 +2,7 @@
 import cupy as cp
 
 
-def firFilter(h, x, prec=cp.complex128):
+def firFilter(h, x, prec=None):
     """
     Perform FIR filtering and compensate for filter delay.
 
@@ -26,8 +26,17 @@ def firFilter(h, x, prec=cp.complex128):
         x = x.reshape(len(x), 1)
     nModes = x.shape[1]
 
-    x_ = cp.asarray(x).astype(prec)
-    h_ = cp.asarray(h).astype(prec)
+    if prec is None:
+        if cp.iscomplexobj(x):
+             x_ = cp.asarray(x).astype(cp.complex128)
+             h_ = cp.asarray(h).astype(cp.complex128)
+        else:
+            x_ = cp.asarray(x)
+            h_ = cp.asarray(h)
+    else:
+        x_ = cp.asarray(x).astype(prec)
+        h_ = cp.asarray(h).astype(prec)
+    
     y_ = x_.copy()
 
     for n in range(nModes):
