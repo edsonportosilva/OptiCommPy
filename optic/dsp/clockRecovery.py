@@ -114,10 +114,13 @@ def gardnerClockRecovery(Ei, param=None):
         Ei = Ei.reshape(len(Ei), 1)
         
     # Initializing variables:
-    nModes = Ei.shape[1]
+    nModes = Ei.shape[1]   
+
+    Eo = Ei.copy()    
+    Ei = np.pad(Ei, ((0, 2)), 'constant')
+
     L = Ei.shape[0]
-    Eo = Ei.copy()
-    
+
     timing_values = []
     
     for indMode in range(nModes):
@@ -152,14 +155,18 @@ def gardnerClockRecovery(Ei, param=None):
             if t_nco > 0:
                 t_nco -= 1
                 m -= 1
+                n -= 2
             elif t_nco < -1:
                 t_nco += 1
                 m += 1
+                n += 2
 
             timing_values_mode.append(t_nco)
             
         timing_values.append(timing_values_mode)
     
+    Eo = Eo[0:n,:]
+
     if returnTiming:
         return Eo, np.asarray(timing_values).astype('float32').T
     else:
