@@ -502,11 +502,11 @@ def basicLaserModel(param=None):
     param : parameter object (struct), optional
         Parameters of the laser.
 
-        - param.P: laser power [W]
-        - param.lambda: laser wavelength [m]
-        - param.lw: laser linewidth [Hz]
-        - param.Fs: sampling rate [Hz]
-        - param.Ns: number of signal samples
+        - param.P: laser power [W] [default: 10 dBm]        
+        - param.lw: laser linewidth [Hz] [default: 1 kHz] 
+        - param.RIN_var: variance of the RIN noise [default: 1e-20]  
+        - param.Fs: sampling rate [samples/s]
+        - param.Ns: number of signal samples [default: 1e3] 
 
     Returns
     -------
@@ -545,14 +545,14 @@ def adc(Ei, param):
         Input signal.
     param : core.parameter
         Resampling parameters:
-            - param.Fs_in  : sampling frequency of the input signal.
-            - param.Fs_out : sampling frequency of the output signal.
-            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds.
-            - param.nBits : number of bits used for quantization.
-            - param.Vmax : maximum value for the ADC's full-scale range.
-            - param.Vmin : minimum value for the ADC's full-scale range.
-            - param.AAF : flag indicating whether to use anti-aliasing filters (True/False).
-            - param.N : number of taps of the anti-aliasing filters.
+            - param.Fs_in  : sampling frequency of the input signal [default: 1 sample/s]
+            - param.Fs_out : sampling frequency of the output signal [default: 1 sample/s]
+            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [default: 0 s]
+            - param.nBits : number of bits used for quantization [default: 8 bits]
+            - param.Vmax : maximum value for the ADC's full-scale range [default: 1V]
+            - param.Vmin : minimum value for the ADC's full-scale range [default: -1V]
+            - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
+            - param.N : number of taps of the anti-aliasing filters [default: 201]
 
     Returns
     -------
