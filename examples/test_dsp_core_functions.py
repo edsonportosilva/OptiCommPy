@@ -29,6 +29,7 @@ from optic.dsp.core import pnorm, signal_power, decimate, resample, lowPassFIR, 
 from optic.utils import parameters
 from optic.plot import eyediagram, plotPSD, pconst
 from optic.comm.modulation import modulateGray
+from optic.comm.metrics import fastBERcalc
 import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
@@ -149,8 +150,11 @@ plt.plot(sig_adc)
 plt.xlim(0,100);
 
 eyediagram(sig_adc[:,0], sig_adc.shape[0], int(param.Fs_out//fc), n=3, ptype='fast', plotlabel=None)
+# -
 
-# +
+# ## Test clock recovery
+
+# + hide_input=false
 # simulation parameters
 SpS = 16          # samples per symbol
 M = 16            # order of the modulation format
@@ -177,11 +181,12 @@ pulse = pulse/max(abs(pulse))
 # pulse shaping
 sigTx = firFilter(pulse, symbolsUp)
 
-downSample = 7.99955
+# resample signal to non-integer samples/symbol rate
+downSample = 7.99755
 
 ΔFs = (Fs/downSample-Fs/8)/(Fs/8)*1e6
 
-print(f'ΔFs = {ΔFs:.2f} ppm')
+print(f'sampling clock deviation (ΔFs) = {ΔFs:.2f} ppm')
 
 sigRxRef = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8, 0)
 
@@ -189,19 +194,22 @@ sigRxRef = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8, 0)
 paramADC = parameters()
 paramADC.Fs_in = Fs
 paramADC.Fs_out = Fs/downSample
-paramADC.jitter_rms = 0.1e-12
-paramADC.nBits =  10
+paramADC.jitter_rms = 400e-15
+paramADC.nBits =  8
 paramADC.Vmax = 1.5
 paramADC.Vmin = -1.5
 paramADC.AAF = False
-paramADC.N = 4001
+paramADC.N = 401
 
 sigRx = adc(sigTx, paramADC)
 
+# clock recovery with Gardner's algorithm
 paramCLKREC = parameters()
 paramCLKREC.isNyquist = True
 paramCLKREC.returnTiming = True
 paramCLKREC.ki = 1e-6
+paramCLKREC.kp = 1e-3
+
 outCLK, ted_values = gardnerClockRecovery(sigRx, paramCLKREC)
 
 
@@ -211,17 +219,19 @@ plt.xlabel('sample')
 plt.grid()
 plt.xlim([0, len(sigRx)])
 plt.legend()
+
+discard = 10000
+pconst(outCLK[discard::2],pType='fancy');
+pconst(sigRx[discard::2], pType='fancy');
+
+symbRx = outCLK[0::2,:]
+
+# BER calculation
+BER, _, _ = fastBERcalc(symbRx[discard:-discard], symbTx[discard:-discard], M, 'qam')
+
+for indMode in range(BER.shape[0]):
+    print(f'Mode {indMode}: BER = {BER[indMode]:.2e}')
+
 # -
 
-pconst(outCLK[10000:-2:2],pType='fancy');
-pconst(sigRx[10000:-2:2], pType='fancy');
 
-#plt.plot(sigRx[10000:10050],'kx', label=f'SpS = {SpS/downSample}')
-plt.plot(outCLK[20000:20200:2],'bo', label= 'Out clock recovery')
-plt.plot(np.roll(sigRxRef,5)[20001:20200:2],'r.', label='SpS = 2')
-plt.xlabel('sample')
-plt.grid()
-#plt.xlim([0, len(sigRx[0:50])])
-plt.legend()
-
-finddelay(outCLK[::2], sigRxRef[::2].reshape(-1,))
