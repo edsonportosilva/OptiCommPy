@@ -368,14 +368,18 @@ param.jitter_rms: standard deviation of the time jitter.</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">gaussianComplexNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapeOut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Generate complex circular Gaussian noise.</p>
-<dl class="simple">
-<dt>shapeOut<span class="classifier">tuple of int</span></dt><dd><p>Shape of ndarray to be generated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shapeOut</strong> (<em>tuple of int</em>) -- Shape of ndarray to be generated.</p></li>
+<li><p><strong>σ2</strong> (<em>float</em><em>, </em><em>optional</em>) -- Variance of the noise (default is 1).</p></li>
+</ul>
 </dd>
-<dt>σ2<span class="classifier">float, optional</span></dt><dd><p>Variance of the noise (default is 1).</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>noise</strong> -- Generated complex circular Gaussian noise.</p>
 </dd>
-</dl>
-<dl class="simple">
-<dt>noise<span class="classifier">ndarray</span></dt><dd><p>Generated complex circular Gaussian noise.</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -384,14 +388,18 @@ param.jitter_rms: standard deviation of the time jitter.</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">gaussianNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapeOut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Generate Gaussian noise.</p>
-<dl class="simple">
-<dt>shapeOut<span class="classifier">tuple of int</span></dt><dd><p>Shape of ndarray to be generated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shapeOut</strong> (<em>tuple of int</em>) -- Shape of ndarray to be generated.</p></li>
+<li><p><strong>σ2</strong> (<em>float</em><em>, </em><em>optional</em>) -- Variance of the noise (default is 1).</p></li>
+</ul>
 </dd>
-<dt>σ2<span class="classifier">float, optional</span></dt><dd><p>Variance of the noise (default is 1).</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>noise</strong> -- Generated Gaussian noise.</p>
 </dd>
-</dl>
-<dl class="simple">
-<dt>noise<span class="classifier">ndarray</span></dt><dd><p>Generated Gaussian noise.</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -505,18 +513,22 @@ param.jitter_rms: standard deviation of the time jitter.</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">rcFilterTaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Generate Raised Cosine (RC) filter coefficients.</p>
-<dl class="simple">
-<dt>t<span class="classifier">array-like</span></dt><dd><p>Time values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>array-like</em>) -- Time values.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) -- RC roll-off factor.</p></li>
+<li><p><strong>Ts</strong> (<em>float</em>) -- Symbol period.</p></li>
+</ul>
 </dd>
-<dt>alpha<span class="classifier">float</span></dt><dd><p>RC roll-off factor.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>coeffs</strong> -- RC filter coefficients.</p>
 </dd>
-<dt>Ts<span class="classifier">float</span></dt><dd><p>Symbol period.</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
-<dl class="simple">
-<dt>coeffs<span class="classifier">ndarray</span></dt><dd><p>RC filter coefficients.</p>
-</dd>
-</dl>
+<p class="rubric">References</p>
 <p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
@@ -550,18 +562,22 @@ param.SpS_out : samples per symbol of the output signal.</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">rrcFilterTaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Generate Root-Raised Cosine (RRC) filter coefficients.</p>
-<dl class="simple">
-<dt>t<span class="classifier">array-like</span></dt><dd><p>Time values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>array-like</em>) -- Time values.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) -- RRC roll-off factor.</p></li>
+<li><p><strong>Ts</strong> (<em>float</em>) -- Symbol period.</p></li>
+</ul>
 </dd>
-<dt>alpha<span class="classifier">float</span></dt><dd><p>RRC roll-off factor.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>coeffs</strong> -- RRC filter coefficients.</p>
 </dd>
-<dt>Ts<span class="classifier">float</span></dt><dd><p>Symbol period.</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
-<dl class="simple">
-<dt>coeffs<span class="classifier">ndarray</span></dt><dd><p>RRC filter coefficients.</p>
-</dd>
-</dl>
+<p class="rubric">References</p>
 <p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 

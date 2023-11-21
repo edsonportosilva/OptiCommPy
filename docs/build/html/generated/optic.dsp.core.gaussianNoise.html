@@ -198,14 +198,18 @@
 <dt class="sig sig-object py" id="optic.dsp.core.gaussianNoise">
 <span class="sig-name descname"><span class="pre">gaussianNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapeOut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.gaussianNoise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Gaussian noise.</p>
-<dl class="simple">
-<dt>shapeOut<span class="classifier">tuple of int</span></dt><dd><p>Shape of ndarray to be generated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shapeOut</strong> (<em>tuple of int</em>) -- Shape of ndarray to be generated.</p></li>
+<li><p><strong>σ2</strong> (<em>float</em><em>, </em><em>optional</em>) -- Variance of the noise (default is 1).</p></li>
+</ul>
 </dd>
-<dt>σ2<span class="classifier">float, optional</span></dt><dd><p>Variance of the noise (default is 1).</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>noise</strong> -- Generated Gaussian noise.</p>
 </dd>
-</dl>
-<dl class="simple">
-<dt>noise<span class="classifier">ndarray</span></dt><dd><p>Generated Gaussian noise.</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
 </dd></dl>

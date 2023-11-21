@@ -198,18 +198,22 @@
 <dt class="sig sig-object py" id="optic.dsp.core.rrcFilterTaps">
 <span class="sig-name descname"><span class="pre">rrcFilterTaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.rrcFilterTaps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate Root-Raised Cosine (RRC) filter coefficients.</p>
-<dl class="simple">
-<dt>t<span class="classifier">array-like</span></dt><dd><p>Time values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>array-like</em>) -- Time values.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) -- RRC roll-off factor.</p></li>
+<li><p><strong>Ts</strong> (<em>float</em>) -- Symbol period.</p></li>
+</ul>
 </dd>
-<dt>alpha<span class="classifier">float</span></dt><dd><p>RRC roll-off factor.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>coeffs</strong> -- RRC filter coefficients.</p>
 </dd>
-<dt>Ts<span class="classifier">float</span></dt><dd><p>Symbol period.</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
-<dl class="simple">
-<dt>coeffs<span class="classifier">ndarray</span></dt><dd><p>RRC filter coefficients.</p>
-</dd>
-</dl>
+<p class="rubric">References</p>
 <p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 

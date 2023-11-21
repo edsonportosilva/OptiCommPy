@@ -30,15 +30,15 @@ def gaussianComplexNoise(shapeOut, σ2=1.0):
     """
     Generate complex circular Gaussian noise.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     shapeOut : tuple of int
         Shape of ndarray to be generated.
     σ2 : float, optional
         Variance of the noise (default is 1).
 
-    Returns:
-    --------
+    Returns
+    -------
     noise : ndarray
         Generated complex circular Gaussian noise.
     """
