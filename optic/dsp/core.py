@@ -109,8 +109,8 @@ def rrcFilterTaps(t, alpha, Ts):
     """
     Generate Root-Raised Cosine (RRC) filter coefficients.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     t : array-like
         Time values.
     alpha : float
@@ -118,13 +118,13 @@ def rrcFilterTaps(t, alpha, Ts):
     Ts : float
         Symbol period.
 
-    Returns:
-    --------
+    Returns
+    -------
     coeffs : ndarray
         RRC filter coefficients.
 
-    References:
-    -----------
+    References
+    ----------
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
     """
     coeffs = np.zeros(len(t), dtype=np.float64)
@@ -157,8 +157,8 @@ def rcFilterTaps(t, alpha, Ts):
     """
     Generate Raised Cosine (RC) filter coefficients.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     t : array-like
         Time values.
     alpha : float
@@ -166,13 +166,13 @@ def rcFilterTaps(t, alpha, Ts):
     Ts : float
         Symbol period.
 
-    Returns:
-    --------
+    Returns
+    -------
     coeffs : ndarray
         RC filter coefficients.
 
-    References:
-    -----------
+    References
+    ----------
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
     """
     coeffs = np.zeros(len(t), dtype=np.float64)
@@ -588,15 +588,15 @@ def gaussianComplexNoise(shapeOut, σ2=1.0):
     """
     Generate complex circular Gaussian noise.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     shapeOut : tuple of int
         Shape of ndarray to be generated.
     σ2 : float, optional
         Variance of the noise (default is 1).
 
-    Returns:
-    --------
+    Returns
+    -------
     noise : ndarray
         Generated complex circular Gaussian noise.
     """
@@ -610,15 +610,15 @@ def gaussianNoise(shapeOut, σ2=1.0):
     """
     Generate Gaussian noise.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     shapeOut : tuple of int
         Shape of ndarray to be generated.
     σ2 : float, optional
         Variance of the noise (default is 1).
 
-    Returns:
-    --------
+    Returns
+    -------
     noise : ndarray
         Generated Gaussian noise.
     """
