@@ -14,3 +14,7 @@ Digital Signal Processing (DSP)
 .. automodule:: optic.dsp.carrierRecovery
     :members:
     :noindex:
+
+.. automodule:: optic.dsp.clockRecovery
+    :members:
+    :noindex:
