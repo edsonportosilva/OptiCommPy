@@ -45,11 +45,13 @@ def lin2dB(x):
 
     Parameters
     ----------
-    x (float): The linear value to be converted to dB.
+    x : float
+        The linear value to be converted to dB.
 
     Returns
     -------
-    float: The value in dB.
+    float
+        The value converted to dB, i.e 10log10(x).
     """
     return 10 * np.log10(x)
 
