@@ -17,6 +17,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    lowPassFIR             -- Calculate FIR coefficients of a lowpass filter
    decimate               -- Decimate signal
    resample               -- Signal resampling
+   upsample               -- Upsample a signal by inserting zeros between samples
    symbolSync             -- Synchronizer delayed sequences of symbols
    finddelay              -- Estimate the delay between sequences of symbols
    pnorm                  -- Normalize the average power of each componennt of x
@@ -24,6 +25,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    gaussianNoise          -- Generate Gaussian noise
    phaseNoise             -- Generate realization of a random-walk phase-noise process
 """
+
 """Digital signal processing utilities."""
 import numpy as np
 from numba import njit, prange

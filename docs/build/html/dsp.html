@@ -109,6 +109,7 @@
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.lowPassFIR.html">optic.dsp.core.lowPassFIR</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.decimate.html">optic.dsp.core.decimate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.resample.html">optic.dsp.core.resample</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.upsample.html">optic.dsp.core.upsample</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.symbolSync.html">optic.dsp.core.symbolSync</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.finddelay.html">optic.dsp.core.finddelay</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.pnorm.html">optic.dsp.core.pnorm</a></li>
@@ -248,22 +249,25 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.resample.html#optic.dsp.core.resample" title="optic.dsp.core.resample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample</span></code></a>(Ei, param)</p></td>
 <td><p>Resample signal to a given sampling rate.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.symbolSync.html#optic.dsp.core.symbolSync" title="optic.dsp.core.symbolSync"><code class="xref py py-obj docutils literal notranslate"><span class="pre">symbolSync</span></code></a>(rx, tx, SpS[, mode])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.upsample.html#optic.dsp.core.upsample" title="optic.dsp.core.upsample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upsample</span></code></a>(x, factor)</p></td>
+<td><p>Upsample a signal by inserting zeros between samples.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.symbolSync.html#optic.dsp.core.symbolSync" title="optic.dsp.core.symbolSync"><code class="xref py py-obj docutils literal notranslate"><span class="pre">symbolSync</span></code></a>(rx, tx, SpS[, mode])</p></td>
 <td><p>Symbol synchronizer.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.finddelay.html#optic.dsp.core.finddelay" title="optic.dsp.core.finddelay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finddelay</span></code></a>(x, y)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.finddelay.html#optic.dsp.core.finddelay" title="optic.dsp.core.finddelay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finddelay</span></code></a>(x, y)</p></td>
 <td><p>Find delay between x and y.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.pnorm.html#optic.dsp.core.pnorm" title="optic.dsp.core.pnorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pnorm</span></code></a>(x)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.pnorm.html#optic.dsp.core.pnorm" title="optic.dsp.core.pnorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pnorm</span></code></a>(x)</p></td>
 <td><p>Normalize the average power of each componennt of x.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.gaussianComplexNoise.html#optic.dsp.core.gaussianComplexNoise" title="optic.dsp.core.gaussianComplexNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaussianComplexNoise</span></code></a>(shapeOut, σ2=None)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.gaussianComplexNoise.html#optic.dsp.core.gaussianComplexNoise" title="optic.dsp.core.gaussianComplexNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaussianComplexNoise</span></code></a>(shapeOut, σ2=None)</p></td>
 <td><p>Generate complex circular Gaussian noise.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.gaussianNoise.html#optic.dsp.core.gaussianNoise" title="optic.dsp.core.gaussianNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaussianNoise</span></code></a>(shapeOut, σ2=None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.gaussianNoise.html#optic.dsp.core.gaussianNoise" title="optic.dsp.core.gaussianNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaussianNoise</span></code></a>(shapeOut, σ2=None)</p></td>
 <td><p>Generate Gaussian noise.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.phaseNoise.html#optic.dsp.core.phaseNoise" title="optic.dsp.core.phaseNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">phaseNoise</span></code></a>(lw, Nsamples, Ts)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.phaseNoise.html#optic.dsp.core.phaseNoise" title="optic.dsp.core.phaseNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">phaseNoise</span></code></a>(lw, Nsamples, Ts)</p></td>
 <td><p>Generate realization of a random-walk phase-noise process.</p></td>
 </tr>
 </tbody>
@@ -927,7 +931,7 @@ estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.</p>
 <li><p><strong>param</strong> (<em>core.parameter</em>) -- <dl class="simple">
 <dt>Resampling parameters:</dt><dd><ul>
 <li><p>kp : Proportional gain for the loop filter. Default is 1e-3.</p></li>
-<li><p>ki : Integral gain for the loop filter. Default is 1e-4.</p></li>
+<li><p>ki : Integral gain for the loop filter. Default is 1e-6.</p></li>
 <li><p>isNyquist: is the pulse shape a Nyquist pulse? Default is True.</p></li>
 <li><p>returnTiming: return estimated timing values. Default is False.</p></li>
 </ul>

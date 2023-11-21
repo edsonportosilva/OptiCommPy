@@ -13,6 +13,8 @@ Available features
 * Standard digital signal processing (DSP) blocks employed in coherent optical receivers, such as:
   
   * Signal resampling.
+
+  * Clock recovery.
   
   * Matched filtering.
   
