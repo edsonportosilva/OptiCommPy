@@ -9,13 +9,20 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    sigPow                 -- Calculate the average power of x
    signal_power           -- Calculate the total average power of x
    firFilter              -- Perform FIR filtering and compensate for filter delay
+   rrcFilterTaps          -- Generate Root-Raised Cosine (RRC) filter coefficients
+   rcFilterTaps           -- Generate Raised Cosine (RC) filter coefficients
    pulseShape             -- Generate a pulse shaping filter
+   clockSamplingInterp    -- Interpolate signal to a given sampling rate
+   quantizer              -- Quantize the input signal using a uniform quantizer 
    lowPassFIR             -- Calculate FIR coefficients of a lowpass filter
    decimate               -- Decimate signal
    resample               -- Signal resampling
    symbolSync             -- Synchronizer delayed sequences of symbols
    finddelay              -- Estimate the delay between sequences of symbols
    pnorm                  -- Normalize the average power of each componennt of x
+   gaussianComplexNoise   -- Generate complex-valued circular Gaussian noise
+   gaussianNoise          -- Generate Gaussian noise
+   phaseNoise             -- Generate realization of a random-walk phase-noise process
 """
 """Digital signal processing utilities."""
 import numpy as np
@@ -462,7 +469,7 @@ def resample(Ei, param):
     Eo = np.zeros((len(tout), Ei.shape[1]), dtype="complex")
     # Anti-aliasing filters:
     N = min(Ei.shape[0], 202)
-    #hi = lowPassFIR(inFs / 2, inFs, N, typeF="rect")
+    # hi = lowPassFIR(inFs / 2, inFs, N, typeF="rect")
     hi = lowPassFIR(outFs / 2, inFs, N, typeF="rect")
 
     Ei = firFilter(hi, Ei)
@@ -471,7 +478,7 @@ def resample(Ei, param):
         Ei = Ei.reshape(len(Ei), 1)
     for k in range(nModes):
         Eo[:, k] = np.interp(tout, tin, Ei[:, k])
-    #Eo = firFilter(ho, Eo)
+    # Eo = firFilter(ho, Eo)
 
     return Eo
 
