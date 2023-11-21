@@ -1,5 +1,5 @@
 
-General utilities
+General Utilities
 ==================
 
 .. automodule:: optic.utils

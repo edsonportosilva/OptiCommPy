@@ -9,8 +9,7 @@ Models for fiber optic channels (:mod:`optic.models.channels`)
    linearFiberChannel   -- Linear optical fiber channel model.
    ssfm                 -- Nonlinear fiber optic channel model based on the NLSE equation.
    manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.   
-   awgn                 -- AWGN channel model.
-   phaseNoise           -- Phase noise model.
+   awgn                 -- AWGN channel model.   
 """
 
 
@@ -20,7 +19,6 @@ import logging as logg
 import numpy as np
 import scipy.constants as const
 from scipy.linalg import norm
-from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 from optic.utils import parameters

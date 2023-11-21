@@ -91,7 +91,7 @@ def gardnerClockRecovery(Ei, param=None):
         Resampling parameters:
             - kp : Proportional gain for the loop filter. Default is 1e-3.
 
-            - ki : Integral gain for the loop filter. Default is 1e-4.
+            - ki : Integral gain for the loop filter. Default is 1e-6.
 
             - isNyquist: is the pulse shape a Nyquist pulse? Default is True.
 
