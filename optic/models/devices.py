@@ -27,7 +27,13 @@ import logging as logg
 import numpy as np
 import scipy.constants as const
 from optic.utils import parameters, dBm2W
-from optic.dsp.core import lowPassFIR, gaussianComplexNoise, phaseNoise, clockSamplingInterp, quantizer
+from optic.dsp.core import (
+    lowPassFIR,
+    gaussianComplexNoise,
+    phaseNoise,
+    clockSamplingInterp,
+    quantizer,
+)
 
 try:
     from optic.dsp.coreGPU import firFilter
@@ -493,20 +499,21 @@ def edfa(Ei, param=None):
 
     return Ei * np.sqrt(G_lin) + noise
 
+
 def basicLaserModel(param=None):
     """
     Laser model with Maxwellian random walk phase noise and RIN.
 
     Parameters
-    ----------  
+    ----------
     param : parameter object (struct), optional
         Parameters of the laser.
 
-        - param.P: laser power [W] [default: 10 dBm]        
-        - param.lw: laser linewidth [Hz] [default: 1 kHz] 
-        - param.RIN_var: variance of the RIN noise [default: 1e-20]  
+        - param.P: laser power [W] [default: 10 dBm]
+        - param.lw: laser linewidth [Hz] [default: 1 kHz]
+        - param.RIN_var: variance of the RIN noise [default: 1e-20]
         - param.Fs: sampling rate [samples/s]
-        - param.Ns: number of signal samples [default: 1e3] 
+        - param.Ns: number of signal samples [default: 1e3]
 
     Returns
     -------
@@ -518,22 +525,23 @@ def basicLaserModel(param=None):
         Fs = param.Fs
     except AttributeError:
         logg.error("Simulation sampling frequency (Fs) not provided.")
-  
-    P = getattr(param,"P", 10)                # Laser power in dBm    
-    lw = getattr(param,"lw", 1e3)             # Linewidth in Hz
-    RIN_var = getattr(param,"RIN_var", 1e-20) # RIN variance    
-    Ns = getattr(param,"Ns", 1000)            # Number of samples of the signal
 
-    t = np.arange(0, Ns)* 1 / Fs
-    
-    # Simulate Maxwellian random walk phase noise    
-    pn = phaseNoise(lw, Ns, 1/Fs)
+    P = getattr(param, "P", 10)  # Laser power in dBm
+    lw = getattr(param, "lw", 1e3)  # Linewidth in Hz
+    RIN_var = getattr(param, "RIN_var", 1e-20)  # RIN variance
+    Ns = getattr(param, "Ns", 1000)  # Number of samples of the signal
+
+    t = np.arange(0, Ns) * 1 / Fs
+
+    # Simulate Maxwellian random walk phase noise
+    pn = phaseNoise(lw, Ns, 1 / Fs)
 
     # Simulate relative intensity noise  (RIN)[todo:check correct model]
     deltaP = gaussianComplexNoise(pn.shape, RIN_var)
-    
-    # Return optical signal       
-    return np.sqrt(dBm2W(P))*np.exp(1j*pn) + deltaP
+
+    # Return optical signal
+    return np.sqrt(dBm2W(P)) * np.exp(1j * pn) + deltaP
+
 
 def adc(Ei, param):
     """
@@ -568,7 +576,7 @@ def adc(Ei, param):
     param.Vmax = getattr(param, "Vmax", 1)
     param.Vmin = getattr(param, "Vmin", -1)
     param.AAF = getattr(param, "AAF", True)
-    param.N   = getattr(param, "N", 201)
+    param.N = getattr(param, "N", 201)
 
     # Extract individual parameters for ease of use
     Fs_in = param.Fs_in
@@ -588,31 +596,37 @@ def adc(Ei, param):
 
     # Get the number of modes (columns) in the input signal
     nModes = Ei.shape[1]
-   
+
     # Apply anti-aliasing filters if AAF is enabled
     if AAF:
         # Anti-aliasing filters:
         Ntaps = min(Ei.shape[0], N)
-        hi = lowPassFIR(param.Fs_out/2, param.Fs_in, Ntaps, typeF="rect")
-        ho = lowPassFIR(param.Fs_out/2, param.Fs_out, Ntaps, typeF="rect")
+        hi = lowPassFIR(param.Fs_out / 2, param.Fs_in, Ntaps, typeF="rect")
+        ho = lowPassFIR(param.Fs_out / 2, param.Fs_out, Ntaps, typeF="rect")
 
         Ei = firFilter(hi, Ei)
-        
+
     if np.iscomplexobj(Ei):
         # Signal interpolation to the ADC's sampling frequency
-        Eo = clockSamplingInterp(Ei.reshape(-1,nModes).real, Fs_in, Fs_out, jitter_rms)+1j*clockSamplingInterp(Ei.reshape(-1,nModes).imag, Fs_in, Fs_out, jitter_rms)
+        Eo = clockSamplingInterp(
+            Ei.reshape(-1, nModes).real, Fs_in, Fs_out, jitter_rms
+        ) + 1j * clockSamplingInterp(
+            Ei.reshape(-1, nModes).imag, Fs_in, Fs_out, jitter_rms
+        )
 
         # Uniform quantization of the signal according to the number of bits of the ADC
-        Eo = quantizer(Eo.real, nBits, Vmax, Vmin) + 1j*quantizer(Eo.imag, nBits, Vmax, Vmin)
-    else: 
+        Eo = quantizer(Eo.real, nBits, Vmax, Vmin) + 1j * quantizer(
+            Eo.imag, nBits, Vmax, Vmin
+        )
+    else:
         # Signal interpolation to the ADC's sampling frequency
-        Eo = clockSamplingInterp(Ei.reshape(-1,nModes), Fs_in, Fs_out, jitter_rms)
+        Eo = clockSamplingInterp(Ei.reshape(-1, nModes), Fs_in, Fs_out, jitter_rms)
 
         # Uniform quantization of the signal according to the number of bits of the ADC
         Eo = quantizer(Eo, nBits, Vmax, Vmin)
 
     # Apply anti-aliasing filters to the output if AAF is enabled
     if AAF:
-        Eo = firFilter(ho, Eo)    
-    
+        Eo = firFilter(ho, Eo)
+
     return Eo
