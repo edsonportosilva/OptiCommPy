@@ -1,5 +1,6 @@
 """Plot utilities."""
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 from matplotlib import cm
 import mpl_scatter_density
 import numpy as np
