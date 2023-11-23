@@ -326,3 +326,101 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
     plt.xlim(Fc - Fs / 2, Fc + Fs / 2)
 
     return fig, plt.gca()
+
+def animateConstGIF(x, figName, 
+                    xlabel='In-Phase (I)', 
+                    ylabel='Quadrature (Q)', 
+                    title=[], 
+                    color='b', 
+                    centralAxes=False,
+                    squareAxes=True, 
+                    fram=200, 
+                    inter=20, 
+                    radius=2,
+                   ):
+    """
+    Create and save a plot animation as GIF
+
+    :param x: x-axis values [np array]    
+    :param figName: figure file name w/ folder path [string]
+    :param xlabel: xlabel [string]
+    :param ylabel: ylabel [string]
+    :param fram: number of frames [int]
+    :param inter: time interval between frames [milliseconds]
+
+    """
+    figAnin = plt.figure()
+       
+    min_xy = -radius #np.min([x.real, x.imag])
+    max_xy = radius #np.max([x.real, x.imag])
+   
+    # plt.axis('equal')
+    ax = plt.axes(            
+        ylim=(
+             min_xy,
+             max_xy,
+        ),
+        xlim=(
+             min_xy,
+             max_xy,
+        ),
+    )
+
+
+#     if not len(plotcols):
+#         prop_cycle = plt.rcParams['axes.prop_cycle']
+#         colors = prop_cycle.by_key()['color']
+#         plotcols= colors[:2]
+#     #print(colors)
+
+    (line,) = ax.plot([], [], color+'.')
+    ax.grid()
+
+#    plt.axhline(color='black', lw=1)
+#    plt.axvline(color='black', lw=1)
+
+    if centralAxes:
+        # Move left y-axis and bottom x-axis to centre, passing through (0,0)
+        ax.spines['left'].set_position('center')
+        ax.spines['bottom'].set_position('center')
+
+        # Eliminate upper and right axes
+        ax.spines['right'].set_color('none')
+        ax.spines['top'].set_color('none')
+
+        # Show ticks in the left and lower axes only
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+        
+    period = int(len(x) / fram)
+    indx = np.arange(0, len(x), period)
+
+    if len(xlabel):
+        plt.xlabel(xlabel, fontsize=16)
+
+    if len(ylabel):
+        plt.ylabel(ylabel, fontsize=16)
+
+    if len(title):
+        plt.title(title)
+
+    def init():        
+        line.set_data([], [])
+        return line,
+
+    def animate(i): 
+        line.set_data(x[indx[i]-period:indx[i]].real, x[indx[i]-period:indx[i]].imag)
+        return line,
+                   
+
+    anim = FuncAnimation(
+        figAnin,
+        animate,
+        init_func=init,
+        frames=fram,
+        interval=inter,
+        blit=True,
+    )
+
+    anim.save(figName, dpi=200, writer="imagemagick")
+    plt.close()
