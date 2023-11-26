@@ -14,7 +14,7 @@
 #     name: python3
 # ---
 
-# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/jupyter/test_modulation.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_modulation.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # # Test basic digital modulation functionalities
 
@@ -24,17 +24,16 @@ if 'google.colab' in str(get_ipython()):
     cd('/content/OptiCommPy/')
     # ! pip install . 
 
-from optic.modulation import modulateGray, demodulateGray, GrayMapping
-from optic.metrics import signal_power, fastBERcalc, theoryBER
-from optic.models import awgn
-from optic.dsp import pnorm
+from optic.comm.modulation import modulateGray, demodulateGray, GrayMapping
+from optic.comm.metrics import fastBERcalc, theoryBER
+from optic.models.channels import awgn
+from optic.dsp.core import pnorm, signal_power
+from optic.plot import pconst
 import matplotlib.pyplot as plt
 import numpy as np
 
-# +
-# # %load_ext autoreload
-# # %autoreload 2
-# -
+# %load_ext autoreload
+# %autoreload 2
 
 # ## Define modulation, modulate and demodulate data
 
@@ -83,3 +82,8 @@ Es = signal_power(constSymb)                      # mean symbol energy
 for ind, symb in enumerate(constSymb/np.sqrt(Es)):
     bitMap[ind,:]
     plt.annotate(str(bitMap[ind,:])[1:-1:2], xy = (symb.real, symb.imag))
+# -
+
+pconst(symbRx, whiteb=True);
+
+pconst(symbRx, whiteb=False);

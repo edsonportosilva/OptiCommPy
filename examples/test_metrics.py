@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -17,7 +17,8 @@
 # <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_metrics.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # + [markdown] toc=true
-# # Test transmission performance metrics for the AWGN channel
+# <h1>Table of Contents<span class="tocSkip"></span></h1>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Test-bit-error-rate-(BER)-versus-signal-to-noise-ratio-per-bit-($E_b/N_0$)" data-toc-modified-id="Test-bit-error-rate-(BER)-versus-signal-to-noise-ratio-per-bit-($E_b/N_0$)-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Test bit-error-rate (BER) versus signal-to-noise ratio per bit ($E_b/N_0$)</a></span><ul class="toc-item"><li><span><a href="#QAM-constellations-with-Gray-mapping" data-toc-modified-id="QAM-constellations-with-Gray-mapping-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>QAM constellations with Gray mapping</a></span></li><li><span><a href="#PSK-constellations-with-Gray-mapping" data-toc-modified-id="PSK-constellations-with-Gray-mapping-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>PSK constellations with Gray mapping</a></span></li></ul></li><li><span><a href="#Test-generalized-mutual-information-(GMI)-versus-signal-to-noise-ratio-(SNR)" data-toc-modified-id="Test-generalized-mutual-information-(GMI)-versus-signal-to-noise-ratio-(SNR)-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Test generalized mutual information (GMI) versus signal-to-noise ratio (SNR)</a></span><ul class="toc-item"><li><span><a href="#QAM-constellations-with-Gray-mapping" data-toc-modified-id="QAM-constellations-with-Gray-mapping-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>QAM constellations with Gray mapping</a></span></li><li><span><a href="#PSK-constellations-with-Gray-mapping" data-toc-modified-id="PSK-constellations-with-Gray-mapping-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>PSK constellations with Gray mapping</a></span></li></ul></li><li><span><a href="#Test-mutual-information-(MI)-versus-signal-to-noise-ratio-(SNR)" data-toc-modified-id="Test-mutual-information-(MI)-versus-signal-to-noise-ratio-(SNR)-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Test mutual information (MI) versus signal-to-noise ratio (SNR)</a></span><ul class="toc-item"><li><span><a href="#QAM-constellations-with-Gray-mapping" data-toc-modified-id="QAM-constellations-with-Gray-mapping-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>QAM constellations with Gray mapping</a></span></li></ul></li><li><span><a href="#Test-MI/GMI-versus-signal-to-noise-ratio-(SNR)-with-probabilistically-shaped-QAM-constellation" data-toc-modified-id="Test-MI/GMI-versus-signal-to-noise-ratio-(SNR)-with-probabilistically-shaped-QAM-constellation-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Test MI/GMI versus signal-to-noise ratio (SNR) with probabilistically shaped QAM constellation</a></span></li><li><span><a href="#Test-error-vector-magnitude-(EVM)-versus-signal-to-noise-ratio-(SNR)" data-toc-modified-id="Test-error-vector-magnitude-(EVM)-versus-signal-to-noise-ratio-(SNR)-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Test error vector magnitude (EVM) versus signal-to-noise ratio (SNR)</a></span></li><li><span><a href="#Test-OSNR/SNR-prediction-with-the-Gaussian-Noise-model-(GN-Model)-as-a-function-of-the-fiber-input-power" data-toc-modified-id="Test-OSNR/SNR-prediction-with-the-Gaussian-Noise-model-(GN-Model)-as-a-function-of-the-fiber-input-power-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Test OSNR/SNR prediction with the Gaussian Noise model (GN Model) as a function of the fiber input power</a></span></li><li><span><a href="#Test-OSNR/SNR-prediction-with-for-a-linear-fiber-channel-as-a-function-of-the-distance" data-toc-modified-id="Test-OSNR/SNR-prediction-with-for-a-linear-fiber-channel-as-a-function-of-the-distance-7"><span class="toc-item-num">7&nbsp;&nbsp;</span>Test OSNR/SNR prediction with for a linear fiber channel as a function of the distance</a></span></li></ul></div>
 # -
 
 if 'google.colab' in str(get_ipython()):    
@@ -26,12 +27,12 @@ if 'google.colab' in str(get_ipython()):
     cd('/content/OptiCommPy/')
     # ! pip install .
 
-from optic.modulation import modulateGray, GrayMapping
-from optic.metrics import signal_power, monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM
-from optic.models import awgn
-from optic.dsp import pnorm
+from optic.comm.modulation import modulateGray, GrayMapping
+from optic.comm.metrics import monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM
+from optic.models.channels import awgn
+from optic.dsp.core import pnorm, signal_power
 from optic.plot import pconst
-from optic.core import parameters
+from optic.utils import parameters
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -438,10 +439,10 @@ plt.ylabel('EVM [dB]');
 plt.grid()
 # -
 
-# ### Test OSNR/SNR prediction with the Gaussian Noise model (GN Model) as a function of the fiber input power
+# ## Test OSNR/SNR prediction with the Gaussian Noise model (GN Model) as a function of the fiber input power
 
 # +
-from optic.metrics import GNmodel_OSNR
+from optic.comm.metrics import GNmodel_OSNR
 
 # optical signal parameters
 Nch = 80   # Number of Nyquist-WDM channels
@@ -473,10 +474,10 @@ plt.xlabel('Pin  per WDM channel (dBm)')
 plt.legend();
 plt.xlim(min(Ptx), max(Ptx));
 # -
-# ### Test OSNR/SNR prediction with for a linear fiber channel as a function of the distance
+# ## Test OSNR/SNR prediction with for a linear fiber channel as a function of the distance
 
 # +
-from optic.metrics import calcLinOSNR
+from optic.comm.metrics import calcLinOSNR
 
 Ns = 14       # number of fiber spans
 Ls = 50       # span length in km

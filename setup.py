@@ -11,12 +11,12 @@ MAINTAINER = 'Edson Porto da Silva'
 MAINTAINER_EMAIL = 'edsonporto88@gmail.com'
 URL = 'https://github.com/edsonportosilva/OptiCommPy'
 LICENSE = 'BSD 3-Clause'
-VERSION = '0.2.0'
+VERSION = '0.6.0'
 
 #This is a list of files to install, and where
 #(relative to the 'root' dir, where setup.py is)
 #You could be more specific.
-files = ["optic/*"]
+files = ["optic/*","optic/comm/*","optic/dsp/*", "optic/models/*"]
 
 setup(
     name=DISTNAME,
@@ -30,15 +30,21 @@ setup(
     #(If you have other packages (dirs) or modules (py files) then
     #put them into the package directory - they will be found
     #recursively.)
-    packages=['optic'],
+    packages=['optic', 'optic.comm', 'optic.models', 'optic.dsp'],
+    #py_modules = ['plot', 'core', 'comm', 'dsp', 'models'],
     install_requires=[
-          'numpy',
-          'scipy',
-          'matplotlib',
+          'numpy>=1.9.2',
+          'scipy>=0.15.0',
+          'matplotlib>=3.7.0',
           'sympy',
-          'tqdm',
-          'numba',
-          'scikit-commpy'
+          'tqdm>=4.64.1',
+          'numba>=0.54.1',
+          'scikit-commpy>=0.7.0',
+	  'simple-pid>=1.0.1',
+	  'mpl-scatter-density>=0.7.0',
+	  'pandas>=2.0.0',
+      'sphinx-rtd-theme>=1.2.2'
+      
     ],
     #'package' package must contain files (see list above)
     #This dict maps the package name =to=> directories

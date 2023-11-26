@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -23,13 +23,21 @@ if 'google.colab' in str(get_ipython()):
     cd('/content/OptiCommPy/')
     # ! pip install . 
 
+# +
 import numpy as np
 from commpy.utilities  import upsample
-from optic.models import mzm, photodiode, linFiberCh, edfa
-from optic.modulation import GrayMapping, modulateGray, demodulateGray
-from optic.metrics import signal_power, theoryBER
-from optic.dsp import firFilter, pulseShape, lowPassFIR, pnorm
-from optic.core import parameters
+from optic.models.devices import mzm, photodiode, edfa
+from optic.models.channels import linearFiberChannel
+from optic.comm.modulation import GrayMapping, modulateGray, demodulateGray
+from optic.comm.metrics import  theoryBER
+from optic.dsp.core import pulseShape, lowPassFIR, pnorm, signal_power
+
+try:
+    from optic.dsp.coreGPU import firFilter    
+except ImportError:
+    from optic.dsp.core import firFilter
+    
+from optic.utils import parameters, dBm2W
 from optic.plot import eyediagram, pconst
 import matplotlib.pyplot as plt
 from scipy.special import erfc
@@ -58,22 +66,26 @@ figsize(10, 3)
 # # %autoreload 2
 # -
 
+np.random.seed(seed=123) # fixing the seed to get reproducible results
+
 # ### Intensity modulation (IM) with Pulse Amplitude Modulation (PAM)
 
 # +
 # simulation parameters
-SpS = 16           # samples per symbol
+SpS = 16            # samples per symbol
 M = 4              # order of the modulation format
 Rs = 10e9          # Symbol rate (for OOK case Rs = Rb)
-Tsymb = 1/Rs       # Symbol period in seconds
-Fs = 1/(Tsymb/SpS) # Signal sampling frequency (samples/second)
+Fs = SpS*Rs        # Sampling frequency in samples/second
 Ts = 1/Fs          # Sampling period
 
+# Laser power
+Pi_dBm = 0         # laser optical power at the input of the MZM in dBm
+Pi = dBm2W(Pi_dBm) # convert from dBm to W
+
 # MZM parameters
-Vπ = 2
-Vb = -Vπ/2
-Pi_dBm = 0 # laser optical power at the input of the MZM in dBm
-Pi = 10**(Pi_dBm/10)*1e-3 # convert from dBm to W
+paramMZM = parameters()
+paramMZM.Vpi = 2
+paramMZM.Vb = -paramMZM.Vpi/2
 
 # generate pseudo-random bit sequence
 bitsTx = np.random.randint(2, size=int(np.log2(M)*1e6))
@@ -93,8 +105,8 @@ pulse = pulse/max(abs(pulse))
 sigTx = firFilter(pulse, symbolsUp)
 
 # optical modulation
-Ai = np.sqrt(Pi)*np.ones(sigTx.size)
-sigTxo = mzm(Ai, 0.25*sigTx, Vπ, Vb)
+Ai = np.sqrt(Pi)
+sigTxo = mzm(Ai, 0.25*sigTx, paramMZM)
 
 print('Average power of the modulated optical signal [mW]: %.3f mW'%(signal_power(sigTxo)/1e-3))
 print('Average power of the modulated optical signal [dBm]: %.3f dBm'%(10*np.log10(signal_power(sigTxo)/1e-3)))
@@ -135,17 +147,23 @@ axs[1].grid()
 
 # +
 # linear optical channel
-L = 40         # total link distance [km]
-α = 0.2        # fiber loss parameter [dB/km]
-D = 16         # fiber dispersion parameter [ps/nm/km]
-Fc = 193.1e12  # central optical frequency [Hz]
+paramCh = parameters()
+paramCh.L = 40         # total link distance [km]
+paramCh.α = 0.2        # fiber loss parameter [dB/km]
+paramCh.D = 16         # fiber dispersion parameter [ps/nm/km]
+paramCh.Fc = 193.1e12  # central optical frequency [Hz]
+paramCh.Fs = Fs        # simulation sampling frequency [samples/second]
 
-sigCh = linFiberCh(sigTxo, L, α, D, Fc, Fs)
+sigCh = linearFiberChannel(sigTxo, paramCh)
 
 # receiver pre-amplifier
-G = α*L    # edfa gain
-NF = 4.5   # edfa noise figure
-sigCh = edfa(sigCh, Fs, G, NF, Fc)
+paramEDFA = parameters()
+paramEDFA.G = paramCh.α*paramCh.L    # edfa gain
+paramEDFA.NF = 4.5   # edfa noise figure 
+paramEDFA.Fc = paramCh.Fc
+paramEDFA.Fs = Fs
+
+sigCh = edfa(sigCh, paramEDFA)
 # -
 
 # ### Direct-detection (DD) pin receiver model
@@ -154,6 +172,7 @@ sigCh = edfa(sigCh, Fs, G, NF, Fc)
 # ideal photodiode (noiseless, no bandwidth limitation)
 paramPD = parameters()
 paramPD.ideal = True
+paramPD.Fs = Fs
 I_Rx_ideal = photodiode(sigTxo.real, paramPD)
 
 # noisy photodiode (thermal noise + shot noise + bandwidth limitation)
@@ -214,17 +233,23 @@ plt.xlim(0,err.size);
 SpS = 16            # Samples per symbol
 M = 4               # order of the modulation format
 Rs = 40e9           # Symbol rate (for the OOK case, Rs = Rb)
-Tsymb = 1/Rs        # Symbol period in seconds
-Fs = 1/(Tsymb/SpS)  # Signal sampling frequency (samples/second)
+Fs = SpS*Rs         # Signal sampling frequency (samples/second)
 Ts = 1/Fs           # Sampling period
 
 # MZM parameters
-Vπ = 2
-Vb = -Vπ/2
+paramMZM = parameters()
+paramMZM.Vpi = 2
+paramMZM.Vb = -paramMZM.Vpi/2
 
 # typical NRZ pulse
 pulse = pulseShape('nrz', SpS)
 pulse = pulse/max(abs(pulse))
+
+# photodiode parameters
+paramPD = parameters()
+paramPD.ideal = False
+paramPD.B = Rs
+paramPD.Fs = Fs
 
 powerValues = np.arange(-20,-4) # power values at the input of the pin receiver
 BER = np.zeros(powerValues.shape)
@@ -236,7 +261,7 @@ Es = signal_power(const) # calculate the average energy per symbol of the PAM co
 discard = 100
 for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
     
-    Pi = 10**((Pi_dBm+3)/10)*1e-3 # optical signal power in W at the MZM input
+    Pi = dBm2W(Pi_dBm+3) # optical signal power in W at the MZM input
 
     # generate pseudo-random bit sequence
     bitsTx = np.random.randint(2, size=int(np.log2(M)*1e6))
@@ -253,15 +278,10 @@ for indPi, Pi_dBm in enumerate(tqdm(powerValues)):
     sigTx = firFilter(pulse, symbolsUp)
 
     # optical modulation
-    Ai = np.sqrt(Pi)*np.ones(sigTx.size)
-    sigTxo = mzm(Ai, 0.25*sigTx, Vπ, Vb)
+    Ai = np.sqrt(Pi)
+    sigTxo = mzm(Ai, 0.25*sigTx, paramMZM)
 
     # pin receiver
-    paramPD = parameters()
-    paramPD.ideal = False
-    paramPD.B = Rs
-    paramPD.Fs = Fs
-
     I_Rx = photodiode(sigTxo.real, paramPD)
     I_Rx = I_Rx/np.std(I_Rx)
 
@@ -300,27 +320,45 @@ plt.xlim(min(powerValues), max(powerValues));
 # simulation parameters
 SpS = 16            # Samples per symbol
 M = 4               # order of the modulation format
-Rs = 10e9           # Symbol rate (for the OOK case, Rs = Rb)
-Tsymb = 1/Rs        # Symbol period in seconds
-Fs = 1/(Tsymb/SpS)  # Signal sampling frequency (samples/second)
+Rs = 40e9           # Symbol rate (for the OOK case, Rs = Rb)
+Fs = SpS*Rs         # Signal sampling frequency (samples/second)
 Ts = 1/Fs           # Sampling period
 
+# Laser power
+Pi_dBm = 0         # laser optical power at the input of the MZM in dBm
+Pi = dBm2W(Pi_dBm) # convert from dBm to W
+
 # MZM parameters
-Pi_dBm = 0 # optical signal power in dBm at the MZM input
-Vπ = 2
-Vb = -Vπ/2
-Pi = 10**((Pi_dBm)/10)*1e-3 # optical signal power in W at the MZM input
+paramMZM = parameters()
+paramMZM.Vpi = 2
+paramMZM.Vb = -paramMZM.Vpi/2
 
 # typical NRZ pulse
 pulse = pulseShape('nrz', SpS)
 pulse = pulse/max(abs(pulse))
 
 # fiber channel parameters
-distance = np.arange(0,101,5) # transmission distance in km
-α = 0.2        # fiber loss parameter [dB/km]
-D = 16         # fiber dispersion parameter [ps/nm/km]
-Fc = 193.1e12  # central optical frequency [Hz]
-    
+distance = np.arange(0,12.5,0.5) # transmission distance in km
+paramCh = parameters()
+paramCh.α = 0.2        # fiber loss parameter [dB/km]
+paramCh.D = 16         # fiber dispersion parameter [ps/nm/km]
+paramCh.Fc = 193.1e12  # central optical frequency [Hz]
+paramCh.Fs = Fs        # simulation sampling frequency [samples/second]
+
+# receiver pre-amplifier parameters
+paramEDFA = parameters()
+paramEDFA.NF = 4.5   # edfa noise figure 
+paramEDFA.Fc = paramCh.Fc
+paramEDFA.Fs = Fs
+
+sigCh = edfa(sigCh, paramEDFA)
+
+# photodiode parameters
+paramPD = parameters()
+paramPD.ideal = False
+paramPD.B = Rs
+paramPD.Fs = Fs
+
 BER = np.zeros(distance.shape)
 Pb = np.zeros(distance.shape)
 
@@ -346,23 +384,18 @@ for indL, L in enumerate(tqdm(distance)):
 
     # optical modulation
     Ai = np.sqrt(Pi)*np.ones(sigTx.size)
-    sigTxo = mzm(Ai, 0.25*sigTx, Vπ, Vb)
+    sigTxo = mzm(Ai, 0.25*sigTx, paramMZM)
     
     # linear optical channel   
-    sigCh = linFiberCh(sigTxo, L, α, D, Fc, Fs)
+    paramCh.L = L
+    sigCh = linearFiberChannel(sigTxo, paramCh)
 
     # receiver pre-amplifier
     if L > 0:
-        G = α*L    # edfa gain
-        NF = 4.5   # edfa noise figure
-        sigCh = edfa(sigCh, Fs, G, NF, Fc)
+        paramEDFA.G = paramCh.α*L  # edfa gain       
+        sigCh = edfa(sigCh, paramEDFA)
 
     # pin receiver
-    paramPD = parameters()
-    paramPD.ideal = False
-    paramPD.B = Rs
-    paramPD.Fs = Fs
-
     I_Rx = photodiode(sigCh, paramPD)
     I_Rx = I_Rx/np.std(I_Rx)
 
@@ -394,5 +427,3 @@ plt.title('BER vs transmission distance')
 plt.legend();
 plt.ylim(-10,0);
 plt.xlim(min(distance), max(distance));
-
-

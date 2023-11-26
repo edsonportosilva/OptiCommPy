@@ -1,0 +1,1074 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="English" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="English" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Digital Signal Processing (DSP) &mdash; OptiCommPy 0.6.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="optic.dsp.core.sigPow" href="generated/optic.dsp.core.sigPow.html" />
+    <link rel="prev" title="optic.comm.ofdm.demodulateOFDM" href="generated/optic.comm.ofdm.demodulateOFDM.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> OptiCommPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="welcome.html">Available features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital Communications Utilities</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Digital Signal Processing (DSP)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#core-digital-signal-processing-utilities-optic-dsp-core">Core digital signal processing utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.sigPow.html">optic.dsp.core.sigPow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.signal_power.html">optic.dsp.core.signal_power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.firFilter.html">optic.dsp.core.firFilter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.rrcFilterTaps.html">optic.dsp.core.rrcFilterTaps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.rcFilterTaps.html">optic.dsp.core.rcFilterTaps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.pulseShape.html">optic.dsp.core.pulseShape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.clockSamplingInterp.html">optic.dsp.core.clockSamplingInterp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.quantizer.html">optic.dsp.core.quantizer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.lowPassFIR.html">optic.dsp.core.lowPassFIR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.decimate.html">optic.dsp.core.decimate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.resample.html">optic.dsp.core.resample</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.upsample.html">optic.dsp.core.upsample</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.symbolSync.html">optic.dsp.core.symbolSync</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.finddelay.html">optic.dsp.core.finddelay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.pnorm.html">optic.dsp.core.pnorm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.gaussianComplexNoise.html">optic.dsp.core.gaussianComplexNoise</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.gaussianNoise.html">optic.dsp.core.gaussianNoise</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.core.phaseNoise.html">optic.dsp.core.phaseNoise</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dsp-algorithms-for-equalization-optic-dsp-equalization">DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.equalization.edc.html">optic.dsp.equalization.edc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.equalization.mimoAdaptEqualizer.html">optic.dsp.equalization.mimoAdaptEqualizer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.carrierRecovery.bps.html">optic.dsp.carrierRecovery.bps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.carrierRecovery.ddpll.html">optic.dsp.carrierRecovery.ddpll</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.carrierRecovery.fourthPowerFOE.html">optic.dsp.carrierRecovery.fourthPowerFOE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.carrierRecovery.cpr.html">optic.dsp.carrierRecovery.cpr</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dsp-algorithms-for-clock-and-timming-recovery-optic-dsp-clockrecovery">DSP algorithms for clock and timming recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.clockRecovery</span></code>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.clockRecovery.gardnerTED.html">optic.dsp.clockRecovery.gardnerTED</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.clockRecovery.gardnerTEDnyquist.html">optic.dsp.clockRecovery.gardnerTEDnyquist</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.clockRecovery.interpolator.html">optic.dsp.clockRecovery.interpolator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.dsp.clockRecovery.gardnerClockRecovery.html">optic.dsp.clockRecovery.gardnerClockRecovery</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Physical Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">General Utilities</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OptiCommPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Digital Signal Processing (DSP)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/dsp.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="digital-signal-processing-dsp">
+<h1>Digital Signal Processing (DSP)<a class="headerlink" href="#digital-signal-processing-dsp" title="Permalink to this heading">¶</a></h1>
+<div class="section" id="core-digital-signal-processing-utilities-optic-dsp-core">
+<h2>Core digital signal processing utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code>)<a class="headerlink" href="#core-digital-signal-processing-utilities-optic-dsp-core" title="Permalink to this heading">¶</a></h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.sigPow.html#optic.dsp.core.sigPow" title="optic.dsp.core.sigPow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sigPow</span></code></a>(x)</p></td>
+<td><p>Calculate the average power of x per mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.signal_power.html#optic.dsp.core.signal_power" title="optic.dsp.core.signal_power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">signal_power</span></code></a>(x)</p></td>
+<td><p>Calculate the total power of x.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.firFilter.html#optic.dsp.core.firFilter" title="optic.dsp.core.firFilter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">firFilter</span></code></a>(h, x)</p></td>
+<td><p>Perform FIR filtering and compensate for filter delay.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.rrcFilterTaps.html#optic.dsp.core.rrcFilterTaps" title="optic.dsp.core.rrcFilterTaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rrcFilterTaps</span></code></a>(t, alpha, Ts)</p></td>
+<td><p>Generate Root-Raised Cosine (RRC) filter coefficients.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.rcFilterTaps.html#optic.dsp.core.rcFilterTaps" title="optic.dsp.core.rcFilterTaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rcFilterTaps</span></code></a>(t, alpha, Ts)</p></td>
+<td><p>Generate Raised Cosine (RC) filter coefficients.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.pulseShape.html#optic.dsp.core.pulseShape" title="optic.dsp.core.pulseShape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pulseShape</span></code></a>(pulseType[, SpS, N, alpha, Ts])</p></td>
+<td><p>Generate a pulse shaping filter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.clockSamplingInterp.html#optic.dsp.core.clockSamplingInterp" title="optic.dsp.core.clockSamplingInterp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clockSamplingInterp</span></code></a>(x[, Fs_in, Fs_out, ...])</p></td>
+<td><p>Interpolate signal to a given sampling rate.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.quantizer.html#optic.dsp.core.quantizer" title="optic.dsp.core.quantizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quantizer</span></code></a>(x[, nBits, maxV, minV])</p></td>
+<td><p>Quantize the input signal using a uniform quantizer with the specified precision.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.lowPassFIR.html#optic.dsp.core.lowPassFIR" title="optic.dsp.core.lowPassFIR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lowPassFIR</span></code></a>(fc, fa, N[, typeF])</p></td>
+<td><p>Calculate FIR coefficients of a lowpass filter.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.decimate.html#optic.dsp.core.decimate" title="optic.dsp.core.decimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decimate</span></code></a>(Ei, param)</p></td>
+<td><p>Decimate signal.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.resample.html#optic.dsp.core.resample" title="optic.dsp.core.resample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample</span></code></a>(Ei, param)</p></td>
+<td><p>Resample signal to a given sampling rate.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.upsample.html#optic.dsp.core.upsample" title="optic.dsp.core.upsample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upsample</span></code></a>(x, factor)</p></td>
+<td><p>Upsample a signal by inserting zeros between samples.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.symbolSync.html#optic.dsp.core.symbolSync" title="optic.dsp.core.symbolSync"><code class="xref py py-obj docutils literal notranslate"><span class="pre">symbolSync</span></code></a>(rx, tx, SpS[, mode])</p></td>
+<td><p>Symbol synchronizer.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.finddelay.html#optic.dsp.core.finddelay" title="optic.dsp.core.finddelay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finddelay</span></code></a>(x, y)</p></td>
+<td><p>Find delay between x and y.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.pnorm.html#optic.dsp.core.pnorm" title="optic.dsp.core.pnorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pnorm</span></code></a>(x)</p></td>
+<td><p>Normalize the average power of each componennt of x.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.gaussianComplexNoise.html#optic.dsp.core.gaussianComplexNoise" title="optic.dsp.core.gaussianComplexNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaussianComplexNoise</span></code></a>(shapeOut, σ2=None)</p></td>
+<td><p>Generate complex circular Gaussian noise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.core.gaussianNoise.html#optic.dsp.core.gaussianNoise" title="optic.dsp.core.gaussianNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaussianNoise</span></code></a>(shapeOut, σ2=None)</p></td>
+<td><p>Generate Gaussian noise.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.core.phaseNoise.html#optic.dsp.core.phaseNoise" title="optic.dsp.core.phaseNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">phaseNoise</span></code></a>(lw, Nsamples, Ts)</p></td>
+<td><p>Generate realization of a random-walk phase-noise process.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">clockSamplingInterp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jitter_rms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-09</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Interpolate signal to a given sampling rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>ndarray</em>) -- Input signal.</p></li>
+<li><p><strong>param</strong> (<em>core.parameter</em>) -- <dl class="simple">
+<dt>Resampling parameters:</dt><dd><p>param.Fs_in  : sampling frequency of the input signal.
+param.Fs_out : sampling frequency of the output signal.
+param.jitter_rms: standard deviation of the time jitter.</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y</strong> -- Resampled signal.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">decimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Decimate signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ei</strong> (<em>np.array</em>) -- Input signal.</p></li>
+<li><p><strong>param</strong> (<em>core.parameter</em>) -- <p>Decimation parameters:</p>
+<ul>
+<li><p>param.SpS_in  : samples per symbol of the input signal.</p></li>
+<li><p>param.SpS_out : samples per symbol of the output signal.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>Eo</strong> -- Decimated signal.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">finddelay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Find delay between x and y.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>np.array</em>) -- Signal 1.</p></li>
+<li><p><strong>y</strong> (<em>np.array</em>) -- Signal 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>d</strong> -- Delay between x and y, in samples.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">firFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Perform FIR filtering and compensate for filter delay.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> (<em>np.array</em>) -- Coefficients of the FIR filter (impulse response, symmetric).</p></li>
+<li><p><strong>x</strong> (<em>np.array</em>) -- Input signal.</p></li>
+<li><p><strong>prec</strong> (<em>cp.dtype</em>) -- Size of the complex representation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y</strong> -- Output (filtered) signal.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">gaussianComplexNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapeOut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate complex circular Gaussian noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shapeOut</strong> (<em>tuple of int</em>) -- Shape of ndarray to be generated.</p></li>
+<li><p><strong>σ2</strong> (<em>float</em><em>, </em><em>optional</em>) -- Variance of the noise (default is 1).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>noise</strong> -- Generated complex circular Gaussian noise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">gaussianNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapeOut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate Gaussian noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shapeOut</strong> (<em>tuple of int</em>) -- Shape of ndarray to be generated.</p></li>
+<li><p><strong>σ2</strong> (<em>float</em><em>, </em><em>optional</em>) -- Variance of the noise (default is 1).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>noise</strong> -- Generated Gaussian noise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">lowPassFIR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typeF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rect'</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Calculate FIR coefficients of a lowpass filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fc</strong> (<em>float</em>) -- Cutoff frequency.</p></li>
+<li><p><strong>fa</strong> (<em>float</em>) -- Sampling frequency.</p></li>
+<li><p><strong>N</strong> (<em>int</em>) -- Number of filter coefficients.</p></li>
+<li><p><strong>typeF</strong> (<em>string</em><em>, </em><em>optional</em>) -- Type of response ('rect', 'gauss'). The default is &quot;rect&quot;.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>h</strong> -- Filter coefficients.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">phaseNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nsamples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate realization of a random-walk phase-noise process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lw</strong> (<em>scalar</em>) -- laser linewidth.</p></li>
+<li><p><strong>Nsamples</strong> (<em>scalar</em>) -- number of samples to be draw.</p></li>
+<li><p><strong>Ts</strong> (<em>scalar</em>) -- sampling period.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>phi</strong> -- realization of the phase noise process.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">pnorm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Normalize the average power of each componennt of x.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>np.array</em>) -- Signal.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Signal x with each component normalized in power.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">pulseShape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulseType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SpS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate a pulse shaping filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pulseType</strong> (<em>string</em><em> (</em><em>'rect'</em><em>,</em><em>'nrz'</em><em>,</em><em>'rrc'</em><em>)</em>) -- type of pulse shaping filter.</p></li>
+<li><p><strong>SpS</strong> (<em>int</em><em>, </em><em>optional</em>) -- Number of samples per symbol of input signal. The default is 2.</p></li>
+<li><p><strong>N</strong> (<em>int</em><em>, </em><em>optional</em>) -- Number of filter coefficients. The default is 1024.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) -- Rolloff of RRC filter. The default is 0.1.</p></li>
+<li><p><strong>Ts</strong> (<em>float</em><em>, </em><em>optional</em>) -- Symbol period in seconds. The default is 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>filterCoeffs</strong> -- Array of filter coefficients (normalized).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">quantizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nBits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxV</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minV</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Quantize the input signal using a uniform quantizer with the specified precision.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>np.array</em>) -- The input signal to be quantized.</p></li>
+<li><p><strong>nBits</strong> (<em>int</em>) -- Number of bits used for quantization. The quantizer will have 2^nBits levels.</p></li>
+<li><p><strong>maxV</strong> (<em>float</em><em>, </em><em>optional</em>) -- Maximum value for the quantizer's full-scale range (default is 1).</p></li>
+<li><p><strong>minV</strong> (<em>float</em><em>, </em><em>optional</em>) -- Minimum value for the quantizer's full-scale range (default is -1).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The quantized output signal with the same shape as 'x', quantized using 'nBits' levels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">rcFilterTaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate Raised Cosine (RC) filter coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>array-like</em>) -- Time values.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) -- RC roll-off factor.</p></li>
+<li><p><strong>Ts</strong> (<em>float</em>) -- Symbol period.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>coeffs</strong> -- RC filter coefficients.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Resample signal to a given sampling rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ei</strong> (<em>ndarray</em>) -- Input signal.</p></li>
+<li><p><strong>param</strong> (<em>core.parameter</em>) -- <dl class="simple">
+<dt>Resampling parameters:</dt><dd><p>param.Rs      : symbol rate of the signal
+param.SpS_in  : samples per symbol of the input signal.
+param.SpS_out : samples per symbol of the output signal.</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>Eo</strong> -- Resampled signal.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">rrcFilterTaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate Root-Raised Cosine (RRC) filter coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>array-like</em>) -- Time values.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) -- RRC roll-off factor.</p></li>
+<li><p><strong>Ts</strong> (<em>float</em>) -- Symbol period.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>coeffs</strong> -- RRC filter coefficients.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">sigPow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Calculate the average power of x per mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>np.array</em>) -- Signal.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Average power of x: P = mean(abs(x)**2).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>scalar</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">signal_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Calculate the total power of x.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>np.array</em>) -- Signal.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Total power of x: P = sum(abs(x)**2).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>scalar</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">symbolSync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SpS</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'amp'</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Symbol synchronizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rx</strong> (<em>np.array</em>) -- Received symbol sequence.</p></li>
+<li><p><strong>tx</strong> (<em>np.array</em>) -- Transmitted symbol sequence.</p></li>
+<li><p><strong>SpS</strong> (<em>int</em>) -- Samples per symbol of input signals.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>tx</strong> -- Transmitted sequence synchronized to rx.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">upsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Upsample a signal by inserting zeros between samples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like</em>) -- Input signal to upsample.</p></li>
+<li><p><strong>factor</strong> (<em>int</em>) -- Upsampling factor. The signal will be upsampled by inserting
+<em class="xref py py-obj">factor - 1</em> zeros between each original sample.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>xUp</strong> -- The upsampled signal with zeros inserted between samples.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function inserts zeros between the samples of the input signal to
+increase its sampling rate. The upsampling factor determines how many
+zeros are inserted between each original sample.</p>
+<p>If the input signal is a 2D array, the upsampling is performed
+column-wise.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="dsp-algorithms-for-equalization-optic-dsp-equalization">
+<h2>DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)<a class="headerlink" href="#dsp-algorithms-for-equalization-optic-dsp-equalization" title="Permalink to this heading">¶</a></h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.equalization.edc.html#optic.dsp.equalization.edc" title="optic.dsp.equalization.edc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">edc</span></code></a>(Ei, param)</p></td>
+<td><p>Electronic chromatic dispersion compensation (EDC).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.equalization.mimoAdaptEqualizer.html#optic.dsp.equalization.mimoAdaptEqualizer" title="optic.dsp.equalization.mimoAdaptEqualizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mimoAdaptEqualizer</span></code></a>(x[, dx, paramEq])</p></td>
+<td><p>N-by-N MIMO adaptive equalizer.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">dbp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ltotal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lspan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Digital backpropagation (symmetric, single-pol.)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ei</strong> -- input signal</p></li>
+<li><p><strong>Ltotal</strong> -- total fiber length [km]</p></li>
+<li><p><strong>Lspan</strong> -- span length [km]</p></li>
+<li><p><strong>hz</strong> -- step-size for the split-step Fourier method [km][default: 0.5 km]</p></li>
+<li><p><strong>alpha</strong> -- fiber attenuation parameter [dB/km][default: 0.2 dB/km]</p></li>
+<li><p><strong>D</strong> -- chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]</p></li>
+<li><p><strong>gamma</strong> -- fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]</p></li>
+<li><p><strong>Fc</strong> -- carrier frequency [Hz][default: 193.1e12 Hz]</p></li>
+<li><p><strong>Fs</strong> -- sampling frequency [Hz]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return Ech</dt>
+<dd class="field-even"><p>backpropagated signal</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">edc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Electronic chromatic dispersion compensation (EDC).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical field.</p></li>
+<li><p><strong>param</strong> (<em>parameter object</em><em>  (</em><em>struct</em><em>)</em>) -- <p>Object with physical/simulation parameters of the optical channel.</p>
+<ul>
+<li><p>param.L: total fiber length [km][default: 50 km]</p></li>
+<li><p>param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]</p></li>
+<li><p>param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]</p></li>
+<li><p>param.Fs: sampling frequency [Hz] [default: []]</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>CD compensated signal.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">mimoAdaptEqualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramEq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>N-by-N MIMO adaptive equalizer.</p>
+<p>Algorithms available: 'cma', 'rde', 'nlms', 'dd-lms', 'da-rde', 'rls', 'dd-rls', 'static'.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like</em>) -- Input array.</p></li>
+<li><p><strong>dx</strong> (<em>array-like</em><em>, </em><em>optional</em>) -- Syncronized exact symbol sequence corresponding to the received input array x.</p></li>
+<li><p><strong>paramEq</strong> (<em>object</em><em>, </em><em>optional</em>) -- <p>Parameter object containing the following attributes:</p>
+<ul>
+<li><p>numIter : int, number of pre-convergence iterations (default: 1)</p></li>
+<li><p>nTaps : int, number of filter taps (default: 15)</p></li>
+<li><p>mu : float or list of floats, step size parameter(s) (default: [1e-3])</p></li>
+<li><p>lambdaRLS : float, RLS forgetting factor (default: 0.99)</p></li>
+<li><p>SpS : int, samples per symbol (default: 2)</p></li>
+<li><p>H : array-like, coefficient matrix (default: [])</p></li>
+<li><p>L : int or list of ints, length of the output of the training section (default: [])</p></li>
+<li><p>Hiter : list, history of coefficient matrices (default: [])</p></li>
+<li><p>storeCoeff : bool, flag indicating whether to store coefficient matrices (default: False)</p></li>
+<li><p>alg : str or list of strs, specifying the equalizer algorithm(s) (default: ['nlms'])</p></li>
+<li><p>constType : str, constellation type (default: 'qam')</p></li>
+<li><p>M : int, modulation order (default: 4)</p></li>
+<li><p>prgsBar : bool, flag indicating whether to display progress bar (default: True)</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>yEq</strong> (<em>array-like</em>) -- Equalized output array.</p></li>
+<li><p><strong>H</strong> (<em>array-like</em>) -- Coefficient matrix.</p></li>
+<li><p><strong>errSq</strong> (<em>array-like</em>) -- Squared absolute error array.</p></li>
+<li><p><strong>Hiter</strong> (<em>list</em>) -- History of coefficient matrices.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">
+<h2>DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)<a class="headerlink" href="#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery" title="Permalink to this heading">¶</a></h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.carrierRecovery.bps.html#optic.dsp.carrierRecovery.bps" title="optic.dsp.carrierRecovery.bps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bps</span></code></a></p></td>
+<td><p>Blind phase search (BPS) algorithm</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.carrierRecovery.ddpll.html#optic.dsp.carrierRecovery.ddpll" title="optic.dsp.carrierRecovery.ddpll"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ddpll</span></code></a></p></td>
+<td><p>Decision-directed Phase-locked Loop (DDPLL) algorithm</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.carrierRecovery.fourthPowerFOE.html#optic.dsp.carrierRecovery.fourthPowerFOE" title="optic.dsp.carrierRecovery.fourthPowerFOE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fourthPowerFOE</span></code></a></p></td>
+<td><p>Estimate the frequency offset (FO) with the 4th-power method.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.carrierRecovery.cpr.html#optic.dsp.carrierRecovery.cpr" title="optic.dsp.carrierRecovery.cpr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpr</span></code></a></p></td>
+<td><p>Carrier phase recovery function (CPR)</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">bps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Blind phase search (BPS) algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ei</strong> (<em>complex-valued ndarray</em>) -- Received constellation symbols.</p></li>
+<li><p><strong>N</strong> (<em>int</em>) -- Half of the 2*N+1 average window.</p></li>
+<li><p><strong>constSymb</strong> (<em>complex-valued ndarray</em>) -- Complex-valued constellation.</p></li>
+<li><p><strong>B</strong> (<em>int</em>) -- number of test phases.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>θ</strong> -- Time-varying estimated phase-shifts.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>real-valued ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramCPR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Carrier phase recovery function (CPR)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ei</strong> (<em>complex-valued ndarray</em>) -- received constellation symbols.</p></li>
+<li><p><strong>symbTx</strong> (<em>complex-valued ndarray</em><em>, </em><em>optional</em>) -- Transmitted symbol sequence. The default is [].</p></li>
+<li><p><strong>paramCPR</strong> (<em>core.param object</em><em>, </em><em>optional</em>) -- <p>configuration parameters. The default is [].</p>
+<p>BPS params:</p>
+<ul>
+<li><p>paramCPR.alg: CPR algorithm to be used ['bps' or 'ddpll']</p></li>
+<li><p>paramCPR.M: constellation order. The default is 4.</p></li>
+<li><p>paramCPR.N: length of BPS the moving average window. The default is 35.</p></li>
+<li><p>paramCPR.B: number of BPS test phases. The default is 64.</p></li>
+</ul>
+<p>DDPLL params:</p>
+<ul>
+<li><p>paramCPR.tau1: DDPLL loop filter param. 1. The default is 1/2*pi*10e6.</p></li>
+<li><p>paramCPR.tau2: DDPLL loop filter param. 2. The default is 1/2*pi*10e6.</p></li>
+<li><p>paramCPR.Kv: DDPLL loop filter gain. The default is 0.1.</p></li>
+<li><p>paramCPR.Ts: symbol period. The default is 1/32e9.</p></li>
+<li><p>paramCPR.pilotInd: indexes of pilot-symbol locations.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> -- Error is generated if the CPR algorithm is not correctly
+    passed.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>Eo</strong> (<em>complex-valued ndarray</em>) -- Phase-compensated signal.</p></li>
+<li><p><strong>θ</strong> (<em>real-valued ndarray</em>) -- Time-varying estimated phase-shifts.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">ddpll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pilotInd</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Decision-directed Phase-locked Loop (DDPLL) algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ei</strong> (<em>complex-valued ndarray</em>) -- Received constellation symbols.</p></li>
+<li><p><strong>Ts</strong> (<em>float scalar</em>) -- Symbol period.</p></li>
+<li><p><strong>Kv</strong> (<em>float scalar</em>) -- Loop filter gain.</p></li>
+<li><p><strong>tau1</strong> (<em>float scalar</em>) -- Loop filter parameter 1.</p></li>
+<li><p><strong>tau2</strong> (<em>float scalar</em>) -- Loop filter parameter 2.</p></li>
+<li><p><strong>constSymb</strong> (<em>complex-valued ndarray</em>) -- Complex-valued ideal constellation symbols.</p></li>
+<li><p><strong>symbTx</strong> (<em>complex-valued ndarray</em>) -- Transmitted symbol sequence.</p></li>
+<li><p><strong>pilotInd</strong> (<em>int ndarray</em>) -- Indexes of pilot-symbol locations.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>θ</strong> -- Time-varying estimated phase-shifts.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>real-valued ndarray</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] H. Meyer, Digital Communication Receivers: Synchronization, Channel
+estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">fourthPowerFOE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotSpec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Estimate the frequency offset (FO) with the 4th-power method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ei</strong> (<em>ndarray</em>) -- Input signal.</p></li>
+<li><p><strong>Fs</strong> (<em>float</em>) -- Sampling frequency.</p></li>
+<li><p><strong>plotSpec</strong> (<em>bool</em><em>, </em><em>optional</em>) -- Whether to plot the spectrum. Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>The output signal after applying frequency offset correction.</p></li>
+<li><p>The estimated frequency offset.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray, float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="dsp-algorithms-for-clock-and-timming-recovery-optic-dsp-clockrecovery">
+<h2>DSP algorithms for clock and timming recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.clockRecovery</span></code>)<a class="headerlink" href="#dsp-algorithms-for-clock-and-timming-recovery-optic-dsp-clockrecovery" title="Permalink to this heading">¶</a></h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.clockRecovery.gardnerTED.html#optic.dsp.clockRecovery.gardnerTED" title="optic.dsp.clockRecovery.gardnerTED"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gardnerTED</span></code></a></p></td>
+<td><p>Calculate the timing error using the Gardner timing error detector.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.clockRecovery.gardnerTEDnyquist.html#optic.dsp.clockRecovery.gardnerTEDnyquist" title="optic.dsp.clockRecovery.gardnerTEDnyquist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gardnerTEDnyquist</span></code></a></p></td>
+<td><p>Modified Gardner timing error detector for Nyquist pulses.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.dsp.clockRecovery.interpolator.html#optic.dsp.clockRecovery.interpolator" title="optic.dsp.clockRecovery.interpolator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolator</span></code></a></p></td>
+<td><p>Perform cubic interpolation using the Farrow structure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.dsp.clockRecovery.gardnerClockRecovery.html#optic.dsp.clockRecovery.gardnerClockRecovery" title="optic.dsp.clockRecovery.gardnerClockRecovery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gardnerClockRecovery</span></code></a></p></td>
+<td><p>Perform clock recovery using Gardner's algorithm with a loop PI filter.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">gardnerClockRecovery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Perform clock recovery using Gardner's algorithm with a loop PI filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ei</strong> (<em>numpy.ndarray</em>) -- Input array representing the received signal.</p></li>
+<li><p><strong>param</strong> (<em>core.parameter</em>) -- <dl class="simple">
+<dt>Resampling parameters:</dt><dd><ul>
+<li><p>kp : Proportional gain for the loop filter. Default is 1e-3.</p></li>
+<li><p>ki : Integral gain for the loop filter. Default is 1e-6.</p></li>
+<li><p>isNyquist: is the pulse shape a Nyquist pulse? Default is True.</p></li>
+<li><p>returnTiming: return estimated timing values. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple containing the recovered signal (Eo) and the timing values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">gardnerTED</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Calculate the timing error using the Gardner timing error detector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) -- Input array of size 3 representing a segment of the received signal.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Gardner timing error detector (TED) value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">gardnerTEDnyquist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Modified Gardner timing error detector for Nyquist pulses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) -- Input array of size 3 representing a segment of the received signal.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Gardner timing error detector (TED) value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">interpolator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Perform cubic interpolation using the Farrow structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>numpy.ndarray</em>) -- Input array of size 4 representing the values for cubic interpolation.</p></li>
+<li><p><strong>t</strong> (<em>float</em>) -- Interpolation parameter.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y</strong> -- Interpolated signal value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="generated/optic.dsp.core.sigPow.html" class="btn btn-neutral float-right" title="optic.dsp.core.sigPow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="generated/optic.comm.ofdm.demodulateOFDM.html" class="btn btn-neutral float-left" title="optic.comm.ofdm.demodulateOFDM" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

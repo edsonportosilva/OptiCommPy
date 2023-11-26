@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -28,12 +28,13 @@ if 'google.colab' in str(get_ipython()):
 import matplotlib.pyplot as plt
 import numpy as np
 
-from optic.dsp import pulseShape, firFilter, decimate, symbolSync, pnorm
-from optic.models import awgn, phaseNoise, pdmCoherentReceiver
-from optic.carrierRecovery import cpr
-from optic.tx import simpleWDMTx
-from optic.core import parameters
-from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power, calcEVM
+from optic.dsp.core import pulseShape, firFilter, decimate, symbolSync, pnorm, signal_power
+from optic.models.devices import pdmCoherentReceiver, basicLaserModel
+from optic.models.channels import awgn
+from optic.models.tx import simpleWDMTx
+from optic.dsp.carrierRecovery import cpr
+from optic.utils import parameters, dBm2W
+from optic.comm.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, calcEVM
 from optic.plot import pconst
 
 import scipy.constants as const
@@ -81,7 +82,7 @@ paramTx.alphaRRC = 0.01    # RRC rolloff
 paramTx.Pch_dBm = 1        # power per WDM channel [dBm]
 paramTx.Nch     = 1        # number of WDM channels
 paramTx.Fc      = 193.1e12 # central optical frequency of the WDM spectrum
-#paramTx.freqSpac = 37.5e9  # WDM grid spacing
+paramTx.lw      = 100e3  # laser linewidth
 paramTx.Nmodes = 2         # number of signal modes [2 for polarization multiplexed signals]
 
 # generate WDM signal
@@ -91,7 +92,7 @@ Fs = paramTx.Rs*paramTx.SpS # sampling frequency
 # -
 # ### Add noise to fix the SNR
 
-SNR = 35
+SNR = 30
 sigCh = awgn(sigTx, SNR, Fs, paramTx.Rs)
 
 # ###  Simulate a coherent receiver frontend subject to laser phase noise and frequency offset
@@ -100,34 +101,34 @@ sigCh = awgn(sigTx, SNR, Fs, paramTx.Rs)
 # Receiver
 
 # parameters
-chIndex  = 0     # index of the channel to be demodulated
-plotPSD  = True
-
-Fc = paramTx.Fc
-Ts = 1/(paramTx.SpS*paramTx.Rs)
+chIndex  = 0    # index of the channel to be demodulated
 
 freqGrid = paramTx.freqGrid
+π  = np.pi
+t  = np.arange(0, len(sigCh))*1/Fs 
+
 print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
-      %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
+      %(chIndex, (paramTx.Fc + freqGrid[chIndex])/1e12, const.c/(paramTx.Fc + freqGrid[chIndex])/1e-9))
 
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 150e6                # frequency offset
+FO      = 150e6                 # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 200e3                 # linewidth
-Plo_dBm = 10                    # power in dBm
-Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
-ϕ_lo    = 0                     # initial phase in rad    
+
+# generate CW laser LO field
+paramLO = parameters()
+paramLO.P = 10              # power in dBm
+paramLO.lw = 100e3          # laser linewidth
+paramLO.RIN_var = 0
+paramLO.Ns = len(sigCh)
+paramLO.Fs = Fs
+
+sigLO = basicLaserModel(paramLO)
+sigLO = sigLO*np.exp(1j*2*π*Δf_lo*t) # add frequency offset
 
 print('Local oscillator P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz\n'\
-      %(Plo_dBm, lw/1e3, FO/1e6))
-
-# generate LO field
-π       = np.pi
-t       = np.arange(0, len(sigTx))*Ts
-ϕ_pn_lo = phaseNoise(lw, len(sigTx), Ts)
-sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
+      %(paramLO.P, paramLO.lw/1e3, FO/1e6))
 
 # polarization multiplexed coherent optical receiver
 sigRx = pdmCoherentReceiver(sigCh, sigLO, θsig = 0)
@@ -149,9 +150,6 @@ elif paramTx.pulse == 'rrc':
     
 pulse = pulse/np.max(np.abs(pulse))            
 sigRx = firFilter(pulse, sigRx)
-
-# plot constellation
-pconst(sigRx[0::paramTx.SpS,:], R=1.75, cmap=constCMAP);
 # -
 
 # ### Downsample to 1 sample/symbol and power normalization
@@ -256,5 +254,3 @@ print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
 print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
-# -
-

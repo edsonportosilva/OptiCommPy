@@ -1,19 +1,54 @@
 """Plot utilities."""
 import matplotlib.pyplot as plt
+from matplotlib import cm
+import mpl_scatter_density
 import numpy as np
+import copy
 from scipy.interpolate import interp1d
 from scipy.ndimage.filters import gaussian_filter
 
-from optic.dsp import pnorm
-from optic.metrics import signal_power
+from optic.dsp.core import pnorm, signal_power
+import warnings
 
+warnings.filterwarnings('ignore', r'All-NaN (slice|axis) encountered')
 
-def pconst(x, lim=False, R=1.5, pType="fancy", cmap="turbo"):
+def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
     """
     Plot signal constellations.
-
-    :param x: complex signals or list of complex signals
-
+    
+    Parameters
+    ----------
+    x : complex signals or list of complex signals
+        Input signals.
+    
+    lim : bool, optional
+        Flag indicating whether to limit the axes to the radius of the signal. 
+        Defaults to True.
+    
+    R : float, optional
+        Scaling factor for the radius of the signal. 
+        Defaults to 1.25.
+    
+    pType : str, optional
+        Type of plot. "fancy" for scatter_density plot, "fast" for fast plot.
+        Defaults to "fancy".
+    
+    cmap : str, optional
+        Color map for scatter_density plot.
+        Defaults to "turbo".
+    
+    whiteb : bool, optional
+        Flag indicating whether to use white background for scatter_density plot.
+        Defaults to True.
+    
+    Returns
+    -------
+    fig : Figure
+        Figure object.
+    
+    ax : Axes or array of Axes
+        Axes object(s).
+    
     """
     if type(x) == list:
         for ind, _ in enumerate(x):
@@ -49,13 +84,16 @@ def pconst(x, lim=False, R=1.5, pType="fancy", cmap="turbo"):
         fig = plt.figure()
 
         if type(x) == list:
-            for k in range(nSubPts):
-                ax = fig.add_subplot(nRows, nCols, Position[k])
+            for k in range(nSubPts):           
 
                 for ind in range(len(x)):
                     if pType == "fancy":
-                        ax = constHist(x[ind][:, k], ax, radius, cmap)
+                        if ind == 0:
+                            ax = fig.add_subplot(nRows, nCols, Position[k], projection='scatter_density')
+                        ax = constHist(x[ind][:, k], ax, radius, cmap, whiteb)
                     elif pType == "fast":
+                        if ind == 0:
+                            ax = fig.add_subplot(nRows, nCols, Position[k])
                         ax.plot(x[ind][:, k].real, x[ind][:, k].imag, ".")
 
                 ax.axis("square")
@@ -68,11 +106,12 @@ def pconst(x, lim=False, R=1.5, pType="fancy", cmap="turbo"):
                     ax.set_xlim(-radius, radius)
                     ax.set_ylim(-radius, radius)
         else:
-            for k in range(nSubPts):
-                ax = fig.add_subplot(nRows, nCols, Position[k])
+            for k in range(nSubPts):                
                 if pType == "fancy":
-                    ax = constHist(x[:, k], ax, radius, cmap)
+                    ax = fig.add_subplot(nRows, nCols, Position[k], projection='scatter_density')
+                    ax = constHist(x[:, k], ax, radius, cmap, whiteb)
                 elif pType == "fast":
+                    ax = fig.add_subplot(nRows, nCols, Position[k])
                     ax.plot(x[:, k].real, x[:, k].imag, ".")
 
                 ax.axis("square")
@@ -89,10 +128,12 @@ def pconst(x, lim=False, R=1.5, pType="fancy", cmap="turbo"):
 
     elif nSubPts == 1:
         fig = plt.figure()
-        ax = plt.gca()
+        #ax = plt.gca()
         if pType == "fancy":
-            ax = constHist(x[:, 0], ax, radius, cmap)
+            ax = fig.add_subplot(1, 1, 1, projection='scatter_density')
+            ax = constHist(x[:, 0], ax, radius, cmap, whiteb)
         elif pType == "fast":
+            ax = plt.gca()
             ax.plot(x.real, x.imag, ".")
         plt.axis("square")
         ax.set_xlabel("In-Phase (I)")
@@ -108,7 +149,7 @@ def pconst(x, lim=False, R=1.5, pType="fancy", cmap="turbo"):
     return fig, ax
 
 
-def constHist(symb, ax, radius, cmap="turbo"):
+def constHist(symb, ax, radius, cmap="turbo", whiteb=True):
     """
     Generate histogram-based constellation plot.
 
@@ -127,24 +168,13 @@ def constHist(symb, ax, radius, cmap="turbo"):
         axis of the plot.
 
     """
-    irange = radius * np.sqrt(signal_power(symb))
-    imRange = np.array([[-irange, irange], [-irange, irange]])
-
-    H, xedges, yedges = np.histogram2d(
-        symb.real, symb.imag, bins=500, range=imRange
-    )
-
-    H = H.T
-
-    H = gaussian_filter(H, sigma=8)
-    ax.imshow(
-        H,
-        cmap=cmap,
-        origin="lower",
-        aspect="auto",
-        extent=[-irange, irange, -irange, irange],
-    )
-
+    cmap = copy.copy(cm.get_cmap(cmap))
+    if  whiteb:
+        cmap.set_under(alpha=0)
+    
+    ax.scatter_density(symb.real, symb.imag, cmap=cmap, 
+                             vmin=0.25, vmax=np.nanmax,
+                             dpi=72, downres_factor=2)
     return ax
 
 
@@ -152,13 +182,29 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     """
     Plot the eye diagram of a modulated signal waveform.
 
-    :param Nsamples: number os samples to be plotted
-    :param SpS: samples per symbol
-    :param n: number of symbol periods
-    :param type: 'fast' or 'fancy'
-    :param plotlabel: label for the plot legend
+    Parameters
+    ----------
+    sigIn : array-like
+        Input signal waveform.
+    Nsamples : int
+        Number of samples to be plotted.
+    SpS : int
+        Samples per symbol.
+    n : int, optional
+        Number of symbol periods. Defaults to 3.
+    ptype : str, optional
+        Type of eye diagram. Can be 'fast' or 'fancy'. Defaults to 'fast'.
+    plotlabel : str, optional
+        Label for the plot legend. Defaults to None.
+
+    Returns
+    -------
+    None
     """
     sig = sigIn.copy()
+
+    if not plotlabel:
+        plotlabel = " "
 
     if np.iscomplex(sig).any():
         d = 1
@@ -179,7 +225,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
         if ptype == "fancy":
             f = interp1d(np.arange(y.size), y, kind="cubic")
 
-            Nup = 20 * SpS
+            Nup = 40 * SpS
             tnew = np.arange(y.size) * (1 / Nup)
             y_ = f(tnew)
 
@@ -187,7 +233,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             imRange = np.array(
                 [
                     [min(taxis), max(taxis)],
-                    [min(y) - 0.1 * np.mean(y), 1.1 * max(y)],
+                    [min(y) - 0.1 * np.mean(np.abs(y)), 1.1 * max(y)],
                 ]
             )
 
@@ -196,9 +242,8 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             )
 
             H = H.T
-            H = gaussian_filter(H, sigma=0.9)
+            H = gaussian_filter(H, sigma=1.0)
 
-            # plt.figure(figsize=(10, 3))
             plt.imshow(
                 H,
                 cmap="turbo",
@@ -206,27 +251,27 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
                 aspect="auto",
                 extent=[0, n, yedges[0], yedges[-1]],
             )
-            plt.xlabel("symbol period (Ts)")
-            plt.ylabel("amplitude")
+
         elif ptype == "fast":
             y[x == n * SpS] = np.nan
             y[x == 0] = np.nan
 
             plt.plot(x / SpS, y, color="blue", alpha=0.8, label=plotlabel_)
-            plt.xlim(min(x / SpS), max(x / SpS))
-            plt.xlabel("symbol period (Ts)")
-            plt.ylabel("amplitude")
-            plt.title("eye diagram")
+            plt.xlim(min(x / SpS), max(x / SpS)) 
 
             if plotlabel is not None:
                 plt.legend(loc="upper left")
 
-            plt.grid()
-            plt.show()
+        plt.xlabel("symbol period (Ts)")
+        plt.ylabel("amplitude")
+        plt.title(f"eye diagram {plotlabel_}")        
+        plt.grid(alpha=0.15)
+        plt.show()
+
     return None
 
 
-def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=[], label=[]):
+def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
     """
     Plot the power spectrum density (PSD) of a signal.
 
@@ -253,6 +298,10 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=[], label=[]):
         matplotlib axes object where the plot is displayed.
 
     """
+    if fig is None:
+        fig = []
+    if label is None:
+        label = []
     if not fig:
         fig = plt.figure()
 
@@ -263,7 +312,7 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=[], label=[]):
        sig.shape[1]       
     except IndexError:
        sig = sig.reshape(len(sig), 1)
-       
+
     for indMode in range(sig.shape[1]):
         plt.psd(
             sig[:, indMode],
@@ -271,7 +320,7 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=[], label=[]):
             Fc=Fc,
             NFFT=NFFT,
             sides="twosided",
-            label=label + ": Mode " + str(indMode),
+            label=f"{label}: Mode {str(indMode)}",
         )
     plt.legend(loc="lower left")
     plt.xlim(Fc - Fs / 2, Fc + Fs / 2)

@@ -1,0 +1,256 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="English" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="English" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>optic.dsp.carrierRecovery.bps &mdash; OptiCommPy 0.6.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="optic.dsp.carrierRecovery.ddpll" href="optic.dsp.carrierRecovery.ddpll.html" />
+    <link rel="prev" title="optic.dsp.equalization.mimoAdaptEqualizer" href="optic.dsp.equalization.mimoAdaptEqualizer.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> OptiCommPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Available features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../comm.html">Digital Communications Utilities</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../dsp.html">Digital Signal Processing (DSP)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../dsp.html#core-digital-signal-processing-utilities-optic-dsp-core">Core digital signal processing utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-equalization-optic-dsp-equalization">DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.dsp.carrierRecovery.bps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.carrierRecovery.ddpll.html">optic.dsp.carrierRecovery.ddpll</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.carrierRecovery.fourthPowerFOE.html">optic.dsp.carrierRecovery.fourthPowerFOE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.carrierRecovery.cpr.html">optic.dsp.carrierRecovery.cpr</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-clock-and-timming-recovery-optic-dsp-clockrecovery">DSP algorithms for clock and timming recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.clockRecovery</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">Physical Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">General Utilities</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OptiCommPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../dsp.html">Digital Signal Processing (DSP)</a> &raquo;</li>
+        
+      <li>optic.dsp.carrierRecovery.bps</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/generated/optic.dsp.carrierRecovery.bps.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="optic-dsp-carrierrecovery-bps">
+<h1>optic.dsp.carrierRecovery.bps<a class="headerlink" href="#optic-dsp-carrierrecovery-bps" title="Permalink to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="optic.dsp.carrierRecovery.bps">
+<span class="sig-name descname"><span class="pre">bps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.bps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Blind phase search (BPS) algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ei</strong> (<em>complex-valued ndarray</em>) -- Received constellation symbols.</p></li>
+<li><p><strong>N</strong> (<em>int</em>) -- Half of the 2*N+1 average window.</p></li>
+<li><p><strong>constSymb</strong> (<em>complex-valued ndarray</em>) -- Complex-valued constellation.</p></li>
+<li><p><strong>B</strong> (<em>int</em>) -- number of test phases.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>θ</strong> -- Time-varying estimated phase-shifts.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>real-valued ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="optic.dsp.carrierRecovery.ddpll.html" class="btn btn-neutral float-right" title="optic.dsp.carrierRecovery.ddpll" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="optic.dsp.equalization.mimoAdaptEqualizer.html" class="btn btn-neutral float-left" title="optic.dsp.equalization.mimoAdaptEqualizer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

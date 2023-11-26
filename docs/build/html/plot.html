@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="English" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="English" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Plot Utilities &mdash; OptiCommPy 0.6.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="General Utilities" href="utils.html" />
+    <link rel="prev" title="optic.models.tx.simpleWDMTx" href="generated/optic.models.tx.simpleWDMTx.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> OptiCommPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="welcome.html">Available features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital Communications Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">Digital Signal Processing (DSP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Physical Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Plot Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">General Utilities</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OptiCommPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Plot Utilities</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/plot.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="plot-utilities">
+<h1>Plot Utilities<a class="headerlink" href="#plot-utilities" title="Permalink to this heading">¶</a></h1>
+<p>Plot utilities.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">constHist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'turbo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">whiteb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate histogram-based constellation plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symb</strong> (<em>np.array</em>) -- Complex-valued constellation symbols.</p></li>
+<li><p><strong>ax</strong> (<em>axis object handle</em>) -- axis of the plot.</p></li>
+<li><p><strong>radius</strong> (<em>real scalar</em>) -- Parameter to adjust the x,y-range of the plot.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>ax</strong> -- axis of the plot.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>axis object handle</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">eyediagram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigIn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nsamples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SpS</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fast'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Plot the eye diagram of a modulated signal waveform.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigIn</strong> (<em>array-like</em>) -- Input signal waveform.</p></li>
+<li><p><strong>Nsamples</strong> (<em>int</em>) -- Number of samples to be plotted.</p></li>
+<li><p><strong>SpS</strong> (<em>int</em>) -- Samples per symbol.</p></li>
+<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) -- Number of symbol periods. Defaults to 3.</p></li>
+<li><p><strong>ptype</strong> (<em>str</em><em>, </em><em>optional</em>) -- Type of eye diagram. Can be 'fast' or 'fancy'. Defaults to 'fast'.</p></li>
+<li><p><strong>plotlabel</strong> (<em>str</em><em>, </em><em>optional</em>) -- Label for the plot legend. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">pconst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pType</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fancy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'turbo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">whiteb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Plot signal constellations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>complex signals</em><em> or </em><em>list of complex signals</em>) -- Input signals.</p></li>
+<li><p><strong>lim</strong> (<em>bool</em><em>, </em><em>optional</em>) -- Flag indicating whether to limit the axes to the radius of the signal.
+Defaults to True.</p></li>
+<li><p><strong>R</strong> (<em>float</em><em>, </em><em>optional</em>) -- Scaling factor for the radius of the signal.
+Defaults to 1.25.</p></li>
+<li><p><strong>pType</strong> (<em>str</em><em>, </em><em>optional</em>) -- Type of plot. &quot;fancy&quot; for scatter_density plot, &quot;fast&quot; for fast plot.
+Defaults to &quot;fancy&quot;.</p></li>
+<li><p><strong>cmap</strong> (<em>str</em><em>, </em><em>optional</em>) -- Color map for scatter_density plot.
+Defaults to &quot;turbo&quot;.</p></li>
+<li><p><strong>whiteb</strong> (<em>bool</em><em>, </em><em>optional</em>) -- Flag indicating whether to use white background for scatter_density plot.
+Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>fig</strong> (<em>Figure</em>) -- Figure object.</p></li>
+<li><p><strong>ax</strong> (<em>Axes or array of Axes</em>) -- Axes object(s).</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">plotPSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NFFT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4096</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Plot the power spectrum density (PSD) of a signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sig</strong> (<em>np.array</em>) -- input signal.</p></li>
+<li><p><strong>Fs</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- signal's sampling frequency. The default is 1.</p></li>
+<li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- signal's central frequency. The default is 0.</p></li>
+<li><p><strong>NFFT</strong> (<em>scalar int</em><em>, </em><em>optional</em>) -- FFT size. The default is 4096.</p></li>
+<li><p><strong>fig</strong> (<em>figure object</em><em>, </em><em>optional</em>) -- matplotlib figure handle. The default is [].</p></li>
+<li><p><strong>label</strong> (<em>string</em><em>, </em><em>optional</em>) -- PSD plot label. The default is [].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>fig</strong> (<em>matplotlib figure object</em>) -- matplotlib figure object where the plot is generated.</p></li>
+<li><p><em>matplotlib axes object</em> -- matplotlib axes object where the plot is displayed.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="utils.html" class="btn btn-neutral float-right" title="General Utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="generated/optic.models.tx.simpleWDMTx.html" class="btn btn-neutral float-left" title="optic.models.tx.simpleWDMTx" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

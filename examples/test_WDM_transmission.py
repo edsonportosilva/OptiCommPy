@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -31,26 +31,25 @@ if 'google.colab' in str(get_ipython()):
 import matplotlib.pyplot as plt
 import numpy as np
 
-from optic.dsp import pulseShape, firFilter, decimate, symbolSync, pnorm
-from optic.models import phaseNoise, pdmCoherentReceiver
+from optic.dsp.core import pulseShape, firFilter, decimate, symbolSync, pnorm, signal_power
+from optic.models.devices import pdmCoherentReceiver, basicLaserModel
 
 try:
-    from optic.modelsGPU import manakovSSF
+    from optic.models.modelsGPU import manakovSSF
 except:
-    from optic.models import manakovSSF
+    from optic.models.channels import manakovSSF
 
-from optic.tx import simpleWDMTx
-from optic.core import parameters
-from optic.equalization import edc, mimoAdaptEqualizer
-from optic.carrierRecovery import cpr
-from optic.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, signal_power, calcEVM
+from optic.models.tx import simpleWDMTx
+from optic.utils import parameters, dBm2W
+from optic.dsp.equalization import edc, mimoAdaptEqualizer
+from optic.dsp.carrierRecovery import cpr
+from optic.comm.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, calcEVM
 from optic.plot import pconst, plotPSD
 
 import scipy.constants as const
 
 import logging as logg
-logg.getLogger().setLevel(logg.INFO)
-logg.basicConfig(format='%(message)s')
+logg.basicConfig(level=logg.INFO, format='%(message)s', force=True)
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 17} id="7df01820" outputId="604d8ed4-041f-4280-ec2b-972c3a244a4d"
 from IPython.core.display import HTML
@@ -115,18 +114,21 @@ paramCh.Fc = paramTx.Fc  # central optical frequency of the WDM spectrum
 paramCh.hz = 0.5         # step-size of the split-step Fourier method [km]
 paramCh.maxIter = 5      # maximum number of convergence iterations per step
 paramCh.tol = 1e-5       # error tolerance per step
+paramCh.nlprMethod = True # use adaptive step-size based o maximum nonlinear phase-shift?
+paramCh.maxNlinPhaseRot = 2e-2 # maximum nonlinear phase-shift per step
 paramCh.prgsBar = True   # show progress bar?
 #paramCh.saveSpanN = [1, 5, 9, 14]
-Fs = paramTx.Rs*paramTx.SpS # sampling rate
+paramCh.Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
 # nonlinear signal propagation
-sigWDM, paramCh = manakovSSF(sigWDM_Tx, Fs, paramCh)
+sigWDM, paramCh = manakovSSF(sigWDM_Tx, paramCh)
 
 # + [markdown] id="45da6d22"
 # **Optical WDM spectrum before and after transmission**
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 241} id="489a01ea" outputId="a50a47a0-e564-4b88-de4d-21440eab470c"
 # plot psd
+Fs = paramCh.Fs
 fig,_ = plotPSD(sigWDM_Tx, Fs, paramCh.Fc, label='Tx'); 
 fig, ax = plotPSD(sigWDM, Fs, paramCh.Fc, fig=fig, label='Rx');
 fig.set_figheight(3)
@@ -146,6 +148,8 @@ chIndex  = int(np.floor(paramTx.Nch/2))      # index of the channel to be demodu
 Fc = paramCh.Fc
 Ts = 1/Fs
 freqGrid = paramTx.freqGrid
+π  = np.pi
+t  = np.arange(0, len(sigWDM))*Ts
 
 print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
       %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
@@ -153,21 +157,22 @@ print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 150e6                # frequency offset
+FO      = 150e6                 # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 100e3                 # linewidth
-Plo_dBm = 10                    # power in dBm
-Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
-ϕ_lo    = 0                     # initial phase in rad    
+
+# generate CW laser LO field
+paramLO = parameters()
+paramLO.P = 10              # power in dBm
+paramLO.lw = 100e3          # laser linewidth
+paramLO.RIN_var = 0
+paramLO.Ns = len(sigWDM)
+paramLO.Fs = Fs
+
+sigLO = basicLaserModel(paramLO)
+sigLO = sigLO*np.exp(1j*2*π*Δf_lo*t) # add frequency offset
 
 print('Local oscillator P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz\n'\
-      %(Plo_dBm, lw/1e3, FO/1e6))
-
-# generate LO field
-π       = np.pi
-t       = np.arange(0, len(sigWDM))*Ts
-ϕ_pn_lo = phaseNoise(lw, len(sigWDM), Ts)
-sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
+      %(paramLO.P, paramLO.lw/1e3, FO/1e6))
 
 # polarization multiplexed coherent optical receiver
 
@@ -202,7 +207,13 @@ sigRx = firFilter(pulse, sigRx)
 pconst(sigRx[0::paramTx.SpS,:], R=3)
 
 # CD compensation
-sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
+paramEDC = parameters()
+paramEDC.L = paramCh.Ltotal
+paramEDC.D = paramCh.D
+paramEDC.Fc = Fc-Δf_lo
+paramEDC.Fs = Fs
+
+sigRx = edc(sigRx, paramEDC)
 
 # plot constellations after CD compensation
 pconst(sigRx[0::paramTx.SpS,:], R=3);
@@ -241,17 +252,17 @@ paramEq.L = [int(0.2*d.shape[0]), int(0.8*d.shape[0])]
 paramEq.prgsBar = False
 
 if paramTx.M == 4:
-    paramEq.alg = ['nlms','cma'] # QPSK
+    paramEq.alg = ['cma','cma'] # QPSK
     paramEq.mu = [5e-3, 1e-3] 
 else:
     paramEq.alg = ['da-rde','rde'] # M-QAM
     paramEq.mu = [5e-3, 2e-4] 
     
-y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
+y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, d, paramEq)
 
 #plot constellations after adaptive equalization
 discard = 5000
-pconst(y_EQ[discard:-discard,:]);
+pconst(y_EQ[discard:-discard,:], R=1.5);
 
 # + [markdown] id="aaf0f85c"
 # ### Carrier phase recovery
@@ -264,7 +275,7 @@ paramCPR.N   = 75
 paramCPR.B   = 64
 paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
 
-y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
+y_CPR, θ = cpr(y_EQ, d, paramCPR)
 
 y_CPR = pnorm(y_CPR)
 
@@ -278,7 +289,6 @@ discard = 5000
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 435} id="4f6650fe" outputId="c5e97918-3305-4e71-8017-8b3432ff1e38"
 #plot constellations after CPR
-pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
 pconst(y_CPR[discard:-discard,:]);
 
 # + [markdown] id="e9e07048"
@@ -286,6 +296,25 @@ pconst(y_CPR[discard:-discard,:]);
 
 # + colab={"base_uri": "https://localhost:8080/"} id="67c66471" outputId="5e6538be-8488-470e-ab15-c1be2c1a9191"
 ind = np.arange(discard, d.shape[0]-discard)
+
+# remove phase and polarization ambiguities for QPSK signals
+if paramTx.M == 4:   
+    d = symbTx
+    # find rotations after CPR and/or polarizations swaps possibly added at the output the adaptive equalizer:
+    rot0 = [np.mean(pnorm(symbTx[ind,0])/pnorm(y_CPR[ind,0])), np.mean(pnorm(symbTx[ind,1])/pnorm(y_CPR[ind,0]))]
+    rot1 = [np.mean(pnorm(symbTx[ind,1])/pnorm(y_CPR[ind,1])), np.mean(pnorm(symbTx[ind,0])/pnorm(y_CPR[ind,1]))]
+
+    if np.argmax(np.abs(rot0)) == 1 and np.argmax(np.abs(rot1)) == 1:      
+        y_CPR_ = y_CPR.copy() 
+        # undo swap and rotation 
+        y_CPR[:,0] = pnorm(rot1[np.argmax(np.abs(rot1))]*y_CPR_[:,1]) 
+        y_CPR[:,1] = pnorm(rot0[np.argmax(np.abs(rot0))]*y_CPR_[:,0])
+    else:
+        # undo rotation
+        y_CPR[:,0] = pnorm(rot0[np.argmax(np.abs(rot0))]*y_CPR[:,0])
+        y_CPR[:,1] = pnorm(rot1[np.argmax(np.abs(rot1))]*y_CPR[:,1])
+        
+
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 GMI, NGMI = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
@@ -299,6 +328,3 @@ print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
 print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
-# -
-
-
