@@ -4,7 +4,7 @@ Test functions in dsp.py
 
 """
 
-from optic.dsp import finddelay
+from optic.dsp.core import finddelay
 import numpy as np
 
 
