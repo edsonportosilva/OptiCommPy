@@ -68,14 +68,37 @@ class TestCommunicationMetrics(unittest.TestCase):
         # Add test cases for calcLLR
         pass
 
-    def test_monteCarloGMI(self):
-        # Add test cases for monteCarloGMI
-        pass
+    def test_monteCarlo_MI_and_GMI(self):
+        # Run GMI vs SNR Monte Carlo simulation
+        qamOrder  = [4, 16, 64]  # Modulation order
 
-    def test_monteCarloMI(self):
-        # Add test cases for monteCarloMI
-        pass
+        SNR  = np.arange(15, 26, 1)
+        MI  = np.zeros((len(SNR),len(qamOrder)))
+        GMI  = np.zeros((len(SNR),len(qamOrder)))
 
+        for ii, M in enumerate(qamOrder):            
+            for indSNR in range(SNR.size):
+
+                snrdB = SNR[indSNR]
+
+                # generate random bits
+                bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e5))    
+
+                # Map bits to constellation symbols
+                symbTx = modulateGray(bitsTx, M, 'qam')
+
+                # Normalize symbols energy to 1
+                symbTx = pnorm(symbTx) 
+
+                # AWGN channel       
+                symbRx = awgn(symbTx, snrdB)
+
+                # GMI estimation
+                MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam')
+                GMI[indSNR, ii], _  = monteCarloGMI(symbRx, symbTx, M, 'qam')
+
+        np.testing.assert_array_almost_equal(MI, GMI, decimal=1)           
+   
     def test_Qfunc(self):
         # Add test cases for Qfunc
         pass
