@@ -658,7 +658,6 @@ def phaseNoise(lw, Nsamples, Ts):
 
     return phi
 
-    import numpy as np
 
 def movingAverage(x, N):
     """
@@ -685,6 +684,13 @@ def movingAverage(x, N):
     nCol = x.shape[1]
     y = np.zeros(x.shape, dtype=x.dtype)
 
+    startInd = N//2
+
+    if N%2:
+        endInd = -N//2+1
+    else:
+        endInd = -N//2
+
     for indCol in range(nCol):
         # Pad the signal with zeros at both ends
         padded_x = np.pad(x[:, indCol], (N//2, N//2), mode='constant')
@@ -692,7 +698,7 @@ def movingAverage(x, N):
         # Calculate moving average using convolution
         h = np.ones(N) / N
         ma = np.convolve(padded_x, h, 'same')
-        y[:, indCol] = ma[N//2:-N//2+1]
+        y[:, indCol] = ma[startInd:endInd]
 
     return y
 
