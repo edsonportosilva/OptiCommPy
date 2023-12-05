@@ -24,6 +24,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    gaussianComplexNoise   -- Generate complex-valued circular Gaussian noise
    gaussianNoise          -- Generate Gaussian noise
    phaseNoise             -- Generate realization of a random-walk phase-noise process
+   movingAverage          -- Calculate the sliding window moving average
 """
 
 """Digital signal processing utilities."""
@@ -656,3 +657,42 @@ def phaseNoise(lw, Nsamples, Ts):
         phi[ind + 1] = phi[ind] + np.random.normal(0, np.sqrt(σ2))
 
     return phi
+
+    import numpy as np
+
+def movingAverage(x, N):
+    """
+    Calculate the sliding window moving average of a 2D NumPy array along each column.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Input 2D array with shape (M, N), where M is the number of samples and N is the number of columns.
+    N : int
+        Size of the sliding window.
+
+    Returns
+    -------
+    numpy.ndarray
+        2D array containing the sliding window moving averages along each column.
+
+    Notes
+    -----
+    The function pads the signal with zeros at both ends to compensate for the lag between the output
+    of the moving average and the original signal.
+
+    """
+    nCol = x.shape[1]
+    y = np.zeros(x.shape, dtype=x.dtype)
+
+    for indCol in range(nCol):
+        # Pad the signal with zeros at both ends
+        padded_x = np.pad(x[:, indCol], (N//2, N//2), mode='constant')
+
+        # Calculate moving average using convolution
+        h = np.ones(N) / N
+        ma = np.convolve(padded_x, h, 'same')
+        y[:, indCol] = ma[N//2:-N//2+1]
+
+    return y
+
