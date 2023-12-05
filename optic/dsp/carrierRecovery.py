@@ -198,7 +198,7 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
         Time-varying estimated phase-shifts.
 
     References
-    -------
+    ----------
     [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel 
     estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.    
     
