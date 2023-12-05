@@ -267,7 +267,7 @@ for indP, G in enumerate(tqdm(scale)):
         paramCPR.B   = 64
         paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
 
-        y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
+        y_CPR = cpr(y_EQ, symbTx=d, param=paramCPR)
 
         y_CPR = pnorm(y_CPR)
 
