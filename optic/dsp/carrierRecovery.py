@@ -18,11 +18,11 @@ import numpy as np
 from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
 
-from optic.dsp.core import pnorm
+from optic.dsp.core import pnorm, movingAverage
 from optic.comm.modulation import GrayMapping
 
 
-def cpr(Ei, symbTx=None, paramCPR=None):
+def cpr(Ei, symbTx=None, param=None):
     """
     Carrier phase recovery function (CPR)
 
@@ -32,30 +32,34 @@ def cpr(Ei, symbTx=None, paramCPR=None):
         received constellation symbols.
     symbTx :complex-valued ndarray, optional
         Transmitted symbol sequence. The default is [].
-    paramCPR : core.param object, optional
+    param : core.param object, optional
         configuration parameters. The default is [].
+
+        - param.alg: CPR algorithm to be used ['bps', 'ddpll', or 'viterbi']
+
+        BPS params:         
         
-        BPS params:
-            
-        - paramCPR.alg: CPR algorithm to be used ['bps' or 'ddpll']
+        - param.M: constellation order. The default is 4.
 
-        - paramCPR.M: constellation order. The default is 4.
+        - param.N: length of BPS the moving average window. The default is 35.    
 
-        - paramCPR.N: length of BPS the moving average window. The default is 35.    
-
-        - paramCPR.B: number of BPS test phases. The default is 64.
+        - param.B: number of BPS test phases. The default is 64.
         
         DDPLL params:
             
-        - paramCPR.tau1: DDPLL loop filter param. 1. The default is 1/2*pi*10e6.
+        - param.tau1: DDPLL loop filter param. 1. The default is 1/2*pi*10e6.
         
-        - paramCPR.tau2: DDPLL loop filter param. 2. The default is 1/2*pi*10e6.
+        - param.tau2: DDPLL loop filter param. 2. The default is 1/2*pi*10e6.
 
-        - paramCPR.Kv: DDPLL loop filter gain. The default is 0.1.
+        - param.Kv: DDPLL loop filter gain. The default is 0.1.
 
-        - paramCPR.Ts: symbol period. The default is 1/32e9.
+        - param.Ts: symbol period. The default is 1/32e9.
 
-        - paramCPR.pilotInd: indexes of pilot-symbol locations.
+        - param.pilotInd: indexes of pilot-symbol locations.
+
+        Viterbi params:
+
+        - param.N: length of the moving average window. The default is 35.
 
     Raises
     ------
@@ -73,19 +77,20 @@ def cpr(Ei, symbTx=None, paramCPR=None):
     """
     if symbTx is None:
         symbTx = []
-    if paramCPR is None:
-        paramCPR = []
+    if param is None:
+        param = []
+
     # check input parameters
-    alg = getattr(paramCPR, "alg", "bps")
-    M = getattr(paramCPR, "M", 4)
-    constType = getattr(paramCPR, 'constType','qam')
-    B = getattr(paramCPR, "B", 64)
-    N = getattr(paramCPR, "N", 35)
-    Kv = getattr(paramCPR, "Kv", 0.1)
-    tau1 = getattr(paramCPR, "tau1", 1 / (2 * np.pi * 10e6))
-    tau2 = getattr(paramCPR, "tau2", 1 / (2 * np.pi * 10e6))
-    Ts = getattr(paramCPR, "Ts", 1 / 32e9)
-    pilotInd = getattr(paramCPR, "pilotInd", np.array([len(Ei) + 1]))
+    alg = getattr(param, "alg", "bps")
+    M = getattr(param, "M", 4)
+    constType = getattr(param, 'constType','qam')
+    B = getattr(param, "B", 64)
+    N = getattr(param, "N", 35)
+    Kv = getattr(param, "Kv", 0.1)
+    tau1 = getattr(param, "tau1", 1 / (2 * np.pi * 10e6))
+    tau2 = getattr(param, "tau2", 1 / (2 * np.pi * 10e6))
+    Ts = getattr(param, "Ts", 1 / 32e9)
+    pilotInd = getattr(param, "pilotInd", np.array([len(Ei) + 1]))
     returnPhases = getattr(param, "returnPhases", False)
 
     try:
@@ -105,6 +110,8 @@ def cpr(Ei, symbTx=None, paramCPR=None):
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
         θ = bps(Ei, N // 2, constSymb, B)
+    elif alg == "viterbi":
+        θ = viterbi(Ei, N)
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
     θ = np.unwrap(4 * θ, axis=0) / 4
@@ -251,6 +258,26 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
             if k < Ei.shape[0]-1:
                 θ[k + 1, n] = θ[k, n] - Kv * u[0]
     return θ
+
+def viterbi(Ei, N=35, M=4):
+    """
+    Viterbi & Viterbi phase estimator.
+
+    Parameters
+    ----------
+    Ei : ndarray
+        Input signal.
+    N : int, optional
+        Size of the moving average window.
+    M : int, optional
+        M-th power order.
+
+    Returns
+    -------
+    ndarray, float
+        Estimated phase error.
+    """          
+    return -np.unwrap(np.angle(movingAverage(Ei**M, N))/M, period=2*np.pi/M, axis=0) - np.pi/4    
 
 
 def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
