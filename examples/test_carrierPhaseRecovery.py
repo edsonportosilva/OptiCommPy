@@ -113,7 +113,7 @@ print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 0*150e6                 # frequency offset
+FO      = 150e6                 # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
 
 # generate CW laser LO field
