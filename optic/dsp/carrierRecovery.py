@@ -86,6 +86,7 @@ def cpr(Ei, symbTx=None, paramCPR=None):
     tau2 = getattr(paramCPR, "tau2", 1 / (2 * np.pi * 10e6))
     Ts = getattr(paramCPR, "Ts", 1 / 32e9)
     pilotInd = getattr(paramCPR, "pilotInd", np.array([len(Ei) + 1]))
+    returnPhases = getattr(param, "returnPhases", False)
 
     try:
         Ei.shape[1]
@@ -113,7 +114,11 @@ def cpr(Ei, symbTx=None, paramCPR=None):
     if Eo.shape[1] == 1:
         Eo = Eo[:]
         θ = θ[:]
-    return Eo, θ
+    
+    if returnPhases:
+        return Eo, θ
+    else:
+        return Eo
 
 
 @njit
