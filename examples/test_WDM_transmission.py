@@ -275,19 +275,11 @@ paramCPR.N   = 75
 paramCPR.B   = 64
 paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
 
-y_CPR, θ = cpr(y_EQ, d, paramCPR)
-
+y_CPR = cpr(y_EQ, d, paramCPR)
 y_CPR = pnorm(y_CPR)
-
-plt.figure(figsize=(10, 3))
-plt.title('CPR estimated phase')
-plt.plot(θ,'-')
-plt.xlim(0, len(θ))
-plt.grid();
 
 discard = 5000
 
-# + colab={"base_uri": "https://localhost:8080/", "height": 435} id="4f6650fe" outputId="c5e97918-3305-4e71-8017-8b3432ff1e38"
 #plot constellations after CPR
 pconst(y_CPR[discard:-discard,:]);
 
