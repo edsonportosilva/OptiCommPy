@@ -336,15 +336,8 @@ paramCPR.N   = 75
 paramCPR.B   = 64
 paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
 
-y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
-
+y_CPR = cpr(y_EQ, symbTx=d, param=paramCPR)
 y_CPR = pnorm(y_CPR)
-
-plt.figure(figsize=(10, 3))
-plt.title('CPR estimated phase')
-plt.plot(θ,'-')
-plt.xlim(0, len(θ))
-plt.grid()
 
 discard = 500
 
