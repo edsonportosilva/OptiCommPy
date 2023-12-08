@@ -318,6 +318,3 @@ print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
 print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
 print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
 print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
-# -
-
-

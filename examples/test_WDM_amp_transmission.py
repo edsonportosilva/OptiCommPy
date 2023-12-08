@@ -319,7 +319,7 @@ else:
     paramEq.alg = ['da-rde','rde'] # M-QAM
     paramEq.mu = [5e-3, 2e-4] 
 
-y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
+y_EQ = mimoAdaptEqualizer(x, paramEq, d)
 
 #plot constellations after adaptive equalization
 discard = 5000
@@ -334,10 +334,8 @@ paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
 paramCPR.N   = 75
 paramCPR.B   = 64
-paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
 
-y_CPR = cpr(y_EQ, symbTx=d, param=paramCPR)
-y_CPR = pnorm(y_CPR)
+y_CPR = cpr(y_EQ, paramCPR)
 
 discard = 500
 
