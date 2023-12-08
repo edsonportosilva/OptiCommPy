@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -82,7 +82,7 @@ paramTx.alphaRRC = 0.01    # RRC rolloff
 paramTx.Pch_dBm = 1        # power per WDM channel [dBm]
 paramTx.Nch     = 1        # number of WDM channels
 paramTx.Fc      = 193.1e12 # central optical frequency of the WDM spectrum
-paramTx.lw      = 100e3  # laser linewidth
+paramTx.lw      = 100e3    # laser linewidth
 paramTx.Nmodes = 2         # number of signal modes [2 for polarization multiplexed signals]
 
 # generate WDM signal
@@ -179,9 +179,7 @@ paramCPR.N   = 85
 paramCPR.B   = 64
 paramCPR.returnPhases = True
        
-y_CPR, θ = cpr(sigRx, param=paramCPR)
-
-y_CPR = pnorm(y_CPR)
+y_CPR, θ = cpr(sigRx, paramCPR)
 
 plt.figure()
 plt.title('CPR estimated phase with BPS')
@@ -223,11 +221,8 @@ paramCPR.tau1 = 1/(2*np.pi*10e3)
 paramCPR.tau2 = 1/(2*np.pi*10e3)
 paramCPR.Kv  = 0.1
 paramCPR.returnPhases = True
-#paramCPR.pilotInd = np.arange(0, len(sigRx), 25)
 
-y_CPR, θ = cpr(sigRx, symbTx=d, param=paramCPR)
-
-y_CPR = pnorm(y_CPR)
+y_CPR, θ = cpr(sigRx, paramCPR)
 
 plt.figure()
 plt.title('CPR estimated phase with DDPLL')
@@ -263,12 +258,10 @@ print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
 # +
 paramCPR = parameters()
 paramCPR.alg = 'viterbi'
-paramCPR.N = 201
+paramCPR.N = 151
 paramCPR.returnPhases = True
 
-y_CPR, θ = cpr(sigRx, param=paramCPR)
-
-y_CPR = pnorm(y_CPR)
+y_CPR, θ = cpr(sigRx, paramCPR)
 
 plt.figure()
 plt.title('CPR estimated phase with Viterbi&Viterbi')
