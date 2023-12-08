@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -159,7 +159,7 @@ ax.set_ylim([-80,-40])
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
 # nonlinear signal propagation
-sigWDM, paramCh = manakovSSF(sigWDM_Tx, paramCh)
+sigWDM = manakovSSF(sigWDM_Tx, paramCh)
 
 # +
 

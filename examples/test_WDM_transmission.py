@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -114,14 +114,14 @@ paramCh.Fc = paramTx.Fc  # central optical frequency of the WDM spectrum
 paramCh.hz = 0.5         # step-size of the split-step Fourier method [km]
 paramCh.maxIter = 5      # maximum number of convergence iterations per step
 paramCh.tol = 1e-5       # error tolerance per step
-paramCh.nlprMethod = True # use adaptive step-size based o maximum nonlinear phase-shift?
+paramCh.nlprMethod = True # use adaptive step-size based o maximum nonlinear phase-shift
 paramCh.maxNlinPhaseRot = 2e-2 # maximum nonlinear phase-shift per step
-paramCh.prgsBar = True   # show progress bar?
+paramCh.prgsBar = True   # show progress bar
 #paramCh.saveSpanN = [1, 5, 9, 14]
 paramCh.Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
 # nonlinear signal propagation
-sigWDM, paramCh = manakovSSF(sigWDM_Tx, paramCh)
+sigWDM = manakovSSF(sigWDM_Tx, paramCh)
 
 # + [markdown] id="45da6d22"
 # **Optical WDM spectrum before and after transmission**
