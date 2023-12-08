@@ -47,6 +47,8 @@ def linearFiberChannel(Ei, param):
 
         - param.Fs: sampling frequency [Hz] [default: None]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
     Returns
     -------
     Eo : np.array
@@ -63,11 +65,13 @@ def linearFiberChannel(Ei, param):
     param.alpha = getattr(param, "alpha", 0.2)
     param.D = getattr(param, "D", 16)
     param.Fc = getattr(param, "Fc", 193.1e12)
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     L = param.L
     alpha = param.alpha
     D = param.D
     Fc = param.Fc
+    returnParameters = param.returnParameters
 
     # c  = 299792458   # speed of light [m/s](vacuum)
     c_kms = const.c / 1e3
@@ -96,7 +100,10 @@ def linearFiberChannel(Ei, param):
             Eo.size,
         )
 
-    return Eo
+    if returnParameters:
+        return Eo, param
+    else:
+        return Eo
 
 
 def ssfm(Ei, param=None):
@@ -136,6 +143,8 @@ def ssfm(Ei, param=None):
 
         - param.prgsBar: display progress bar? bolean variable [default:True]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
     Returns
     -------
     Ech : np.array
@@ -161,6 +170,7 @@ def ssfm(Ei, param=None):
     param.amp = getattr(param, "amp", "edfa")
     param.NF = getattr(param, "NF", 4.5)
     param.prgsBar = getattr(param, "prgsBar", True)
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -173,6 +183,7 @@ def ssfm(Ei, param=None):
     amp = param.amp
     NF = param.NF
     prgsBar = param.prgsBar
+    returnParameters = param.returnParameters
 
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
@@ -227,12 +238,15 @@ def ssfm(Ei, param=None):
         elif amp is None:
             Ech = Ech * np.exp(0)
 
-    return (
-        Ech.reshape(
-            len(Ech),
-        ),
-        param,
-    )
+    if returnParameters:
+        return (
+            Ech.reshape(
+                len(Ech),
+            ),
+            param,
+        )
+    else:
+        return Ech
 
 
 def manakovSSF(Ei, param):
@@ -282,6 +296,8 @@ def manakovSSF(Ei, param):
 
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
     Returns
     -------
     Ech : np.array
@@ -312,6 +328,7 @@ def manakovSSF(Ei, param):
     param.maxNlinPhaseRot = getattr(param, "maxNlinPhaseRot", 2e-2)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -329,6 +346,7 @@ def manakovSSF(Ei, param):
     saveSpanN = param.saveSpanN
     nlprMethod = param.nlprMethod
     maxNlinPhaseRot = param.maxNlinPhaseRot
+    returnParameters = param.returnParameters
 
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
@@ -450,7 +468,10 @@ def manakovSSF(Ei, param):
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
 
-    return Ech, param
+    if returnParameters:
+        return Ech, param
+    else:
+        return Ech
 
 
 def nlinPhaseRot(Ex, Ey, Pch, γ):
