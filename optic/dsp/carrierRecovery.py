@@ -23,7 +23,7 @@ from optic.dsp.core import pnorm, movingAverage
 from optic.comm.modulation import GrayMapping
 
 
-def cpr(Ei, symbTx=None, param=None):
+def cpr(Ei, param=None, symbTx=None):
     """
     Carrier phase recovery function (CPR)
 
@@ -31,25 +31,23 @@ def cpr(Ei, symbTx=None, param=None):
     ----------
     Ei : complex-valued ndarray
         received constellation symbols.
-    symbTx :complex-valued ndarray, optional
-        Transmitted symbol sequence. The default is [].
     param : core.param object, optional
         configuration parameters. The default is [].
 
         - param.alg: CPR algorithm to be used ['bps', 'ddpll', or 'viterbi']
 
-        BPS params:         
-        
+        BPS params:
+
         - param.M: constellation order. The default is 4.
 
-        - param.N: length of BPS the moving average window. The default is 35.    
+        - param.N: length of BPS the moving average window. The default is 35.
 
         - param.B: number of BPS test phases. The default is 64.
-        
+
         DDPLL params:
-            
+
         - param.tau1: DDPLL loop filter param. 1. The default is 1/2*pi*10e6.
-        
+
         - param.tau2: DDPLL loop filter param. 2. The default is 1/2*pi*10e6.
 
         - param.Kv: DDPLL loop filter gain. The default is 0.1.
@@ -61,6 +59,9 @@ def cpr(Ei, symbTx=None, param=None):
         Viterbi params:
 
         - param.N: length of the moving average window. The default is 35.
+
+    symbTx :complex-valued ndarray, optional
+        Transmitted symbol sequence. The default is [].
 
     Raises
     ------
@@ -77,14 +78,14 @@ def cpr(Ei, symbTx=None, param=None):
 
     """
     if symbTx is None:
-        symbTx = []
+        symbTx = np.zeros(Ei.shape)
     if param is None:
         param = []
 
     # check input parameters
     alg = getattr(param, "alg", "bps")
     M = getattr(param, "M", 4)
-    constType = getattr(param, 'constType','qam')
+    constType = getattr(param, "constType", "qam")
     B = getattr(param, "B", 64)
     N = getattr(param, "N", 35)
     Kv = getattr(param, "Kv", 0.1)
@@ -104,7 +105,7 @@ def cpr(Ei, symbTx=None, param=None):
     constSymb = pnorm(constSymb)
 
     # 4th power frequency offset estimation/compensation
-    Ei, _ = fourthPowerFOE(Ei, 1/Ts)
+    Ei, _ = fourthPowerFOE(Ei, 1 / Ts)
     Ei = pnorm(Ei)
 
     if alg == "ddpll":
@@ -117,12 +118,12 @@ def cpr(Ei, symbTx=None, param=None):
         raise ValueError("CPR algorithm incorrectly specified.")
     θ = np.unwrap(4 * θ, axis=0) / 4
 
-    Eo = Ei * np.exp(1j * θ)
+    Eo = pnorm(Ei * np.exp(1j * θ))
 
     if Eo.shape[1] == 1:
         Eo = Eo[:]
         θ = θ[:]
-    
+
     if returnPhases:
         return Eo, θ
     else:
@@ -165,7 +166,6 @@ def bps(Ei, N, constSymb, B):
     L = x.shape[0]
 
     for n in range(nModes):
-
         dist = np.zeros((B, constSymb.shape[0]), dtype="float")
         dmin = np.zeros((B, 2 * N + 1), dtype="float")
 
@@ -212,9 +212,9 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
 
     References
     ----------
-    [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel 
-    estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.    
-    
+    [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel
+    estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
+
     """
     nSymbols, nModes = Ei.shape
 
@@ -232,7 +232,6 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     u = np.zeros(3, dtype=np.float64)  # [u_f, u_d1, u_d]
 
     for n in range(nModes):
-
         u[2] = 0  # Output of phase detector (residual phase error)
         u[0] = 0  # Output of loop filter
 
@@ -256,9 +255,10 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
             u[0] = np.sum(a1b * u)
 
             # Estimate the phase error for the next symbol
-            if k < Ei.shape[0]-1:
+            if k < Ei.shape[0] - 1:
                 θ[k + 1, n] = θ[k, n] - Kv * u[0]
     return θ
+
 
 def viterbi(Ei, N=35, M=4):
     """
@@ -277,8 +277,13 @@ def viterbi(Ei, N=35, M=4):
     -------
     ndarray, float
         Estimated phase error.
-    """          
-    return -np.unwrap(np.angle(movingAverage(Ei**M, N))/M, period=2*np.pi/M, axis=0) - np.pi/4    
+    """
+    return (
+        -np.unwrap(
+            np.angle(movingAverage(Ei**M, N)) / M, period=2 * np.pi / M, axis=0
+        )
+        - np.pi / 4
+    )
 
 
 def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
@@ -308,7 +313,7 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
 
     nModes = Ei.shape[1]
     Eo = Ei.copy()
-    t = np.arange(0, Eo.shape[0])*1/Fs
+    t = np.arange(0, Eo.shape[0]) * 1 / Fs
 
     for n in range(nModes):
         f4 = 10 * np.log10(np.abs(fftshift(fft(Ei[:, n] ** 4))))
