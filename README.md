@@ -22,6 +22,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 * Standard digital signal processing (DSP) blocks employed in coherent optical receivers, such as:
   - *Signal resampling.* 
   - *Matched filtering.*
+  - *Clock recovery.*
   - *Electronic chromatic dispersion compensation (EDC)*.
   - *Several NxN MIMO adaptive equalization algorithms*.
   - *Carrier phase recovery algorithms.* 
