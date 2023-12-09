@@ -260,10 +260,7 @@ def ssfm(Ei, param):
             len(Ech),
         )
 
-    if returnParameters:
-        return Ech, param
-    else:
-        return Ech
+    return (Ech, param) if returnParameters else Ech
 
 
 def manakovSSF(Ei, param):
@@ -498,10 +495,7 @@ def manakovSSF(Ei, param):
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
 
-    if returnParameters:
-        return Ech, param
-    else:
-        return Ech
+    return (Ech, param) if returnParameters else Ech
 
 
 def nlinPhaseRot(Ex, Ey, Pch, γ):
@@ -772,10 +766,7 @@ def manakovDBP(Ei, param):
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
 
-    if returnParameters:
-        return Ech, param
-    else:
-        return Ech
+    return (Ech, param) if returnParameters else Ech
 
 
 def setPowerforParSSFM(sig, powers):
