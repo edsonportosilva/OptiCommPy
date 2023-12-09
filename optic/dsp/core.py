@@ -686,11 +686,7 @@ def movingAverage(x, N):
 
     startInd = N//2
 
-    if N%2:
-        endInd = -N//2+1
-    else:
-        endInd = -N//2
-
+    endInd = -N//2+1 if N%2 else -N//2
     for indCol in range(nCol):
         # Pad the signal with zeros at both ends
         padded_x = np.pad(x[:, indCol], (N//2, N//2), mode='constant')

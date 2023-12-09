@@ -237,10 +237,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
             logg.info(f"{alg}MSE = %.6f.", np.nanmean(errSq))
 
     if returnResults:
-        if storeCoeff:
-            return yEq, H, errSq, Hiter
-        else:
-            return yEq, H, errSq
+        return (yEq, H, errSq, Hiter) if storeCoeff else (yEq, H, errSq)
     else:
         return yEq
 

@@ -124,10 +124,7 @@ def cpr(Ei, param=None, symbTx=None):
         Eo = Eo[:]
         θ = θ[:]
 
-    if returnPhases:
-        return Eo, θ
-    else:
-        return Eo
+    return (Eo, θ) if returnPhases else Eo
 
 
 @njit

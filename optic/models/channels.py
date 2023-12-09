@@ -100,10 +100,7 @@ def linearFiberChannel(Ei, param):
             Eo.size,
         )
 
-    if returnParameters:
-        return Eo, param
-    else:
-        return Eo
+    return (Eo, param) if returnParameters else Eo
 
 
 def ssfm(Ei, param=None):
@@ -238,15 +235,16 @@ def ssfm(Ei, param=None):
         elif amp is None:
             Ech = Ech * np.exp(0)
 
-    if returnParameters:
-        return (
+    return (
+        (
             Ech.reshape(
                 len(Ech),
             ),
             param,
         )
-    else:
-        return Ech
+        if returnParameters
+        else Ech
+    )
 
 
 def manakovSSF(Ei, param):
