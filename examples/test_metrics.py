@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -16,11 +16,6 @@
 
 # <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_metrics.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
-# + [markdown] toc=true
-# <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#Test-bit-error-rate-(BER)-versus-signal-to-noise-ratio-per-bit-($E_b/N_0$)" data-toc-modified-id="Test-bit-error-rate-(BER)-versus-signal-to-noise-ratio-per-bit-($E_b/N_0$)-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Test bit-error-rate (BER) versus signal-to-noise ratio per bit ($E_b/N_0$)</a></span><ul class="toc-item"><li><span><a href="#QAM-constellations-with-Gray-mapping" data-toc-modified-id="QAM-constellations-with-Gray-mapping-1.1"><span class="toc-item-num">1.1&nbsp;&nbsp;</span>QAM constellations with Gray mapping</a></span></li><li><span><a href="#PSK-constellations-with-Gray-mapping" data-toc-modified-id="PSK-constellations-with-Gray-mapping-1.2"><span class="toc-item-num">1.2&nbsp;&nbsp;</span>PSK constellations with Gray mapping</a></span></li></ul></li><li><span><a href="#Test-generalized-mutual-information-(GMI)-versus-signal-to-noise-ratio-(SNR)" data-toc-modified-id="Test-generalized-mutual-information-(GMI)-versus-signal-to-noise-ratio-(SNR)-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Test generalized mutual information (GMI) versus signal-to-noise ratio (SNR)</a></span><ul class="toc-item"><li><span><a href="#QAM-constellations-with-Gray-mapping" data-toc-modified-id="QAM-constellations-with-Gray-mapping-2.1"><span class="toc-item-num">2.1&nbsp;&nbsp;</span>QAM constellations with Gray mapping</a></span></li><li><span><a href="#PSK-constellations-with-Gray-mapping" data-toc-modified-id="PSK-constellations-with-Gray-mapping-2.2"><span class="toc-item-num">2.2&nbsp;&nbsp;</span>PSK constellations with Gray mapping</a></span></li></ul></li><li><span><a href="#Test-mutual-information-(MI)-versus-signal-to-noise-ratio-(SNR)" data-toc-modified-id="Test-mutual-information-(MI)-versus-signal-to-noise-ratio-(SNR)-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Test mutual information (MI) versus signal-to-noise ratio (SNR)</a></span><ul class="toc-item"><li><span><a href="#QAM-constellations-with-Gray-mapping" data-toc-modified-id="QAM-constellations-with-Gray-mapping-3.1"><span class="toc-item-num">3.1&nbsp;&nbsp;</span>QAM constellations with Gray mapping</a></span></li></ul></li><li><span><a href="#Test-MI/GMI-versus-signal-to-noise-ratio-(SNR)-with-probabilistically-shaped-QAM-constellation" data-toc-modified-id="Test-MI/GMI-versus-signal-to-noise-ratio-(SNR)-with-probabilistically-shaped-QAM-constellation-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Test MI/GMI versus signal-to-noise ratio (SNR) with probabilistically shaped QAM constellation</a></span></li><li><span><a href="#Test-error-vector-magnitude-(EVM)-versus-signal-to-noise-ratio-(SNR)" data-toc-modified-id="Test-error-vector-magnitude-(EVM)-versus-signal-to-noise-ratio-(SNR)-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Test error vector magnitude (EVM) versus signal-to-noise ratio (SNR)</a></span></li><li><span><a href="#Test-OSNR/SNR-prediction-with-the-Gaussian-Noise-model-(GN-Model)-as-a-function-of-the-fiber-input-power" data-toc-modified-id="Test-OSNR/SNR-prediction-with-the-Gaussian-Noise-model-(GN-Model)-as-a-function-of-the-fiber-input-power-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Test OSNR/SNR prediction with the Gaussian Noise model (GN Model) as a function of the fiber input power</a></span></li><li><span><a href="#Test-OSNR/SNR-prediction-with-for-a-linear-fiber-channel-as-a-function-of-the-distance" data-toc-modified-id="Test-OSNR/SNR-prediction-with-for-a-linear-fiber-channel-as-a-function-of-the-distance-7"><span class="toc-item-num">7&nbsp;&nbsp;</span>Test OSNR/SNR prediction with for a linear fiber channel as a function of the distance</a></span></li></ul></div>
-# -
-
 if 'google.colab' in str(get_ipython()):    
     # ! git clone -b main https://github.com/edsonportosilva/OptiCommPy
     from os import chdir as cd
@@ -28,11 +23,11 @@ if 'google.colab' in str(get_ipython()):
     # ! pip install .
 
 from optic.comm.modulation import modulateGray, GrayMapping
-from optic.comm.metrics import monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM
+from optic.comm.metrics import monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, theoryMI, calcEVM
 from optic.models.channels import awgn
 from optic.dsp.core import pnorm, signal_power
 from optic.plot import pconst
-from optic.utils import parameters
+from optic.utils import parameters, dB2lin
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -164,6 +159,64 @@ plt.ylabel('log10(BER)');
 plt.grid()
 # -
 
+# ## Test mutual information (MI) versus signal-to-noise ratio (SNR)
+
+# ### QAM constellations with Gray mapping
+
+# +
+# Run MI vs SNR Monte Carlo simulation 
+
+qamOrder  = [4, 16, 64, 256]  # Modulation order
+
+SNR  = np.arange(-2, 35, 1)
+MI  = np.zeros((len(SNR),len(qamOrder)))
+MItheory  = np.zeros((len(SNR),len(qamOrder)))
+
+for ii, M in enumerate(qamOrder):
+    print('run sim: M = ', M)         
+
+    for indSNR in tqdm(range(SNR.size)):
+
+        snrdB = SNR[indSNR]
+
+        # generate random bits
+        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e4))    
+
+        # Map bits to constellation symbols
+        symbTx = modulateGray(bitsTx, M, 'qam')
+
+        # Normalize symbols energy to 1
+        symbTx = pnorm(symbTx) 
+
+        # AWGN channel        
+        symbRx = awgn(symbTx, snrdB)
+
+        # MI estimation
+        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam')
+        MItheory[indSNR, ii] = theoryMI(M, 'qam', snrdB)
+
+# +
+plt.figure(figsize=(10,6))
+
+for ii, M in enumerate(qamOrder):
+    plt.plot(SNR, MI[:,ii], 'o', label=f'{str(M)}QAM monte carlo', linewidth=2)
+    
+plt.gca().set_prop_cycle(None)
+
+for ii, M in enumerate(qamOrder):
+    plt.plot(SNR, MItheory[:,ii], '-', label=f'{str(M)}QAM theory', linewidth=2)
+
+# plot theoretical AWGN channel capacity    
+C = np.log2(1 + dB2lin(SNR))
+plt.plot(SNR, C,'k-', label='AWGN capacity',linewidth=2)
+
+
+plt.xlim(min(SNR), max(SNR))
+plt.legend();
+plt.xlabel('SNR [dB]');
+plt.ylabel('MI [bits/symbol]');
+plt.grid()
+# -
 # ## Test generalized mutual information (GMI) versus signal-to-noise ratio (SNR)
 
 # ### QAM constellations with Gray mapping
@@ -262,57 +315,6 @@ plt.ylabel('GMI [bits/symbol]');
 plt.grid()
 # -
 
-# ## Test mutual information (MI) versus signal-to-noise ratio (SNR)
-
-# ### QAM constellations with Gray mapping
-
-# +
-# Run MI vs SNR Monte Carlo simulation 
-
-qamOrder  = [4, 16, 64, 256, 1024]  # Modulation order
-
-SNR  = np.arange(-2, 35, 1)
-MI  = np.zeros((len(SNR),len(qamOrder)))
-
-for ii, M in enumerate(qamOrder):
-    print('run sim: M = ', M)         
-
-    for indSNR in tqdm(range(SNR.size)):
-
-        snrdB = SNR[indSNR]
-
-        # generate random bits
-        bitsTx   = np.random.randint(2, size=int(np.log2(M)*1e4))    
-
-        # Map bits to constellation symbols
-        symbTx = modulateGray(bitsTx, M, 'qam')
-
-        # Normalize symbols energy to 1
-        symbTx = pnorm(symbTx) 
-
-        # AWGN channel        
-        symbRx = awgn(symbTx, snrdB)
-
-        # MI estimation
-        MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam')
-
-# +
-plt.figure(figsize=(10,6))
-
-for ii, M in enumerate(qamOrder):
-    plt.plot(SNR, MI[:,ii], '-', label=f'{str(M)}QAM monte carlo', linewidth=2)
-
-# plot theoretical AWGN channel capacity    
-C = np.log2(1 + 10**(SNR/10))
-plt.plot(SNR, C,'k-', label='AWGN capacity',linewidth=2)
-
-
-plt.xlim(min(SNR), max(SNR))
-plt.legend();
-plt.xlabel('SNR [dB]');
-plt.ylabel('MI [bits/symbol]');
-plt.grid()
-# -
 # ## Test MI/GMI versus signal-to-noise ratio (SNR) with probabilistically shaped QAM constellation
 
 # +

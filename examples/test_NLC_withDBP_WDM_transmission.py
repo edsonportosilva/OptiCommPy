@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -165,7 +165,7 @@ for indP, G in enumerate(tqdm(scale)):
     # nonlinear signal propagation
     G_lin = dB2lin(G)
 
-    sigWDM, paramCh = manakovSSF(np.sqrt(G_lin)*sigWDM_Tx, paramCh)
+    sigWDM = manakovSSF(np.sqrt(G_lin)*sigWDM_Tx, paramCh)
     print('Fiber launch power per WDM channel: ', round(10*np.log10(signal_power(sigWDM)/paramTx.Nch /1e-3),2),'dBm')
     
     ### WDM channels coherent detection and demodulation
@@ -256,7 +256,7 @@ for indP, G in enumerate(tqdm(scale)):
             paramEq.alg = ['da-rde','rde'] # M-QAM
             paramEq.mu = [5e-3, 2e-4] 
 
-        y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
+        y_EQ = mimoAdaptEqualizer(x, paramEq, d)
 
         ### Carrier phase recovery
 
@@ -265,12 +265,9 @@ for indP, G in enumerate(tqdm(scale)):
         paramCPR.M   = paramTx.M
         paramCPR.N   = 75
         paramCPR.B   = 64
-        paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
-
-        y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
-
-        y_CPR = pnorm(y_CPR)
-
+       
+        y_CPR = cpr(y_EQ, paramCPR)
+       
         discard = 5000
 
         ### Evaluate transmission metrics

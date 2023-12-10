@@ -69,14 +69,12 @@ def interpolator(x, t):
     y : float
         Interpolated signal value.
     """
-    y = (
+    return (
         x[0] * (-1 / 6 * t**3 + 1 / 6 * t)
         + x[1] * (1 / 2 * t**3 + 1 / 2 * t**2 - 1 * t)
         + x[2] * (-1 / 2 * t**3 - 1 * t**2 + 1 / 2 * t + 1)
         + x[3] * (1 / 6 * t**3 + 1 / 2 * t**2 + 1 / 3 * t)
     )
-
-    return y
 
 
 def gardnerClockRecovery(Ei, param=None):

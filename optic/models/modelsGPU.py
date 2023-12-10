@@ -136,6 +136,8 @@ def ssfm(Ei, param):
 
         - param.prgsBar: display progress bar? bolean variable [default:True]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
     Returns
     -------
     Ech : np.array
@@ -162,6 +164,7 @@ def ssfm(Ei, param):
     param.NF = getattr(param, "NF", 4.5)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -175,6 +178,7 @@ def ssfm(Ei, param):
     prec = param.prec
     prgsBar = param.prgsBar
     saveSpanN = param.saveSpanN
+    returnParameters = param.returnParameters
 
     Nspans = int(np.floor(Ltotal / Lspan))
     Nsteps = int(np.floor(Lspan / hz))
@@ -256,7 +260,7 @@ def ssfm(Ei, param):
             len(Ech),
         )
 
-    return Ech, param
+    return (Ech, param) if returnParameters else Ech
 
 
 def manakovSSF(Ei, param):
@@ -305,6 +309,8 @@ def manakovSSF(Ei, param):
 
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
     Returns
     -------
     Ech : np.array
@@ -335,6 +341,7 @@ def manakovSSF(Ei, param):
     param.maxNlinPhaseRot = getattr(param, "maxNlinPhaseRot", 2e-2)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -352,6 +359,7 @@ def manakovSSF(Ei, param):
     saveSpanN = param.saveSpanN
     nlprMethod = param.nlprMethod
     maxNlinPhaseRot = param.maxNlinPhaseRot
+    returnParameters = param.returnParameters
 
     Nspans = int(np.floor(Ltotal / Lspan))
 
@@ -487,7 +495,7 @@ def manakovSSF(Ei, param):
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
 
-    return Ech, param
+    return (Ech, param) if returnParameters else Ech
 
 
 def nlinPhaseRot(Ex, Ey, Pch, γ):
@@ -583,6 +591,9 @@ def manakovDBP(Ei, param):
 
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
+
     Returns
     -------
     Ech : np.array
@@ -612,6 +623,7 @@ def manakovDBP(Ei, param):
     param.maxNlinPhaseRot = getattr(param, "maxNlinPhaseRot", 2e-2)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -628,6 +640,7 @@ def manakovDBP(Ei, param):
     saveSpanN = param.saveSpanN
     nlprMethod = param.nlprMethod
     maxNlinPhaseRot = param.maxNlinPhaseRot
+    returnParameters = param.returnParameters
 
     Nspans = int(np.floor(Ltotal / Lspan))
 
@@ -753,7 +766,7 @@ def manakovDBP(Ei, param):
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
 
-    return Ech, param
+    return (Ech, param) if returnParameters else Ech
 
 
 def setPowerforParSSFM(sig, powers):
