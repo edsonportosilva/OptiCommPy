@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -28,11 +28,11 @@ if 'google.colab' in str(get_ipython()):
     # ! pip install .
 
 from optic.comm.modulation import modulateGray, GrayMapping
-from optic.comm.metrics import monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, calcEVM
+from optic.comm.metrics import monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, theoryMI, calcEVM
 from optic.models.channels import awgn
 from optic.dsp.core import pnorm, signal_power
 from optic.plot import pconst
-from optic.utils import parameters
+from optic.utils import parameters, dB2lin
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -269,10 +269,11 @@ plt.grid()
 # +
 # Run MI vs SNR Monte Carlo simulation 
 
-qamOrder  = [4, 16, 64, 256, 1024]  # Modulation order
+qamOrder  = [4, 16, 64, 256]  # Modulation order
 
 SNR  = np.arange(-2, 35, 1)
 MI  = np.zeros((len(SNR),len(qamOrder)))
+MItheory  = np.zeros((len(SNR),len(qamOrder)))
 
 for ii, M in enumerate(qamOrder):
     print('run sim: M = ', M)         
@@ -295,15 +296,21 @@ for ii, M in enumerate(qamOrder):
 
         # MI estimation
         MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam')
+        MItheory[indSNR, ii] = theoryMI(M, 'qam', snrdB)
 
 # +
 plt.figure(figsize=(10,6))
 
 for ii, M in enumerate(qamOrder):
-    plt.plot(SNR, MI[:,ii], '-', label=f'{str(M)}QAM monte carlo', linewidth=2)
+    plt.plot(SNR, MI[:,ii], 'o', label=f'{str(M)}QAM monte carlo', linewidth=2)
+    
+plt.gca().set_prop_cycle(None)
+
+for ii, M in enumerate(qamOrder):
+    plt.plot(SNR, MItheory[:,ii], '-', label=f'{str(M)}QAM theory', linewidth=2)
 
 # plot theoretical AWGN channel capacity    
-C = np.log2(1 + 10**(SNR/10))
+C = np.log2(1 + dB2lin(SNR))
 plt.plot(SNR, C,'k-', label='AWGN capacity',linewidth=2)
 
 
