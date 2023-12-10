@@ -6,13 +6,15 @@ Metrics for signal and performance characterization (:mod:`optic.comm.metrics`)
 .. autosummary::
    :toctree: generated/
 
+   bert                     -- Calculate BER and Q-factor for optical communication using On-Off Keying (OOK).
    fastBERcalc              -- Monte Carlo BER/SER/SNR calculation
    calcLLR                  -- LLR calculation (circular AGWN channel)
    monteCarloGMI            -- Monte Carlo based generalized mutual information (GMI) estimation
-   monteCarloMI            --  Monte Carlo based mutual information (MI) estimation
+   monteCarloMI             --  Monte Carlo based mutual information (MI) estimation
    Qfunc                    -- Calculate function Q(x)
    calcEVM                  -- Calculate error vector magnitude (EVM) metrics
    theoryBER                -- Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel
+   theoryMI                 -- Calculate mutual information for the DCMC AWGN channel
    calcLinOSNR              -- Calculate the OSNR evolution in a multi-span fiber transmission system
 """
 
@@ -555,7 +557,7 @@ def theoryBER(M, EbN0, constType):
 @njit
 def condEntropy(yI, yQ, const, pX, ind, σ):
     """
-    Calculate conditional entropy H(X|Y) via numerical integration.
+    Calculate conditional entropy H(X|Y=y)
 
     Parameters
     ----------
@@ -573,7 +575,7 @@ def condEntropy(yI, yQ, const, pX, ind, σ):
     Returns
     -------
     float
-        H(X|Y) calculated via double integration.
+        conditional entropy H(X|Y=y).
     """
     π = np.pi
     prob = 0
@@ -667,7 +669,7 @@ def theoryMI(M, constType, SNR, pX=None, symetry=True, lim=np.inf, tol=1e-3):
     MI = -np.sum(pX * np.log2(pX))
 
     if symetry:
-        # Exploit rotational symmetry of the constellation
+        # Exploit rotational symmetry of the constellation to speed up calculations
         constR = np.abs(constSymb)
         R = np.unique(constR)
         MI_R = np.zeros(R.shape)
