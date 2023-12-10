@@ -10,7 +10,7 @@ Metrics for signal and performance characterization (:mod:`optic.comm.metrics`)
    fastBERcalc              -- Monte Carlo BER/SER/SNR calculation
    calcLLR                  -- LLR calculation (circular AGWN channel)
    monteCarloGMI            -- Monte Carlo based generalized mutual information (GMI) estimation
-   monteCarloMI             --  Monte Carlo based mutual information (MI) estimation
+   monteCarloMI             -- Monte Carlo based mutual information (MI) estimation
    Qfunc                    -- Calculate function Q(x)
    calcEVM                  -- Calculate error vector magnitude (EVM) metrics
    theoryBER                -- Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel
