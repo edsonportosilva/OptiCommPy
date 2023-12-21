@@ -20,14 +20,56 @@ from optic.utils import parameters
 
 def laser_dfb(param, current):
     """
-    Simulates the behavior of a distributed feedback (DFB) laser.
+    Simulate the behavior of a laser in a DFB (Distributed Feedback) structure.
 
-    Args:
-        param: The parameters of the DFB laser.
-        current: The current object.
+    Parameters
+    ----------
+    param : Namespace
+        An object containing parameters for the DFB simulation.
+        - noise_terms : bool, optional
+            Flag to include noise terms in the simulation. Default is False.
+        - v : float, optional
+            Active layer volume. Default is 1.5e-10 cm^3.
+        - tau_n : float, optional
+            Carrier lifetime. Default is 1.0e-9 s.
+        - a0 : float, optional
+            Active layer gain coefficient. Default is 2.5e-16 m^3.
+        - vg : float, optional
+            Group velocity. Default is 8.5e+9 m/s.
+        - n_t : float, optional
+            Carrier density at transparency. Default is 1.0e+18 cm^-3.
+        - epsilon : float, optional
+            Gain compression factor. Default is 1.0e-17 cm^3.
+        - gamma : float, optional
+            Mode confinement factor. Default is 0.4.
+        - tau_p : float, optional
+            Photon lifetime. Default is 3.0e-12 s.
+        - beta : float, optional
+            Fraction of spontaneous emission coupling. Default is 3.0e-5.
+        - alpha : float, optional
+            Linewidth enhancement factor. Default is 5.
+        - sigma : float, optional
+            Absorption cross-section. Default is 2e-20 m^2.
+        - i_bias : float, optional
+            Bias current. Default is 0.078 A.
+        - i_max : float, optional
+            Maximum current. Default is 0.188 A.
+        - eta_0 : float, optional
+            Quantum efficiency. Default is 0.4.
+        - lmbd : float, optional
+            Wavelength of the laser. Default is 1300e-9 m.
+    
+    current : Namespace
+        An object containing information about the current distribution.
+        - signal : ndarray
+            Current signal distribution.
+        - t : ndarray
+            Time array representing the current signal over time.
 
-    Returns:
-        A tuple containing the updated parameters, current object, and the solution of the DFB laser simulation.
+    Returns
+    -------
+    tuple
+        A tuple containing the updated `param`, the modified `current`, and the result of solving the laser DFB simulation.
     """
     param.noise_terms = getattr(param, "noise_terms", False)
     param.v = getattr(param, "v", 1.5e-10)
@@ -53,16 +95,72 @@ def laser_dfb(param, current):
 
     return param, current, solve_laser_dfb(param, current)
 
+def set_current(param, current):
+    """
+    Set the electrical current for a laser simulation.
+
+    Parameters
+    ----------
+    param : Namespace
+        An object containing parameters for the simulation.
+        - i_max : float
+            Maximum current.
+        - i_bias : float
+            Bias current.
+
+    current : Namespace
+        An object containing information about the current distribution.
+        - signal : ndarray
+            Current signal distribution.
+        - t : ndarray
+            Time array representing the current signal over time.
+        - t_step : float
+            Time step between consecutive elements in `t`.
+
+    Returns
+    -------
+    Namespace
+        An updated `current` object with the modified current signal and time step.
+    """
+    current.signal = param.i_max * current.signal + param.i_bias
+    current.t_step = current.t[1]-current.t[0]
+    return current
+
 def laser_dynamic_response(y, param):
     """
-    Calculates the dynamic response of the laser.
+    Calculate the dynamic response of a laser after simulation.
 
-    Args:
-        y: The state of the laser.
-        param: The parameters of the laser.
+    Parameters
+    ----------
+    y : ndarray
+        An array containing the state variables of the laser.
+        - y[0, :] : float
+            Carrier density.
+        - y[1, :] : float
+            Photon density.
+        - y[2, :] : float
+            Optical phase.
 
-    Returns:
-        An object containing the calculated laser parameters including power, chirp, and output electric field.
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
+    
+    Returns
+    -------
+    Namespace
+        An object containing the calculated dynamic response parameters.
+        - N : float
+            Carrier density.
+        - S : float
+            Photon density.
+        - phase : float
+            Optical phase.
+        - power : float
+            Optical power.
+        - chirp : float
+            Chirp parameter.
+        - e_out : complex
+            Complex electric field.
     """
     out = parameters()
     # get physical parameters
@@ -75,35 +173,45 @@ def laser_dynamic_response(y, param):
     out.e_out = np.sqrt(np.real(out.power)) * np.exp(1j * out.phase)
     return out
 
-def set_current(param, current):
-    """
-    Sets the current signal and time step for the current object.
-
-    Args:
-        param: The parameters for setting the current signal.
-        current: The current object.
-
-    Returns:
-        The updated current object with the modified signal and time step.
-    """
-    current.signal = param.i_max * current.signal + param.i_bias
-    current.t_step = current.t[1]-current.t[0]
-    return current
-
 def get_current(current, t):
     """
-    Returns the current value at a given time.
+    Get the electrical current at a specific time for a laser simulation.
 
-    Args:
-        current: The current object.
-        t: The time value.
+    Parameters
+    ----------
+    current : Namespace
+        An object containing information about the current distribution.
+        (Refer to set_current function docstring for details.)
+    
+    t : float
+        The specific time at which to retrieve the current.
 
-    Returns:
-        The real part of the current signal at the specified time.
+    Returns
+    -------
+    float
+        The electrical current at the specified time.
     """
     return np.real(current.signal[np.argwhere(t >= current.t)[-1]])
 
 def solve_laser_dfb(param, current):
+    """
+    Solve the rate equations for a laser in a DFB (Distributed Feedback) structure.
+
+    Parameters
+    ----------
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
+
+    current : Namespace
+        An object containing information about the current distribution.
+        (Refer to set_current function docstring for details.)
+
+    Returns
+    -------
+    scipy.integrate.OdeResult
+        The result of solving the rate equations for the laser DFB simulation.
+    """
     # Initial conditions        
     return solve_ivp(
         laser_rate_equations,
@@ -119,14 +227,28 @@ def solve_laser_dfb(param, current):
 
 def get_initial_conditions(param,current):
     """
-    Calculates the initial conditions for the laser rate equations.
+    Get the initial conditions for the rate equations of a laser in a DFB (Distributed Feedback) structure.
 
-    Args:
-        param: The parameters of the rate equations.
-        current: The current value.
+    Parameters
+    ----------
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
 
-    Returns:
-        The array of initial conditions [y0[0], y0[1], y0[2]].
+    current : Namespace
+        An object containing information about the current distribution.
+        (Refer to laser_dfb function docstring for details.)
+
+    Returns
+    -------
+    ndarray
+        An array containing the initial conditions for the rate equations.
+        - y0[0] : float
+            Initial carrier density.
+        - y0[1] : float
+            Initial photon density.
+        - y0[2] : float
+            Initial phase.
     """
     y0 = np.zeros([3])        
     y0[1] = param.gamma * param.tau_p/(param.v * e) * (get_current(current,0)-param.ith)
@@ -136,25 +258,38 @@ def get_initial_conditions(param,current):
 
 def laser_rate_equations(t, y, param, current):
     """
-    Calculate the derivatives of the laser state variables based on the laser rate equations.
+    Calculate the rate equations for a laser in a DFB (Distributed Feedback) structure.
 
     Parameters
     ----------
-    t : scalar
-        Time value.
-    y : np.array
-        Array of laser state variables.
-    param : parameter object (struct)
-        Object with laser parameters.
-    current : parameter object (struct)
-        Object with current input signal.
+    t : float
+        Time.
+    y : ndarray
+        An array containing the state variables of the laser.
+        - y[0] : float
+            Carrier density.
+        - y[1] : float
+            Photon density.
+        - y[2] : float
+            Optical phase.
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
+    current : Namespace
+        An object containing information about the current distribution.
+        (Refer to set_current function docstring for details.)
 
     Returns
     -------
-    np.array
-        Array of derivatives of the laser state variables.
+    ndarray
+        An array containing the calculated rate equations.
+        - dy[0] : float
+            Rate of change of carrier density.
+        - dy[1] : float
+            Rate of change of photon density.
+        - dy[2] : float
+            Rate of change of optical phase.
     """
-    #param, current = args
     dy = np.zeros(3)        
     # Carrier density
     dy[0] = carrier_density(t,y,param,current)
@@ -166,75 +301,118 @@ def laser_rate_equations(t, y, param, current):
 
 def carrier_density(t,y,param,current):
     """
-    Calculate the rate of change of the carrier density.
+    Calculate the rate of change of carrier density in a laser.
 
     Parameters
     ----------
-    t : scalar
-        Time value.
-    y : np.array
-        Array of laser state variables.
-    param : parameter object (struct)
-        Object with laser parameters.
-    current : parameter object (struct)
-        Object with current input signal.
+    t : float
+        Time.
+    y : ndarray
+        An array containing the state variables of the laser.
+        - y[0] : float
+            Carrier density.
+        - y[1] : float
+            Photon density.
+        - y[2] : float
+            Optical phase.
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
+    current : Namespace
+        An object containing information about the current distribution.
+        (Refer to set_current function docstring for details.)
 
     Returns
     -------
-    scalar
-        Rate of change of the carrier density.
+    float
+        The rate of change of carrier density.
     """
     current = get_current(current, t)
     return current/(e*param.v)-y[0]/param.tau_n-param.vg*param.a0*y[1]*(y[0]-param.n_t)/(1+param.epsilon*y[1])
   
 def photon_density(y,param):
     """
-    Calculate the rate of change of the photon density.
+    Calculate the rate of change of photon density in a laser.
 
     Parameters
     ----------
-    y : np.array
-        Array of laser state variables.
-    param : parameter object (struct)
-        Object with laser parameters.
+    y : ndarray
+        An array containing the state variables of the laser.
+        - y[0] : float
+            Carrier density.
+        - y[1] : float
+            Photon density.
+        - y[2] : float
+            Optical phase.
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
 
     Returns
     -------
-    scalar
-        Rate of change of the photon density.
+    float
+        The rate of change of photon density.
     """
     return (param.gamma * param.a0 * param.vg * ((y[0]-param.n_t)/(1+param.epsilon*y[1]))-1/param.tau_p)*y[1]+param.beta*param.gamma*y[0]/param.tau_n
     
 def optical_phase(y,param):
     """
-    Calculate the rate of change of the optical phase.
+    Calculate the rate of change of optical phase in a laser.
 
     Parameters
     ----------
-    y : np.array
-        Array of laser state variables.
-    param : parameter object (struct)
-        Object with laser parameters.
+    y : ndarray
+        An array containing the state variables of the laser.
+        - y[0] : float
+            Carrier density.
+        - y[1] : float
+            Photon density.
+        - y[2] : float
+            Optical phase.
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
 
     Returns
     -------
-    scalar
-        Rate of change of the optical phase.
-    """    
+    float
+        The rate of change of optical phase.
+    """
     return param.alpha/2 * (param.gamma*param.vg*param.a0*(y[0]-param.n_t)-1/param.tau_p)
 
 def add_noise_rate_equations(y, dy, param, current):
     """
-    Adds noise terms to the rate equations.
+    Add noise terms to the rate equations for a laser.
 
-    Args:
-        y: The current state of the rate equations.
-        dy: The rate of change of the rate equations.
-        param: The parameters of the rate equations.
-        current: The current value.
+    Parameters
+    ----------
+    y : ndarray
+        An array containing the state variables of the laser.
+        - y[0] : float
+            Carrier density.
+        - y[1] : float
+            Photon density.
+        - y[2] : float
+            Optical phase.
+    dy : ndarray
+        An array containing the calculated rate equations.
+        - dy[0] : float
+            Rate of change of carrier density.
+        - dy[1] : float
+            Rate of change of photon density.
+        - dy[2] : float
+            Rate of change of optical phase.
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
+    current : Namespace
+        An object containing information about the current distribution.
+        (Refer to laser_dfb function docstring for details.)
 
-    Returns:
-        The updated rate of change of the rate equations.
+    Returns
+    -------
+    ndarray
+        An array containing the rate equations with added noise terms.
     """
     # Calculate noise terms
     dn = laser_noise_sources(y,param,current) if param.noise_terms else np.zeros(3)
@@ -244,15 +422,35 @@ def add_noise_rate_equations(y, dy, param, current):
 
 def laser_noise_sources(y,param,current):
     """
-    Calculates the noise terms for the laser rate equations.
+    Calculate noise sources for a laser.
 
-    Args:
-        y: The current state of the rate equations.
-        param: The parameters of the rate equations.
-        current: The current value.
+    Parameters
+    ----------
+    y : ndarray
+        An array containing the state variables of the laser.
+        - y[0] : float
+            Carrier density.
+        - y[1] : float
+            Photon density.
+        - y[2] : float
+            Optical phase.
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
+    current : Namespace
+        An object containing information about the current distribution.
+        (Refer to laser_dfb function docstring for details.)
 
-    Returns:
-        A list of noise terms [fn, fs, fp].
+    Returns
+    -------
+    list
+        A list containing noise sources.
+        - fn : float
+            Noise source related to the optical phase.
+        - fs : float
+            Noise source related to the carrier density and photon density.
+        - fp : float
+            Noise source related to the photon density.
     """
     # diffusion coefficient - see ref. [2]
     dss = (param.beta*y[0]*y[1]/param.tau_n)
@@ -262,23 +460,54 @@ def laser_noise_sources(y,param,current):
     # noise sources
     t_step_sqrt = np.sqrt(2 / current.t_step)
     fs = np.random.randn() * np.sqrt(dss) * t_step_sqrt
-    fz = np.random.randn() * np.sqrt(dzz) * t_step_sqrt
     fp = np.random.randn() * np.sqrt(dpp) * t_step_sqrt
+    fz = np.random.randn() * np.sqrt(dzz) * t_step_sqrt
     fn = fz - fs
     return [fn, fs, fp]
 
 def get_im_response(param, out, f, type='exact'):
     """
-    Calculates the impulse response of an intensity modulator (IM).
+    Get the Y and Z parameters and the intensity modulation (IM) frequency response of a semiconductor laser.
 
-    Args:
-        param: The parameters of the IM.
-        out: The output of the IM.
-        f: The frequency values.
-        type: The type of response to calculate ('exact' or 'approx.').
+    Parameters
+    ----------
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
 
-    Returns:
-        The calculated Y, Z, and response values based on the specified type.
+    out : Namespace
+        An object containing laser simulation output.
+        - N : ndarray
+            Carrier density over time.
+        - S : ndarray
+            Photon density over time.
+        - phase : ndarray
+            Optical phase over time.
+        - power : ndarray
+            Optical power over time.
+        - chirp : ndarray
+            Optical chirp over time.
+        - e_out : ndarray
+            Optical output over time.
+
+    f : float
+        The frequency of interest for the IM frequency response.
+
+    type : {'exact', 'approx.'}, optional
+        The type of IM response to calculate. Default is 'exact'.
+        - 'exact': Exact IM response.
+        - 'approx.': Approximate IM response.
+
+    Returns
+    -------
+    ndarray, ndarray, ndarray
+        Arrays containing the IM response:
+        - Y : ndarray
+            Function of laser parameters and bias current.
+        - Z : ndarray
+            Function of laser parameters and bias current.
+        - im_response : ndarray
+            The calculated IM frequency response.
     """
     Y, Z = im_response_yz(param,out)
     if type=='exact':
@@ -288,59 +517,51 @@ def get_im_response(param, out, f, type='exact'):
     else:
         print('Invalid type of IM response.')
         return -1
-
-def im_response_hf(f,Y,Z):
-    """
-    Calculates the high-frequency response of an intensity modulator (IM) - Eq. [6] ref. [1].
-
-    Args:
-        f: The frequency values.
-        Y: The Y parameter of the IM.
-        Z: The Z parameter of the IM.
-
-    Returns:
-        The calculated high-frequency response of the IM.
-    """
-    return Z/((1j*2*np.pi*f)**2+1j*2*np.pi*f*Y+Z)
-
-def im_response_haf(f,Y,Z):
-    """
-    Calculates the high-frequency approximation response of an intensity modulator (IM) - Eq. [12] ref. [1]
-
-    Args:
-        f: The frequency values.
-        Y: The Y parameter of the IM.
-        Z: The Z parameter of the IM.
-
-    Returns:
-        The calculated high-frequency approximation response of the IM.
-    """
-    fr = np.sqrt(Z)/(2*np.pi)
-    return fr**2/((fr**2-f**2)+1j*f*Y/(2*np.pi))
-
+    
 def im_response_yz(param,out):
     """
-    Calculates the Y and Z parameters for the intensity modulation frequency response - see ref. [1]
+    Calculate the components Y and Z function of laser parameters and bias current.
 
-    Args:
-        param: The parameters of the intensity modulator.
-        out: The output of the intensity modulator.
+    Parameters
+    ----------
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
 
-    Returns:
-        A tuple containing the calculated Y and Z parameters for the intensity modulation frequency response.
+    out : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dynamic_response function docstring for details.)
+
+
+    Returns
+    -------
+    ndarray, ndarray
+        Arrays containing the components Y and Z of the IM response:
+        - Y : ndarray
+            Function of laser parameters and bias current.
+        - Z : ndarray
+            Function of laser parameters and bias current.
     """
     return im_response_y(param,out),im_response_z(param,out)
 
 def im_response_y(param,out):
     """
-    Calculates the Y parameter for the intensity modulation frequency response - Eq. [7] ref. [1].
+    Calculate the function Y of laser parameters and bias current.
 
-    Args:
-        param: The parameters of the intensity modulator.
-        out: The output of the intensity modulator.
+    Parameters
+    ----------
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
 
-    Returns:
-        The calculated Y parameter for the intensity modulation frequency response.
+    out : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dynamic_response function docstring for details.)
+
+    Returns
+    -------
+    float
+        The calculated component Y.
     """
     Y = param.vg*param.a0*out.S[-1]/(1+param.epsilon*out.S[-1]) + 1/param.tau_n + 1/param.tau_p
     Y -= param.gamma*param.a0*param.vg*(out.N[-1]-param.n_t)/(1+param.epsilon*out.S[-1])**2
@@ -348,29 +569,96 @@ def im_response_y(param,out):
 
 def im_response_z(param,out):
     """
-    Calculates the Z parameter for the intensity modulation frequency response - Eq. [8] ref. [1].
+    Calculate the function Z of laser parameters and bias current.
 
-    Args:
-        param: The parameters of the intensity modulator.
-        out: The output of the intensity modulator.
+    Parameters
+    ----------
+    param : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dfb function docstring for details.)
 
-    Returns:
-        The calculated Z parameter for the intensity modulation frequency response.
+    out : Namespace
+        An object containing parameters for the simulation.
+        (Refer to laser_dynamic_response function docstring for details.)
+
+    Returns
+    -------
+    float
+        The calculated component Z.
     """
     Z = param.vg*param.a0*out.S[-1]/(1+param.epsilon*out.S[-1]) * 1/param.tau_p + 1/(param.tau_p*param.tau_n)
     Z += (param.beta-1)*param.gamma*param.a0*param.vg/param.tau_n*(out.N[-1]-param.n_t)/(1+param.epsilon*out.S[-1])**2
     return Z
 
+def im_response_hf(f,Y,Z):
+    """
+    Calculate the intensity modulation (IM) frequency response of a semiconductor laser.
+
+    Parameters
+    ----------
+    f : float
+        The frequency of interest for the IM response.
+
+    Y : ndarray
+        Function of laser parameters and bias current.
+
+    Z : ndarray
+        Function of laser parameters and bias current.
+
+    Returns
+    -------
+    ndarray
+        The calculated IM frequency response.
+    """
+    return Z/((1j*2*np.pi*f)**2+1j*2*np.pi*f*Y+Z)
+
+def im_response_haf(f,Y,Z):
+    """
+    Calculate the approximated intensity modulation (IM) frequency response of a semiconductor laser.
+
+    Parameters
+    ----------
+    f : float
+        The frequency of interest for the IM response.
+
+    Y : ndarray
+        Function of laser parameters and bias current.
+
+    Z : ndarray
+        Function of laser parameters and bias current.
+
+    Returns
+    -------
+    ndarray
+        The calculated high-frequency approximate IM response.
+    """
+    fr = np.sqrt(Z)/(2*np.pi)
+    return fr**2/((fr**2-f**2)+1j*f*Y/(2*np.pi))
+
 def plot(t,y):
     """
-    Plots the optical power, chirp, carrier density, and photon density.
+    Plot various laser simulation outputs over time.
 
-    Args:
-        t: The time values.
-        y: The values to be plotted.
+    Parameters
+    ----------
+    t : ndarray
+        Time values.
 
-    Returns:
-        The matplotlib axes object containing the plot.
+    y : Namespace
+        An object containing laser simulation output.
+        - power : ndarray
+            Optical power over time.
+        - chirp : ndarray
+            Optical chirp over time.
+        - N : ndarray
+            Carrier density over time.
+        - S : ndarray
+            Photon density over time.
+
+    Returns
+    -------
+    ndarray
+        Axes of the generated subplots.
     """
     fig,ax=plt.subplots(2,2,figsize=(12,6))
     ax[0,0].plot(1e9*t, 1e3*y.power)
