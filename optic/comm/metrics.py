@@ -694,7 +694,6 @@ def theoryMI(M, constType, SNR, pX=None, symetry=True, lim=np.inf, tol=1e-3):
         MI -= np.sum(MI_R * symbCount)
 
     else:
-        MI = 0
         for ind in range(len(constSymb)):
             MI -= dblquad(
                 condEntropy,
