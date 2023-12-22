@@ -201,6 +201,10 @@ def apskConst(M, m1=None, phaseOffset=None):
     -------
     const : ndarray
         APSK constellation
+
+    References
+    ----------
+    Z. Liu, et al "APSK Constellation with Gray Mapping," IEEE Communications Letters, vol. 15, no. 12, pp. 1271-1273, December 2011
     """
     if m1 is None:
         if M == 16:
