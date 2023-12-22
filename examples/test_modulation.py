@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -41,7 +41,7 @@ import numpy as np
 # Run AWGN simulation 
 SNRdB = 25 # SNR 
 M      = 16  # order of the modulation format
-constType = 'qam' # 'qam', 'psk', 'pam' or 'ook'
+constType = 'qam' # 'qam', 'psk', 'apsk', 'pam' or 'ook'
 
 # generate random bits
 bits = np.random.randint(2, size = int(np.log2(M)*1e6))
@@ -61,7 +61,9 @@ BER, _, SNRest = fastBERcalc(symbRx, symbTx, M, constType)
 print('BER = %.2e'%BER)
 print('SNR = %.2f dB'%SNRdB)
 print('SNR(est) = %.2f dB'%SNRest)
-print('BER(theory) = %.2e'%theoryBER(M, EbN0dB, constType))
+
+if constType in ['qam','psk','pam']:
+    print('BER(theory) = %.2e'%theoryBER(M, EbN0dB, constType))
 
 plt.figure(figsize=(4,4))
 plt.plot(symbRx.real, symbRx.imag,'.', label='Rx')
@@ -84,6 +86,8 @@ for ind, symb in enumerate(constSymb/np.sqrt(Es)):
     plt.annotate(str(bitMap[ind,:])[1:-1:2], xy = (symb.real, symb.imag))
 # -
 
-pconst(symbRx, whiteb=True);
+pconst(symbRx, whiteb=True, R=1.5*np.max(np.abs(constSymb/np.sqrt(Es))));
 
-pconst(symbRx, whiteb=False);
+pconst(symbRx, whiteb=False, R=1.5*np.max(np.abs(constSymb/np.sqrt(Es))));
+
+
