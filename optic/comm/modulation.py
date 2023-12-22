@@ -74,29 +74,36 @@ def GrayMapping(M, constType):
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
 
-    L = int(M - 1) if constType in ["pam", "ook"] else int(np.sqrt(M) - 1)
+    # L = int(M - 1) if constType in ["pam", "ook"] else int(np.sqrt(M) - 1)
     bitsSymb = int(np.log2(M))
 
     code = GrayCode(bitsSymb)
     if constType == "ook":
         const = np.arange(0, 2)
     elif constType == "pam":
-        const = np.arange(-L, L + 1, 2)
+        # const = np.arange(-L, L + 1, 2)
+        const = pamConst(M)
     elif constType == "qam":
-        PAM = np.arange(-L, L + 1, 2)
-        PAM = np.array([PAM])
+        const = qamConst(M)
 
-        # generate complex square M-QAM constellation
-        const = np.tile(PAM, (L + 1, 1))
-        const = const + 1j * np.flipud(const.T)
+        # PAM = np.arange(-L, L + 1, 2)
+        # PAM = np.array([PAM])
 
-        for ind in np.arange(1, L + 1, 2):
-            const[ind] = np.flip(const[ind], 0)
+        # # generate complex square M-QAM constellation
+        # const = np.tile(PAM, (L + 1, 1))
+        # const = const + 1j * np.flipud(const.T)
+
+        # for ind in np.arange(1, L + 1, 2):
+        #     const[ind] = np.flip(const[ind], 0)
     elif constType == "psk":
-        pskPhases = np.arange(0, 2 * np.pi, 2 * np.pi / M)
+        const = pskConst(M)
 
-        # generate complex M-PSK constellation
-        const = np.exp(1j * pskPhases)
+    elif constType == "apsk":
+        const = apskConst(M)
+        # pskPhases = np.arange(0, 2 * np.pi, 2 * np.pi / M)
+
+        # # generate complex M-PSK constellation
+        # const = np.exp(1j * pskPhases)
     const = const.reshape(M, 1)
     const_ = np.zeros((M, 2), dtype=complex)
 
@@ -110,6 +117,124 @@ def GrayMapping(M, constType):
     if constType in ["pam", "ook"]:
         const = const.real
     return const
+
+
+def pamConst(M):
+    """
+    Generate a Pulse Amplitude Modulation (PAM) constellation.
+
+    Parameters
+    ----------
+    M : int
+        Number of symbols in the constellation. It must be an integer.
+
+    Returns
+    -------
+    ndarray
+        1D PAM constellation.
+    """
+    L = int(M - 1)
+    return np.arange(-L, L + 1, 2)
+
+
+def qamConst(M):
+    """
+    Generate a Quadrature Amplitude Modulation (QAM) constellation.
+
+    Parameters
+    ----------
+    M : int
+        Number of symbols in the constellation. It must be a perfect square.
+
+    Returns
+    -------
+    const : ndarray
+        Complex square M-QAM constellation.
+    """
+    L = int(np.sqrt(M) - 1)
+
+    # generate 1D PAM constellation
+    PAM = np.arange(-L, L + 1, 2)
+    PAM = np.array([PAM])
+
+    # generate complex square M-QAM constellation
+    const = np.tile(PAM, (L + 1, 1))
+    const = const + 1j * np.flipud(const.T)
+
+    for ind in np.arange(1, L + 1, 2):
+        const[ind] = np.flip(const[ind], 0)
+
+    return const
+
+
+def pskConst(M):
+    """
+    Generate a Phase Shift Keying (PSK) constellation.
+
+    Parameters
+    ----------
+    M : int
+        Number of symbols in the constellation. It must be a power of 2 positive integer.
+
+    Returns
+    -------
+    ndarray
+        Complex M-PSK constellation.
+    """
+    # generate complex M-PSK constellation
+    pskPhases = np.arange(0, 2 * np.pi, 2 * np.pi / M)
+    return np.exp(1j * pskPhases)
+
+
+def apskConst(M, m1=None, phaseOffset=None):
+    """
+    Generate an APSK modulated constellation.
+
+    Parameters
+    ----------
+    M : int
+        Constellation order.
+    m1 : int
+        Number of bits used to index the radii of the constellation.
+
+    Returns
+    -------
+    const : ndarray
+        APSK constellation
+    """
+    if m1 is None:
+        if M == 16:
+            m1 = 1
+        elif M == 32:
+            m1 = 2
+        elif M == 64:
+            m1 = 2
+        elif M == 128:
+            m1 = 3
+        elif M == 256:
+            m1 = 3
+        elif M == 512:
+            m1 = 4
+        elif M == 1024:
+            m1 = 4
+
+    nRings = int(2**m1)  # bits that index the rings
+    m2 = int(np.log2(M) - m1)  # bits that index the symbols per ring
+
+    symbolsPerRing = int(2**m2)
+
+    const = np.zeros((M,), dtype=np.complex64)
+
+    if phaseOffset is None:
+        phaseOffset = np.pi / symbolsPerRing
+
+    for idx in range(nRings):
+        radius = np.sqrt(-np.log(1 - ((idx + 1) - 0.5) * symbolsPerRing / M))
+        const[idx * symbolsPerRing : (idx + 1) * symbolsPerRing] = radius * pskConst(
+            symbolsPerRing
+        )
+
+    return const * np.exp(1j * phaseOffset)
 
 
 @njit(parallel=True)
