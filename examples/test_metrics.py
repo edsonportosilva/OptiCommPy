@@ -159,6 +159,65 @@ plt.ylabel('log10(BER)');
 plt.grid()
 # -
 
+# ### APSK constellations with Gray Mapping
+
+# +
+# Run BER vs Ebn0 Monte Carlo simulation 
+
+apskOrder  = [16, 64, 256, 1024]  # Modulation order
+
+EbN0dB_  = np.arange(-2, 35, 1)
+BER      = np.zeros((len(EbN0dB_),len(apskOrder)))
+BER[:]   = np.nan
+
+for ii, M in enumerate(apskOrder):
+    print('run sim: M = ', M)
+    for indSNR in tqdm(range(EbN0dB_.size)):
+
+        EbN0dB = EbN0dB_[indSNR]
+
+        # generate random bits
+        bitsTx = np.random.randint(2, size=int(np.log2(M)*1e5))    
+
+        # Map bits to constellation symbols
+        symbTx = modulateGray(bitsTx, M, 'apsk')
+
+        # Normalize symbols energy to 1
+        symbTx = pnorm(symbTx) 
+
+        # AWGN channel  
+        snrdB  = EbN0dB + 10*np.log10(np.log2(M))
+        symbRx = awgn(symbTx, snrdB)
+
+        # BER calculation
+        BER[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, M, 'apsk')
+
+        if BER[indSNR, ii] == 0:              
+            break
+
+# +
+# Plot simulation results and theoretical curves        
+BER[BER==0] = np.nan
+
+plt.figure(figsize=(10,6))
+for ii, M in enumerate(apskOrder):
+    plt.plot(EbN0dB_, np.log10(BER[:,ii]), 'o', label=f'{str(M)}APSK monte carlo')
+
+plt.gca().set_prop_cycle(None)
+
+for M in apskOrder:
+    BERtheory = theoryBER(M, EbN0dB_,'psk')
+    BERtheory[BERtheory==0] = np.nan
+    plt.plot(EbN0dB_, np.log10(BERtheory), '-', label=f'{str(M)}PSK theory')
+
+plt.xlim(min(EbN0dB_), max(EbN0dB_))
+plt.ylim(-6, 0)
+plt.legend();
+plt.xlabel('EbN0 [dB]');
+plt.ylabel('log10(BER)');
+plt.grid()
+# -
+
 # ## Test mutual information (MI) versus signal-to-noise ratio (SNR)
 
 # ### QAM constellations with Gray mapping
