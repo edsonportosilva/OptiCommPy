@@ -74,36 +74,20 @@ def GrayMapping(M, constType):
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
 
-    # L = int(M - 1) if constType in ["pam", "ook"] else int(np.sqrt(M) - 1)
     bitsSymb = int(np.log2(M))
 
     code = GrayCode(bitsSymb)
     if constType == "ook":
         const = np.arange(0, 2)
     elif constType == "pam":
-        # const = np.arange(-L, L + 1, 2)
         const = pamConst(M)
     elif constType == "qam":
         const = qamConst(M)
-
-        # PAM = np.arange(-L, L + 1, 2)
-        # PAM = np.array([PAM])
-
-        # # generate complex square M-QAM constellation
-        # const = np.tile(PAM, (L + 1, 1))
-        # const = const + 1j * np.flipud(const.T)
-
-        # for ind in np.arange(1, L + 1, 2):
-        #     const[ind] = np.flip(const[ind], 0)
     elif constType == "psk":
         const = pskConst(M)
-
     elif constType == "apsk":
         const = apskConst(M)
-        # pskPhases = np.arange(0, 2 * np.pi, 2 * np.pi / M)
 
-        # # generate complex M-PSK constellation
-        # const = np.exp(1j * pskPhases)
     const = const.reshape(M, 1)
     const_ = np.zeros((M, 2), dtype=complex)
 
