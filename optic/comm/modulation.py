@@ -110,6 +110,7 @@ def GrayMapping(M, constType):
     for ind in range(M):
         const_[ind, 0] = const[ind, 0]  # complex constellation symbol
         const_[ind, 1] = int(code[ind], 2)  # mapped bit sequence (as integer decimal)
+
     # sort complex symbols column according to their mapped bit sequence (as integer decimal)
     const = const_[const_[:, 1].real.argsort()]
     const = const[:, 0]
@@ -234,9 +235,15 @@ def apskConst(M, m1=None, phaseOffset=None):
 
     for idx in range(nRings):
         radius = np.sqrt(-np.log(1 - ((idx + 1) - 0.5) * symbolsPerRing / M))
-        const[idx * symbolsPerRing : (idx + 1) * symbolsPerRing] = radius * pskConst(
-            symbolsPerRing
-        )
+
+        if (idx + 1) % 2 == 1:
+            const[idx * symbolsPerRing : (idx + 1) * symbolsPerRing] = radius * np.flip(
+                pskConst(symbolsPerRing)
+            )
+        else:
+            const[
+                idx * symbolsPerRing : (idx + 1) * symbolsPerRing
+            ] = radius * pskConst(symbolsPerRing)
 
     return const * np.exp(1j * phaseOffset)
 
