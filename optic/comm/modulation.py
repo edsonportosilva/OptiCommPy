@@ -6,8 +6,8 @@ Digital modulation utilities (:mod:`optic.comm.modulation`)
 .. autosummary::
    :toctree: generated/
 
-   GrayCode                 -- Gray code generator
-   GrayMapping              -- Gray Mapping for digital modulations
+   grayCode                 -- Gray code generator
+   grayMapping              -- Gray Mapping for digital modulations
    minEuclid                -- Find minimum Euclidean distance
    demap                    -- Contellation symbol index to bit sequence demapping
    modulateGray             -- Modulate bit sequences to constellation symbol sequences (w/ Gray mapping)
@@ -23,7 +23,7 @@ from optic.utils import bitarray2dec, dec2bitarray
 from numba import njit, prange
 
 
-def GrayCode(n):
+def grayCode(n):
     """
     Gray code generator.
 
@@ -52,7 +52,7 @@ def GrayCode(n):
     return code
 
 
-def GrayMapping(M, constType):
+def grayMapping(M, constType):
     """
     Gray Mapping for digital modulations.
 
@@ -65,8 +65,8 @@ def GrayMapping(M, constType):
 
     Returns
     -------
-    const : list
-        list with constellation symbols (sorted according their corresponding
+    const : ndarray
+        constellation symbols (sorted according their corresponding
         Gray bit sequence as integer decimal).
 
     """
@@ -76,7 +76,7 @@ def GrayMapping(M, constType):
 
     bitsSymb = int(np.log2(M))
 
-    code = GrayCode(bitsSymb)
+    code = grayCode(bitsSymb)
     if constType == "ook":
         const = np.arange(0, 2)
     elif constType == "pam":
@@ -310,7 +310,7 @@ def modulateGray(bits, M, constType):
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
     bitsSymb = int(np.log2(M))
-    const = GrayMapping(M, constType)
+    const = grayMapping(M, constType)
 
     symb = bits.reshape(-1, bitsSymb).T
     symbInd = bitarray2dec(symb)
@@ -342,7 +342,7 @@ def demodulateGray(symb, M, constType):
     if M != 2 and constType == "ook":
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
-    const = GrayMapping(M, constType)
+    const = grayMapping(M, constType)
 
     # get bit to symbol mapping
     indMap = minEuclid(const, const)

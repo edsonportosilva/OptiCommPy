@@ -22,7 +22,7 @@ if 'google.colab' in str(get_ipython()):
     cd('/content/OptiCommPy/')
     # ! pip install .
 
-from optic.comm.modulation import modulateGray, GrayMapping
+from optic.comm.modulation import modulateGray, grayMapping
 from optic.comm.metrics import monteCarloGMI, monteCarloMI, fastBERcalc, theoryBER, theoryMI, calcEVM
 from optic.models.channels import awgn
 from optic.dsp.core import pnorm, signal_power
@@ -405,7 +405,7 @@ PS = 0
 for ii, M in enumerate(qamOrder):
     print('run sim: M = ', M)
 
-    constSymb = GrayMapping(M, 'qam')
+    constSymb = grayMapping(M, 'qam')
     Es = np.mean(np.abs(constSymb) ** 2)
     constSymb = constSymb / np.sqrt(Es)
 

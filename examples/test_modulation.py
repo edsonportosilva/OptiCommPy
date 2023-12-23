@@ -24,7 +24,7 @@ if 'google.colab' in str(get_ipython()):
     cd('/content/OptiCommPy/')
     # ! pip install . 
 
-from optic.comm.modulation import modulateGray, demodulateGray, GrayMapping
+from optic.comm.modulation import modulateGray, demodulateGray, grayMapping
 from optic.comm.metrics import fastBERcalc, theoryBER
 from optic.models.channels import awgn
 from optic.dsp.core import pnorm, signal_power
@@ -76,7 +76,7 @@ plt.grid()
 
 
 # plot modulation bit-to-symbol mapping
-constSymb = GrayMapping(M, constType)             # Gray constellation mapping
+constSymb = grayMapping(M, constType)             # Gray constellation mapping
 bitMap = demodulateGray(constSymb, M, constType)  # bit mapping
 bitMap = bitMap.reshape(-1, int(np.log2(M)))
 Es = signal_power(constSymb)                      # mean symbol energy
