@@ -8,6 +8,10 @@ Digital modulation utilities (:mod:`optic.comm.modulation`)
 
    grayCode                 -- Gray code generator
    grayMapping              -- Gray Mapping for digital modulations
+   pamConst                 -- Generate a Pulse Amplitude Modulation (PAM) constellation.
+   qamConst                 -- Generate a Quadrature Amplitude Modulation (QAM) constellation.
+   pskConst                 -- Generate a Phase Shift Keying (PSK) constellation.
+   apskConst                -- Generate an Amplitude-Phase Shift Keying (APSK) constellation.
    minEuclid                -- Find minimum Euclidean distance
    demap                    -- Contellation symbol index to bit sequence demapping
    modulateGray             -- Modulate bit sequences to constellation symbol sequences (w/ Gray mapping)
@@ -173,7 +177,7 @@ def pskConst(M):
 
 def apskConst(M, m1=None, phaseOffset=None):
     """
-    Generate an APSK modulated constellation.
+    Generate an Amplitude-Phase Shift Keying (APSK) constellation.
 
     Parameters
     ----------
