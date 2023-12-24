@@ -302,7 +302,7 @@ def modulateGray(bits, M, constType):
     M : int
         order of the modulation format.
     constType : string
-        'qam', 'psk', 'pam' or 'ook'.
+        'qam', 'psk', 'apsk', 'pam' or 'ook'.
 
     Returns
     -------
@@ -335,7 +335,7 @@ def demodulateGray(symb, M, constType):
     M : int
         order of the modulation format.
     constType : string
-        'qam', 'psk', 'pam' or 'ook'.
+        'qam', 'psk', 'apsk', 'pam' or 'ook'.
 
     Returns
     -------
