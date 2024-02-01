@@ -7,7 +7,7 @@ tags:
   - Photonics  
 authors:
   - name: Edson Porto da Silva
-    orcid: 0000-0000-0000-0000
+    orcid: 0000-0003-4230-9121
     equal-contrib: true
     affiliation: "1" # (Multiple affiliations must be quoted)
   - name: Adolfo Fernandes Herbster
@@ -18,11 +18,6 @@ affiliations:
    index: 1
 date: 01 February 2024
 bibliography: paper.bib
-
-# Optional fields if submitting to a AAS journal too, see this blog post:
-# https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
-aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
-aas-journal: Astrophysical Journal <- The name of the AAS journal.
 ---
 
 # Summary
@@ -35,13 +30,14 @@ Today, optical communication systems engineering is a multidisciplinary field en
 
 Whether in the research or development stages, the study of optical communication systems typically necessitates the use of robust computational models to simulate various aspects of the system. For instance, it may be essential to comprehend how information-carrying signals transmitted over fibers will be affected by propagation phenomena such as chromatic dispersion (CD), polarization mode dispersion (PMD), nonlinear effects, and noise [@Agrawal2002]. This information ultimately determines the performance metrics of the transmission system, which play a crucial role in selecting the most suitable technology to become an industrial standard.
 
-Presently, a variety of optical communication simulation toolboxes are accessible. While the majority of these are proprietary software packages [@OptiSystem], [@vpi], [@optsim], a few are open-source but are designed to operate within proprietary software environments such as Matlab\textsuperscript{\textregistered} [@robochameleon], [@optilux].
+Presently, a variety of optical communication simulation toolboxes are accessible. While the majority of these are proprietary software packages [@OptiSystem], [@vpi], [@optsim], a few are open-source but are designed to operate within proprietary software environments such as Matlab&reg;
+[@robochameleon], [@optilux].
 
 In this paper, we present OptiCommPy, an open-source Python package designed for simulating optical communication systems and subsystems. OptiCommPy is freely accessible, providing researchers, students, and engineers with the option to simulate various optical communication systems at the physical layer. Additionally, the toolbox incorporates numerous digital signal processing (DSP) algorithms, particularly essential for coherent optical systems.
 
 # Software description
 
-The module structure of the OptiCommPy package is illustrated in Figure 1. At the top level, the package is named `optic`, containing five sub-packages: `comm, models, dsp, utils`, and `plot`.
+The module structure of the OptiCommPy package is illustrated in Fig. 1. At the top level, the package is named `optic`, containing five sub-packages: `comm, models, dsp, utils`, and `plot`.
 
 ![Structure of modules of the OptiCommPy package.](OptiCommPy.png)
 
@@ -54,10 +50,12 @@ The `dsp` sub-package is a collection of DSP algorithms ranging from basic signa
 Finally, the `utils` and the `plot` sub-packages provide functions that implement a few general utilities and custom plotting functions to visualize signals (eyediagram plots, constellation plots, etc).
 
 # Basic example of usage
-In this section, a basic illustrative example of the usage of the OptiCommPy package is presented. A schematic for the transmission system being simulated is shown in Figure 2. It consists of a 10~Gb/s NRZ OOK transmission over 100~km of optical fiber with direct detection at the receiver assuming a photodiode with 10 GHz of bandwidth. The fiber channel is modeled as a linear propagation medium exhibiting loss and chromatic dispersion. All the simulation parameters are listed in Table~\ref{tab:simparam}.
+In this section, a basic illustrative example of the usage of the OptiCommPy package is presented. A schematic for the transmission system being simulated is shown in Figure 2. It consists of a 10~Gb/s NRZ OOK transmission over 100~km of optical fiber with direct detection at the receiver assuming a photodiode with 10 GHz of bandwidth. The fiber channel is modeled as a linear propagation medium exhibiting loss and chromatic dispersion. All the simulation parameters are listed in Table 1.
 
 ![Schematic of the basic IM/DD simulation. The eye diagrams displayed are generated from the simulation data using the `optic.plot.eyediagram` function available in the package.](BasicIMDD.png)
 
+
+Table 1: simulation parameters.
 | Parameter                                 | Value          |
 |-------------------------------------------|----------------|
 | Order of the modulation format ($M$)      | 2              |
@@ -74,7 +72,8 @@ In this section, a basic illustrative example of the usage of the OptiCommPy pac
 | Simulation sampling rate ($F_s$)          | 160 GSamples/s |
 
 
-\subsection{Building the simulation setup}
+
+## Building the simulation setup
 To build the corresponding simulation setup with OptiCommPy, first the necessary functions need to be imported as shown in listing ~\ref{lis:setup1}. 
 
 
@@ -127,7 +126,7 @@ paramPD.B = Rs         # photodiode bandwidth limitation [Hz]
 paramPD.Fs = Fs        # sampling frequency [samples/s]
 ```
 
-After defining all the required parameters, the core simulation code, as depicted in listing.~\ref{lis:setup3}, establishes the signal flow through each OptiCommPy model, extending from the initial bit source to the direct-detection optical receiver. Starting with a pseudorandom bit sequence, the signal undergoes upsampling and pulse shaping, resulting in a series of binary non-return-to-zero (NRZ) pulses. The corresponding eyediagram, located in the bottom-left corner of Fig.~\ref{fig:basic-IMDD}, visually portrays this signal. The electrical NRZ signal then drives the MZM, biased at the quadrature point. An ideal laser generates the optical carrier, free from phase and intensity noise. This optical signal, upon exiting the MZM, traverses the linear fiber channel, where it is subjected to losses and chromatic dispersion. Finally, the signal is received by the photodiode. An illustrative eyediagram of the resulting received signal can be observed in the bottom-right corner of Fig.~\ref{fig:basic-IMDD}.
+After defining all the required parameters, the core simulation code, as depicted in listing.~\ref{lis:setup3}, establishes the signal flow through each OptiCommPy model, extending from the initial bit source to the direct-detection optical receiver. Starting with a pseudorandom bit sequence, the signal undergoes upsampling and pulse shaping, resulting in a series of binary non-return-to-zero (NRZ) pulses. The corresponding eyediagram, located in the bottom-left corner of Fig. 2, visually portrays this signal. The electrical NRZ signal then drives the MZM, biased at the quadrature point. An ideal laser generates the optical carrier, free from phase and intensity noise. This optical signal, upon exiting the MZM, traverses the linear fiber channel, where it is subjected to losses and chromatic dispersion. Finally, the signal is received by the photodiode. An illustrative eyediagram of the resulting received signal can be observed in the bottom-right corner of Fig.~\ref{fig:basic-IMDD}.
 
 
 ```python
@@ -161,28 +160,39 @@ I_Rx = photodiode(sigCh, paramPD)
 I_Rx = I_Rx[0::SpS]
 ```
 
-# Citations
+### Analyzing the results
 
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
+After detecting the optical signal and getting the corresponding photocurrent `I_Rx`, signal quality metrics can then be evaluated in order to quantify the transmission performance. For OOK optical transmission systems, the most common metrics are the BER and the quality-factor (Q-factor), which can be calculated from the `I_Rx` using the function `bert` available from `optic.comm.metrics`, as depicted in listings~\ref{lis:setup4}.
 
-If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for @fidgit.
+```python
+# calculate the BER and Q-factor
+BER, Q = bert(I_Rx)
+print("simulation completed.")
 
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
+print("\nTransmission performance metrics:")
+print(f"Q-factor = {Q:.2f} ")
+print(f"BER = {BER:.2e}")
 
-# Figures
+# Theoretical error probability from Q-factor
+Pb = 0.5 * erfc(Q / np.sqrt(2))  
+print(f'Pb = {Pb:.2e}\n')
+```
 
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
-and referenced from text using \autoref{fig:example}.
+The resulting metric values output at the end of the simulation are shown in listings~\ref{lis:output1}.
 
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
+```python
+Starting simulation...simulation completed.
+
+Transmission performance metrics:
+Q-factor = 3.49 
+BER = 2.80e-04
+Pb = 2.44e-04
+```
+
+Starting from this basic setup, we can conduct a comprehensive analysis to characterize transmission performance across various system parameters. For instance, by repeating the same simulation with different optical launch powers and transmission distances, we can generate performance curves that depict BER and Q-factor as functions of received optical power at varying transmission distances, as illustrated in Fig.~3. These plots clearly illustrate that system performance deteriorates with longer transmission distances, which is primarily attributed to the cumulative impact of chromatic dispersion and the noise sources at the photodiode, resulting in increased signal degradation.
+
+![Performance metrics for different transmission distances and received optical powers, characterizing the increasing penalty from chromatic dispersion with the distance (a) BER vs received optical power for different transmission distances; (b) Q-factor vs received optical power for different transmission distances.](metrics.png)
+
 
 # Acknowledgements
 
