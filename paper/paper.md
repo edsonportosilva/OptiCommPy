@@ -96,6 +96,77 @@ from optic.utils import parameters, dBm2W
 from scipy.special import erfc
 ```
 
+Given that each element in the simulation requires a specific set of parameters, the subsequent step involves defining all necessary parameters to establish the desired simulation setup, as illustrated in listing~\ref{lis:setup2}. In this particular example, we assume that the electrical signal driving the optical modulator is a binary non-return-to-zero (NRZ) signal. The optical modulator is modeled as an ideal Mach-Zehnder Modulator (MZM). The fiber channel is considered linear and affected only by loss and chromatic dispersion. Lastly, at the receiver, a photodiode with a frequency response limited to 10~GHz is configured, subject to the influence of thermal and shot noise.
+
+```python
+# Intensity modulation direct-detection 
+# (IM/DD) with On-Off Keying (OOK)
+
+# simulation parameters
+SpS = 16    # samples per symbol
+M = 2       # order of the modulation format
+Rs = 10e9   # Symbol rate
+Fs = SpS*Rs # Signal sampling frequency (samples/second)
+Pi_dBm = 3  # laser optical power at the input of the MZM in dBm
+Pi = dBm2W(Pi_dBm) # convert from dBm to W
+
+# NRZ pulse
+pulse = pulseShape('nrz', SpS) # typical NRZ pulse shape
+pulse = pulse/max(abs(pulse))  # normalize to 1 Vpp
+
+# MZM parameters
+paramMZM = parameters()
+paramMZM.Vpi = 2              # modulator's Vpi voltage
+paramMZM.Vb = -paramMZM.Vpi/2 # bias at the quadrature point
+
+# linear fiber optical channel parameters
+paramCh = parameters()
+paramCh.L = 100        # total link distance [km]
+paramCh.alpha = 0.2    # fiber loss parameter [dB/km]
+paramCh.D = 16         # fiber dispersion parameter [ps/nm/km]
+paramCh.Fc = 193.1e12  # central optical frequency [Hz]
+paramCh.Fs = Fs        # sampling frequency [samples/s]
+
+# photodiode parameters
+paramPD = parameters()
+paramPD.ideal = False  # w/o noise, w/o bandwidth limitation?
+paramPD.B = Rs         # photodiode bandwidth limitation [Hz]
+paramPD.Fs = Fs        # sampling frequency [samples/s]
+```
+
+After defining all the required parameters, the core simulation code, as depicted in listing.~\ref{lis:setup3}, establishes the signal flow through each OptiCommPy model, extending from the initial bit source to the direct-detection optical receiver. Starting with a pseudorandom bit sequence, the signal undergoes upsampling and pulse shaping, resulting in a series of binary non-return-to-zero (NRZ) pulses. The corresponding eyediagram, located in the bottom-left corner of Fig.~\ref{fig:basic-IMDD}, visually portrays this signal. The electrical NRZ signal then drives the MZM, biased at the quadrature point. An ideal laser generates the optical carrier, free from phase and intensity noise. This optical signal, upon exiting the MZM, traverses the linear fiber channel, where it is subjected to losses and chromatic dispersion. Finally, the signal is received by the photodiode. An illustrative eyediagram of the resulting received signal can be observed in the bottom-right corner of Fig.~\ref{fig:basic-IMDD}.
+
+
+```python
+## Simulation
+print('\nStarting simulation...', end="")
+
+# generate pseudo-random bit sequence
+np.random.seed(seed=123) # fixing the seed to get reproducible results
+bitsTx = np.random.randint(2, size=100000)
+
+# generate 2-PAM modulated symbol sequence
+symbTx = modulateGray(bitsTx, M, 'pam')    
+
+# upsampling
+symbolsUp = upsample(symbTx, SpS)
+
+# pulse shaping
+sigTx = firFilter(pulse, symbolsUp)
+
+# optical modulation
+Ai = np.sqrt(Pi) # ideal cw laser constant envelope
+sigTxo = mzm(Ai, sigTx, paramMZM)
+
+# linear fiber channel model
+sigCh = linearFiberChannel(sigTxo, paramCh)
+
+# noisy PD (thermal noise + shot noise + bandwidth limit)
+I_Rx = photodiode(sigCh, paramPD)
+
+# capture samples in the middle of signaling intervals
+I_Rx = I_Rx[0::SpS]
+```
 
 # Citations
 
