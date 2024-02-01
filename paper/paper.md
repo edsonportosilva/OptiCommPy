@@ -51,20 +51,51 @@ The \pyth{dsp} sub-package is a collection of DSP algorithms ranging from basic 
 
 Finally, the \pyth{utils} and the \pyth{plot} sub-packages provide functions that implement a few general utilities and custom plotting functions to visualize signals (eyediagram plots, constellation plots, etc).
 
-Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
+# 
+In this section, a basic illustrative example of the usage of the OptiCommPy package is presented. A schematic for the transmission system being simulated is shown in Fig.~\ref{fig:basic-IMDD}. It consists of a 10~Gb/s NRZ OOK transmission over 100~km of optical fiber with direct detection at the receiver assuming a photodiode with 10 GHz of bandwidth. The fiber channel is modeled as a linear propagation medium exhibiting loss and chromatic dispersion. All the simulation parameters are listed in Table~\ref{tab:simparam}.
 
-Double dollars make self-standing equations:
+\begin{table}[h]
+\footnotesize
+\centering
+\caption{Simulation parameters.}
+\begin{tabular}{|l|l|}
+\hline
+Parameter & Value \\
+\hline
+Order of the modulation format ($M$) & 2 \\ \hline
+Symbol rate ($R_s$) & 10 Gb/s \\ \hline
+Pulse shape  & NRZ \\ \hline
+Laser output power ($P_i$) & $3$ dBm \\
+\hline
+MZM $V_\pi$ voltage & 2.0 V\\ \hline
+MZM bias voltage ($V_b$) & -1.0 V \\ 
+\hline
+Total link distance ($L$) & 100 km \\ \hline
+Fiber loss parameter ($\alpha$) & 0.2 dB/km \\ \hline
+Fiber dispersion parameter ($D$) & 16 ps/nm/km \\ \hline
+Central optical frequency ($F_c$) & $193.1$ THz \\ \hline
+Photodiode bandwidth ($B$) & $10$ GHz \\ \hline
+Simulation sampling rate ($F_s$) & 160 GSamples/s \\ \hline
+\end{tabular}
+\label{tab:simparam}
+\end{table}
+\normalsize
 
-$$\Theta(x) = \left\{\begin{array}{l}
-0\textrm{ if } x < 0\cr
-1\textrm{ else}
-\end{array}\right.$$
+\subsection{Building the simulation setup}
+To build the corresponding simulation setup with OptiCommPy, first the necessary functions need to be imported as shown in listing ~\ref{lis:setup1}. 
 
-You can also use plain \LaTeX for equations
-\begin{equation}\label{eq:fourier}
-\hat f(\omega) = \int_{-\infty}^{\infty} f(x) e^{i\omega x} dx
-\end{equation}
-and refer to \autoref{eq:fourier} from text.
+
+```python
+import numpy as np    
+from optic.models.devices import mzm, photodiode
+from optic.models.channels import linearFiberChannel
+from optic.comm.modulation import modulateGray
+from optic.comm.metrics import bert
+from optic.dsp.core import firFilter, pulseShape, upsample
+from optic.utils import parameters, dBm2W
+from scipy.special import erfc
+```
+
 
 # Citations
 
