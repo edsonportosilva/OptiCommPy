@@ -41,9 +41,9 @@ In this paper, we present OptiCommPy, an open-source Python package designed for
 
 # Software description
 
-The module structure of the OptiCommPy package is illustrated in Fig.~\ref{fig:pckg-struct}. At the top level, the package is named `optic`, containing five sub-packages: `comm, models, dsp, utils`, and `plot`.
+The module structure of the OptiCommPy package is illustrated in Figure 1. At the top level, the package is named `optic`, containing five sub-packages: `comm, models, dsp, utils`, and `plot`.
 
-![Software description](OptiCommPy.png)
+![Structure of modules of the OptiCommPy package.](OptiCommPy.png)
 
 The `comm` sub-package comprises three modules designed for implementing various digital modulation and demodulation schemes [@Proakis2001], including pulse amplitude modulation (PAM), quadrature amplitude modulation (QAM), phase-shift keying (PSK), and on-off keying (OOK). Evaluating the performance of these diverse digital communication schemes is made possible through different metrics, such as bit-error-rate (BER), symbol-error-rate (SER), error vector magnitude (EVM), mutual information (MI), and generalized mutual information (GMI) [@Alvarado2018], all available within the `comm.metrics` module.
 
