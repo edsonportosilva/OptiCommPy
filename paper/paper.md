@@ -21,7 +21,7 @@ bibliography: paper.bib
 ---
 
 # Summary
-OptiCommPy, an open-source Python package designed for simulating optical communication systems and subsystems. OptiCommPy is freely accessible, providing researchers, students, and engineers with the option to simulate various optical communication systems at the physical layer. Additionally, the toolbox incorporates numerous digital signal processing (DSP) algorithms, particularly essential for coherent optical systems.
+OptiCommPy is an open-source Python package designed for simulating optical communication systems and subsystems. OptiCommPy is freely accessible, providing researchers, students, and engineers with the option to simulate various optical communication systems at the physical layer. Additionally, the toolbox incorporates numerous digital signal processing (DSP) algorithms, particularly essential for coherent optical systems.
 
 # Statement of need
 
@@ -51,9 +51,6 @@ Several types of analysis can be conducted to characterize transmission performa
 ![Performance metrics for different transmission distances and received optical powers, characterizing the increasing penalty from chromatic dispersion with the distance in a 10 Gb/s OOK transmission system. (a) BER vs received optical power for different transmission distances; (b) Q-factor vs received optical power for different transmission distances.](metrics.png)
 
 A collection of examples of utilization of OptiCommPy to build several different simulation setups, including advanced setups with non-linear fiber propagation models, WDM transmission, and coherent detection can be found in https://github.com/edsonportosilva/OptiCommPy/tree/main/examples.
-
-# Conclusions
-OptiCommPy is an open-source Python package that serves as a versatile tool for simulating optical communication systems at the physical layer. It facilitates the study of advanced DSP algorithms crucial for coherent optical systems. Through a basic IM/DD optical transmission setup, we demonstrated its practical application. The example simulated a 10 Gb/s NRZ OOK optical transmission over a 100 km fiber optic channel with direct detection. We analyzed the system's performance, revealing the impact of parameters such as transmission distance and photodiode noise. This software allows for in-depth analysis, enabling researchers and engineers to explore and optimize optical communication technologies. The transition from research to telecommunications products continues to be a crucial facet of the ever-evolving optical communication field. OptiCommPy provides a valuable platform to bridge the gap, contributing to the development of faster, more efficient optical fiber communications.
 
 # Acknowledgements
 
