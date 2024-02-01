@@ -39,7 +39,7 @@ Presently, a variety of optical communication simulation toolboxes are accessibl
 
 In this paper, we present OptiCommPy, an open-source Python package designed for simulating optical communication systems and subsystems. OptiCommPy is freely accessible, providing researchers, students, and engineers with the option to simulate various optical communication systems at the physical layer. Additionally, the toolbox incorporates numerous digital signal processing (DSP) algorithms, particularly essential for coherent optical systems.
 
-# Mathematics
+# Software description
 
 The module structure of the OptiCommPy package is illustrated in Fig.~\ref{fig:pckg-struct}. At the top level, the package is named \pyth{optic}, containing five sub-packages: \pyth{comm, models, dsp, utils}, and \pyth{plot}.
 
