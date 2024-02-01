@@ -54,8 +54,9 @@ The `dsp` sub-package is a collection of DSP algorithms ranging from basic signa
 Finally, the `utils` and the `plot` sub-packages provide functions that implement a few general utilities and custom plotting functions to visualize signals (eyediagram plots, constellation plots, etc).
 
 # Basic example of usage
-In this section, a basic illustrative example of the usage of the OptiCommPy package is presented. A schematic for the transmission system being simulated is shown in Fig.~\ref{fig:basic-IMDD}. It consists of a 10~Gb/s NRZ OOK transmission over 100~km of optical fiber with direct detection at the receiver assuming a photodiode with 10 GHz of bandwidth. The fiber channel is modeled as a linear propagation medium exhibiting loss and chromatic dispersion. All the simulation parameters are listed in Table~\ref{tab:simparam}.
+In this section, a basic illustrative example of the usage of the OptiCommPy package is presented. A schematic for the transmission system being simulated is shown in Figure 2. It consists of a 10~Gb/s NRZ OOK transmission over 100~km of optical fiber with direct detection at the receiver assuming a photodiode with 10 GHz of bandwidth. The fiber channel is modeled as a linear propagation medium exhibiting loss and chromatic dispersion. All the simulation parameters are listed in Table~\ref{tab:simparam}.
 
+![Schematic of the basic IM/DD simulation. The eye diagrams displayed are generated from the simulation data using the `optic.plot.eyediagram` function available in the package.](BasicIMDD.png)
 
 | Parameter                                 | Value          |
 |-------------------------------------------|----------------|
