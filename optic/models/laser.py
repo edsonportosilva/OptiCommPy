@@ -179,7 +179,7 @@ def laser_dynamic_response(y, param):
     out.phase = y[2,:]
     # get signal parameters
     out.power = (out.S/2) * (param.v * h * param.freq_0 * param.eta_0)/(param.gamma * param.tau_p)
-    out.chirp = 1/(2*np.pi) * (param.alpha / 2) * (param.gamma * param.vg * param.a0 * (out.N - param.n_t) - 1/param.tau_p) # np.diff(y[2,:],prepend=y[2,0])/self.t_step
+    out.chirp = 1/(2*np.pi) * (param.alpha / 2) * (param.gamma * param.vg * param.a0 * (out.N - param.n_t) - 1/param.tau_p)
     out.e_out = np.sqrt(np.real(out.power)) * np.exp(1j * out.phase)
     return out
 
