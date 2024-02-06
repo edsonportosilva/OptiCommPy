@@ -1,5 +1,5 @@
 # Authors: OpticCommPy contributors
-# License: BSD 3-Clause
+# License: GPL-3.0 license
 
 from setuptools import setup
 
@@ -10,7 +10,7 @@ LONG_DESCRIPTION = open("README.md", encoding="utf8").read()
 MAINTAINER = "Edson Porto da Silva"
 MAINTAINER_EMAIL = "edsonporto88@gmail.com"
 URL = "https://github.com/edsonportosilva/OptiCommPy"
-LICENSE = "BSD 3-Clause"
+LICENSE = "GPL-3.0 license"
 VERSION = "0.7.0"
 
 # This is a list of files to install, and where
