@@ -1,3 +1,18 @@
+"""
+=======================================================================
+Customized functions for plotting and vizualization (:mod:`optic.plot`)
+=======================================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   pconst                     -- Generate custom constellation plots      
+   constHist                  -- Generate histogram for constellation plots
+   plotDecisionBoundaries     -- Plot decision boundaries of the detector
+   eyediagram                 -- Plots eyediagrams of communication signals
+   plotPSD                    -- Plot power spectral density of signals
+"""
+
 """Plot utilities."""
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -9,6 +24,8 @@ from scipy.interpolate import interp1d
 from scipy.ndimage.filters import gaussian_filter
 
 from optic.dsp.core import pnorm, signal_power
+from optic.comm.modulation import detector
+from optic.utils import dB2lin
 import warnings
 
 warnings.filterwarnings('ignore', r'All-NaN (slice|axis) encountered')
@@ -178,6 +195,72 @@ def constHist(symb, ax, radius, cmap="turbo", whiteb=True):
                              dpi=72, downres_factor=2)
     return ax
 
+def plotDecisionBoundaries(constSymb, px=None, SNR=20, rule='MAP', gridStep=0.001, d=0.5, cmap=plt.cm.turbo):
+    """
+    Plot decision boundaries for a given constellation symbols.
+
+    Parameters:
+    -----------
+    constSymb : array_like
+        An array of complex constellation symbols.
+    px : array_like, optional
+        Prior probabilities for each symbol in `constSymb`. If None, equal probabilities are assumed.
+    SNR : float, optional
+        Signal-to-noise ratio in decibels (dB). Default is 20.
+    rule : str, optional
+        The detection rule to use. Either 'MAP' (default) or 'ML'.
+    gridStep : float, optional
+        Step size for creating the decision boundary grid. Default is 0.001.
+    d : float, optional
+        Margin added to the maximum and minimum values of real and imaginary parts of `constSymb`.
+        Default is 0.5.
+    cmap : str or Colormap, optional
+        Colormap to be used for the contour plot. Default is 'turbo'.
+
+    Returns:
+    --------
+    fig : matplotlib.figure.Figure
+        The created matplotlib figure.
+    ax : matplotlib.axes.Axes
+        The created matplotlib axes.
+
+    Notes:
+    ------
+    This function assumes a Gaussian channel and uses the MAP detector for creating decision boundaries.
+    """
+
+    # Normalize constellation symbols
+    constSymb = pnorm(constSymb)
+
+    # If px is None, assume equal probabilities for symbols
+    if px is None:
+        M = len(constSymb)
+        px = (1/M) * np.ones(M)
+
+    # Define the range for the grid
+    x_min, x_max = min(constSymb.real) - d, max(constSymb.real) + d
+    y_min, y_max = min(constSymb.imag) - d, max(constSymb.imag) + d
+
+    # Create the grid
+    gI, gQ = np.meshgrid(np.arange(x_min, x_max, gridStep), np.arange(y_min, y_max, gridStep))
+    
+    r = gI.ravel() + 1j * gQ.ravel()
+
+    # Calculate noise variance from SNR
+    σ2 = 1 / dB2lin(SNR)
+
+    # Use MAP detector for a Gaussian channel
+    dec, pos = detector(r, σ2, constSymb, rule=rule, px=px)  # detector
+    
+    # Reshape for plotting
+    Z = pos.reshape(gI.shape)+1
+
+    # Create contour plot of decision boundaries
+    fig, ax = plt.subplots()
+    ax.contourf(gI, gQ, Z, 2*len(constSymb), cmap=cmap)
+    ax.axis('square')
+
+    return fig, ax
 
 def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     """
@@ -328,6 +411,7 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
 
     return fig, plt.gca()
 
+
 def animateConstGIF(x, figName, 
                     xlabel='In-Phase (I)', 
                     ylabel='Quadrature (Q)', 
@@ -340,22 +424,39 @@ def animateConstGIF(x, figName,
                     radius=2,
                    ):
     """
-    Create and save a plot animation as GIF
+    Create and save a constellation plot animation as GIF
 
-    :param x: x-axis values [np array]    
-    :param figName: figure file name w/ folder path [string]
-    :param xlabel: xlabel [string]
-    :param ylabel: ylabel [string]
-    :param fram: number of frames [int]
-    :param inter: time interval between frames [milliseconds]
-
+    Parameters:
+    -----------
+    x : numpy.ndarray
+        x-axis values.
+    figName : str
+        Figure file name with folder path.
+    xlabel : str, optional
+        X-axis label. Default is 'In-Phase (I)'.
+    ylabel : str, optional
+        Y-axis label. Default is 'Quadrature (Q)'.
+    title : str, optional
+        Title of the plot.
+    color : str, optional
+        Color of the points in the plot. Default is 'b' (blue).
+    centralAxes : bool, optional
+        Whether to place the axes at the center. Default is False.
+    squareAxes : bool, optional
+        Whether to keep the axes square. Default is True.
+    fram : int, optional
+        Number of frames. Default is 200.
+    inter : int, optional
+        Time interval between frames in milliseconds. Default is 20.
+    radius : int, optional
+        Radius for setting plot limits. Default is 2.
     """
+
     figAnin = plt.figure()
        
-    min_xy = -radius #np.min([x.real, x.imag])
-    max_xy = radius #np.max([x.real, x.imag])
+    min_xy = -radius
+    max_xy = radius
    
-    # plt.axis('equal')
     ax = plt.axes(            
         ylim=(
              min_xy,
@@ -367,42 +468,27 @@ def animateConstGIF(x, figName,
         ),
     )
 
-
-#     if not len(plotcols):
-#         prop_cycle = plt.rcParams['axes.prop_cycle']
-#         colors = prop_cycle.by_key()['color']
-#         plotcols= colors[:2]
-#     #print(colors)
-
     (line,) = ax.plot([], [], color+'.')
     ax.grid()
 
-#    plt.axhline(color='black', lw=1)
-#    plt.axvline(color='black', lw=1)
-
     if centralAxes:
-        # Move left y-axis and bottom x-axis to centre, passing through (0,0)
         ax.spines['left'].set_position('center')
         ax.spines['bottom'].set_position('center')
-
-        # Eliminate upper and right axes
         ax.spines['right'].set_color('none')
         ax.spines['top'].set_color('none')
-
-        # Show ticks in the left and lower axes only
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
         
     period = int(len(x) / fram)
     indx = np.arange(0, len(x), period)
 
-    if len(xlabel):
+    if xlabel:
         plt.xlabel(xlabel, fontsize=16)
 
-    if len(ylabel):
+    if ylabel:
         plt.ylabel(ylabel, fontsize=16)
 
-    if len(title):
+    if title:
         plt.title(title)
 
     def init():        
@@ -425,3 +511,4 @@ def animateConstGIF(x, figName,
 
     anim.save(figName, dpi=200, writer="imagemagick")
     plt.close()
+
