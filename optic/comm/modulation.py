@@ -290,7 +290,75 @@ def demap(indSymb, bitMap):
         decBits[i * b : i * b + b] = bitMap[indSymb[i], :]
     return decBits
 
+@njit
+def detector(r, σ2, constSymb, px=None, rule='MAP'):
+    """
+    Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule.
 
+    Parameters:
+    -----------
+    r : ndarray
+        The received signal.
+    σ2 : float
+        The noise variance.
+    constSymb : ndarray
+        The constellation symbols.
+    px : ndarray, optional
+        The prior probabilities of each symbol. If None, uniform priors are assumed.
+    rule : str, optional
+        The detection rule to use. Either 'MAP' (default) or 'ML'.
+
+    Returns:
+    --------
+    tuple
+        A tuple containing:
+            - ndarray: The detected symbols.
+            - ndarray: The indices of the detected symbols in the constellation.
+
+    Notes:
+    ------
+    If `px` is None or `rule` is 'ML', uniform priors are assumed.
+    """
+    if px is None or rule == 'ML':
+        px = 1 / constSymb.size * np.ones(constSymb.size)
+           
+    decided = np.zeros(r.size, dtype=np.complex64) 
+    indDec = np.zeros(r.size, dtype=np.int64) 
+    π = np.pi  
+    
+    if rule == 'MAP':
+        for ii, ri in enumerate(r): # for each received symbol        
+            log_probMetric = np.zeros(constSymb.size)
+
+            # calculate MAP probability metric        
+            # calculate log(P(sm|r)) = log(p(r|sm)*P(sm)) for m= 1,2,...,M
+            log_probMetric = - np.abs(ri - constSymb)**2 / σ2 + np.log(px)
+
+            # find the constellation symbol with the largest P(sm|r)       
+            indDec[ii] = np.argmax(log_probMetric)
+
+            # make the decision in favor of the symbol with the largest metric
+            decided[ii] = constSymb[indDec[ii]]
+            
+    elif rule == 'ML':      
+        for ii, ri in enumerate(r): # for each received symbol        
+            distMetric = np.zeros(constSymb.size)        
+            # calculate distance metric   
+
+            # calculate |r-sm|**2, for m= 1,2,...,M
+            distMetric = np.abs(ri - constSymb)**2
+
+            # find the constellation symbol with the smallest distance metric       
+            indDec[ii] = np.argmin(distMetric)
+
+            # make the decision in favor of the symbol with the smallest metric
+            decided[ii] = constSymb[indDec[ii]]
+    else:
+        print('Detection rule should be either MAP or ML')
+        
+    
+    return decided, indDec
+    
 def modulateGray(bits, M, constType):
     """
     Modulate bit sequences to constellation symbol sequences (w/ Gray mapping).
