@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -114,14 +114,14 @@ paramCh.Fc = paramTx.Fc  # central optical frequency of the WDM spectrum
 paramCh.hz = 0.5         # step-size of the split-step Fourier method [km]
 paramCh.maxIter = 5      # maximum number of convergence iterations per step
 paramCh.tol = 1e-5       # error tolerance per step
-paramCh.nlprMethod = True # use adaptive step-size based o maximum nonlinear phase-shift?
+paramCh.nlprMethod = True # use adaptive step-size based o maximum nonlinear phase-shift
 paramCh.maxNlinPhaseRot = 2e-2 # maximum nonlinear phase-shift per step
-paramCh.prgsBar = True   # show progress bar?
+paramCh.prgsBar = True   # show progress bar
 #paramCh.saveSpanN = [1, 5, 9, 14]
 paramCh.Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
 # nonlinear signal propagation
-sigWDM, paramCh = manakovSSF(sigWDM_Tx, paramCh)
+sigWDM = manakovSSF(sigWDM_Tx, paramCh)
 
 # + [markdown] id="45da6d22"
 # **Optical WDM spectrum before and after transmission**
@@ -258,7 +258,7 @@ else:
     paramEq.alg = ['da-rde','rde'] # M-QAM
     paramEq.mu = [5e-3, 2e-4] 
     
-y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, d, paramEq)
+y_EQ = mimoAdaptEqualizer(x, paramEq, d)
 
 #plot constellations after adaptive equalization
 discard = 5000
@@ -273,21 +273,11 @@ paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
 paramCPR.N   = 75
 paramCPR.B   = 64
-paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
 
-y_CPR, θ = cpr(y_EQ, d, paramCPR)
-
-y_CPR = pnorm(y_CPR)
-
-plt.figure(figsize=(10, 3))
-plt.title('CPR estimated phase')
-plt.plot(θ,'-')
-plt.xlim(0, len(θ))
-plt.grid();
+y_CPR = cpr(y_EQ, paramCPR)
 
 discard = 5000
 
-# + colab={"base_uri": "https://localhost:8080/", "height": 435} id="4f6650fe" outputId="c5e97918-3305-4e71-8017-8b3432ff1e38"
 #plot constellations after CPR
 pconst(y_CPR[discard:-discard,:]);
 

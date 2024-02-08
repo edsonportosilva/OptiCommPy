@@ -6,13 +6,15 @@ Metrics for signal and performance characterization (:mod:`optic.comm.metrics`)
 .. autosummary::
    :toctree: generated/
 
+   bert                     -- Calculate BER and Q-factor for optical communication using On-Off Keying (OOK).
    fastBERcalc              -- Monte Carlo BER/SER/SNR calculation
    calcLLR                  -- LLR calculation (circular AGWN channel)
    monteCarloGMI            -- Monte Carlo based generalized mutual information (GMI) estimation
-   monteCarloMI            --  Monte Carlo based mutual information (MI) estimation
+   monteCarloMI             -- Monte Carlo based mutual information (MI) estimation
    Qfunc                    -- Calculate function Q(x)
    calcEVM                  -- Calculate error vector magnitude (EVM) metrics
    theoryBER                -- Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel
+   theoryMI                 -- Calculate mutual information for the DCMC AWGN channel
    calcLinOSNR              -- Calculate the OSNR evolution in a multi-span fiber transmission system
 """
 
@@ -23,10 +25,12 @@ import logging as logg
 import numpy as np
 from numba import njit, prange
 from scipy.special import erf
+from scipy.integrate import dblquad
 import scipy.constants as const
 
+from optic.utils import dB2lin
 from optic.dsp.core import pnorm, signal_power
-from optic.comm.modulation import GrayMapping, demodulateGray, minEuclid
+from optic.comm.modulation import grayMapping, demodulateGray, minEuclid
 
 
 def bert(Irx, bitsTx=None, seed=123):
@@ -82,25 +86,25 @@ def bert(Irx, bitsTx=None, seed=123):
 
     """
     if bitsTx is None:
-        np.random.seed(seed=seed) # fixing the seed 
+        np.random.seed(seed=seed)  # fixing the seed
 
         # generate reference pseudo-random bit sequence
         bitsTx = np.random.randint(2, size=Irx.size)
 
     # get received signal statistics
-    I1 = np.mean(Irx[bitsTx==1]) # average value of I1
-    I0 = np.mean(Irx[bitsTx==0]) # average value of I0
+    I1 = np.mean(Irx[bitsTx == 1])  # average value of I1
+    I0 = np.mean(Irx[bitsTx == 0])  # average value of I0
 
-    std1 = np.std(Irx[bitsTx==1]) # standard deviation std1 of I1
-    std0 = np.std(Irx[bitsTx==0]) # standard deviation std0 of I0
+    std1 = np.std(Irx[bitsTx == 1])  # standard deviation std1 of I1
+    std0 = np.std(Irx[bitsTx == 0])  # standard deviation std0 of I0
 
-    Id = (std1*I0 + std0*I1)/(std1 + std0) # optimal decision threshold
-    Q = (I1-I0)/(std1 + std0) # Qfactor 
+    Id = (std1 * I0 + std0 * I1) / (std1 + std0)  # optimal decision threshold
+    Q = (I1 - I0) / (std1 + std0)  # Qfactor
 
     # apply the optimal decision rule
     bitsRx = np.empty(bitsTx.size)
-    bitsRx[Irx> Id] = 1
-    bitsRx[Irx<= Id] = 0
+    bitsRx[Irx > Id] = 1
+    bitsRx[Irx <= Id] = 0
 
     # calculate the BER
     err = np.logical_xor(bitsRx, bitsTx)
@@ -108,6 +112,7 @@ def bert(Irx, bitsTx=None, seed=123):
     BER = np.mean(err)
 
     return BER, Q
+
 
 def fastBERcalc(rx, tx, M, constType):
     """
@@ -138,7 +143,7 @@ def fastBERcalc(rx, tx, M, constType):
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     Es = np.mean(np.abs(constSymb) ** 2)
 
     # We want all the signal sequences to be disposed in columns:
@@ -249,7 +254,7 @@ def monteCarloGMI(rx, tx, M, constType, px=None):
     if px is None:
         px = []
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
 
     # get bit mapping
     b = int(np.log2(M))
@@ -345,7 +350,7 @@ def monteCarloMI(rx, tx, M, constType, px=None):
     if len(px) == 0:  # if px is not defined
         px = 1 / M * np.ones(M)  # assume uniform distribution
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     Es = np.sum(np.abs(constSymb) ** 2 * px)
     constSymb = constSymb / np.sqrt(Es)
 
@@ -487,7 +492,7 @@ def calcEVM(symb, M, constType, symbTx=None):
             symbTx = symbTx.reshape(len(symbTx), 1)
         symbTx = pnorm(symbTx)
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     constSymb = pnorm(constSymb)
 
     EVM = np.zeros(symb.shape[1])
@@ -544,11 +549,164 @@ def theoryBER(M, EbN0, constType):
         Ps = 2 * Qfunc(np.sqrt(2 * k * EbN0lin) * np.sin(np.pi / M))
         Pb = Ps / k
     elif constType == "pam":
-        Ps = (2 * (M - 1) / M) * Qfunc(
-            np.sqrt(6 * np.log2(M) / (M**2 - 1) * EbN0lin)
-        )
+        Ps = (2 * (M - 1) / M) * Qfunc(np.sqrt(6 * np.log2(M) / (M**2 - 1) * EbN0lin))
         Pb = Ps / k
     return Pb
+
+
+@njit
+def condEntropy(yI, yQ, const, pX, ind, σ):
+    """
+    Calculate conditional entropy H(X|Y=y)
+
+    Parameters
+    ----------
+    yI, yQ : float
+        Real and imaginary parts of the received signal Y.
+    const : array_like
+        Constellation of complex-valued transmitted symbols.
+    pX : array_like
+        Probability of each transmitted symbol.
+    ind : int
+        Index of the transmitted symbol.
+    σ : float
+        Standard deviation of the Gaussian noise.
+
+    Returns
+    -------
+    float
+        conditional entropy H(X|Y=y).
+    """
+    π = np.pi
+    prob = 0
+    M = len(const)
+
+    for ii in prange(len(const)):
+        xI = const[ii].real
+        xQ = const[ii].imag
+        prob += (
+            1
+            / (2 * π * σ**2)
+            * np.exp(-((yI - xI) ** 2 + (yQ - xQ) ** 2) / (2 * σ**2))
+            * pX[ii]
+        )
+
+    log2pY = np.log2(max([prob, 1e-50]))
+
+    xI = const[ind].real
+    xQ = const[ind].imag
+
+    expTerm = (
+        1 / (2 * π * σ**2) * np.exp(-((yI - xI) ** 2 + (yQ - xQ) ** 2) / (2 * σ**2))
+    )
+
+    int1 = expTerm * np.log2(max([expTerm, 1e-50]))  # p(Y|X)*log2(p(Y|X))
+
+    int2 = expTerm * np.log2(pX[ind])  # p(Y|X)*log2(p(X))
+
+    int3 = expTerm * log2pY  # p(Y|X)*log2(p(Y))
+
+    return (
+        -(int1 + int2 - int3) * pX[ind]
+    )  # integral of p(Y,X)*log2(p(Y|X)p(X)/p(Y)) = H(X|Y)
+
+
+@njit
+def minR(R, x):
+    """
+    Find the index of the minimum absolute difference between an array R and a value x.
+
+    Parameters
+    ----------
+    R : array_like
+        Array of values.
+    x : float
+        Value for comparison.
+
+    Returns
+    -------
+    int
+        Index of the minimum absolute difference.
+    """
+    return np.argmin(np.abs(R - np.abs(x)))
+
+
+def theoryMI(M, constType, SNR, pX=None, symetry=True, lim=np.inf, tol=1e-3):
+    """
+    Calculate mutual information for discrete input continuous output the memoryless AWGN channel (DCMC).
+
+    Parameters
+    ----------
+    M : int
+        Number of symbols in the constellation.
+    constType : str
+        Type of constellation ('qam', 'psk').
+    SNR : float
+        Signal-to-noise ratio in dB.
+    pX : array_like, optional
+        Probability of each transmitted symbol (default is None).
+    symetry : bool, optional
+        Flag to exploit rotational symmetry of the constellation (default is True).
+    lim : int, optional
+        Limit for numerical integration (default is np.inf).
+    tol : float, optional
+        Tolerance for numerical integration error (default is 1e-3).
+
+    Returns
+    -------
+    float
+        Mutual information for the given parameters.
+    """
+    constSymb = grayMapping(M, constType)  # get constellation
+    Es = signal_power(constSymb)  # calculate average symbol energy
+    constSymb = constSymb / np.sqrt(Es)  # normalize average symbol energy
+
+    σ = np.sqrt((1 / 2) * 1 / dB2lin(SNR))  # noise variance per dimension
+
+    if pX is None:
+        pX = 1 / M * np.ones(M)
+
+    MI = -np.sum(pX * np.log2(pX))
+
+    if symetry:
+        # Exploit rotational symmetry of the constellation to speed up calculations
+        constR = np.abs(constSymb)
+        R = np.unique(constR)
+        MI_R = np.zeros(R.shape)
+        symbCount = np.zeros(R.shape)
+
+        for ind in range(len(R)):
+            symbCount[ind] = np.sum(constR == R[ind])
+
+        for ind in range(len(constSymb)):
+            indR = minR(R, constSymb[ind])
+
+            if MI_R[indR] == 0:
+                MI_R[indR] = dblquad(
+                    condEntropy,
+                    -lim,
+                    lim,
+                    -lim,
+                    lim,
+                    args=(constSymb, pX, ind, σ),
+                    epsabs=tol,
+                )[0]
+        MI -= np.sum(MI_R * symbCount)
+
+    else:
+        MI = 0
+        for ind in range(len(constSymb)):
+            MI -= dblquad(
+                condEntropy,
+                -lim,
+                lim,
+                -lim,
+                lim,
+                args=(constSymb, pX, ind, σ),
+                epsabs=tol,
+            )[0]
+
+    return MI
 
 
 def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
@@ -576,12 +734,7 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
         * (Ptx / Rs) ** 3
         * (
             np.arcsinh(
-                (np.pi**2)
-                / 2
-                * np.abs(β2)
-                * Leffa
-                * Nch ** (2 * Rs / Δf)
-                * Rs**2
+                (np.pi**2) / 2 * np.abs(β2) * Leffa * Nch ** (2 * Rs / Δf) * Rs**2
             )
         )
         / (np.pi * np.abs(β2) * Leffa)
@@ -611,7 +764,6 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
 
 
 def ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc):
-
     # ASE noise power calculation:
     G = α * Ls  # amplifier gain (dB)
 
@@ -646,9 +798,7 @@ def GNmodel_OSNR(Rs, Nch, Δf, Ptx, paramCh=None, Bref=12.5e9):
     P_ase = np.zeros(len(Ptx))
 
     for k, Ptx_dBm in enumerate(Ptx):
-        P_nli[k] = GN_Model_NyquistWDM(
-            Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc
-        )
+        P_nli[k] = GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc)
         P_ase[k] = ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc)
         OSNR[k] = 10 ** (Ptx_dBm / 10) * 1e-3 / (P_nli[k] + P_ase[k])
     return OSNR, P_nli, P_ase

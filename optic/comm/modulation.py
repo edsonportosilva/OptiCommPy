@@ -6,8 +6,12 @@ Digital modulation utilities (:mod:`optic.comm.modulation`)
 .. autosummary::
    :toctree: generated/
 
-   GrayCode                 -- Gray code generator
-   GrayMapping              -- Gray Mapping for digital modulations
+   grayCode                 -- Gray code generator
+   grayMapping              -- Gray Mapping for digital modulations
+   pamConst                 -- Generate a Pulse Amplitude Modulation (PAM) constellation.
+   qamConst                 -- Generate a Quadrature Amplitude Modulation (QAM) constellation.
+   pskConst                 -- Generate a Phase Shift Keying (PSK) constellation.
+   apskConst                -- Generate an Amplitude-Phase Shift Keying (APSK) constellation.
    minEuclid                -- Find minimum Euclidean distance
    demap                    -- Contellation symbol index to bit sequence demapping
    modulateGray             -- Modulate bit sequences to constellation symbol sequences (w/ Gray mapping)
@@ -23,7 +27,7 @@ from optic.utils import bitarray2dec, dec2bitarray
 from numba import njit, prange
 
 
-def GrayCode(n):
+def grayCode(n):
     """
     Gray code generator.
 
@@ -52,7 +56,7 @@ def GrayCode(n):
     return code
 
 
-def GrayMapping(M, constType):
+def grayMapping(M, constType):
     """
     Gray Mapping for digital modulations.
 
@@ -65,8 +69,8 @@ def GrayMapping(M, constType):
 
     Returns
     -------
-    const : list
-        list with constellation symbols (sorted according their corresponding
+    const : ndarray
+        constellation symbols (sorted according their corresponding
         Gray bit sequence as integer decimal).
 
     """
@@ -74,35 +78,27 @@ def GrayMapping(M, constType):
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
 
-    L = int(M - 1) if constType in ["pam", "ook"] else int(np.sqrt(M) - 1)
     bitsSymb = int(np.log2(M))
 
-    code = GrayCode(bitsSymb)
+    code = grayCode(bitsSymb)
     if constType == "ook":
         const = np.arange(0, 2)
     elif constType == "pam":
-        const = np.arange(-L, L + 1, 2)
+        const = pamConst(M)
     elif constType == "qam":
-        PAM = np.arange(-L, L + 1, 2)
-        PAM = np.array([PAM])
-
-        # generate complex square M-QAM constellation
-        const = np.tile(PAM, (L + 1, 1))
-        const = const + 1j * np.flipud(const.T)
-
-        for ind in np.arange(1, L + 1, 2):
-            const[ind] = np.flip(const[ind], 0)
+        const = qamConst(M)
     elif constType == "psk":
-        pskPhases = np.arange(0, 2 * np.pi, 2 * np.pi / M)
+        const = pskConst(M)
+    elif constType == "apsk":
+        const = apskConst(M)
 
-        # generate complex M-PSK constellation
-        const = np.exp(1j * pskPhases)
     const = const.reshape(M, 1)
     const_ = np.zeros((M, 2), dtype=complex)
 
     for ind in range(M):
         const_[ind, 0] = const[ind, 0]  # complex constellation symbol
         const_[ind, 1] = int(code[ind], 2)  # mapped bit sequence (as integer decimal)
+
     # sort complex symbols column according to their mapped bit sequence (as integer decimal)
     const = const_[const_[:, 1].real.argsort()]
     const = const[:, 0]
@@ -110,6 +106,134 @@ def GrayMapping(M, constType):
     if constType in ["pam", "ook"]:
         const = const.real
     return const
+
+
+def pamConst(M):
+    """
+    Generate a Pulse Amplitude Modulation (PAM) constellation.
+
+    Parameters
+    ----------
+    M : int
+        Number of symbols in the constellation. It must be an integer.
+
+    Returns
+    -------
+    ndarray
+        1D PAM constellation.
+    """
+    L = int(M - 1)
+    return np.arange(-L, L + 1, 2)
+
+
+def qamConst(M):
+    """
+    Generate a Quadrature Amplitude Modulation (QAM) constellation.
+
+    Parameters
+    ----------
+    M : int
+        Number of symbols in the constellation. It must be a perfect square.
+
+    Returns
+    -------
+    const : ndarray
+        Complex square M-QAM constellation.
+    """
+    L = int(np.sqrt(M) - 1)
+
+    # generate 1D PAM constellation
+    PAM = np.arange(-L, L + 1, 2)
+    PAM = np.array([PAM])
+
+    # generate complex square M-QAM constellation
+    const = np.tile(PAM, (L + 1, 1))
+    const = const + 1j * np.flipud(const.T)
+
+    for ind in np.arange(1, L + 1, 2):
+        const[ind] = np.flip(const[ind], 0)
+
+    return const
+
+
+def pskConst(M):
+    """
+    Generate a Phase Shift Keying (PSK) constellation.
+
+    Parameters
+    ----------
+    M : int
+        Number of symbols in the constellation. It must be a power of 2 positive integer.
+
+    Returns
+    -------
+    ndarray
+        Complex M-PSK constellation.
+    """
+    # generate complex M-PSK constellation
+    pskPhases = np.arange(0, 2 * np.pi, 2 * np.pi / M)
+    return np.exp(1j * pskPhases)
+
+
+def apskConst(M, m1=None, phaseOffset=None):
+    """
+    Generate an Amplitude-Phase Shift Keying (APSK) constellation.
+
+    Parameters
+    ----------
+    M : int
+        Constellation order.
+    m1 : int
+        Number of bits used to index the radii of the constellation.
+
+    Returns
+    -------
+    const : ndarray
+        APSK constellation
+
+    References
+    ----------
+    Z. Liu, et al "APSK Constellation with Gray Mapping," IEEE Communications Letters, vol. 15, no. 12, pp. 1271-1273, December 2011
+    """
+    if m1 is None:
+        if M == 16:
+            m1 = 1
+        elif M == 32:
+            m1 = 2
+        elif M == 64:
+            m1 = 2
+        elif M == 128:
+            m1 = 3
+        elif M == 256:
+            m1 = 3
+        elif M == 512:
+            m1 = 4
+        elif M == 1024:
+            m1 = 4
+
+    nRings = int(2**m1)  # bits that index the rings
+    m2 = int(np.log2(M) - m1)  # bits that index the symbols per ring
+
+    symbolsPerRing = int(2**m2)
+
+    const = np.zeros((M,), dtype=np.complex64)
+
+    if phaseOffset is None:
+        phaseOffset = np.pi / symbolsPerRing
+
+    for idx in range(nRings):
+        radius = np.sqrt(-np.log(1 - ((idx + 1) - 0.5) * symbolsPerRing / M))
+
+        if (idx + 1) % 2 == 1:
+            const[idx * symbolsPerRing : (idx + 1) * symbolsPerRing] = radius * np.flip(
+                pskConst(symbolsPerRing)
+            )
+        else:
+            const[
+                idx * symbolsPerRing : (idx + 1) * symbolsPerRing
+            ] = radius * pskConst(symbolsPerRing)
+
+    return const * np.exp(1j * phaseOffset)
 
 
 @njit(parallel=True)
@@ -178,7 +302,7 @@ def modulateGray(bits, M, constType):
     M : int
         order of the modulation format.
     constType : string
-        'qam', 'psk', 'pam' or 'ook'.
+        'qam', 'psk', 'apsk', 'pam' or 'ook'.
 
     Returns
     -------
@@ -190,7 +314,7 @@ def modulateGray(bits, M, constType):
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
     bitsSymb = int(np.log2(M))
-    const = GrayMapping(M, constType)
+    const = grayMapping(M, constType)
 
     symb = bits.reshape(-1, bitsSymb).T
     symbInd = bitarray2dec(symb)
@@ -211,7 +335,7 @@ def demodulateGray(symb, M, constType):
     M : int
         order of the modulation format.
     constType : string
-        'qam', 'psk', 'pam' or 'ook'.
+        'qam', 'psk', 'apsk', 'pam' or 'ook'.
 
     Returns
     -------
@@ -222,7 +346,7 @@ def demodulateGray(symb, M, constType):
     if M != 2 and constType == "ook":
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
-    const = GrayMapping(M, constType)
+    const = grayMapping(M, constType)
 
     # get bit to symbol mapping
     indMap = minEuclid(const, const)

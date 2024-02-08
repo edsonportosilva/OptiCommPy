@@ -21,7 +21,7 @@ from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 from optic.dsp.core import pnorm
 from optic.models.channels import linearFiberChannel
-from optic.comm.modulation import GrayMapping
+from optic.comm.modulation import grayMapping
 
 
 def edc(Ei, param):
@@ -65,7 +65,7 @@ def edc(Ei, param):
     return linearFiberChannel(Ei, param)
 
 
-def mimoAdaptEqualizer(x, dx=None, paramEq=None):
+def mimoAdaptEqualizer(x, param=None, dx=None):
     """
     N-by-N MIMO adaptive equalizer.
 
@@ -75,9 +75,7 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
     ----------
     x : array-like
         Input array.
-    dx : array-like, optional
-        Syncronized exact symbol sequence corresponding to the received input array x.
-    paramEq : object, optional
+    param : object, optional
         Parameter object containing the following attributes:
 
         - numIter : int, number of pre-convergence iterations (default: 1)
@@ -106,6 +104,11 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
 
         - prgsBar : bool, flag indicating whether to display progress bar (default: True)
 
+        - returnResults : bool, return filters, MSE and filters per iteration
+
+    dx : array-like, optional
+        Syncronized exact symbol sequence corresponding to the received input array x.
+
     Returns
     -------
     yEq : array-like
@@ -120,23 +123,24 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
     """
     if dx is None:
         dx = []
-    if paramEq is None:
-        paramEq = []
+    if param is None:
+        param = []
 
     # check input parameters
-    numIter = getattr(paramEq, "numIter", 1)
-    nTaps = getattr(paramEq, "nTaps", 15)
-    mu = getattr(paramEq, "mu", [1e-3])
-    lambdaRLS = getattr(paramEq, "lambdaRLS", 0.99)
-    SpS = getattr(paramEq, "SpS", 2)
-    H = getattr(paramEq, "H", [])
-    L = getattr(paramEq, "L", [])
-    Hiter = getattr(paramEq, "Hiter", [])
-    storeCoeff = getattr(paramEq, "storeCoeff", False)
-    alg = getattr(paramEq, "alg", ["nlms"])
-    constType = getattr(paramEq, "constType", "qam")
-    M = getattr(paramEq, "M", 4)
-    prgsBar = getattr(paramEq, "prgsBar", True)
+    numIter = getattr(param, "numIter", 1)
+    nTaps = getattr(param, "nTaps", 15)
+    mu = getattr(param, "mu", [1e-3])
+    lambdaRLS = getattr(param, "lambdaRLS", 0.99)
+    SpS = getattr(param, "SpS", 2)
+    H = getattr(param, "H", [])
+    L = getattr(param, "L", [])
+    Hiter = getattr(param, "Hiter", [])
+    storeCoeff = getattr(param, "storeCoeff", False)
+    alg = getattr(param, "alg", ["nlms"])
+    constType = getattr(param, "constType", "qam")
+    M = getattr(param, "M", 4)
+    prgsBar = getattr(param, "prgsBar", True)
+    returnResults = getattr(param, "returnResults", False)
 
     # We want all the signal sequences to be disposed in columns:
     if not len(dx):
@@ -160,7 +164,7 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
     )  # pad start and end of the signal with zeros
 
     # Defining training parameters:
-    constSymb = GrayMapping(M, constType)  # constellation
+    constSymb = grayMapping(M, constType)  # constellation
     constSymb = pnorm(constSymb)  # normalized constellation symbols
 
     totalNumSymb = int(np.fix((len(x) - nTaps) / SpS + 1))
@@ -231,7 +235,11 @@ def mimoAdaptEqualizer(x, dx=None, paramEq=None):
                 x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb
             )
             logg.info(f"{alg}MSE = %.6f.", np.nanmean(errSq))
-    return yEq, H, errSq, Hiter
+
+    if returnResults:
+        return (yEq, H, errSq, Hiter) if storeCoeff else (yEq, H, errSq)
+    else:
+        return yEq
 
 
 @njit

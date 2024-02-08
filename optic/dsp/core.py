@@ -24,6 +24,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    gaussianComplexNoise   -- Generate complex-valued circular Gaussian noise
    gaussianNoise          -- Generate Gaussian noise
    phaseNoise             -- Generate realization of a random-walk phase-noise process
+   movingAverage          -- Calculate the sliding window moving average
 """
 
 """Digital signal processing utilities."""
@@ -254,9 +255,11 @@ def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
         Input signal.
     param : core.parameter
         Resampling parameters:
-            param.Fs_in  : sampling frequency of the input signal.
-            param.Fs_out : sampling frequency of the output signal.
-            param.jitter_rms: standard deviation of the time jitter.
+            - param.Fs_in  : sampling frequency of the input signal.
+
+            - param.Fs_out : sampling frequency of the output signal.
+
+            - param.jitter_rms: standard deviation of the time jitter.
 
     Returns
     -------
@@ -447,9 +450,11 @@ def resample(Ei, param):
         Input signal.
     param : core.parameter
         Resampling parameters:
-            param.Rs      : symbol rate of the signal
-            param.SpS_in  : samples per symbol of the input signal.
-            param.SpS_out : samples per symbol of the output signal.
+            - param.Rs      : symbol rate of the signal.
+
+            - param.SpS_in  : samples per symbol of the input signal.
+            
+            - param.SpS_out : samples per symbol of the output signal.
 
     Returns
     -------
@@ -652,3 +657,44 @@ def phaseNoise(lw, Nsamples, Ts):
         phi[ind + 1] = phi[ind] + np.random.normal(0, np.sqrt(σ2))
 
     return phi
+
+
+def movingAverage(x, N):
+    """
+    Calculate the sliding window moving average of a 2D NumPy array along each column.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Input 2D array with shape (M, N), where M is the number of samples and N is the number of columns.
+    N : int
+        Size of the sliding window.
+
+    Returns
+    -------
+    numpy.ndarray
+        2D array containing the sliding window moving averages along each column.
+
+    Notes
+    -----
+    The function pads the signal with zeros at both ends to compensate for the lag between the output
+    of the moving average and the original signal.
+
+    """
+    nCol = x.shape[1]
+    y = np.zeros(x.shape, dtype=x.dtype)
+
+    startInd = N//2
+
+    endInd = -N//2+1 if N%2 else -N//2
+    for indCol in range(nCol):
+        # Pad the signal with zeros at both ends
+        padded_x = np.pad(x[:, indCol], (N//2, N//2), mode='constant')
+
+        # Calculate moving average using convolution
+        h = np.ones(N) / N
+        ma = np.convolve(padded_x, h, 'same')
+        y[:, indCol] = ma[startInd:endInd]
+
+    return y
+
