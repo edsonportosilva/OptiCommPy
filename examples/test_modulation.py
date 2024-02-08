@@ -7,12 +7,17 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.7
+#       jupytext_version: 1.14.5
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
+
+# + [markdown] toc=true
+# <h1>Table of Contents<span class="tocSkip"></span></h1>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Define-modulation,-modulate-and-demodulate-data" data-toc-modified-id="Define-modulation,-modulate-and-demodulate-data-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Define modulation, modulate and demodulate data</a></span></li></ul></div>
+# -
 
 # <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_modulation.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
@@ -89,5 +94,91 @@ for ind, symb in enumerate(constSymb/np.sqrt(Es)):
 pconst(symbRx, whiteb=True, R=1.5*np.max(np.abs(constSymb/np.sqrt(Es))));
 
 pconst(symbRx, whiteb=False, R=1.5*np.max(np.abs(constSymb/np.sqrt(Es))));
+
+# +
+from numba import njit
+
+@njit
+def detector(r, σ2, constSymb, px=None, rule='MAP'):
+    """
+    Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule.
+
+    Parameters:
+        r (ndarray): The received signal.
+        σ2 (float): The noise variance.
+        constSymb (ndarray): The constellation symbols.
+        px (ndarray, optional): The prior probabilities of each symbol. If None, uniform priors are assumed.
+        rule (str, optional): The detection rule to use. Either 'MAP' (default) or 'ML'.
+
+    Returns:
+        tuple: A tuple containing:
+            - ndarray: The detected symbols.
+            - ndarray: The indices of the detected symbols in the constellation.
+
+    """
+    if px is None or rule == 'ML':
+        px = 1 / constSymb.size * np.ones(constSymb.size)
+           
+    decided = np.zeros(r.size, dtype=np.complex64) 
+    indDec = np.zeros(r.size, dtype=np.int64) 
+    π = np.pi  
+    
+    if rule == 'MAP':
+        for ii, ri in enumerate(r): # for each received symbol        
+            log_probMetric = np.zeros(constSymb.size)
+
+            # calculate MAP probability metric        
+            # calculate log(P(sm|r)) = log(p(r|sm)*P(sm)) for m= 1,2,...,M
+            log_probMetric = - np.abs(ri - constSymb)**2 / σ2 + np.log(px)
+
+            # find the constellation symbol with the largest P(sm|r)       
+            indDec[ii] = np.argmax(log_probMetric)
+
+            # make the decision in favor of the symbol with the largest metric
+            decided[ii] = constSymb[indDec[ii]]
+            
+    elif rule == 'ML':      
+        for ii, ri in enumerate(r): # for each received symbol        
+            distMetric = np.zeros(constSymb.size)        
+            # calculate distance metric   
+
+            # calculate |r-sm|**2, for m= 1,2,...,M
+            distMetric = np.abs(ri - constSymb)**2
+
+            # find the constellation symbol with the smallest distance metric       
+            indDec[ii] = np.argmin(distMetric)
+
+            # make the decision in favor of the symbol with the smallest metric
+            decided[ii] = constSymb[indDec[ii]]
+    else:
+        print('Detection rule should be either MAP or ML')
+        
+    
+    return decided, indDec
+
+# +
+from optic.utils import dB2lin
+
+SNR = 20
+σ2 = 1/dB2lin(SNR)
+
+# +
+d = 3
+x_min, x_max = min(constSymb.real)-d, max(constSymb.real)+d
+y_min, y_max = min(constSymb.imag)-d, max(constSymb.imag)+d
+
+h = 0.005
+gI, gQ = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
+
+# +
+r = gI.ravel() + 1j*gQ.ravel()
+dec, pos = detector(r, σ2, constSymb, rule='MAP') # detector
+
+# Put the result into a color plot
+Z = pos.reshape(gI.shape)
+fig, ax = plt.subplots()
+ax.contourf(gI, gQ, Z, 32, cmap=plt.cm.tab20c);
+ax.plot(constSymb.real, constSymb.imag,'ko');
+# -
 
 
