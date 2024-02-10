@@ -114,8 +114,8 @@ def gardnerClockRecovery(Ei, param=None):
     # Initializing variables:
     nModes = Ei.shape[1]
 
-    Eo = Ei.copy()
-    Ei = np.pad(Ei, ((0, 2)), "constant")
+    Eo = Ei.copy()   
+    Ei = np.pad(Ei, ((0,2),(0,0)))
 
     L = Ei.shape[0]
 
