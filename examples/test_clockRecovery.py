@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.7
+#       jupytext_version: 1.14.5
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -71,13 +71,13 @@ pulse = pulse/max(abs(pulse))
 sigTx = firFilter(pulse, symbolsUp)
 
 # resample signal to non-integer samples/symbol rate
-downSample = 7.99955
+downSample = 7.9995
 
 ΔFs = (Fs/downSample-Fs/8)/(Fs/8)*1e6
 
 print(f'sampling clock deviation (ΔFs) = {ΔFs:.2f} ppm')
 
-sigRxRef = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8, 0)
+#sigRxRef = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8, 0)
 
 # ADC input parameters
 paramADC = parameters()
@@ -97,7 +97,8 @@ paramCLKREC = parameters()
 paramCLKREC.isNyquist = True
 paramCLKREC.returnTiming = True
 paramCLKREC.ki = 1e-6
-paramCLKREC.kp = 2e-4
+paramCLKREC.kp = 1e-4
+paramCLKREC.lpad = 2
 
 outCLK, ted_values = gardnerClockRecovery(sigRx, paramCLKREC)
 
@@ -120,3 +121,6 @@ BER, _, _ = fastBERcalc(symbRx[discard:-discard,:], symbTx[discard:-discard,:], 
 
 for indMode in range(BER.shape[0]):
     print(f'Mode {indMode}: BER = {BER[indMode]:.2e}')
+# -
+
+
