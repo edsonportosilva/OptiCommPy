@@ -105,6 +105,7 @@ def gardnerClockRecovery(Ei, param=None):
     ki = getattr(param, "ki", 1e-6)
     isNyquist = getattr(param, "isNyquist", True)
     returnTiming = getattr(param, "returnTiming", False)
+    lpad = getattr(param, "lpad", 2)
 
     try:
         Ei.shape[1]
@@ -114,8 +115,8 @@ def gardnerClockRecovery(Ei, param=None):
     # Initializing variables:
     nModes = Ei.shape[1]
 
+    Ei = np.pad(Ei, ((0, lpad),(0,0)))
     Eo = Ei.copy()   
-    Ei = np.pad(Ei, ((0,2),(0,0)))
 
     L = Ei.shape[0]
 
