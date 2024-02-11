@@ -86,7 +86,7 @@ def gardnerClockRecovery(Ei, param=None):
     Ei : numpy.ndarray
         Input array representing the received signal.
     param : core.parameter
-        Resampling parameters:
+        Clock recovery parameters:
             - kp : Proportional gain for the loop filter. Default is 1e-3.
 
             - ki : Integral gain for the loop filter. Default is 1e-6.
@@ -94,6 +94,8 @@ def gardnerClockRecovery(Ei, param=None):
             - isNyquist: is the pulse shape a Nyquist pulse? Default is True.
 
             - returnTiming: return estimated timing values. Default is False.
+
+            - lpad: length of zero padding at the end of the 
 
     Returns
     -------
@@ -150,17 +152,16 @@ def gardnerClockRecovery(Ei, param=None):
             m += 1
 
             # NCO
-            if t_nco > 0:
+            if t_nco > 0.5:
                 t_nco -= 1
                 m -= 1
                 n -= 2
-            elif t_nco < -1:
+            elif t_nco < -0.5:
                 t_nco += 1
                 m += 1
                 n += 2
 
             timing_values_mode.append(t_nco)
-
         timing_values.append(timing_values_mode)
 
     Eo = Eo[0:n, :]
