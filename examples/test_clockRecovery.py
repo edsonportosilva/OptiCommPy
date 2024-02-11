@@ -27,7 +27,7 @@ if 'google.colab' in str(get_ipython()):
 # +
 from optic.dsp.core import firFilter, pulseShape, pnorm, upsample, clockSamplingInterp
 from optic.utils import parameters
-from optic.plot import pconst
+from optic.plot import pconst, plotPSD
 from optic.comm.modulation import modulateGray
 from optic.comm.metrics import fastBERcalc
 import matplotlib.pyplot as plt
@@ -64,26 +64,24 @@ symbTx = symbTx.reshape(-1,2)
 symbolsUp = upsample(symbTx, SpS)
 
 # typical NRZ pulse
-pulse = pulseShape('rc', SpS, N=2001, alpha=0.1)
+pulse = pulseShape('rc', SpS, N=2001, alpha=0.01)
 pulse = pulse/max(abs(pulse))
 
 # pulse shaping
 sigTx = firFilter(pulse, symbolsUp)
 
 # resample signal to non-integer samples/symbol rate
-downSample = 7.9995
+ppm = 250
+Fs_adc = 2*Rs*(1 + ppm/1e6)
+ppm_meas = (Fs_adc-2*Rs)/(2*Rs)*1e6
 
-ΔFs = (Fs/downSample-Fs/8)/(Fs/8)*1e6
-
-print(f'sampling clock deviation (ΔFs) = {ΔFs:.2f} ppm')
-
-#sigRxRef = clockSamplingInterp(sigTx.reshape(-1,1), Fs, Fs/8, 0)
+print(f'sampling clock deviation (ΔFs) = {ppm_meas:.2f} ppm')
 
 # ADC input parameters
 paramADC = parameters()
 paramADC.Fs_in = Fs
-paramADC.Fs_out = Fs/downSample
-paramADC.jitter_rms = 0*400e-15
+paramADC.Fs_out = Fs_adc
+paramADC.jitter_rms = 400e-15
 paramADC.nBits =  8
 paramADC.Vmax = 2.5
 paramADC.Vmin = -2.5
@@ -97,8 +95,8 @@ paramCLKREC = parameters()
 paramCLKREC.isNyquist = True
 paramCLKREC.returnTiming = True
 paramCLKREC.ki = 1e-6
-paramCLKREC.kp = 1e-4
-paramCLKREC.lpad = 2
+paramCLKREC.kp = 5e-4
+paramCLKREC.lpad = 0#8
 
 outCLK, ted_values = gardnerClockRecovery(sigRx, paramCLKREC)
 
@@ -108,6 +106,7 @@ plt.plot(ted_values, label = 'timing')
 plt.xlabel('sample')
 plt.grid()
 plt.xlim([0, len(sigRx)])
+plt.ylim([-0.6, 0.6])
 plt.legend()
 
 # plot received constellations without and with clock recovery
@@ -122,5 +121,8 @@ BER, _, _ = fastBERcalc(symbRx[discard:-discard,:], symbTx[discard:-discard,:], 
 for indMode in range(BER.shape[0]):
     print(f'Mode {indMode}: BER = {BER[indMode]:.2e}')
 # -
+plotPSD(ted_values-np.mean(ted_values),NFFT=ted_values.shape[0], Fs=2*Rs)
+plt.xlim(-500e6, 500e6)
+
 
 
