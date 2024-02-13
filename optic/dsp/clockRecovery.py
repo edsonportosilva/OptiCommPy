@@ -95,7 +95,9 @@ def gardnerClockRecovery(Ei, param=None):
 
             - returnTiming: return estimated timing values. Default is False.
 
-            - lpad: length of zero padding at the end of the 
+            - lpad: length of zero padding at the end of the input vector. Default is 1.
+
+            - maxPPM: maximum clock rate expected deviation in PPM. Default is 500.
 
     Returns
     -------
@@ -107,40 +109,36 @@ def gardnerClockRecovery(Ei, param=None):
     ki = getattr(param, "ki", 1e-6)
     isNyquist = getattr(param, "isNyquist", True)
     returnTiming = getattr(param, "returnTiming", False)
-    lpad = getattr(param, "lpad", 2)
-    nSymbols = getattr(param, "nSymbols", None)
+    lpad = getattr(param, "lpad", 1)
+    maxPPM = getattr(param, "maxPPM", 500)
 
     try:
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
 
+    Ei = np.pad(Ei, ((0, lpad), (0, 0)))
+
     # Initializing variables:
     nModes = Ei.shape[1]
+    nSamples = Ei.shape[0]
 
-    Ei = np.pad(Ei, ((0, lpad),(0,0)))
+    # Initiate output vector according with a maximum estimate of clock deviation
+    Eo = np.zeros((int((1 - maxPPM / 1e6) * nSamples), nModes), dtype=np.complex64)
 
-    if nSymbols is None:
-        Eo = Ei.copy() 
-    else:
-        Eo = np.zeros((2*nSymbols, nModes), dtype=np.complex64)  
-        
-    Lm = Ei.shape[0]
     Ln = Eo.shape[0]
-    
-    # timing_values = []
-    timing_values = np.zeros(Eo.shape, dtype=np.float64)
+
+    t_nco_values = np.zeros(Eo.shape, dtype=np.float64)
     last_n = 0
 
     for indMode in range(nModes):
         intPart = 0
         t_nco = 0
-       # timing_values_mode = []
 
         n = 2
         m = 2
 
-        while n < Ln - 1 and m < Lm - 2:
+        while n < Ln - 1 and m < nSamples - 2:
             Eo[n, indMode] = interpolator(Ei[m - 2 : m + 2, indMode], t_nco)
 
             if n % 2 == 0:
@@ -156,30 +154,26 @@ def gardnerClockRecovery(Ei, param=None):
 
                 t_nco -= loopFilterOut
 
-            n += 1
-            m += 1
-
-            # NCO clock gap 
-            if t_nco > 0.5:
-                t_nco -= 1
-                m -= 1
-                n -= 2
-            elif t_nco < -0.5:
-                t_nco += 1
+            # NCO clock gap
+            if t_nco > 1:
+                t_nco -= 1  # shift t_nco back by one sample
+                n -= 1  # shift index of next vector for TED calculation back by one sample
+            elif t_nco < -1:
+                t_nco += 1  # shift t_nco foward by one sample
+                n += 2  # shift index of next vector for TED calculation back by two samples
+                m += 1  # shift index of next interpolating vector forward by one sample
+            else:
+                n += 1
                 m += 1
-                n += 2
 
-            timing_values[n, indMode] = t_nco
-        
+            t_nco_values[n, indMode] = t_nco
+
         if n > last_n:
             last_n = n
-            #timing_values_mode.append(t_nco)
-        #print(len(timing_values_mode))
-        #timing_values.append(timing_values_mode)
 
     Eo = Eo[0:last_n, :]
 
     if returnTiming:
-        return Eo, timing_values #np.asarray(timing_values).astype("float32").T
+        return Eo, t_nco_values
     else:
         return Eo
