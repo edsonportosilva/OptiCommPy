@@ -156,11 +156,11 @@ def gardnerClockRecovery(Ei, param=None):
 
             # NCO clock gap
             if t_nco > 1:
-                t_nco -= 1  # shift t_nco back by one sample
-                n -= 1  # shift index of next vector for TED calculation back by one sample
+                t_nco -= 1  # shift t_nco backward by one sample
+                n -= 1  # shift index of next vector for TED calculation backward by one sample
             elif t_nco < -1:
                 t_nco += 1  # shift t_nco foward by one sample
-                n += 2  # shift index of next vector for TED calculation back by two samples
+                n += 2  # shift index of next vector for TED calculation backward by two samples
                 m += 1  # shift index of next interpolating vector forward by one sample
             else:
                 n += 1
