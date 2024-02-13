@@ -64,14 +64,14 @@ symbTx = symbTx.reshape(-1,2)
 symbolsUp = upsample(symbTx, SpS)
 
 # typical NRZ pulse
-pulse = pulseShape('rc', SpS, N=2001, alpha=0.01)
+pulse = pulseShape('rc', SpS, N=4001, alpha=0.001)
 pulse = pulse/max(abs(pulse))
 
 # pulse shaping
 sigTx = firFilter(pulse, symbolsUp)
 
 # resample signal to non-integer samples/symbol rate
-ppm = 250
+ppm = 25
 Fs_adc = 2*Rs*(1 + ppm/1e6)
 ppm_meas = (Fs_adc-2*Rs)/(2*Rs)*1e6
 
@@ -97,6 +97,7 @@ paramCLKREC.returnTiming = True
 paramCLKREC.ki = 1e-6
 paramCLKREC.kp = 5e-4
 paramCLKREC.lpad = 0#8
+#paramCLKREC.nSymbols = 128000//2
 
 outCLK, ted_values = gardnerClockRecovery(sigRx, paramCLKREC)
 
@@ -106,7 +107,7 @@ plt.plot(ted_values, label = 'timing')
 plt.xlabel('sample')
 plt.grid()
 plt.xlim([0, len(sigRx)])
-plt.ylim([-0.6, 0.6])
+plt.ylim([-0.1, 1.1])
 plt.legend()
 
 # plot received constellations without and with clock recovery
