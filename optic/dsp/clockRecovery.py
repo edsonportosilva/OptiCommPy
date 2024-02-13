@@ -128,12 +128,14 @@ def gardnerClockRecovery(Ei, param=None):
     Lm = Ei.shape[0]
     Ln = Eo.shape[0]
     
-    timing_values = []
+    # timing_values = []
+    timing_values = np.zeros(Eo.shape, dtype=np.float64)
+    last_n = 0
 
     for indMode in range(nModes):
         intPart = 0
         t_nco = 0
-        timing_values_mode = []
+       # timing_values_mode = []
 
         n = 2
         m = 2
@@ -158,21 +160,26 @@ def gardnerClockRecovery(Ei, param=None):
             m += 1
 
             # NCO clock gap 
-            if t_nco > 1:
+            if t_nco > 0.5:
                 t_nco -= 1
                 m -= 1
                 n -= 2
-            elif t_nco < 0:
+            elif t_nco < -0.5:
                 t_nco += 1
                 m += 1
                 n += 2
 
-            timing_values_mode.append(t_nco)
-        timing_values.append(timing_values_mode)
+            timing_values[n, indMode] = t_nco
+        
+        if n > last_n:
+            last_n = n
+            #timing_values_mode.append(t_nco)
+        #print(len(timing_values_mode))
+        #timing_values.append(timing_values_mode)
 
-    Eo = Eo[0:n, :]
+    Eo = Eo[0:last_n, :]
 
     if returnTiming:
-        return Eo, np.asarray(timing_values).astype("float32").T
+        return Eo, timing_values #np.asarray(timing_values).astype("float32").T
     else:
         return Eo
