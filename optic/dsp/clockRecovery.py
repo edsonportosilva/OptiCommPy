@@ -108,6 +108,7 @@ def gardnerClockRecovery(Ei, param=None):
     isNyquist = getattr(param, "isNyquist", True)
     returnTiming = getattr(param, "returnTiming", False)
     lpad = getattr(param, "lpad", 2)
+    nSymbols = getattr(param, "nSymbols", None)
 
     try:
         Ei.shape[1]
@@ -118,10 +119,15 @@ def gardnerClockRecovery(Ei, param=None):
     nModes = Ei.shape[1]
 
     Ei = np.pad(Ei, ((0, lpad),(0,0)))
-    Eo = Ei.copy()   
 
-    L = Ei.shape[0]
-
+    if nSymbols is None:
+        Eo = Ei.copy() 
+    else:
+        Eo = np.zeros((2*nSymbols, nModes), dtype=np.complex64)  
+        
+    Lm = Ei.shape[0]
+    Ln = Eo.shape[0]
+    
     timing_values = []
 
     for indMode in range(nModes):
@@ -132,7 +138,7 @@ def gardnerClockRecovery(Ei, param=None):
         n = 2
         m = 2
 
-        while n < L - 1 and m < L - 2:
+        while n < Ln - 1 and m < Lm - 2:
             Eo[n, indMode] = interpolator(Ei[m - 2 : m + 2, indMode], t_nco)
 
             if n % 2 == 0:
@@ -151,12 +157,12 @@ def gardnerClockRecovery(Ei, param=None):
             n += 1
             m += 1
 
-            # NCO
-            if t_nco > 0.5:
+            # NCO clock gap 
+            if t_nco > 1:
                 t_nco -= 1
                 m -= 1
                 n -= 2
-            elif t_nco < -0.5:
+            elif t_nco < 0:
                 t_nco += 1
                 m += 1
                 n += 2
