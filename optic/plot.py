@@ -17,6 +17,7 @@ Customized functions for plotting and vizualization (:mod:`optic.plot`)
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib import cm
+from matplotlib.colors import LinearSegmentedColormap
 import mpl_scatter_density
 import numpy as np
 import copy
@@ -512,3 +513,32 @@ def animateConstGIF(x, figName,
     anim.save(figName, dpi=200, writer="imagemagick")
     plt.close()
 
+def randomCmap(nColors=100, low=0.1, high=0.99):
+    """
+    Generate a random colormap with the specified number of colors and random RGB values.
+
+    Parameters
+    ----------
+    nColors : int, optional
+        Number of colors in the colormap. Defaults to 100.
+    low : float, optional
+        Lower bound for random RGB values. Defaults to 0.1.
+    high : float, optional
+        Upper bound for random RGB values. Defaults to 0.99.
+
+    Returns
+    -------
+    matplotlib.colors.LinearSegmentedColormap
+        Random colormap with the specified number of colors and random RGB values.
+
+    Notes
+    -----
+    The function generates a random colormap by creating `nColors` random RGB colors
+    with values between `low` and `high`, and then creates a `LinearSegmentedColormap`
+    object using these colors.
+   
+    """
+    randRGBcolors = [(np.random.uniform(low=low, high=high, size=(1,3))) for i in range(nColors)]
+    new_cmap  = LinearSegmentedColormap.from_list('new_map', randRGBcolors, N=nColors)
+    
+    return new_cmap
