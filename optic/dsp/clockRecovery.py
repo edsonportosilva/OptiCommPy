@@ -12,8 +12,11 @@ DSP algorithms for clock and timming recovery (:mod:`optic.dsp.clockRecovery`)
    interpolator           -- Perform cubic interpolation using the Farrow structure
    gardnerClockRecovery   -- Perform clock recovery using Gardner's algorithm with a loop PI filter   
 """
+import logging as logg
+
 import numpy as np
 from numba import njit
+from scipy.signal import find_peaks
 
 
 @njit
@@ -170,10 +173,47 @@ def gardnerClockRecovery(Ei, param=None):
 
         if n > last_n:
             last_n = n
+        
+        logg.info(f"Clock deviation mode {indMode}: {calcClockDeviation(t_nco_values[:, indMode])[0]:.2f} ppm")
 
-    Eo = Eo[0:last_n, :]
+    Eo = Eo[0:last_n, :]   
 
     if returnTiming:
         return Eo, t_nco_values
     else:
         return Eo
+
+
+def calcClockDeviation(t_nco_values):
+    """
+    Calculate the clock deviation in parts per million (ppm) from t_nco values.
+
+    Parameters
+    ----------
+    t_nco_values : ndarray
+        An array containing the relative time delay values provided to the NCO.  
+
+    Returns
+    -------
+    float
+        The clock deviation in parts per million (ppm).  
+    """
+    try:
+        t_nco_values.shape[1]
+    except IndexError:
+        t_nco_values = t_nco_values.reshape(len(t_nco_values), 1)
+
+    timingError = t_nco_values - np.mean(t_nco_values)
+
+    t = np.arange(timingError.shape[0])
+
+    nModes = t_nco_values.shape[1]
+    ppm = np.zeros(nModes)
+
+    for indMode in range(nModes):
+        peaks, _ = find_peaks(np.abs(np.diff(timingError[:,indMode])), height=0.5)
+        mean_period = np.mean(np.diff(t[peaks])) # mean period of t_nco_values
+        fo = 1/mean_period
+        ppm[indMode] = np.sign(np.mean(ted_values))*fo*1e6
+
+    return ppm
