@@ -11,13 +11,14 @@ Customized functions for plotting and vizualization (:mod:`optic.plot`)
    plotDecisionBoundaries     -- Plot decision boundaries of the detector
    eyediagram                 -- Plots eyediagrams of communication signals
    plotPSD                    -- Plot power spectral density of signals
+   randomCmap                 -- Generate a random RGB colormap
 """
 
 """Plot utilities."""
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib import cm
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import ListedColormap
 import mpl_scatter_density
 import numpy as np
 import copy
@@ -528,7 +529,7 @@ def randomCmap(nColors=100, low=0.1, high=0.99):
 
     Returns
     -------
-    matplotlib.colors.LinearSegmentedColormap
+    matplotlib.colors.ListedColormap
         Random colormap with the specified number of colors and random RGB values.
 
     Notes
@@ -539,6 +540,6 @@ def randomCmap(nColors=100, low=0.1, high=0.99):
    
     """
     randRGBcolors = [(np.random.uniform(low=low, high=high, size=(1,3))) for i in range(nColors)]
-    new_cmap  = LinearSegmentedColormap.from_list('new_map', randRGBcolors, N=nColors)
+    new_cmap  = ListedColormap(randRGBcolors, 'new_map', N=nColors)
     
     return new_cmap
