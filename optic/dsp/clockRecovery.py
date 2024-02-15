@@ -11,6 +11,7 @@ DSP algorithms for clock and timming recovery (:mod:`optic.dsp.clockRecovery`)
    gardnerTEDnyquist      -- Modified Gardner timing error detector for Nyquist pulses
    interpolator           -- Perform cubic interpolation using the Farrow structure
    gardnerClockRecovery   -- Perform clock recovery using Gardner's algorithm with a loop PI filter   
+   calcClockDrift         -- Estimate clock drift from relative time delays fed to the interpolator
 """
 import logging as logg
 
@@ -175,7 +176,7 @@ def gardnerClockRecovery(Ei, param=None):
         if n > last_n:
             last_n = n
         
-        logg.info(f"Estimated clock drift mode {indMode}: {calcClockDeviation(t_nco_values[:, indMode])[0]:.2f} ppm")
+        logg.info(f"Estimated clock drift mode {indMode}: {calcClockDrift(t_nco_values[:, indMode])[0]:.2f} ppm")
 
     Eo = Eo[0:last_n, :]   
 
@@ -185,9 +186,9 @@ def gardnerClockRecovery(Ei, param=None):
         return Eo
 
 
-def calcClockDeviation(t_nco_values):
+def calcClockDrift(t_nco_values):
     """
-    Calculate the clock deviation in parts per million (ppm) from t_nco values.
+    Calculate the clock drift in parts per million (ppm) from t_nco values.
 
     Parameters
     ----------
