@@ -54,4 +54,6 @@ A collection of examples of utilization of OptiCommPy to build several different
 
 # Acknowledgements
 
+This work was supported by the National Council for Scientific and Technological Development (CNPq), Brazil, grant 406684/2021-9.
+
 # References
