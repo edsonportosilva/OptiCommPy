@@ -201,8 +201,8 @@ def plotDecisionBoundaries(constSymb, px=None, SNR=20, rule='MAP', gridStep=0.00
     """
     Plot decision boundaries for a given constellation symbols.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     constSymb : array_like
         An array of complex constellation symbols.
     px : array_like, optional
@@ -219,16 +219,12 @@ def plotDecisionBoundaries(constSymb, px=None, SNR=20, rule='MAP', gridStep=0.00
     cmap : str or Colormap, optional
         Colormap to be used for the contour plot. Default is 'turbo'.
 
-    Returns:
-    --------
+    Returns
+    -------
     fig : matplotlib.figure.Figure
         The created matplotlib figure.
     ax : matplotlib.axes.Axes
-        The created matplotlib axes.
-
-    Notes:
-    ------
-    This function assumes a Gaussian channel and uses the MAP detector for creating decision boundaries.
+        The created matplotlib axes.   
     """
 
     # Normalize constellation symbols
@@ -428,8 +424,8 @@ def animateConstGIF(x, figName,
     """
     Create and save a constellation plot animation as GIF
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     x : numpy.ndarray
         x-axis values.
     figName : str
@@ -530,14 +526,7 @@ def randomCmap(nColors=100, low=0.1, high=0.99):
     Returns
     -------
     matplotlib.colors.ListedColormap
-        Random colormap with the specified number of colors and random RGB values.
-
-    Notes
-    -----
-    The function generates a random colormap by creating `nColors` random RGB colors
-    with values between `low` and `high`, and then creates a `LinearSegmentedColormap`
-    object using these colors.
-   
+        Random colormap with the specified number of colors and random RGB values.  
     """
     randRGBcolors = [(np.random.uniform(low=low, high=high, size=(1,3))) for i in range(nColors)]
     new_cmap  = ListedColormap(randRGBcolors, 'new_map', N=nColors)
