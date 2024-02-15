@@ -295,8 +295,8 @@ def detector(r, σ2, constSymb, px=None, rule='MAP'):
     """
     Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     r : ndarray
         The received signal.
     σ2 : float
@@ -308,8 +308,8 @@ def detector(r, σ2, constSymb, px=None, rule='MAP'):
     rule : str, optional
         The detection rule to use. Either 'MAP' (default) or 'ML'.
 
-    Returns:
-    --------
+    Returns
+    -------
     tuple
         A tuple containing:
             - ndarray: The detected symbols.
