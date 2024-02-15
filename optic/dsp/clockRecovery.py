@@ -133,7 +133,8 @@ def gardnerClockRecovery(Ei, param=None):
 
     t_nco_values = np.zeros(Eo.shape, dtype=np.float64)
     last_n = 0
-
+    logg.info(f"Running clock recovery...")
+    
     for indMode in range(nModes):
         intPart = 0
         t_nco = 0
@@ -174,7 +175,7 @@ def gardnerClockRecovery(Ei, param=None):
         if n > last_n:
             last_n = n
         
-        logg.info(f"Clock deviation mode {indMode}: {calcClockDeviation(t_nco_values[:, indMode])[0]:.2f} ppm")
+        logg.info(f"Estimated clock drift mode {indMode}: {calcClockDeviation(t_nco_values[:, indMode])[0]:.2f} ppm")
 
     Eo = Eo[0:last_n, :]   
 
@@ -214,6 +215,6 @@ def calcClockDeviation(t_nco_values):
         peaks, _ = find_peaks(np.abs(np.diff(timingError[:,indMode])), height=0.5)
         mean_period = np.mean(np.diff(t[peaks])) # mean period of t_nco_values
         fo = 1/mean_period
-        ppm[indMode] = np.sign(np.mean(ted_values))*fo*1e6
+        ppm[indMode] = np.sign(np.mean(t_nco_values))*fo*1e6
 
     return ppm
