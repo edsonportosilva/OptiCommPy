@@ -381,6 +381,7 @@ def manakovSSF(Ei, param):
         Ech_spans = np.zeros((Ei.shape[0], Ei.shape[1] * len(saveSpanN))).astype(prec)
         indRecSpan = 0
 
+    logg.info(f"Running Manakov SSF model on CPU...")
     for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
         Ex_conv = Ech_x.copy()
         Ey_conv = Ech_y.copy()
