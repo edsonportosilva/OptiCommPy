@@ -13,6 +13,7 @@ DSP algorithms for carrier phase and frequency recovery (:mod:`optic.dsp.carrier
    fourthPowerFOE -- Frequency offset (FO) estimation and compensation with the 4th-power method
    cpr            -- General function to call and configure any of the CPR algorithms in this module   
 """
+import logging as logg
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -105,14 +106,18 @@ def cpr(Ei, param=None, symbTx=None):
     constSymb = pnorm(constSymb)
 
     # 4th power frequency offset estimation/compensation
+    logg.info(f"Running frequency offset compensation...")
     Ei, _ = fourthPowerFOE(Ei, 1 / Ts)
     Ei = pnorm(Ei)
 
     if alg == "ddpll":
+        logg.info(f"Running DDPLL carrier phase recovery...")
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
+        logg.info(f"Running BPS carrier phase recovery...")
         θ = bps(Ei, N // 2, constSymb, B)
     elif alg == "viterbi":
+        logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")
         θ = viterbi(Ei, N)
     else:
         raise ValueError("CPR algorithm incorrectly specified.")

@@ -180,6 +180,8 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
             H[
                 initH + initH * nModes, int(np.floor(H.shape[1] / 2))
             ] = 1  # Central spike initialization
+
+    logg.info(f"Running adaptive equalizer...")
     # Equalizer training:
     if type(alg) == list:
         yEq = np.zeros((totalNumSymb, x.shape[1]), dtype="complex")
