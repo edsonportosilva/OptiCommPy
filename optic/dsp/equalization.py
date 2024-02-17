@@ -61,6 +61,7 @@ def edc(Ei, param):
 
     param.alpha = 0
     param.D = -param.D
+    logg.info(f"Running CD compensation...")
 
     return linearFiberChannel(Ei, param)
 
