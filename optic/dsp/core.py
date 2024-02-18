@@ -453,7 +453,7 @@ def resample(Ei, param):
             - param.Rs      : symbol rate of the signal.
 
             - param.SpS_in  : samples per symbol of the input signal.
-            
+
             - param.SpS_out : samples per symbol of the output signal.
 
     Returns
@@ -517,6 +517,7 @@ def symbolSync(rx, tx, SpS, mode="amp"):
     delay = np.zeros(nModes)
 
     corrMatrix = np.zeros((nModes, nModes))
+    rot = np.ones((nModes, nModes), dtype=np.complex64)
 
     if mode == "amp":
         for n in range(nModes):
@@ -533,15 +534,22 @@ def symbolSync(rx, tx, SpS, mode="amp"):
     elif mode == "real":
         for n in range(nModes):
             for m in range(nModes):
-                corrMatrix[m, n] = np.max(
+                c1 = np.max(
                     np.abs(signal.correlate(np.real(tx[:, m]), np.real(rx[:, n])))
                 )
-        swap = np.argmax(corrMatrix, axis=0)
+                c2 = np.max(
+                    np.abs(signal.correlate(np.real(tx[:, m]), np.imag(rx[:, n])))
+                )
+                corrMatrix[m, n] = np.max([c1, c2])
 
+                if c2 > c1:
+                    rot[m, n] = np.exp(-1j * np.pi / 4)
+
+        swap = np.argmax(corrMatrix, axis=0)
         tx = tx[:, swap]
 
         for k in range(nModes):
-            delay[k] = finddelay(np.real(tx[:, k]), np.real(rx[:, k]))
+            delay[k] = finddelay(np.real(rot[k, swap[k]] * tx[:, k]), np.real(rx[:, k]))
 
     # compensate time delay
     for k in range(nModes):
@@ -566,7 +574,7 @@ def finddelay(x, y):
         Delay between x and y, in samples.
 
     """
-    return np.argmax(signal.correlate(x, y)) - x.shape[0] + 1
+    return np.argmax(np.abs(signal.correlate(x, y))) - x.shape[0] + 1
 
 
 @njit
@@ -684,17 +692,16 @@ def movingAverage(x, N):
     nCol = x.shape[1]
     y = np.zeros(x.shape, dtype=x.dtype)
 
-    startInd = N//2
+    startInd = N // 2
 
-    endInd = -N//2+1 if N%2 else -N//2
+    endInd = -N // 2 + 1 if N % 2 else -N // 2
     for indCol in range(nCol):
         # Pad the signal with zeros at both ends
-        padded_x = np.pad(x[:, indCol], (N//2, N//2), mode='constant')
+        padded_x = np.pad(x[:, indCol], (N // 2, N // 2), mode="constant")
 
         # Calculate moving average using convolution
         h = np.ones(N) / N
-        ma = np.convolve(padded_x, h, 'same')
+        ma = np.convolve(padded_x, h, "same")
         y[:, indCol] = ma[startInd:endInd]
 
     return y
-
