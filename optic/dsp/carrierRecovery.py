@@ -20,7 +20,7 @@ from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
 
 from optic.dsp.core import pnorm, movingAverage
-from optic.comm.modulation import GrayMapping
+from optic.comm.modulation import grayMapping
 
 
 def cpr(Ei, param=None, symbTx=None):
@@ -101,7 +101,7 @@ def cpr(Ei, param=None, symbTx=None):
         Ei = Ei.reshape(len(Ei), 1)
 
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     constSymb = pnorm(constSymb)
 
     # 4th power frequency offset estimation/compensation

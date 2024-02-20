@@ -21,7 +21,7 @@ from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 from optic.dsp.core import pnorm
 from optic.models.channels import linearFiberChannel
-from optic.comm.modulation import GrayMapping
+from optic.comm.modulation import grayMapping
 
 
 def edc(Ei, param):
@@ -164,7 +164,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     )  # pad start and end of the signal with zeros
 
     # Defining training parameters:
-    constSymb = GrayMapping(M, constType)  # constellation
+    constSymb = grayMapping(M, constType)  # constellation
     constSymb = pnorm(constSymb)  # normalized constellation symbols
 
     totalNumSymb = int(np.fix((len(x) - nTaps) / SpS + 1))

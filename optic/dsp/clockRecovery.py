@@ -11,9 +11,13 @@ DSP algorithms for clock and timming recovery (:mod:`optic.dsp.clockRecovery`)
    gardnerTEDnyquist      -- Modified Gardner timing error detector for Nyquist pulses
    interpolator           -- Perform cubic interpolation using the Farrow structure
    gardnerClockRecovery   -- Perform clock recovery using Gardner's algorithm with a loop PI filter   
+   calcClockDrift         -- Estimate clock drift from relative time delays fed to the interpolator
 """
+import logging as logg
+
 import numpy as np
 from numba import njit
+from scipy.signal import find_peaks
 
 
 @njit
@@ -86,7 +90,7 @@ def gardnerClockRecovery(Ei, param=None):
     Ei : numpy.ndarray
         Input array representing the received signal.
     param : core.parameter
-        Resampling parameters:
+        Clock recovery parameters:
             - kp : Proportional gain for the loop filter. Default is 1e-3.
 
             - ki : Integral gain for the loop filter. Default is 1e-6.
@@ -94,6 +98,10 @@ def gardnerClockRecovery(Ei, param=None):
             - isNyquist: is the pulse shape a Nyquist pulse? Default is True.
 
             - returnTiming: return estimated timing values. Default is False.
+
+            - lpad: length of zero padding at the end of the input vector. Default is 1.
+
+            - maxPPM: maximum clock rate expected deviation in PPM. Default is 500.
 
     Returns
     -------
@@ -105,31 +113,37 @@ def gardnerClockRecovery(Ei, param=None):
     ki = getattr(param, "ki", 1e-6)
     isNyquist = getattr(param, "isNyquist", True)
     returnTiming = getattr(param, "returnTiming", False)
+    lpad = getattr(param, "lpad", 1)
+    maxPPM = getattr(param, "maxPPM", 500)
 
     try:
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
 
+    Ei = np.pad(Ei, ((0, lpad), (0, 0)))
+
     # Initializing variables:
     nModes = Ei.shape[1]
+    nSamples = Ei.shape[0]
 
-    Eo = Ei.copy()
-    Ei = np.pad(Ei, ((0, 2)), "constant")
+    # Initiate output vector according with a maximum estimate of clock deviation
+    Eo = np.zeros((int((1 - maxPPM / 1e6) * nSamples), nModes), dtype=np.complex64)
 
-    L = Ei.shape[0]
+    Ln = Eo.shape[0]
 
-    timing_values = []
-
+    t_nco_values = np.zeros(Eo.shape, dtype=np.float64)
+    last_n = 0
+    logg.info(f"Running clock recovery...")
+    
     for indMode in range(nModes):
         intPart = 0
         t_nco = 0
-        timing_values_mode = []
 
         n = 2
         m = 2
 
-        while n < L - 1 and m < L - 2:
+        while n < Ln - 1 and m < nSamples - 2:
             Eo[n, indMode] = interpolator(Ei[m - 2 : m + 2, indMode], t_nco)
 
             if n % 2 == 0:
@@ -145,26 +159,63 @@ def gardnerClockRecovery(Ei, param=None):
 
                 t_nco -= loopFilterOut
 
-            n += 1
-            m += 1
-
-            # NCO
-            if t_nco > 0:
-                t_nco -= 1
-                m -= 1
-                n -= 2
+            # NCO clock gap
+            if t_nco > 1:
+                t_nco -= 1  # shift t_nco backward by one sample
+                n -= 1  # shift index of next vector for TED calculation backward by one sample
             elif t_nco < -1:
-                t_nco += 1
+                t_nco += 1  # shift t_nco foward by one sample
+                n += 2  # shift index of next vector for TED calculation forward by two samples
+                m += 1  # shift index of next interpolating vector forward by one sample
+            else:
+                n += 1
                 m += 1
-                n += 2
 
-            timing_values_mode.append(t_nco)
+            t_nco_values[n, indMode] = t_nco
 
-        timing_values.append(timing_values_mode)
+        if n > last_n:
+            last_n = n
+        
+        logg.info(f"Estimated clock drift mode {indMode}: {calcClockDrift(t_nco_values[:, indMode])[0]:.2f} ppm")
 
-    Eo = Eo[0:n, :]
+    Eo = Eo[0:last_n, :]   
 
     if returnTiming:
-        return Eo, np.asarray(timing_values).astype("float32").T
+        return Eo, t_nco_values
     else:
         return Eo
+
+
+def calcClockDrift(t_nco_values):
+    """
+    Calculate the clock drift in parts per million (ppm) from t_nco values.
+
+    Parameters
+    ----------
+    t_nco_values : ndarray
+        An array containing the relative time delay values provided to the NCO.  
+
+    Returns
+    -------
+    float
+        The clock deviation in parts per million (ppm).  
+    """
+    try:
+        t_nco_values.shape[1]
+    except IndexError:
+        t_nco_values = t_nco_values.reshape(len(t_nco_values), 1)
+
+    timingError = t_nco_values - np.mean(t_nco_values)
+
+    t = np.arange(timingError.shape[0])
+
+    nModes = t_nco_values.shape[1]
+    ppm = np.zeros(nModes)
+
+    for indMode in range(nModes):
+        peaks, _ = find_peaks(np.abs(np.diff(timingError[:,indMode])), height=0.5)
+        mean_period = np.mean(np.diff(t[peaks])) # mean period of t_nco_values
+        fo = 1/mean_period
+        ppm[indMode] = np.sign(np.mean(t_nco_values))*fo*1e6
+
+    return ppm

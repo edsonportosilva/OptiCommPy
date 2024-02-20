@@ -30,7 +30,7 @@ import scipy.constants as const
 
 from optic.utils import dB2lin
 from optic.dsp.core import pnorm, signal_power
-from optic.comm.modulation import GrayMapping, demodulateGray, minEuclid
+from optic.comm.modulation import grayMapping, demodulateGray, minEuclid
 
 
 def bert(Irx, bitsTx=None, seed=123):
@@ -143,7 +143,7 @@ def fastBERcalc(rx, tx, M, constType):
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     Es = np.mean(np.abs(constSymb) ** 2)
 
     # We want all the signal sequences to be disposed in columns:
@@ -254,7 +254,7 @@ def monteCarloGMI(rx, tx, M, constType, px=None):
     if px is None:
         px = []
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
 
     # get bit mapping
     b = int(np.log2(M))
@@ -350,7 +350,7 @@ def monteCarloMI(rx, tx, M, constType, px=None):
     if len(px) == 0:  # if px is not defined
         px = 1 / M * np.ones(M)  # assume uniform distribution
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     Es = np.sum(np.abs(constSymb) ** 2 * px)
     constSymb = constSymb / np.sqrt(Es)
 
@@ -492,7 +492,7 @@ def calcEVM(symb, M, constType, symbTx=None):
             symbTx = symbTx.reshape(len(symbTx), 1)
         symbTx = pnorm(symbTx)
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     constSymb = pnorm(constSymb)
 
     EVM = np.zeros(symb.shape[1])
@@ -657,7 +657,7 @@ def theoryMI(M, constType, SNR, pX=None, symetry=True, lim=np.inf, tol=1e-3):
     float
         Mutual information for the given parameters.
     """
-    constSymb = GrayMapping(M, constType)  # get constellation
+    constSymb = grayMapping(M, constType)  # get constellation
     Es = signal_power(constSymb)  # calculate average symbol energy
     constSymb = constSymb / np.sqrt(Es)  # normalize average symbol energy
 
