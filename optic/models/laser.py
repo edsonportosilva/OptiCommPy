@@ -1,3 +1,16 @@
+"""
+========================================================
+Models for DFB laser (:mod:`optic.models.laser`)
+========================================================
+
+.. autosummary::
+   :toctree: generated/
+
+   laser_dfb             -- Semiconductor DFB laser model.
+"""
+
+
+"""Basic physical models for DFB laser."""
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.fft import fft
