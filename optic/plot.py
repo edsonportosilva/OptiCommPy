@@ -8,6 +8,7 @@ Customized functions for plotting and vizualization (:mod:`optic.plot`)
 
    pconst                     -- Generate custom constellation plots      
    constHist                  -- Generate histogram for constellation plots
+   plotColoredConst           -- Colored constellation scatter plot
    plotDecisionBoundaries     -- Plot decision boundaries of the detector
    eyediagram                 -- Plots eyediagrams of communication signals
    plotPSD                    -- Plot power spectral density of signals
