@@ -206,6 +206,76 @@ def constHist(symb, ax, cmap="turbo", whiteb=True):
     return ax
 
 
+def plotColoredConst(
+    symb,
+    constSymb,
+    px=None,
+    SNR=20,
+    rule="MAP",
+    cmap=plt.cm.turbo,
+    fig=None,
+    ax=None,
+):
+    """
+    Colored constellation scatter plot.
+
+    Parameters
+    ----------
+    symb : np.array
+        Complex-valued constellation symbols.
+    constSymb : np.array
+        Complex-valued constellation symbols used for detection.
+    px : array_like, optional
+        Prior probabilities of symbols.
+    SNR : float, optional
+        Signal-to-Noise Ratio (SNR) in decibels (dB). Default is 20 dB.
+    rule : str, optional
+        Detection rule, either "MAP" for Maximum A Posteriori or "ML" for Maximum Likelihood.
+        Default is "MAP".
+    cmap : matplotlib.colors.Colormap, optional
+        Colormap for coloring the constellation symbols. Default is matplotlib.cm.turbo.
+    fig : matplotlib.figure.Figure, optional
+        Figure object for the plot. If None, a new figure is created. Default is None.
+    ax : matplotlib.axes.Axes, optional
+        Axes object for the plot. If None, a new axes is created. Default is None.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure object for the plot.
+    ax : matplotlib.axes.Axes
+        Axes object for the plot.
+
+    Notes
+    -----
+    This function generates a scatter plot of complex-valued constellation symbols with colors
+    representing the corresponding decided constellation symbols based on detection results.
+
+    The detected symbols are determined using a detector based on the provided input symbols, noise
+    variance, detection rule, and prior probabilities (if available).
+    """
+    cmap = copy.copy(cm.get_cmap(cmap))
+
+    σ2 = 1 / dB2lin(SNR)
+
+    _, pos = detector(symb, σ2, constSymb, rule=rule, px=px)  # detector
+
+    # plot received symbols with colors that depend
+    # on the respective decided constellation symbol
+    colors = cmap(np.linspace(0, 1, len(constSymb)))
+
+    # Create plot
+    if fig is None and ax is None:
+        fig, ax = plt.subplots()
+
+    ax.scatter(symb.real, symb.imag, c=[colors[ind] for ind in pos], marker=".", s=0.5)
+    ax.axis("square")
+    ax.set_xlabel("In-Phase (I)")
+    ax.set_ylabel("Quadrature (Q)")
+
+    return fig, ax
+
+
 def plotDecisionBoundaries(
     constSymb,
     px=None,
@@ -237,6 +307,10 @@ def plotDecisionBoundaries(
         Default is 0.5.
     cmap : str or Colormap, optional
         Colormap to be used for the contour plot. Default is 'turbo'.
+    fig : matplotlib.figure.Figure, optional
+        Figure object for the plot. If None, a new figure is created. Default is None.
+    ax : matplotlib.axes.Axes, optional
+        Axes object for the plot. If None, a new axes is created. Default is None.
 
     Returns
     -------
@@ -244,6 +318,14 @@ def plotDecisionBoundaries(
         The created matplotlib figure.
     ax : matplotlib.axes.Axes
         The created matplotlib axes.
+
+    Notes
+    -----
+    This function plots decision boundaries for a given set of constellation symbols in the complex plane.
+    It uses the specified signal-to-noise ratio (SNR), detection rule, and prior probabilities (if available)
+    to determine the decision boundaries.
+
+    The decision boundaries are plotted using a contour plot with colors representing the different decision regions.
     """
 
     # Normalize constellation symbols
@@ -269,7 +351,7 @@ def plotDecisionBoundaries(
     σ2 = 1 / dB2lin(SNR)
 
     # Use MAP detector for a Gaussian channel
-    dec, pos = detector(r, σ2, constSymb, rule=rule, px=px)  # detector
+    _, pos = detector(r, σ2, constSymb, rule=rule, px=px)  # detector
 
     # Reshape for plotting
     Z = pos.reshape(gI.shape) + 1
@@ -280,6 +362,8 @@ def plotDecisionBoundaries(
 
     ax.contourf(gI, gQ, Z, 2 * len(constSymb), cmap=cmap)
     ax.axis("square")
+    ax.set_xlabel("In-Phase (I)")
+    ax.set_ylabel("Quadrature (Q)")
 
     return fig, ax
 
