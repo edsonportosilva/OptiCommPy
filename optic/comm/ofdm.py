@@ -16,9 +16,8 @@ import numpy as np
 
 from scipy.fftpack     import fft, ifft
 from scipy.interpolate import interp1d
-from numba import njit
 
-@njit
+
 def hermit(V):
     """
     Hermitian simmetry block.
