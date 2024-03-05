@@ -16,7 +16,9 @@ import numpy as np
 
 from scipy.fftpack     import fft, ifft
 from scipy.interpolate import interp1d
+from numba import njit
 
+@njit
 def hermit(V):
     """
     Hermitian simmetry block.
@@ -70,7 +72,7 @@ def calcSymbolRate(M, Rb, Nfft, Np, G, hermitSym):
     return Rb / (nDataSymbols/(Nfft + G) * np.log2(M))
 
 
-def modulateOFDM(Nfft, G, pilot, pilotCarriers, symbTx, hermitSym):
+def modulateOFDM(symbTx, param):
     """
     OFDM symbols modulator.
 
@@ -94,12 +96,18 @@ def modulateOFDM(Nfft, G, pilot, pilotCarriers, symbTx, hermitSym):
     symbTx_OFDM   : complex-valued np.array
                     OFDM symbols sequency transmitted
     """
-    
+    # Check and set default values for input parameters
+    Nfft = getattr(param, "Nfft", 512)
+    G = getattr(param, "G", 4)
+    hermitSymmetry = getattr(param, "hermitSymmetry", False)
+    pilot = getattr(param, "pilot", 1+1j)
+    pilotCarriers = getattr(param, "pilotCarriers", np.array([], dtype = int))
+        
     # Number of pilot subcarriers
     Np = len(pilotCarriers)
 
     # Number of subcarriers
-    N = Nfft//2 - 1 if hermitSym else Nfft
+    N = Nfft//2 - 1 if hermitSymmetry else Nfft
     numSymb  = len(symbTx)
     numOFDMframes = numSymb//(N - Np)
 
@@ -115,7 +123,7 @@ def modulateOFDM(Nfft, G, pilot, pilotCarriers, symbTx, hermitSym):
         symbTx_OFDM_par[indFrame, G : G + N][pilotCarriers] = pilot
 
         # Hermitian symmetry
-        if hermitSym:
+        if hermitSymmetry:
             symbTx_OFDM_par[indFrame, G : G + Nfft] = hermit(symbTx_OFDM_par[indFrame, G : G + N])
 
         # IFFT operation
@@ -127,7 +135,7 @@ def modulateOFDM(Nfft, G, pilot, pilotCarriers, symbTx, hermitSym):
     return symbTx_OFDM_par.reshape(1,-1).reshape(-1,)
 
 
-def demodulateOFDM(Nfft, G, pilot, pilotCarriers, symbRx_OFDM, hermitSym):
+def demodulateOFDM(symbRx_OFDM, param):
     """
     OFDM symbols demodulator.
 
@@ -151,12 +159,18 @@ def demodulateOFDM(Nfft, G, pilot, pilotCarriers, symbRx_OFDM, hermitSym):
     symbRx        : complex np.array
                     demodulated symbols sequency received
     """
+    # Check and set default values for input parameters
+    Nfft = getattr(param, "Nfft", 512)
+    G = getattr(param, "G", 4)
+    hermitSymmetry = getattr(param, "hermitSymmetry", False)
+    pilot = getattr(param, "pilot", 1+1j)
+    pilotCarriers = getattr(param, "pilotCarriers", np.array([], dtype = int))
     
     # Number of pilot subcarriers
     Np = len(pilotCarriers)
 
     # Number of subcarriers
-    N = Nfft//2 - 1 if hermitSym else Nfft
+    N = Nfft//2 - 1 if hermitSymmetry else Nfft
     Carriers      = np.arange(0, N)
     dataCarriers  = np.array(list(set(Carriers) - set(pilotCarriers)))
 
@@ -175,7 +189,7 @@ def demodulateOFDM(Nfft, G, pilot, pilotCarriers, symbRx_OFDM, hermitSym):
     for indFrame in range(numOFDMframes):
         symbRx_OFDM_par[indFrame, :] = fft(symbRx_OFDM_par[indFrame,:]) / np.sqrt(Nfft)
 
-    if hermitSym:
+    if hermitSymmetry:
         # Removal of hermitian symmetry
         symbRx_OFDM_par = symbRx_OFDM_par[:, 1 : 1 + N]
 
