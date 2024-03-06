@@ -14,8 +14,9 @@ OFDM utilities (:mod:`optic.comm.ofdm`)
 
 import numpy as np
 
-from scipy.fftpack     import fft, ifft
+from numpy.fft  import fft, ifft, fftshift
 from scipy.interpolate import interp1d
+from optic.dsp.core import upsample
 
 
 def hermit(V):
@@ -42,6 +43,8 @@ def hermit(V):
     
     return Vh
 
+def padOFDM(x, L):
+    return np.pad(x,(L, L),'constant', constant_values=0)
 
 def calcSymbolRate(M, Rb, Nfft, Np, G, hermitSym):
     """    
@@ -89,6 +92,8 @@ def modulateOFDM(symbTx, param):
                     symbols sequency transmitted
     hermitSym     : boolean
                     True-> Real OFDM symbols / False: Complex OFDM symbols 
+    SpS           : int
+                    oversampling factor
     
     Returns
     -------
@@ -101,37 +106,42 @@ def modulateOFDM(symbTx, param):
     hermitSymmetry = getattr(param, "hermitSymmetry", False)
     pilot = getattr(param, "pilot", 1+1j)
     pilotCarriers = getattr(param, "pilotCarriers", np.array([], dtype = int))
+    SpS = getattr(param, "SpS", 2)
         
     # Number of pilot subcarriers
     Np = len(pilotCarriers)
 
     # Number of subcarriers
-    N = Nfft//2 - 1 if hermitSymmetry else Nfft
+    Ns = Nfft//2 - 1 if hermitSymmetry else Nfft
     numSymb  = len(symbTx)
-    numOFDMframes = numSymb//(N - Np)
+    numOFDMframes = numSymb//(Ns - Np)
 
-    Carriers = np.arange(0, N)
+    Carriers = np.arange(0, Ns)
     dataCarriers  = np.array(list(set(Carriers) - set(pilotCarriers)))
 
-    symbTx_par = np.reshape(symbTx, (numOFDMframes, N - Np))
-    symbTx_OFDM_par = np.zeros( (numOFDMframes, Nfft + G), complex)
-
+    # Serial to parallel
+    symbTx_par = np.reshape(symbTx, (numOFDMframes, Ns - Np))   
+    symbTx_OFDM_par = np.zeros( (numOFDMframes, SpS*(Nfft + G)), dtype=np.complex64)
+    
     for indFrame in range(numOFDMframes):
-        # Pilot subcarriers inclusion
-        symbTx_OFDM_par[indFrame, G : G + N][dataCarriers]  = symbTx_par[indFrame, :]
-        symbTx_OFDM_par[indFrame, G : G + N][pilotCarriers] = pilot
+        # Start OFDM frame with zeros
+        frameOFDM = np.zeros(Ns, dtype=np.complex64) 
+
+        # Insert data and pilot subcarriers                    
+        frameOFDM[dataCarriers]  = symbTx_par[indFrame, :]
+        frameOFDM[pilotCarriers] = pilot
 
         # Hermitian symmetry
         if hermitSymmetry:
-            symbTx_OFDM_par[indFrame, G : G + Nfft] = hermit(symbTx_OFDM_par[indFrame, G : G + N])
-
-        # IFFT operation
-        symbTx_OFDM_par[indFrame, G : G + Nfft] = ifft(symbTx_OFDM_par[indFrame, G : G + Nfft]) * np.sqrt(Nfft)
-
+            frameOFDM = hermit(frameOFDM)
+       
+        # IFFT operation       
+        symbTx_OFDM_par[indFrame, SpS*G : SpS*(G + Nfft)] = ifft(fftshift(padOFDM(frameOFDM, Nfft*(SpS-1)//2))) * np.sqrt(SpS*Nfft)
+        
         # Cyclic prefix addition
-        symbTx_OFDM_par[indFrame, 0 : G] = symbTx_OFDM_par[indFrame, Nfft : Nfft + G].copy()
+        symbTx_OFDM_par[indFrame, 0 : SpS*G] = symbTx_OFDM_par[indFrame, Nfft*SpS : SpS*(Nfft + G)].copy()
 
-    return symbTx_OFDM_par.reshape(1,-1).reshape(-1,)
+    return symbTx_OFDM_par.ravel()
 
 
 def demodulateOFDM(symbRx_OFDM, param):
@@ -186,7 +196,7 @@ def demodulateOFDM(symbRx_OFDM, param):
 
     # FFT operation
     for indFrame in range(numOFDMframes):
-        symbRx_OFDM_par[indFrame, :] = fft(symbRx_OFDM_par[indFrame,:]) / np.sqrt(Nfft)
+        symbRx_OFDM_par[indFrame, :] = fftshift(fft(symbRx_OFDM_par[indFrame,:])) / np.sqrt(Nfft)
 
     if hermitSymmetry:
         # Removal of hermitian symmetry
@@ -211,4 +221,4 @@ def demodulateOFDM(symbRx_OFDM, param):
         # Pilot extraction
         symbRx_OFDM_par = symbRx_OFDM_par[:, dataCarriers]
 
-    return symbRx_OFDM_par.reshape(1,-1).reshape(-1,)
+    return symbRx_OFDM_par.ravel()
