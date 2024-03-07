@@ -43,8 +43,30 @@ def hermit(V):
     
     return Vh
 
-def padOFDM(x, L):
-    return np.pad(x,(L, L),'constant', constant_values=0)
+def zeroPad(x, L):
+    """
+    Pad an input array with zeros on both sides.
+
+    Parameters
+    ----------
+    x : array_like
+        Input array to be padded.
+    L : int
+        Number of zeros to pad on each side of the array.
+
+    Returns
+    -------
+    padded_array : ndarray
+        Padded array with zeros added at the beginning and end.
+
+    Notes
+    -----
+    This function pads the input array `x` with `L` zeros on both sides, effectively increasing
+    its length by `2*L`.
+
+    """
+    return np.pad(x, (L, L), 'constant', constant_values=0)
+
 
 def calcSymbolRate(M, Rb, Nfft, Np, G, hermitSym):
     """    
@@ -136,7 +158,7 @@ def modulateOFDM(symb, param):
             frameOFDM = hermit(frameOFDM)
        
         # IFFT operation       
-        sigOFDM_par[indFrame, SpS*G : SpS*(G + Nfft)] = ifft(fftshift(padOFDM(frameOFDM, (Nfft*(SpS-1))//2))) * np.sqrt(SpS*Nfft)
+        sigOFDM_par[indFrame, SpS*G : SpS*(G + Nfft)] = ifft(fftshift(zeroPad(frameOFDM, (Nfft*(SpS-1))//2))) * np.sqrt(SpS*Nfft)
         
         # Cyclic prefix addition
         if G > 0:
