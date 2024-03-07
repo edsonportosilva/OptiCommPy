@@ -11,13 +11,9 @@ OFDM utilities (:mod:`optic.comm.ofdm`)
    modulateOFDM             -- OFDM symbols modulator
    demodulateOFDM           -- OFDM symbols demodulator   
 """
-
 import numpy as np
-
 from numpy.fft  import fft, ifft, fftshift
 from scipy.interpolate import interp1d
-from optic.dsp.core import upsample
-
 
 def hermit(V):
     """
