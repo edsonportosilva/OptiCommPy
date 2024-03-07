@@ -74,9 +74,9 @@ def calcSymbolRate(M, Rb, Nfft, Np, G, hermitSym):
     return Rb / (nDataSymbols/(Nfft + G) * np.log2(M))
 
 
-def modulateOFDM(symbTx, param):
+def modulateOFDM(symb, param):
     """
-    OFDM symbols modulator.
+    Modulate OFDM signal.
 
     Parameters
     ----------
@@ -88,7 +88,7 @@ def modulateOFDM(symbTx, param):
                     pilot symbol
     pilotCarriers : np.array
                     indexes of pilot subcarriers
-    symbTx        : complex-valued array
+    symb          : complex-valued array of modulation symbols
                     symbols sequency transmitted
     hermitSym     : boolean
                     True-> Real OFDM symbols / False: Complex OFDM symbols 
@@ -97,7 +97,7 @@ def modulateOFDM(symbTx, param):
     
     Returns
     -------
-    symbTx_OFDM   : complex-valued np.array
+    symb_OFDM   : complex-valued np.array
                     OFDM symbols sequency transmitted
     """
     # Check and set default values for input parameters
@@ -113,22 +113,22 @@ def modulateOFDM(symbTx, param):
 
     # Number of subcarriers
     Ns = Nfft//2 - 1 if hermitSymmetry else Nfft
-    numSymb  = len(symbTx)
+    numSymb  = len(symb)
     numOFDMframes = numSymb//(Ns - Np)
 
     Carriers = np.arange(0, Ns)
     dataCarriers  = np.array(list(set(Carriers) - set(pilotCarriers)))
 
     # Serial to parallel
-    symbTx_par = np.reshape(symbTx, (numOFDMframes, Ns - Np))   
-    symbTx_OFDM_par = np.zeros( (numOFDMframes, SpS*(Nfft + G)), dtype=np.complex64)
+    symb_par = np.reshape(symb, (numOFDMframes, Ns - Np))   
+    sigOFDM_par = np.zeros( (numOFDMframes, SpS*(Nfft + G)), dtype=np.complex64)
     
     for indFrame in range(numOFDMframes):
         # Start OFDM frame with zeros
         frameOFDM = np.zeros(Ns, dtype=np.complex64) 
 
         # Insert data and pilot subcarriers                    
-        frameOFDM[dataCarriers]  = symbTx_par[indFrame, :]
+        frameOFDM[dataCarriers]  = symb_par[indFrame, :]
         frameOFDM[pilotCarriers] = pilot
 
         # Hermitian symmetry
@@ -136,17 +136,18 @@ def modulateOFDM(symbTx, param):
             frameOFDM = hermit(frameOFDM)
        
         # IFFT operation       
-        symbTx_OFDM_par[indFrame, SpS*G : SpS*(G + Nfft)] = ifft(fftshift(padOFDM(frameOFDM, Nfft*(SpS-1)//2))) * np.sqrt(SpS*Nfft)
+        sigOFDM_par[indFrame, SpS*G : SpS*(G + Nfft)] = ifft(fftshift(padOFDM(frameOFDM, (Nfft*(SpS-1))//2))) * np.sqrt(SpS*Nfft)
         
         # Cyclic prefix addition
-        symbTx_OFDM_par[indFrame, 0 : SpS*G] = symbTx_OFDM_par[indFrame, Nfft*SpS : SpS*(Nfft + G)].copy()
+        if G > 0:
+            sigOFDM_par[indFrame, 0 : SpS*G] = sigOFDM_par[indFrame, Nfft*SpS : SpS*(Nfft + G)].copy()
 
-    return symbTx_OFDM_par.ravel()
+    return sigOFDM_par.ravel()
 
 
-def demodulateOFDM(symbRx_OFDM, param):
+def demodulateOFDM(sig, param):
     """
-    OFDM symbols demodulator.
+    Demodulate OFDM signal.
 
     Parameters
     ----------
@@ -160,13 +161,18 @@ def demodulateOFDM(symbRx_OFDM, param):
                     pilot symbol
     pilotCarriers : np.array
                     indexes of pilot subcarriers
-    symbRx_OFDM   : complex-valued array
-                    OFDM symbols sequency received
+    sig           : complex-valued array
+                    OFDM signal sequency received at one sample per symbol
+    returnChannel: bool
+                   return estimated channel
     
     Returns
     -------
     symbRx        : complex np.array
                     demodulated symbols sequency received
+    Notes
+    -----
+    The input signal must be sampled at one sample per symbol.
     """
     # Check and set default values for input parameters
     Nfft = getattr(param, "Nfft", 512)
@@ -174,6 +180,7 @@ def demodulateOFDM(symbRx_OFDM, param):
     hermitSymmetry = getattr(param, "hermitSymmetry", False)
     pilot = getattr(param, "pilot", 1+1j)
     pilotCarriers = getattr(param, "pilotCarriers", np.array([], dtype = int))
+    returnChannel = getattr(param,'returnChannel', False)
     
     # Number of pilot subcarriers
     Np = len(pilotCarriers)
@@ -186,27 +193,27 @@ def demodulateOFDM(symbRx_OFDM, param):
     H_abs = 0
     H_pha = 0
 
-    numSymb       = len(symbRx_OFDM)
+    numSymb       = len(sig)
     numOFDMframes = numSymb//(Nfft + G)
 
-    symbRx_OFDM_par = np.reshape(symbRx_OFDM, (numOFDMframes, Nfft + G))
+    sig_par = np.reshape(sig, (numOFDMframes, Nfft + G))
 
-    # Cyclic prefix extraction
-    symbRx_OFDM_par = symbRx_OFDM_par[:, G : G + Nfft]
+    # Cyclic prefix removal
+    sig_par = sig_par[:, G : G + Nfft]
 
     # FFT operation
     for indFrame in range(numOFDMframes):
-        symbRx_OFDM_par[indFrame, :] = fftshift(fft(symbRx_OFDM_par[indFrame,:])) / np.sqrt(Nfft)
+        sig_par[indFrame, :] = fftshift(fft(sig_par[indFrame,:])) / np.sqrt(Nfft)
 
     if hermitSymmetry:
         # Removal of hermitian symmetry
-        symbRx_OFDM_par = symbRx_OFDM_par[:, 1 : 1 + N]
+        sig_par = sig_par[:, 1 : 1 + N]
 
-    # Equalization
+    # Channel estimation and single tap equalization    
     if Np != 0:
         # Channel estimation
         for indFrame in range(numOFDMframes):
-            H_est = symbRx_OFDM_par[indFrame, :][pilotCarriers] / pilot
+            H_est = sig_par[indFrame, :][pilotCarriers] / pilot
 
             H_abs += interp1d(pilotCarriers, np.abs(H_est), kind = 'linear', fill_value = "extrapolate")(Carriers)
             H_pha += interp1d(pilotCarriers, np.angle(H_est), kind = 'linear', fill_value = "extrapolate")(Carriers)
@@ -216,9 +223,12 @@ def demodulateOFDM(symbRx_OFDM, param):
                 H_pha = H_pha/numOFDMframes
 
         for indFrame in range(numOFDMframes):
-            symbRx_OFDM_par[indFrame, :] = symbRx_OFDM_par[indFrame, :] / (H_abs*np.exp(H_pha))
+            sig_par[indFrame, :] = sig_par[indFrame, :] / (H_abs*np.exp(1j*H_pha))
 
         # Pilot extraction
-        symbRx_OFDM_par = symbRx_OFDM_par[:, dataCarriers]
+        sig_par = sig_par[:, dataCarriers]
 
-    return symbRx_OFDM_par.ravel()
+    if returnChannel:
+        return sig_par.ravel(), H_abs*np.exp(1j*H_pha)
+    else:
+        return sig_par.ravel()
