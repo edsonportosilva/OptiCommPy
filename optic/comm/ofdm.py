@@ -6,7 +6,8 @@ OFDM utilities (:mod:`optic.comm.ofdm`)
 .. autosummary::
    :toctree: generated/
 
-   hermit                   -- Hermitian simmetry block.
+   hermit                   -- Hermitian simmetry block
+   zeroPad                  -- Pad an input array with zeros on both sides
    calcSymbolRate           -- Calculate the symbol rate of a given OFDM configuration
    modulateOFDM             -- OFDM symbols modulator
    demodulateOFDM           -- OFDM symbols demodulator   
