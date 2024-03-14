@@ -98,25 +98,27 @@ def modulateOFDM(symb, param):
 
     Parameters
     ----------
-    Nfft          : scalar
-                    size of FFT
-    G             : scalar
-                    cyclic prefix length
-    pilot         : complex-valued scalar
-                    pilot symbol
-    pilotCarriers : np.array
-                    indexes of pilot subcarriers
-    symb          : complex-valued array of modulation symbols
-                    symbols sequency transmitted
-    hermitSym     : boolean
-                    True-> Real OFDM symbols / False: Complex OFDM symbols 
-    SpS           : int
-                    oversampling factor
-    
+    symb : np.ndarray
+        Complex-valued array of modulation symbols representing the symbols sequence to be transmitted.
+    param : optic.utils.parameters object
+        An object containing the parameters for OFDM modulation.
+        - Nfft : scalar, optional
+            Size of the FFT. Default is 512.
+        - G : scalar, optional
+            Cyclic prefix length. Default is 4.
+        - hermitSymmetry : bool, optional
+            If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.
+        - pilot : complex-valued scalar, optional
+            Pilot symbol. Default is 1 + 1j.
+        - pilotCarriers : np.array, optional
+            Indexes of pilot subcarriers. Default is an empty array.
+        - SpS : int, optional
+            Oversampling factor. Default is 2.
+
     Returns
     -------
-    symb_OFDM   : complex-valued np.array
-                    OFDM symbols sequency transmitted
+    np.ndarray
+        Complex-valued array representing the OFDM symbols sequence transmitted.  
     """
     # Check and set default values for input parameters
     Nfft = getattr(param, "Nfft", 512)
@@ -169,28 +171,35 @@ def demodulateOFDM(sig, param):
 
     Parameters
     ----------
-    Nfft          : scalar
-                    size of FFT
-    N             : scalar
-                    number of transmitted subcarriers
-    G             : scalar
-                    cyclic prefix length
-    pilot         : complex-valued scalar
-                    pilot symbol
-    pilotCarriers : np.array
-                    indexes of pilot subcarriers
-    sig           : complex-valued array
-                    OFDM signal sequency received at one sample per symbol
-    returnChannel: bool
-                   return estimated channel
-    
+    sig : np.ndarray
+        Complex-valued array representing the OFDM signal sequence received at one sample per symbol.
+    param : optic.utils.parameters object
+        An object containing the parameters for OFDM demodulation.
+        - Nfft : scalar, optional
+            Size of the FFT. Default is 512.
+        - N : scalar, optional
+            Number of transmitted subcarriers. Default is calculated based on `Nfft`.
+        - G : scalar, optional
+            Cyclic prefix length. Default is 4.
+        - hermitSymmetry : bool, optional
+            If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.
+        - pilot : complex-valued scalar, optional
+            Pilot symbol. Default is 1 + 1j.
+        - pilotCarriers : np.array, optional
+            Indexes of pilot subcarriers. Default is an empty array.
+        - returnChannel : bool, optional
+            If True, return the estimated channel. Default is False.
+
     Returns
     -------
-    symbRx        : complex np.array
-                    demodulated symbols sequency received
+    np.ndarray or tuple
+        If `returnChannel` is False, returns a complex-valued array representing the demodulated symbols sequence received.
+        If `returnChannel` is True, returns a tuple containing the demodulated symbols sequence received and the estimated channel.
+
     Notes
     -----
-    The input signal must be sampled at one sample per symbol.
+    - The input signal must be sampled at one sample per symbol.
+    - This function performs demodulation of the OFDM signal according to the provided parameters, including channel estimation and single tap equalization.
     """
     # Check and set default values for input parameters
     Nfft = getattr(param, "Nfft", 512)
