@@ -23,3 +23,6 @@ Physical Models
     :members:
     :noindex:
 
+.. automodule:: optic.models.laser
+    :members:
+    :noindex:
