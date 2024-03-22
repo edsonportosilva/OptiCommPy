@@ -102,9 +102,6 @@ def firFilter(h, x):
     return y
 
 
-import numpy as np
-
-
 @njit
 def rrcFilterTaps(t, alpha, Ts):
     """
