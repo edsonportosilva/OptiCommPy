@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.5
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -25,7 +25,7 @@ if 'google.colab' in str(get_ipython()):
     # ! pip install . 
 
 # +
-from optic.dsp.core import pnorm, signal_power, decimate, resample, lowPassFIR, firFilter, clockSamplingInterp, quantizer, upsample, pulseShape, finddelay
+from optic.dsp.core import pnorm, signal_power, decimate, resample, lowPassFIR, firFilter, clockSamplingInterp, quantizer, upsample, pulseShape, finddelay, delaySignal
 from optic.utils import parameters
 from optic.plot import eyediagram, plotPSD, pconst
 from optic.comm.modulation import modulateGray
@@ -119,3 +119,17 @@ plt.plot(t, sig_q,'--k',markersize=4);
 plt.xlim(0, 10*1/fc)
 
 eyediagram(sig_dec.reshape(-1,), sig_dec.size, int(Fs//fc), n=3, ptype='fast', plotlabel=None)
+
+# +
+plt.figure(1)
+plt.plot(t, sig,'--k',markersize=4);
+
+sigd = delaySignal(sig, 7*1/Fs, Fs)
+
+plt.plot(t, sigd, '--b',markersize=4)
+plt.xlim(0, 10*1/fc)
+# -
+
+
+
+
