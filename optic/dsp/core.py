@@ -31,6 +31,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
 import numpy as np
 from numba import njit, prange
 from scipy import signal
+from numpy.fft import fft, ifft, fftfreq, fftshift
 
 
 @njit
@@ -702,3 +703,40 @@ def movingAverage(x, N):
         y[:, indCol] = ma[startInd:endInd]
 
     return y
+
+
+def delaySignal(sig, delay, fs):
+    """
+    Apply a time delay to a signal sampled at fs samples per second using FFT/IFFT algorithms.
+    
+    Parameters:
+    ----------
+    sig : array_like
+        The input signal.
+    delay : float
+        The time delay to apply to the signal (in seconds).
+    fs : float
+        Sampling frequency of the signal (in samples per second).
+    
+    Returns:
+    -------
+    array_like
+        The delayed signal.
+    """
+    # Calculate the length of the signal
+    N = len(sig)    
+       
+    # Compute the frequency vector
+    freq = fftshift(fftfreq(N, d=1/fs))
+    
+    # Compute the FFT of the signal
+    sig_fft = fftshift(fft(sig))
+    
+    # Apply the phase shift corresponding to the time delay
+    phase_shift = np.exp(-1j * 2 * np.pi * freq * delay)
+    delayed_sig_fft = fftshift(sig_fft * phase_shift)
+    
+    # Compute the IFFT of the delayed signal
+    delayed_sig = ifft(delayed_sig_fft)
+    
+    return delayed_sig
