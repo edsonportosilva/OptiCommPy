@@ -133,5 +133,12 @@ sigd = delaySignal(sig, 2*1/Fs, Fs)
 
 plt.plot(t, sigd, '--b',markersize=4)
 plt.xlim(0, 10*1/fc)
+
+sigd = delaySignal(sig + 1j*sigd, 32*1/Fs, Fs)
+
+plt.figure()
+plt.plot(t, sigd.real, '--r',markersize=4)
+plt.plot(t, sigd.imag, '--b',markersize=4)
+plt.xlim(0, 10*1/fc)
 # -
 
