@@ -14,6 +14,11 @@
 #     name: python3
 # ---
 
+# + [markdown] toc=true
+# <h1>Table of Contents<span class="tocSkip"></span></h1>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Test-rational-resample" data-toc-modified-id="Test-rational-resample-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Test rational resample</a></span></li><li><span><a href="#Test-sampling-clock-converter" data-toc-modified-id="Test-sampling-clock-converter-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Test sampling clock converter</a></span></li><li><span><a href="#Test-signal-quantizer" data-toc-modified-id="Test-signal-quantizer-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Test signal quantizer</a></span></li></ul></div>
+# -
+
 # <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_dsp_core_functions.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # # Test basic DSP functionalities
@@ -124,12 +129,9 @@ eyediagram(sig_dec.reshape(-1,), sig_dec.size, int(Fs//fc), n=3, ptype='fast', p
 plt.figure(1)
 plt.plot(t, sig,'--k',markersize=4);
 
-sigd = delaySignal(sig, 7*1/Fs, Fs)
+sigd = delaySignal(sig, 2*1/Fs, Fs)
 
 plt.plot(t, sigd, '--b',markersize=4)
 plt.xlim(0, 10*1/fc)
 # -
-
-
-
 
