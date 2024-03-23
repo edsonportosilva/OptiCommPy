@@ -725,18 +725,24 @@ def delaySignal(sig, delay, fs):
     """
     # Calculate the length of the signal
     N = len(sig)    
+
+    # Calculate the length of zero padding needed
+    pad_length = int(np.ceil(delay * fs))
+    
+    # Zero-pad the signal to avoid circular shift
+    sig_padded = np.pad(sig, (0, pad_length), mode='constant')
        
     # Compute the frequency vector
-    freq = fftshift(fftfreq(N, d=1/fs))
+    freq = fftshift(fftfreq(len(sig_padded), d=1/fs))
     
     # Compute the FFT of the signal
-    sig_fft = fftshift(fft(sig))
+    sig_fft = fftshift(fft(sig_padded))
     
     # Apply the phase shift corresponding to the time delay
     phase_shift = np.exp(-1j * 2 * np.pi * freq * delay)
     delayed_sig_fft = fftshift(sig_fft * phase_shift)
     
     # Compute the IFFT of the delayed signal
-    delayed_sig = ifft(delayed_sig_fft)
+    delayed_sig = ifft(delayed_sig_fft)[:N]
     
     return delayed_sig
