@@ -65,13 +65,6 @@ Cloning the repository from GitHub:
 ```
 $ git clone https://github.com/edsonportosilva/OptiCommPy.git
 $ cd OptiCommPy
-$ python setup.py install
-```
-or 
-
-```
-$ git clone https://github.com/edsonportosilva/OptiCommPy.git
-$ cd OptiCommPy
 $ pip install .
 ```
 ## Documentation
