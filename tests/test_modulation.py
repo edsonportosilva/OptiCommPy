@@ -1,14 +1,14 @@
 import unittest
 import numpy as np
 from optic.utils import bitarray2dec, dec2bitarray
-from optic.comm.modulation import GrayCode, GrayMapping, minEuclid, demap, modulateGray, demodulateGray
+from optic.comm.modulation import grayCode, grayMapping, minEuclid, demap, modulateGray, demodulateGray
 
 class TestModulationFunctions(unittest.TestCase):
     def test_GrayCode(self):
         # Test GrayCode function for different values of n
         for n in range(1, 6):
             with self.subTest(n=n):
-                result = GrayCode(n)
+                result = grayCode(n)
                 self.assertEqual(len(result), 2**n)
                 self.assertEqual(len(result[0]), n)
 
@@ -19,7 +19,7 @@ class TestModulationFunctions(unittest.TestCase):
         for M in M_values:
             for constType in constTypes:
                 with self.subTest(M=M, constType=constType):
-                    result = GrayMapping(M, constType)
+                    result = grayMapping(M, constType)
                     self.assertEqual(len(result), M)
 
     def test_minEuclid(self):
