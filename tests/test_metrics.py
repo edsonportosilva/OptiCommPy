@@ -60,12 +60,8 @@ class TestCommunicationMetrics(unittest.TestCase):
                 if BER[indSNR, ii] == 0:              
                     break
 
-        np.testing.assert_array_almost_equal(BER, BER_theory, decimal=3)       
-
-    def test_calcLLR(self):
-        # Add test cases for calcLLR
-        pass
-
+        np.testing.assert_array_almost_equal(BER, BER_theory, decimal=3)      
+   
     def test_monteCarlo_MI_and_GMI(self):
         # Run GMI vs SNR Monte Carlo simulation
         qamOrder  = [4, 16, 64]  # Modulation order
