@@ -11,7 +11,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 
 </p>
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommPy/HEAD?urlpath=lab) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8125665.svg)](https://doi.org/10.5281/zenodo.8125665)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommPy/HEAD?urlpath=lab) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10304945.svg)](https://doi.org/10.5281/zenodo.10304945)
 
 
 ## Available features
@@ -22,6 +22,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 * Standard digital signal processing (DSP) blocks employed in coherent optical receivers, such as:
   - *Signal resampling.* 
   - *Matched filtering.*
+  - *Clock recovery.*
   - *Electronic chromatic dispersion compensation (EDC)*.
   - *Several NxN MIMO adaptive equalization algorithms*.
   - *Carrier phase recovery algorithms.* 
@@ -78,4 +79,4 @@ We are continuously making efforts to improve the code documentation. You can fi
 
 ## Citing this repository
 
-Edson Porto da Silva, Adolfo Herbster, Carlos Daniel Fontes da Silva, & Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.6.0-alpha (v0.6.0-alpha). Zenodo. https://doi.org/10.5281/zenodo.8125665
+Edson Porto da Silva, Adolfo Herbster, Carlos Daniel Fontes da Silva, & Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.7.0-alpha (v0.7.0-alpha). Zenodo. https://doi.org/10.5281/zenodo.10304945

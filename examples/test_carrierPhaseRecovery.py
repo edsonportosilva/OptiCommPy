@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -82,7 +82,7 @@ paramTx.alphaRRC = 0.01    # RRC rolloff
 paramTx.Pch_dBm = 1        # power per WDM channel [dBm]
 paramTx.Nch     = 1        # number of WDM channels
 paramTx.Fc      = 193.1e12 # central optical frequency of the WDM spectrum
-paramTx.lw      = 100e3  # laser linewidth
+paramTx.lw      = 100e3    # laser linewidth
 paramTx.Nmodes = 2         # number of signal modes [2 for polarization multiplexed signals]
 
 # generate WDM signal
@@ -177,13 +177,12 @@ paramCPR.M   = paramTx.M
 paramCPR.constType = paramTx.constType
 paramCPR.N   = 85
 paramCPR.B   = 64
+paramCPR.returnPhases = True
        
-y_CPR, θ = cpr(sigRx, paramCPR=paramCPR)
-
-y_CPR = pnorm(y_CPR)
+y_CPR, θ = cpr(sigRx, paramCPR)
 
 plt.figure()
-plt.title('CPR estimated phase')
+plt.title('CPR estimated phase with BPS')
 plt.plot(θ,'-')
 plt.xlim(0, len(θ))
 plt.grid();
@@ -221,19 +220,56 @@ paramCPR.constType = paramTx.constType
 paramCPR.tau1 = 1/(2*np.pi*10e3)
 paramCPR.tau2 = 1/(2*np.pi*10e3)
 paramCPR.Kv  = 0.1
-#paramCPR.pilotInd = np.arange(0, len(sigRx), 25)
+paramCPR.returnPhases = True
 
-y_CPR, θ = cpr(sigRx, symbTx=d, paramCPR=paramCPR)
-
-y_CPR = pnorm(y_CPR)
+y_CPR, θ = cpr(sigRx, paramCPR)
 
 plt.figure()
-plt.title('CPR estimated phase')
+plt.title('CPR estimated phase with DDPLL')
 plt.plot(θ,'-')
 plt.xlim(0, len(θ))
 plt.grid();
 
 discard = 1000
+
+# plot constellations
+pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
+pconst(y_CPR[discard:-discard,:], cmap=constCMAP)
+
+# Performance metrics
+ind = np.arange(discard, d.shape[0]-discard)
+BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+GMI, NGMI = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+MI       = monteCarloMI(y_CPR[ind,:], d[ind,:], paramTx.M, paramTx.constType)
+EVM      = calcEVM(y_CPR[ind,:], paramTx.M, 'qam', d[ind,:])
+
+print('      pol.X      pol.Y      ')
+print(' SER: %.2e,  %.2e'%(SER[0], SER[1]))
+print(' BER: %.2e,  %.2e'%(BER[0], BER[1]))
+print(' SNR: %.2f dB,  %.2f dB'%(SNR[0], SNR[1]))
+print(' EVM: %.2f %%,    %.2f %%'%(EVM[0]*100, EVM[1]*100))
+print('  MI: %.2f bits, %.2f bits'%(MI[0], MI[1]))
+print(' GMI: %.2f bits, %.2f bits'%(GMI[0], GMI[1]))
+print('NGMI: %.2f,      %.2f'%(NGMI[0], NGMI[1]))
+# -
+
+# ### Carrier phase recovery with Viterbi&Viterbi
+
+# +
+paramCPR = parameters()
+paramCPR.alg = 'viterbi'
+paramCPR.N = 151
+paramCPR.returnPhases = True
+
+y_CPR, θ = cpr(sigRx, paramCPR)
+
+plt.figure()
+plt.title('CPR estimated phase with Viterbi&Viterbi')
+plt.plot(θ,'-')
+plt.xlim(0, len(θ))
+plt.grid();
+
+discard = 20000
 
 # plot constellations
 pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')

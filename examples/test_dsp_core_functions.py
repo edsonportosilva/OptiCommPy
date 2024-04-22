@@ -7,14 +7,19 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.5
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
 
-# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_modulation.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# + [markdown] toc=true
+# <h1>Table of Contents<span class="tocSkip"></span></h1>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Test-rational-resample" data-toc-modified-id="Test-rational-resample-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Test rational resample</a></span></li><li><span><a href="#Test-sampling-clock-converter" data-toc-modified-id="Test-sampling-clock-converter-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Test sampling clock converter</a></span></li><li><span><a href="#Test-signal-quantizer" data-toc-modified-id="Test-signal-quantizer-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Test signal quantizer</a></span></li></ul></div>
+# -
+
+# <a href="https://colab.research.google.com/github/edsonportosilva/OptiCommPy/blob/main/examples/test_dsp_core_functions.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # # Test basic DSP functionalities
 
@@ -25,7 +30,7 @@ if 'google.colab' in str(get_ipython()):
     # ! pip install . 
 
 # +
-from optic.dsp.core import pnorm, signal_power, decimate, resample, lowPassFIR, firFilter, clockSamplingInterp, quantizer, upsample, pulseShape, finddelay
+from optic.dsp.core import pnorm, signal_power, decimate, resample, lowPassFIR, firFilter, clockSamplingInterp, quantizer, upsample, pulseShape, finddelay, delaySignal
 from optic.utils import parameters
 from optic.plot import eyediagram, plotPSD, pconst
 from optic.comm.modulation import modulateGray
@@ -119,3 +124,21 @@ plt.plot(t, sig_q,'--k',markersize=4);
 plt.xlim(0, 10*1/fc)
 
 eyediagram(sig_dec.reshape(-1,), sig_dec.size, int(Fs//fc), n=3, ptype='fast', plotlabel=None)
+
+# +
+plt.figure(1)
+plt.plot(t, sig,'--k',markersize=4);
+
+sigd = delaySignal(sig, 2*1/Fs, Fs)
+
+plt.plot(t, sigd, '--b',markersize=4)
+plt.xlim(0, 10*1/fc)
+
+sigd = delaySignal(sig + 1j*sigd, 32*1/Fs, Fs)
+
+plt.figure()
+plt.plot(t, sigd.real, '--r',markersize=4)
+plt.plot(t, sigd.imag, '--b',markersize=4)
+plt.xlim(0, 10*1/fc)
+# -
+

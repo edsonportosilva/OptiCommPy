@@ -24,12 +24,14 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    gaussianComplexNoise   -- Generate complex-valued circular Gaussian noise
    gaussianNoise          -- Generate Gaussian noise
    phaseNoise             -- Generate realization of a random-walk phase-noise process
+   movingAverage          -- Calculate the sliding window moving average
 """
 
 """Digital signal processing utilities."""
 import numpy as np
 from numba import njit, prange
 from scipy import signal
+from numpy.fft import fft, ifft, fftfreq, fftshift
 
 
 @njit
@@ -99,9 +101,6 @@ def firFilter(h, x):
     if y.shape[1] == 1:
         y = y[:, 0]
     return y
-
-
-import numpy as np
 
 
 @njit
@@ -254,9 +253,11 @@ def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
         Input signal.
     param : core.parameter
         Resampling parameters:
-            param.Fs_in  : sampling frequency of the input signal.
-            param.Fs_out : sampling frequency of the output signal.
-            param.jitter_rms: standard deviation of the time jitter.
+            - param.Fs_in  : sampling frequency of the input signal.
+
+            - param.Fs_out : sampling frequency of the output signal.
+
+            - param.jitter_rms: standard deviation of the time jitter.
 
     Returns
     -------
@@ -447,9 +448,11 @@ def resample(Ei, param):
         Input signal.
     param : core.parameter
         Resampling parameters:
-            param.Rs      : symbol rate of the signal
-            param.SpS_in  : samples per symbol of the input signal.
-            param.SpS_out : samples per symbol of the output signal.
+            - param.Rs      : symbol rate of the signal.
+
+            - param.SpS_in  : samples per symbol of the input signal.
+
+            - param.SpS_out : samples per symbol of the output signal.
 
     Returns
     -------
@@ -512,6 +515,7 @@ def symbolSync(rx, tx, SpS, mode="amp"):
     delay = np.zeros(nModes)
 
     corrMatrix = np.zeros((nModes, nModes))
+    rot = np.ones((nModes, nModes), dtype=np.complex64)
 
     if mode == "amp":
         for n in range(nModes):
@@ -528,15 +532,22 @@ def symbolSync(rx, tx, SpS, mode="amp"):
     elif mode == "real":
         for n in range(nModes):
             for m in range(nModes):
-                corrMatrix[m, n] = np.max(
+                c1 = np.max(
                     np.abs(signal.correlate(np.real(tx[:, m]), np.real(rx[:, n])))
                 )
-        swap = np.argmax(corrMatrix, axis=0)
+                c2 = np.max(
+                    np.abs(signal.correlate(np.real(tx[:, m]), np.imag(rx[:, n])))
+                )
+                corrMatrix[m, n] = np.max([c1, c2])
 
+                if c2 > c1:
+                    rot[m, n] = np.exp(-1j * np.pi / 4)
+
+        swap = np.argmax(corrMatrix, axis=0)
         tx = tx[:, swap]
 
         for k in range(nModes):
-            delay[k] = finddelay(np.real(tx[:, k]), np.real(rx[:, k]))
+            delay[k] = finddelay(np.real(rot[k, swap[k]] * tx[:, k]), np.real(rx[:, k]))
 
     # compensate time delay
     for k in range(nModes):
@@ -561,7 +572,7 @@ def finddelay(x, y):
         Delay between x and y, in samples.
 
     """
-    return np.argmax(signal.correlate(x, y)) - x.shape[0] + 1
+    return np.argmax(np.abs(signal.correlate(x, y))) - x.shape[0] + 1
 
 
 @njit
@@ -652,3 +663,86 @@ def phaseNoise(lw, Nsamples, Ts):
         phi[ind + 1] = phi[ind] + np.random.normal(0, np.sqrt(σ2))
 
     return phi
+
+
+def movingAverage(x, N):
+    """
+    Calculate the sliding window moving average of a 2D NumPy array along each column.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Input 2D array with shape (M, N), where M is the number of samples and N is the number of columns.
+    N : int
+        Size of the sliding window.
+
+    Returns
+    -------
+    numpy.ndarray
+        2D array containing the sliding window moving averages along each column.
+
+    Notes
+    -----
+    The function pads the signal with zeros at both ends to compensate for the lag between the output
+    of the moving average and the original signal.
+
+    """
+    nCol = x.shape[1]
+    y = np.zeros(x.shape, dtype=x.dtype)
+
+    startInd = N // 2
+
+    endInd = -N // 2 + 1 if N % 2 else -N // 2
+    for indCol in range(nCol):
+        # Pad the signal with zeros at both ends
+        padded_x = np.pad(x[:, indCol], (N // 2, N // 2), mode="constant")
+
+        # Calculate moving average using convolution
+        h = np.ones(N) / N
+        ma = np.convolve(padded_x, h, "same")
+        y[:, indCol] = ma[startInd:endInd]
+
+    return y
+
+
+def delaySignal(sig, delay, fs):
+    """
+    Apply a time delay to a signal sampled at fs samples per second using FFT/IFFT algorithms.
+    
+    Parameters:
+    ----------
+    sig : array_like
+        The input signal.
+    delay : float
+        The time delay to apply to the signal (in seconds).
+    fs : float
+        Sampling frequency of the signal (in samples per second).
+    
+    Returns:
+    -------
+    array_like
+        The delayed signal.
+    """
+    # Calculate the length of the signal
+    N = len(sig)    
+
+    # Calculate the length of zero padding needed
+    pad_length = int(np.ceil(delay * fs))
+    
+    # Zero-pad the signal to avoid circular shift
+    sig_padded = np.pad(sig, (0, pad_length), mode='constant')
+       
+    # Compute the frequency vector
+    freq = fftshift(fftfreq(len(sig_padded), d=1/fs))
+    
+    # Compute the FFT of the signal
+    sig_fft = fftshift(fft(sig_padded))
+    
+    # Apply the phase shift corresponding to the time delay
+    phase_shift = np.exp(-1j * 2 * np.pi * freq * delay)
+    delayed_sig_fft = fftshift(sig_fft * phase_shift)
+    
+    # Compute the IFFT of the delayed signal
+    delayed_sig = ifft(delayed_sig_fft)[:N]
+    
+    return delayed_sig
