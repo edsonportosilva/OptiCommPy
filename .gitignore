@@ -3,6 +3,8 @@
 *.swp
 *.png
 *.pdf
+*.ipynb_checkpoints 
+*.pylint.d 
 
 /doc/_build
 /doc/generated
