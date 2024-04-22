@@ -54,7 +54,7 @@ class TestCommunicationMetrics(unittest.TestCase):
                 symbRx = awgn(symbTx, snrdB)
 
                 # BER calculation
-                BER[indSNR, ii], _, _ = fastBERcalc(symbRx, symbTx, M, 'qam')
+                BER[indSNR, ii] = fastBERcalc(symbRx, symbTx, M, 'qam')[0][0]
                 BER_theory[indSNR, ii] = theoryBER(M, EbN0dB, 'qam')
 
                 if BER[indSNR, ii] == 0:              
@@ -94,8 +94,8 @@ class TestCommunicationMetrics(unittest.TestCase):
                 symbRx = awgn(symbTx, snrdB)
 
                 # GMI estimation
-                MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam')
-                GMI[indSNR, ii], _  = monteCarloGMI(symbRx, symbTx, M, 'qam')
+                MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam')[0]
+                GMI[indSNR, ii] = monteCarloGMI(symbRx, symbTx, M, 'qam')[0][0]
 
         np.testing.assert_array_almost_equal(MI, GMI, decimal=1)           
    
