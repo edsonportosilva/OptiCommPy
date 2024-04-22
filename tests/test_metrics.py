@@ -60,9 +60,7 @@ class TestCommunicationMetrics(unittest.TestCase):
                 if BER[indSNR, ii] == 0:              
                     break
 
-        np.testing.assert_array_almost_equal(BER, BER_theory, decimal=3)
-
-        
+        np.testing.assert_array_almost_equal(BER, BER_theory, decimal=3)       
 
     def test_calcLLR(self):
         # Add test cases for calcLLR
@@ -97,35 +95,7 @@ class TestCommunicationMetrics(unittest.TestCase):
                 MI[indSNR, ii] = monteCarloMI(symbRx, symbTx, M, 'qam')[0]
                 GMI[indSNR, ii] = monteCarloGMI(symbRx, symbTx, M, 'qam')[0][0]
 
-        np.testing.assert_array_almost_equal(MI, GMI, decimal=1)           
+        np.testing.assert_array_almost_equal(MI, GMI, decimal=1)        
    
-    def test_Qfunc(self):
-        # Add test cases for Qfunc
-        pass
-
-    def test_calcEVM(self):
-        # Add test cases for calcEVM
-        pass
-
-    def test_theoryBER(self):
-        # Add test cases for theoryBER
-        pass
-
-    def test_calcLinOSNR(self):
-        # Add test cases for calcLinOSNR
-        pass
-
-    def test_GN_Model_NyquistWDM(self):
-        # Add test cases for GN_Model_NyquistWDM
-        pass
-
-    def test_ASE_NyquistWDM(self):
-        # Add test cases for ASE_NyquistWDM
-        pass
-
-    def test_GNmodel_OSNR(self):
-        # Add test cases for GNmodel_OSNR
-        pass
-
 if __name__ == '__main__':
     unittest.main()
