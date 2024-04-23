@@ -6,7 +6,7 @@ from setuptools import setup
 # Taken from scikit-commpy setup.py
 DISTNAME = "OptiCommPy"
 DESCRIPTION = "Optical Communications Algorithms with Python"
-LONG_DESCRIPTION = open("README.md", encoding="utf8").read()
+LONG_DESCRIPTION = open("README.rst", encoding="utf8").read()
 MAINTAINER = "Edson Porto da Silva"
 MAINTAINER_EMAIL = "edsonporto88@gmail.com"
 URL = "https://github.com/edsonportosilva/OptiCommPy"
