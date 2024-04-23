@@ -4,9 +4,8 @@
    <img src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/logo_OptiCommPy.jpg" width="500">
    </p>
 
-This repository is a Python-based framework to simulate systems,
-subsystems, and components of fiber optic communication systems, for
-educational and research purposes.
+**OptiCommPy** is a Python-based framework to simulate systems, subsystems, and 
+components of fiber optic communication systems, for educational and research purposes.
 
 .. raw:: html
 
@@ -16,7 +15,7 @@ educational and research purposes.
 
 
 .. raw:: html
-   
+
    <p align="center">
    <img src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/DSP.jpg" width="800">
    </p>
