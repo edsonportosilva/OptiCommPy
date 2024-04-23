@@ -10,9 +10,6 @@
 Welcome to OptiCommPy's documentation!
 ======================================
 
-**OptiCommPy** is a Python-based framework to simulate systems, subsystems, and 
-components of fiber optic communication systems, for educational and research purposes.
-
 .. note::
 
    This project is under active development.
@@ -21,8 +18,7 @@ components of fiber optic communication systems, for educational and research pu
     :maxdepth: 2
     :caption: Reference
 
-    welcome
-    usage
+.. include:: ../../README.rst
 
 .. toctree::
     :maxdepth: 2
