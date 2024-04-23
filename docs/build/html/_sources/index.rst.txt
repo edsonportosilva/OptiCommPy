@@ -4,8 +4,8 @@
    contain the root `toctree` directive.
 
 .. .. image:: logo_OptiCommpy.jpg
-..    :width: 500px  
-..    :align: center
+..     :width: 500px  
+..     :align: center
 
 Welcome to OptiCommPy's documentation!
 ======================================
@@ -13,12 +13,14 @@ Welcome to OptiCommPy's documentation!
 .. note::
 
    This project is under active development.
-   
+
+.. include:: ../../README.rst
+
 .. toctree::
     :maxdepth: 2
     :caption: Reference
-
-.. include:: ../../README.rst
+   
+    test_WDM_transmission
 
 .. toctree::
     :maxdepth: 2
