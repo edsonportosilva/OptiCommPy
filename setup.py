@@ -44,7 +44,7 @@ setup(
         "mpl-scatter-density>=0.7.0",
         "pandas>=2.0.0",
         "sphinx-rtd-theme>=1.2.2",
-        "nbsphinx>=0.93"
+        "nbsphinx>=0.9.3"
     ],
     #'package' package must contain files (see list above)
     # This dict maps the package name =to=> directories
