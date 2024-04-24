@@ -58,6 +58,10 @@ def pm(Ai, u, Vπ):
     Ao : np.array
         Modulated optical field at the output of the PM.
 
+    References
+    ----------
+    [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
+
     """
     try:
         u.shape
@@ -97,6 +101,12 @@ def mzm(Ai, u, param=None):
     -------
     Ao : np.array
         Modulated optical field at the output of the MZM.
+
+    References
+    ----------
+    [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
+    
+    [2] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
     if param is None:
@@ -148,6 +158,10 @@ def iqm(Ai, u, param=None):
     -------
     Ao : complex-valued np.array
         Modulated optical field at the output of the IQM.
+
+    Refefences
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
     if param is None:
@@ -205,6 +219,10 @@ def pbs(E, θ=0):
     Ey : (N,) np.array
         Ey output single pol. field.
 
+    Refefences
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
+
     """
     try:
         assert E.shape[1] == 2, "E need to be a (N,2) or a (N,) np.array"
@@ -257,6 +275,10 @@ def photodiode(E, param=None):
     -------
     ipd : np.array
           photocurrent.
+
+    References
+    ----------
+    [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
 
     """
     if param is None:
@@ -339,6 +361,10 @@ def balancedPD(E1, E2, param=None):
     ibpd : np.array
            Balanced photocurrent.
 
+    Refefences
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
+
     """
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
@@ -362,6 +388,10 @@ def hybrid_2x4_90deg(Es, Elo):
     -------
     Eo : np.array
         Optical hybrid outputs.
+
+    Refefences
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
     assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
@@ -401,6 +431,10 @@ def coherentReceiver(Es, Elo, param=None):
     s : np.array
         Downconverted signal after balanced detection.
 
+    Refefences
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
+
     """
     assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
@@ -435,6 +469,10 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     -------
     S : np.array
         Downconverted signal after balanced detection.
+
+    Refefences
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
@@ -520,6 +558,10 @@ def basicLaserModel(param=None):
     optical_signal : np.array
           Optical signal with phase noise and RIN.
 
+    Refefences
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
+
     """
     try:
         Fs = param.Fs
@@ -540,7 +582,7 @@ def basicLaserModel(param=None):
     deltaP = gaussianComplexNoise(pn.shape, RIN_var)
 
     # Return optical signal
-    return np.sqrt(dBm2W(P)) * np.exp(1j * pn) + deltaP
+    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * pn) 
 
 
 def adc(Ei, param):

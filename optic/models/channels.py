@@ -54,6 +54,12 @@ def linearFiberChannel(Ei, param):
     Eo : np.array
         Optical field at the output of the fiber.
 
+    References
+    ----------
+    [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
+
+    [2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
+
     """
     try:
         Fs = param.Fs
@@ -152,7 +158,7 @@ def ssfm(Ei, param=None):
     References
     ----------
     [1] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
-    
+
     """
     try:
         Fs = param.Fs
@@ -310,7 +316,9 @@ def manakovSSF(Ei, param):
     References
     ----------
     [1] D. Marcuse, C. R. Menyuk, e P. K. A. Wai, “Application of the Manakov-PMD equation to studies of signal propagation in optical fibers with randomly varying birefringence”, Journal of Lightwave Technology, vol. 15, nº 9, p. 1735–1745, 1997, doi: 10.1109/50.622902.
+
     [2] P. Serena, C. Lasagni, S. Musetti, e A. Bononi, “On Numerical Simulations of Ultra-Wideband Long-Haul Optical Communication Systems”, Journal of Lightwave Technology, vol. 38, nº 5, p. 1019–1031, 2020, doi: 10.1109/JLT.2019.2938580.
+
     [3] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.    
     """
     try:
@@ -553,6 +561,10 @@ def awgn(sig, snr, Fs=1, B=1, complexNoise=True):
     -------
     np.array
         Input signal plus noise.
+
+    References
+    ----------
+    [1] P. Massoud Salehi e J. Proakis, Digital Communications. McGraw-Hill Education, 2007.
 
     """
     snr_lin = 10 ** (snr / 10)
