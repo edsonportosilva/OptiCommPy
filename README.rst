@@ -78,6 +78,7 @@ Requirements/Dependencies
 -  pandas>=2.0.0
 -  sphinx-rtd-theme>=1.2.2
 -  nbsphinx>=0.9.3
+-  nbsphinx-link>=1.3.0  
 
 Installation
 ------------
