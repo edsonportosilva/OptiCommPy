@@ -3,7 +3,6 @@
 *.swp
 *.png
 *.pdf
-*.pylint.d 
 
 /doc/_build
 /doc/generated
@@ -14,3 +13,4 @@ optic/.vscode/settings.json
 .vscode/settings.json
 /.ipynb_checkpoints
 /examples/.ipynb_checkpoints
+/examples/.pylint.d
