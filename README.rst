@@ -5,6 +5,7 @@
 .. .. image:: https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/logo_OptiCommPy.jpg
 ..    :width: 500px
 ..    :align: center
+
 |logo|
 
 **OptiCommPy** is a Python-based framework to simulate systems, subsystems, and 
@@ -120,12 +121,14 @@ Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.7.0-alpha
 .. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.10304945.svg
    :target: https://doi.org/10.5281/zenodo.10304945
 .. |DSP| image:: https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/DSP.jpg
-   :width:500px
+   :width:100%
    :align: center
 .. |logo| image:: https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/logo_OptiCommPy.jpg
-   :width:500px
+   :width:50%
    :align: center
 .. |eye| image:: https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/eyeDisp.gif   
+   :width:50%
 .. |spectrum| image:: https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/40GOOK_spectrum.jpg
+   :width:50%
    
 
