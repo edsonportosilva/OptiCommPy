@@ -3,7 +3,6 @@
 *.swp
 *.png
 *.pdf
-*.ipynb_checkpoints 
 *.pylint.d 
 
 /doc/_build
@@ -13,3 +12,4 @@
 /OptiCommPy.egg-info
 optic/.vscode/settings.json
 .vscode/settings.json
+/.ipynb_checkpoints
