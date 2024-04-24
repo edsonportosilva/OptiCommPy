@@ -459,6 +459,8 @@ complex plane.</p>
 <dd class="field-odd"><p>scalar</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -468,8 +470,8 @@ complex plane.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Irx</strong> (<em>numpy.ndarray</em>) -- Received signal intensity values.</p></li>
-<li><p><strong>bitsTx</strong> (<em>numpy.ndarray</em><em>, </em><em>optional</em>) -- Transmitted bit sequence. If not provided, a random bit sequence is generated.</p></li>
+<li><p><strong>Irx</strong> (<em>numpy.np.array</em>) -- Received signal intensity values.</p></li>
+<li><p><strong>bitsTx</strong> (<em>numpy.np.array</em><em>, </em><em>optional</em>) -- Transmitted bit sequence. If not provided, a random bit sequence is generated.</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) -- Random seed for bit sequence generation when bitsTx is not provided.</p></li>
 </ul>
 </dd>
@@ -493,15 +495,8 @@ a random bit sequence is generated using the specified <em class="xref py py-obj
 <p>The optimal decision threshold <em class="xref py py-obj">Id</em> and the Q-factor are calculated based on the signal statistics.</p>
 <p>The function then applies the optimal decision rule to estimate the received bit sequence <em class="xref py py-obj">bitsRx</em>. The Bit Error Rate (BER) is calculated
 by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj">bitsTx</em>.</p>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Irx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">bitsTx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">BER</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">ook_BERT</span><span class="p">(</span><span class="n">Irx</span><span class="p">,</span> <span class="n">bitsTx</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BER: </span><span class="si">{</span><span class="n">BER</span><span class="si">}</span><span class="s2">, Q-factor: </span><span class="si">{</span><span class="n">Q</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
 <p class="rubric">References</p>
-<p>Agrawal, Govind P. Fiber-optic communication systems. John Wiley &amp; Sons, 2012.</p>
+<p>[1] Agrawal, Govind P. Fiber-optic communication systems. John Wiley &amp; Sons, 2012.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -524,6 +519,9 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] R. A. Shafik, et al, “On the error vector magnitude as a performance metric and comparative analysis”, em 2006 International Conference on Emerging Technologies, 2006, p. 27–31. doi: 10.1109/ICET.2006.335992.</p>
+<p>[2] H. A. Mahmoud e H. Arslan, “Error vector magnitude to SNR conversion for nondata-aided receivers”, IEEE Transactions on Wireless Communications, vol. 8, nº 5, p. 2694–2704, 2009, doi: 10.1109/TWC.2009.080862.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -547,6 +545,8 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -573,6 +573,9 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] J. G. Proakis; M. Salehi, Communication Systems Engineering, 2nd Edition. Pearson, 2002.</p>
+<p>[2] R. -J. Essiambre, et al, &quot;Capacity Limits of Optical Fiber Networks,&quot;  Journal of Lightwave Technology, vol. 28, no. 4, p. 662-701, 2010, doi: 10.1109/JLT.2009.2039464.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -596,6 +599,8 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <dd class="field-odd"><p>scalar</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -620,6 +625,8 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 </p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -644,6 +651,8 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 </p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -667,6 +676,8 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -688,6 +699,8 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <dd class="field-odd"><p>scalar</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -713,6 +726,8 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.</p>
 </dd></dl>
 
 </section>

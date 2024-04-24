@@ -113,8 +113,8 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Irx</strong> (<em>numpy.ndarray</em>) -- Received signal intensity values.</p></li>
-<li><p><strong>bitsTx</strong> (<em>numpy.ndarray</em><em>, </em><em>optional</em>) -- Transmitted bit sequence. If not provided, a random bit sequence is generated.</p></li>
+<li><p><strong>Irx</strong> (<em>numpy.np.array</em>) -- Received signal intensity values.</p></li>
+<li><p><strong>bitsTx</strong> (<em>numpy.np.array</em><em>, </em><em>optional</em>) -- Transmitted bit sequence. If not provided, a random bit sequence is generated.</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) -- Random seed for bit sequence generation when bitsTx is not provided.</p></li>
 </ul>
 </dd>
@@ -138,15 +138,8 @@ a random bit sequence is generated using the specified <em class="xref py py-obj
 <p>The optimal decision threshold <em class="xref py py-obj">Id</em> and the Q-factor are calculated based on the signal statistics.</p>
 <p>The function then applies the optimal decision rule to estimate the received bit sequence <em class="xref py py-obj">bitsRx</em>. The Bit Error Rate (BER) is calculated
 by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj">bitsTx</em>.</p>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Irx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">bitsTx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">BER</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">ook_BERT</span><span class="p">(</span><span class="n">Irx</span><span class="p">,</span> <span class="n">bitsTx</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BER: </span><span class="si">{</span><span class="n">BER</span><span class="si">}</span><span class="s2">, Q-factor: </span><span class="si">{</span><span class="n">Q</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
 <p class="rubric">References</p>
-<p>Agrawal, Govind P. Fiber-optic communication systems. John Wiley &amp; Sons, 2012.</p>
+<p>[1] Agrawal, Govind P. Fiber-optic communication systems. John Wiley &amp; Sons, 2012.</p>
 </dd></dl>
 
 </section>

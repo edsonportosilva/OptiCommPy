@@ -490,6 +490,12 @@ def calcEVM(symb, M, constType, symbTx=None):
     EVM : np.array
         Error vector magnitude (EVM) per signal dimension.
 
+    References
+    ----------
+    [1] R. A. Shafik, et al, “On the error vector magnitude as a performance metric and comparative analysis”, em 2006 International Conference on Emerging Technologies, 2006, p. 27–31. doi: 10.1109/ICET.2006.335992.
+
+    [2] H. A. Mahmoud e H. Arslan, “Error vector magnitude to SNR conversion for nondata-aided receivers”, IEEE Transactions on Wireless Communications, vol. 8, nº 5, p. 2694–2704, 2009, doi: 10.1109/TWC.2009.080862.
+
     """
     if symbTx is None:
         symbTx = []
@@ -860,6 +866,14 @@ def calcLinOSNR(Ns, Pin, α, Ls, OSNRin, NF=4.5, Fc=193.1e12, Bref=12.5e9):
     -------
     OSNR : np.array
         OSNR values in dB at the output of each fiber span.
+
+    References
+    ----------
+    [1] J. G. Proakis; M. Salehi, Communication Systems Engineering, 2nd Edition. Pearson, 2002.
+
+    [2] R. -J. Essiambre, et al, "Capacity Limits of Optical Fiber Networks,"  Journal of Lightwave Technology, vol. 28, no. 4, p. 662-701, 2010, doi: 10.1109/JLT.2009.2039464.
+
+    [3] R. Schober, P. Bayvel, e F. D. Pasquale, “Analytical model for the calculation of the optical signal-to-noise ratio (SNR) of WDM EDFA chains”, Optical and Quantum Electronics, vol. 31, no 3, p. 237–241. 1999, doi: 10.1023/A:1006948826091.
 
     """
     G = α * Ls
