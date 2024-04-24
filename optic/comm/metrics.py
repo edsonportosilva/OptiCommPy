@@ -39,10 +39,10 @@ def bert(Irx, bitsTx=None, seed=123):
 
     Parameters
     ----------
-    Irx : numpy.ndarray
+    Irx : numpy.np.array
         Received signal intensity values.
 
-    bitsTx : numpy.ndarray, optional
+    bitsTx : numpy.np.array, optional
         Transmitted bit sequence. If not provided, a random bit sequence is generated.
 
     seed : int, optional
@@ -73,16 +73,9 @@ def bert(Irx, bitsTx=None, seed=123):
     The function then applies the optimal decision rule to estimate the received bit sequence `bitsRx`. The Bit Error Rate (BER) is calculated
     by comparing `bitsRx` to `bitsTx`.
 
-    Example
-    -------
-    >>> Irx = np.array([0.1, 0.8, 0.2, 0.7, 0.3])
-    >>> bitsTx = np.array([0, 1, 0, 1, 0])
-    >>> BER, Q = ook_BERT(Irx, bitsTx)
-    >>> print(f"BER: {BER}, Q-factor: {Q}")
-
     References
     ----------
-    Agrawal, Govind P. Fiber-optic communication systems. John Wiley & Sons, 2012.
+    [1] Agrawal, Govind P. Fiber-optic communication systems. John Wiley & Sons, 2012.
 
     """
     if bitsTx is None:
@@ -137,6 +130,10 @@ def fastBERcalc(rx, tx, M, constType):
         Symbol-error-rate.
     SNR : np.array
         Estimated SNR from the received constellation.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
     if M != 2 and constType == "ook":
@@ -209,6 +206,10 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap, px):
     LLRs : np.array
         sequence of calculated LLRs.
 
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
+
     """
     M = len(constSymb)
     b = int(np.log2(M))
@@ -249,6 +250,10 @@ def monteCarloGMI(rx, tx, M, constType, px=None):
         Generalized mutual information values.
     NGMI : np.array
         Normalized mutual information.
+    
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
 
     """
     if px is None:
@@ -344,6 +349,10 @@ def monteCarloMI(rx, tx, M, constType, px=None):
     MI : np.array
         Estimated MI values.
 
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
+
     """
     if px is None:
         px = []
@@ -408,6 +417,10 @@ def calcMI(rx, tx, σ2, constSymb, pX):
     scalar
         Estimated mutual information.
 
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
+
     """
     N = len(rx)
     H_XgY = np.zeros(1, dtype=np.float64)
@@ -448,6 +461,10 @@ def Qfunc(x):
     -------
     scalar
         value of Q(x).
+    
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
     return 0.5 - 0.5 * erf(x / np.sqrt(2))
@@ -532,6 +549,10 @@ def theoryBER(M, EbN0, constType):
     -------
     Pb : scalar
         Theoretical probability of bit error.
+    
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
     EbN0lin = 10 ** (EbN0 / 10)
@@ -576,6 +597,10 @@ def condEntropy(yI, yQ, const, pX, ind, σ):
     -------
     float
         conditional entropy H(X|Y=y).
+
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
     """
     π = np.pi
     prob = 0
@@ -656,6 +681,10 @@ def theoryMI(M, constType, SNR, pX=None, symetry=True, lim=np.inf, tol=1e-3):
     -------
     float
         Mutual information for the given parameters.
+    
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
     """
     constSymb = grayMapping(M, constType)  # get constellation
     Es = signal_power(constSymb)  # calculate average symbol energy
