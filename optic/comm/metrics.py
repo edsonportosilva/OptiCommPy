@@ -133,7 +133,7 @@ def fastBERcalc(rx, tx, M, constType):
 
     References
     ----------
-    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
     """
     if M != 2 and constType == "ook":
@@ -464,7 +464,7 @@ def Qfunc(x):
     
     References
     ----------
-    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
     """
     return 0.5 - 0.5 * erf(x / np.sqrt(2))
@@ -558,7 +558,7 @@ def theoryBER(M, EbN0, constType):
     
     References
     ----------
-    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
     """
     EbN0lin = 10 ** (EbN0 / 10)

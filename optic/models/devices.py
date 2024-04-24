@@ -511,6 +511,10 @@ def edfa(Ei, param=None):
     Eo : np.array
         Amplified noisy optical signal.
 
+    References
+    ----------
+    [1] R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber Networks," in Journal of Lightwave Technology, vol. 28, no. 4, pp. 662-701, 2010, doi: 10.1109/JLT.2009.2039464.
+
     """
     try:
         Fs = param.Fs

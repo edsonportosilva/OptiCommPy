@@ -1,24 +1,22 @@
 .. raw:: html
 
-   <p align="center">
-   <img src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/logo_OptiCommPy.jpg" width="500">
-   </p>
+.. image:: ../../figures/logo_OptiCommpy.jpg
+    :width: 500px  
+    :align: center
 
 **OptiCommPy** is a Python-based framework to simulate systems, subsystems, and 
 components of fiber optic communication systems, for educational and research purposes.
 
-.. raw:: html
 
-   <p align="center">
-   <img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/eyeDisp.gif" width="400">  <img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/40GOOK_spectrum.jpg" width="400">   
-   </p>
+.. image:: ../../figures/eyeDisp.gif
+     :width: 45%      
+.. image:: ../../figures/40GOOK_spectrum.jpg
+     :width: 45% 
+     
 
-
-.. raw:: html
-
-   <p align="center">
-   <img src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/DSP.jpg" width="800">
-   </p>
+.. image:: ../../figures/DSP.jpg
+     :width: 600px  
+     :align: center
 
 |Binder| |Documentation Status| |DOI|
 
