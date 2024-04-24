@@ -108,38 +108,15 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symb</strong> (<em>np.ndarray</em>) -- Complex-valued array of modulation symbols representing the symbols sequence to be transmitted.</p></li>
+<li><p><strong>symb</strong> (<em>np.np.array</em>) -- Complex-valued array of modulation symbols representing the symbols sequence to be transmitted.</p></li>
 <li><p><strong>param</strong> (<em>optic.utils.parameters object</em>) -- <p>An object containing the parameters for OFDM modulation.
-- Nfft : scalar, optional</p>
-<blockquote>
-<div><p>Size of the FFT. Default is 512.</p>
-</div></blockquote>
+- Nfft : scalar, optional. Size of the FFT. Default is 512.</p>
 <ul>
-<li><dl class="simple">
-<dt>G<span class="classifier">scalar, optional</span></dt><dd><p>Cyclic prefix length. Default is 4.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>hermitSymmetry<span class="classifier">bool, optional</span></dt><dd><p>If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>pilot<span class="classifier">complex-valued scalar, optional</span></dt><dd><p>Pilot symbol. Default is 1 + 1j.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>pilotCarriers<span class="classifier">np.array, optional</span></dt><dd><p>Indexes of pilot subcarriers. Default is an empty array.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>SpS<span class="classifier">int, optional</span></dt><dd><p>Oversampling factor. Default is 2.</p>
-</dd>
-</dl>
-</li>
+<li><p>G : scalar, optional. Cyclic prefix length. Default is 4.</p></li>
+<li><p>hermitSymmetry : bool, optional. If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.</p></li>
+<li><p>pilot : complex-valued scalar, optional. Pilot symbol. Default is 1 + 1j.</p></li>
+<li><p>pilotCarriers : np.array, optional. Indexes of pilot subcarriers. Default is an empty array.</p></li>
+<li><p>SpS : int, optional. Oversampling factor. Default is 2.</p></li>
 </ul>
 </p></li>
 </ul>
@@ -148,7 +125,7 @@
 <dd class="field-even"><p>Complex-valued array representing the OFDM symbols sequence transmitted.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>

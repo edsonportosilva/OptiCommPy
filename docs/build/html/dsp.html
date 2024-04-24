@@ -486,7 +486,7 @@ of the moving average and the original signal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>t</strong> (<em>array-like</em>) -- Time values.</p></li>
+<li><p><strong>t</strong> (<em>np.array</em>) -- Time values.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em>) -- RC roll-off factor.</p></li>
 <li><p><strong>Ts</strong> (<em>float</em>) -- Symbol period.</p></li>
 </ul>
@@ -537,7 +537,7 @@ of the moving average and the original signal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>t</strong> (<em>array-like</em>) -- Time values.</p></li>
+<li><p><strong>t</strong> (<em>np.array</em>) -- Time values.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em>) -- RRC roll-off factor.</p></li>
 <li><p><strong>Ts</strong> (<em>float</em>) -- Symbol period.</p></li>
 </ul>
@@ -615,7 +615,7 @@ of the moving average and the original signal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>array-like</em>) -- Input signal to upsample.</p></li>
+<li><p><strong>x</strong> (<em>np.array</em>) -- Input signal to upsample.</p></li>
 <li><p><strong>factor</strong> (<em>int</em>) -- Upsampling factor. The signal will be upsampled by inserting
 <em class="xref py py-obj">factor - 1</em> zeros between each original sample.</p></li>
 </ul>
@@ -624,7 +624,7 @@ of the moving average and the original signal.</p>
 <dd class="field-even"><p><strong>xUp</strong> -- The upsampled signal with zeros inserted between samples.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>array-like</p>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -697,6 +697,8 @@ column-wise.</p>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.</p>
 </dd></dl>
 
 <dl class="py function">

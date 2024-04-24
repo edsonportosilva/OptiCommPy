@@ -173,13 +173,12 @@
 <dd class="field-even"><p><strong>const</strong> -- APSK constellation</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<ol class="upperalpha simple" start="26">
-<li><p>Liu, et al &quot;APSK Constellation with Gray Mapping,&quot; IEEE Communications Letters, vol. 15, no. 12, pp. 1271-1273, December 2011</p></li>
-</ol>
+<p>[1] Z. Liu, et al &quot;APSK Constellation with Gray Mapping,&quot; IEEE Communications Letters, vol. 15, no. 12, pp. 1271-1273, December 2011</p>
+<p>[2] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -200,6 +199,8 @@
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -222,6 +223,8 @@
 <dd class="field-odd"><p>array of ints</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -231,10 +234,10 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>r</strong> (<em>ndarray</em>) -- The received signal.</p></li>
+<li><p><strong>r</strong> (<em>np.array</em>) -- The received signal.</p></li>
 <li><p><strong>σ2</strong> (<em>float</em>) -- The noise variance.</p></li>
-<li><p><strong>constSymb</strong> (<em>ndarray</em>) -- The constellation symbols.</p></li>
-<li><p><strong>px</strong> (<em>ndarray</em><em>, </em><em>optional</em>) -- The prior probabilities of each symbol. If None, uniform priors are assumed.</p></li>
+<li><p><strong>constSymb</strong> (<em>np.array</em>) -- The constellation symbols.</p></li>
+<li><p><strong>px</strong> (<em>np.array</em><em>, </em><em>optional</em>) -- The prior probabilities of each symbol. If None, uniform priors are assumed.</p></li>
 <li><p><strong>rule</strong> (<em>str</em><em>, </em><em>optional</em>) -- The detection rule to use. Either 'MAP' (default) or 'ML'.</p></li>
 </ul>
 </dd>
@@ -243,8 +246,8 @@
 <li><p><em>tuple</em> --</p>
 <dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>ndarray: The detected symbols.</p></li>
-<li><p>ndarray: The indices of the detected symbols in the constellation.</p></li>
+<li><p>np.array: The detected symbols.</p></li>
+<li><p>np.array: The indices of the detected symbols in the constellation.</p></li>
 </ul>
 </dd>
 </dl>
@@ -256,6 +259,8 @@
 </p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -291,9 +296,11 @@
 Gray bit sequence as integer decimal).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -313,9 +320,11 @@ complex plane.</p>
 <dd class="field-even"><p>indexes of the closest constellation symbols.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>array of int</p>
+<dd class="field-odd"><p>np.array of int</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -337,6 +346,8 @@ complex plane.</p>
 <dd class="field-odd"><p>array of complex constellation symbols</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -351,9 +362,11 @@ complex plane.</p>
 <dd class="field-even"><p>1D PAM constellation.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -368,9 +381,11 @@ complex plane.</p>
 <dd class="field-even"><p>Complex M-PSK constellation.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -385,9 +400,11 @@ complex plane.</p>
 <dd class="field-even"><p><strong>const</strong> -- Complex square M-QAM constellation.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.</p>
 </dd></dl>
 
 </section>
@@ -751,43 +768,16 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sig</strong> (<em>np.ndarray</em>) -- Complex-valued array representing the OFDM signal sequence received at one sample per symbol.</p></li>
-<li><p><strong>param</strong> (<em>optic.utils.parameters object</em>) -- <p>An object containing the parameters for OFDM demodulation.
-- Nfft : scalar, optional</p>
-<blockquote>
-<div><p>Size of the FFT. Default is 512.</p>
-</div></blockquote>
+<li><p><strong>sig</strong> (<em>np.np.array</em>) -- Complex-valued array representing the OFDM signal sequence received at one sample per symbol.</p></li>
+<li><p><strong>param</strong> (<em>optic.utils.parameters object</em>) -- <p>An object containing the parameters for OFDM demodulation.</p>
 <ul>
-<li><dl class="simple">
-<dt>N<span class="classifier">scalar, optional</span></dt><dd><p>Number of transmitted subcarriers. Default is calculated based on <em class="xref py py-obj">Nfft</em>.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>G<span class="classifier">scalar, optional</span></dt><dd><p>Cyclic prefix length. Default is 4.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>hermitSymmetry<span class="classifier">bool, optional</span></dt><dd><p>If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>pilot<span class="classifier">complex-valued scalar, optional</span></dt><dd><p>Pilot symbol. Default is 1 + 1j.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>pilotCarriers<span class="classifier">np.array, optional</span></dt><dd><p>Indexes of pilot subcarriers. Default is an empty array.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>returnChannel<span class="classifier">bool, optional</span></dt><dd><p>If True, return the estimated channel. Default is False.</p>
-</dd>
-</dl>
-</li>
+<li><p>Nfft : scalar, optional. Size of the FFT. Default is 512.</p></li>
+<li><p>N : scalar, optional. Number of transmitted subcarriers. Default is calculated based on <em class="xref py py-obj">Nfft</em>.</p></li>
+<li><p>G : scalar, optional. Cyclic prefix length. Default is 4.</p></li>
+<li><p>hermitSymmetry : bool, optional.If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.</p></li>
+<li><p>pilot : complex-valued scalar, optional. Pilot symbol. Default is 1 + 1j.</p></li>
+<li><p>pilotCarriers : np.array, optional.Indexes of pilot subcarriers. Default is an empty array.</p></li>
+<li><p>returnChannel : bool, optional. If True, return the estimated channel. Default is False.</p></li>
 </ul>
 </p></li>
 </ul>
@@ -797,7 +787,7 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 If <em class="xref py py-obj">returnChannel</em> is True, returns a tuple containing the demodulated symbols sequence received and the estimated channel.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray or tuple</p>
+<dd class="field-odd"><p>np.array or tuple</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -831,38 +821,15 @@ If <em class="xref py py-obj">returnChannel</em> is True, returns a tuple contai
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symb</strong> (<em>np.ndarray</em>) -- Complex-valued array of modulation symbols representing the symbols sequence to be transmitted.</p></li>
+<li><p><strong>symb</strong> (<em>np.np.array</em>) -- Complex-valued array of modulation symbols representing the symbols sequence to be transmitted.</p></li>
 <li><p><strong>param</strong> (<em>optic.utils.parameters object</em>) -- <p>An object containing the parameters for OFDM modulation.
-- Nfft : scalar, optional</p>
-<blockquote>
-<div><p>Size of the FFT. Default is 512.</p>
-</div></blockquote>
+- Nfft : scalar, optional. Size of the FFT. Default is 512.</p>
 <ul>
-<li><dl class="simple">
-<dt>G<span class="classifier">scalar, optional</span></dt><dd><p>Cyclic prefix length. Default is 4.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>hermitSymmetry<span class="classifier">bool, optional</span></dt><dd><p>If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>pilot<span class="classifier">complex-valued scalar, optional</span></dt><dd><p>Pilot symbol. Default is 1 + 1j.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>pilotCarriers<span class="classifier">np.array, optional</span></dt><dd><p>Indexes of pilot subcarriers. Default is an empty array.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>SpS<span class="classifier">int, optional</span></dt><dd><p>Oversampling factor. Default is 2.</p>
-</dd>
-</dl>
-</li>
+<li><p>G : scalar, optional. Cyclic prefix length. Default is 4.</p></li>
+<li><p>hermitSymmetry : bool, optional. If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.</p></li>
+<li><p>pilot : complex-valued scalar, optional. Pilot symbol. Default is 1 + 1j.</p></li>
+<li><p>pilotCarriers : np.array, optional. Indexes of pilot subcarriers. Default is an empty array.</p></li>
+<li><p>SpS : int, optional. Oversampling factor. Default is 2.</p></li>
 </ul>
 </p></li>
 </ul>
@@ -871,7 +838,7 @@ If <em class="xref py py-obj">returnChannel</em> is True, returns a tuple contai
 <dd class="field-even"><p>Complex-valued array representing the OFDM symbols sequence transmitted.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -891,7 +858,7 @@ If <em class="xref py py-obj">returnChannel</em> is True, returns a tuple contai
 <dd class="field-even"><p><strong>padded_array</strong> -- Padded array with zeros added at the beginning and end.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>

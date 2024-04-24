@@ -110,7 +110,7 @@ def rrcFilterTaps(t, alpha, Ts):
 
     Parameters
     ----------
-    t : array-like
+    t : np.array
         Time values.
     alpha : float
         RRC roll-off factor.
@@ -158,7 +158,7 @@ def rcFilterTaps(t, alpha, Ts):
 
     Parameters
     ----------
-    t : array-like
+    t : np.array
         Time values.
     alpha : float
         RC roll-off factor.
@@ -362,7 +362,7 @@ def upsample(x, factor):
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input signal to upsample.
     factor : int
         Upsampling factor. The signal will be upsampled by inserting
@@ -370,7 +370,7 @@ def upsample(x, factor):
 
     Returns
     -------
-    xUp : array-like
+    xUp : np.array
         The upsampled signal with zeros inserted between samples.
 
     Notes

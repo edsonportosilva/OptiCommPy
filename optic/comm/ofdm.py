@@ -53,7 +53,7 @@ def zeroPad(x, L):
 
     Returns
     -------
-    padded_array : ndarray
+    padded_array : np.array
         Padded array with zeros added at the beginning and end.
 
     Notes
@@ -99,26 +99,24 @@ def modulateOFDM(symb, param):
 
     Parameters
     ----------
-    symb : np.ndarray
+    symb : np.np.array
         Complex-valued array of modulation symbols representing the symbols sequence to be transmitted.
     param : optic.utils.parameters object
         An object containing the parameters for OFDM modulation.
-        - Nfft : scalar, optional
-            Size of the FFT. Default is 512.
-        - G : scalar, optional
-            Cyclic prefix length. Default is 4.
-        - hermitSymmetry : bool, optional
-            If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.
-        - pilot : complex-valued scalar, optional
-            Pilot symbol. Default is 1 + 1j.
-        - pilotCarriers : np.array, optional
-            Indexes of pilot subcarriers. Default is an empty array.
-        - SpS : int, optional
-            Oversampling factor. Default is 2.
+        - Nfft : scalar, optional. Size of the FFT. Default is 512.
+
+        - G : scalar, optional. Cyclic prefix length. Default is 4.
+
+        - hermitSymmetry : bool, optional. If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.
+
+        - pilot : complex-valued scalar, optional. Pilot symbol. Default is 1 + 1j.
+
+        - pilotCarriers : np.array, optional. Indexes of pilot subcarriers. Default is an empty array.
+        - SpS : int, optional. Oversampling factor. Default is 2.
 
     Returns
     -------
-    np.ndarray
+    np.array
         Complex-valued array representing the OFDM symbols sequence transmitted.  
     """
     # Check and set default values for input parameters
@@ -172,28 +170,28 @@ def demodulateOFDM(sig, param):
 
     Parameters
     ----------
-    sig : np.ndarray
+    sig : np.np.array
         Complex-valued array representing the OFDM signal sequence received at one sample per symbol.
     param : optic.utils.parameters object
         An object containing the parameters for OFDM demodulation.
-        - Nfft : scalar, optional
-            Size of the FFT. Default is 512.
-        - N : scalar, optional
-            Number of transmitted subcarriers. Default is calculated based on `Nfft`.
-        - G : scalar, optional
-            Cyclic prefix length. Default is 4.
-        - hermitSymmetry : bool, optional
-            If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.
-        - pilot : complex-valued scalar, optional
-            Pilot symbol. Default is 1 + 1j.
-        - pilotCarriers : np.array, optional
-            Indexes of pilot subcarriers. Default is an empty array.
-        - returnChannel : bool, optional
-            If True, return the estimated channel. Default is False.
+
+        - Nfft : scalar, optional. Size of the FFT. Default is 512.
+
+        - N : scalar, optional. Number of transmitted subcarriers. Default is calculated based on `Nfft`.
+
+        - G : scalar, optional. Cyclic prefix length. Default is 4.
+
+        - hermitSymmetry : bool, optional.If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.
+
+        - pilot : complex-valued scalar, optional. Pilot symbol. Default is 1 + 1j.
+
+        - pilotCarriers : np.array, optional.Indexes of pilot subcarriers. Default is an empty array.
+
+        - returnChannel : bool, optional. If True, return the estimated channel. Default is False.
 
     Returns
     -------
-    np.ndarray or tuple
+    np.array or tuple
         If `returnChannel` is False, returns a complex-valued array representing the demodulated symbols sequence received.
         If `returnChannel` is True, returns a tuple containing the demodulated symbols sequence received and the estimated channel.
 
