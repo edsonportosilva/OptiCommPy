@@ -127,7 +127,7 @@ Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.7.0-alpha
    :width: 50%
    :align: center
 .. |eye| image:: https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/eyeDisp.gif   
-   :width:50%
+   :width: 50%
 .. |spectrum| image:: https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/40GOOK_spectrum.jpg
    :width: 50%
    
