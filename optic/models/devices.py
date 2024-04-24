@@ -159,7 +159,7 @@ def iqm(Ai, u, param=None):
     Ao : complex-valued np.array
         Modulated optical field at the output of the IQM.
 
-    Refefences
+    References
     ----------
     [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
@@ -219,7 +219,7 @@ def pbs(E, θ=0):
     Ey : (N,) np.array
         Ey output single pol. field.
 
-    Refefences
+    References
     ----------
     [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
@@ -361,7 +361,7 @@ def balancedPD(E1, E2, param=None):
     ibpd : np.array
            Balanced photocurrent.
 
-    Refefences
+    References
     ----------
     [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
@@ -389,7 +389,7 @@ def hybrid_2x4_90deg(Es, Elo):
     Eo : np.array
         Optical hybrid outputs.
 
-    Refefences
+    References
     ----------
     [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
@@ -431,7 +431,7 @@ def coherentReceiver(Es, Elo, param=None):
     s : np.array
         Downconverted signal after balanced detection.
 
-    Refefences
+    References
     ----------
     [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
@@ -470,7 +470,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     S : np.array
         Downconverted signal after balanced detection.
 
-    Refefences
+    References
     ----------
     [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
@@ -558,7 +558,7 @@ def basicLaserModel(param=None):
     optical_signal : np.array
           Optical signal with phase noise and RIN.
 
-    Refefences
+    References
     ----------
     [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
