@@ -56,9 +56,14 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Simulation of coherent WDM transmission</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#Summary">Summary</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Transmitter">Transmitter</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Nonlinear-fiber-model">Nonlinear fiber model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#WDM-channels-coherent-detection-and-demodulation">WDM channels coherent detection and demodulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Transmitter">Transmitter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Nonlinear-fiber-model">Nonlinear fiber model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Vector-Manakov-Equation">Vector Manakov Equation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Nonlinear-fiber-propagation-with-a-symmetric-split-step-Fourier-method">Nonlinear fiber propagation with a symmetric split-step Fourier method</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Coherent-detection,-digital-signal-processing-and-data-demodulation">Coherent detection, digital signal processing and data demodulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Optical-coherent-receiver">Optical coherent receiver</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Matched-filtering-and-CD-compensation">Matched filtering and CD compensation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Downsampling-to-2-samples/symbol-and-re-synchronization-with-transmitted-sequences">Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Power-normalization">Power normalization</a></li>
@@ -199,13 +204,12 @@
 </div>
 <section id="Summary">
 <h2>Summary<a class="headerlink" href="#Summary" title="Permalink to this heading"></a></h2>
-<p>OptiCommPy is a Python package for simulating optical communication systems, including Wavelength Division Multiplexing (WDM) systems. Here’s a example of how to run a simulation of a coherent WDM system with using OptiCommPy.</p>
+<p>OptiCommPy is a Python package for simulating optical communication systems, including Wavelength Division Multiplexing (WDM) systems. This notebook shows an example of how to use OptiCommPy to run a simulation of a coherent WDM system with several modulated co-propagating optical carriers.</p>
 </section>
 <section id="Transmitter">
 <h2>Transmitter<a class="headerlink" href="#Transmitter" title="Permalink to this heading"></a></h2>
-<p>The initial step involves defining a comprehensive set of parameters for the WDM transmitters. The table below outlines a specific configuration where <span class="math notranslate nohighlight">\(11\times32\)</span>GBd PDM-16QAM WDM carriers are generated, following a frequency grid of 37.5 GHz that is centered precisely at the optical frequency of 193.1 THz. Each carrier is modulated with a Nyquist spectrum, by means of a root-raised-cosine (RRC) pulse-shaping filter with a rolloff factor of 0.01. The continuous-wave (CW) lasers utilized
-in this setup are characterized by linewidths of 100 kHz, with each modulated carrier boasting an output power of -2 dBm. The number of samples per symbol (SpS) adopted in the simulation is set to 16, meaning that the signals are represented at a corresponding sampling rate (Fs) of Fs = 16<span class="math notranslate nohighlight">\(\times\)</span>Rs = 512 GSa/s, where Rs is the symbol rate (i.e. 32GBd). The total bandwidth simulated in this setup is 11$:nbsphinx-math:<a href="#id1"><span class="problematic" id="id2">`</span></a>times`$37.5 GHz = 412.5 GHz, which is below Fs, thus avoiding
-aliasing in the extremes of the spectrum. The total simulated interval corresponds to 100000 signaling periods, corresponding to 400000 bits transmitted per polarization per WDM carrier.</p>
+<p>The initial step involves defining a comprehensive set of parameters for the WDM transmitters. The table below outlines a specific WDM system configuration where <span class="math notranslate nohighlight">\(11\times32\)</span>GBd PDM-16QAM carriers are generated, following a frequency grid of 37.5 GHz that is centered precisely at the optical frequency of 193.1 THz. Each carrier is modulated with a Nyquist spectrum, by means of a root-raised-cosine (RRC) pulse-shaping filter with a rolloff factor of 0.01. The continuous-wave (CW) lasers
+utilized in this setup are characterized by linewidths of 100 kHz, with each modulated carrier boasting an output power of -2 dBm.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
@@ -268,6 +272,8 @@ aliasing in the extremes of the spectrum. The total simulated interval correspon
 </tr>
 </tbody>
 </table>
+<p>The number of samples per symbol (SpS) adopted in the simulation is set to 16, meaning that the signals are represented at a corresponding sampling rate (Fs) of Fs = 16<span class="math notranslate nohighlight">\(\times\)</span>Rs = 512 GSa/s, where Rs is the symbol rate (i.e. 32GBd). The total bandwidth simulated in this setup is 11$:nbsphinx-math:<a href="#id1"><span class="problematic" id="id2">`</span></a>times`$37.5 GHz = 412.5 GHz, which is below Fs, thus avoiding aliasing in the extremes of the spectrum. The total simulated interval corresponds to 100000 signaling periods, corresponding
+to 400000 bits transmitted per polarization per WDM carrier.</p>
 <p><strong>Polarization multiplexed WDM signal generation</strong></p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
@@ -363,9 +369,11 @@ channel 10       power: -2.00 dBm
 total WDM signal power: 8.41 dBm
 </pre></div></div>
 </div>
+</section>
 <section id="Nonlinear-fiber-model">
-<h3>Nonlinear fiber model<a class="headerlink" href="#Nonlinear-fiber-model" title="Permalink to this heading"></a></h3>
-<p><strong>Vector Manakov Equation</strong></p>
+<h2>Nonlinear fiber model<a class="headerlink" href="#Nonlinear-fiber-model" title="Permalink to this heading"></a></h2>
+<section id="Vector-Manakov-Equation">
+<h3>Vector Manakov Equation<a class="headerlink" href="#Vector-Manakov-Equation" title="Permalink to this heading"></a></h3>
 <p>When considering two polarizations propagating over an optical fiber, the Manakov model can be used to describe the coupled propagation of two orthogonal polarization components, taking into account their mutual interactions and the characteristics of the fiber such as attenuation, nonlinearity and dispersion.</p>
 <p>The vectorial Manakov equation is a system of coupled nonlinear Schrödinger equations (NLSEs) for the two polarizations, <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span>, written in the following form:</p>
 <div class="math notranslate nohighlight">
@@ -382,7 +390,9 @@ total WDM signal power: 8.41 dBm
 </ul>
 <p>These equations model the linear effects of fiber attenuation and chromatic dispersion, and the nonlinear distortions originated from self-phase modulation (SPM), cross-phase modulation (XPM) and four-wave-mixing (FWM). The Manakov model is formulated under the assumption that the impact of polarization mode dispersion (PMD) effects is significantly smaller compared to the nonlinear effects and the characteristic length scales involved. This assumption implies that the beat length associated
 with PMD is much shorter than the nonlinear effective length of the fiber. In this context, the resulting nonlinear term in the Manakov equation represents an averaged effect of the fiber’s nonlinearity, accounting for the rapid variations in the polarization states as the optical signal propagates through the fiber. This averaging captures the overall influence of the fiber’s nonlinearity on the signal, considering the dynamic changes in polarization states over short distances.</p>
-<p><strong>Nonlinear fiber propagation with a symmetric split-step Fourier method</strong></p>
+</section>
+<section id="Nonlinear-fiber-propagation-with-a-symmetric-split-step-Fourier-method">
+<h3>Nonlinear fiber propagation with a symmetric split-step Fourier method<a class="headerlink" href="#Nonlinear-fiber-propagation-with-a-symmetric-split-step-Fourier-method" title="Permalink to this heading"></a></h3>
 <p>The Split-Step Fourier Method (SSFM) is a powerful numerical technique extensively utilized in optical fiber communications to solve the NLSE, which governs the propagation of optical signals in fibers. It’s designed to handle the intricate interplay of linear and nonlinear effects accumulated over long propagation distances. The fundamental concept of SSFM involves breaking down the complicated task of describing the signal propagation over long distances of fiber into a iterative sequence of
 simple calculation steps, involving time and frequency domain representations of the propagating signal. By assuming the independence of linear and nonlinear effects at each small propagation step, they can be applied to the signals independently in an iterative manner, ensuring accurate modeling of optical phenomena.</p>
 <p>The coupled Manakov equations described above can be numerically integrated via split-step Fourier methods. A pseudocode for the SSFM algorithm is shown below.</p>
@@ -531,8 +541,11 @@ simple calculation steps, involving time and frequency domain representations of
 </div>
 </div>
 </section>
-<section id="WDM-channels-coherent-detection-and-demodulation">
-<h3>WDM channels coherent detection and demodulation<a class="headerlink" href="#WDM-channels-coherent-detection-and-demodulation" title="Permalink to this heading"></a></h3>
+</section>
+<section id="Coherent-detection,-digital-signal-processing-and-data-demodulation">
+<h2>Coherent detection, digital signal processing and data demodulation<a class="headerlink" href="#Coherent-detection,-digital-signal-processing-and-data-demodulation" title="Permalink to this heading"></a></h2>
+<section id="Optical-coherent-receiver">
+<h3>Optical coherent receiver<a class="headerlink" href="#Optical-coherent-receiver" title="Permalink to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
