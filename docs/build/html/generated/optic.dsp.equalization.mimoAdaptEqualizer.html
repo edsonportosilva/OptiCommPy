@@ -106,8 +106,8 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>array-like</em>) -- Input array.</p></li>
-<li><p><strong>dx</strong> (<em>array-like</em><em>, </em><em>optional</em>) -- Syncronized exact symbol sequence corresponding to the received input array x.</p></li>
+<li><p><strong>x</strong> (<em>np.array</em>) -- Input array.</p></li>
+<li><p><strong>dx</strong> (<em>np.array</em><em>, </em><em>optional</em>) -- Syncronized exact symbol sequence corresponding to the received input array x.</p></li>
 <li><p><strong>param</strong> (<em>object</em><em>, </em><em>optional</em>) -- <p>Parameter object containing the following attributes:</p>
 <ul>
 <li><p>numIter : int, number of pre-convergence iterations (default: 1)</p></li>
@@ -115,7 +115,7 @@
 <li><p>mu : float or list of floats, step size parameter(s) (default: [1e-3])</p></li>
 <li><p>lambdaRLS : float, RLS forgetting factor (default: 0.99)</p></li>
 <li><p>SpS : int, samples per symbol (default: 2)</p></li>
-<li><p>H : array-like, coefficient matrix (default: [])</p></li>
+<li><p>H : np.array, coefficient matrix (default: [])</p></li>
 <li><p>L : int or list of ints, length of the output of the training section (default: [])</p></li>
 <li><p>Hiter : list, history of coefficient matrices (default: [])</p></li>
 <li><p>storeCoeff : bool, flag indicating whether to store coefficient matrices (default: False)</p></li>
@@ -130,9 +130,9 @@
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>yEq</strong> (<em>array-like</em>) -- Equalized output array.</p></li>
-<li><p><strong>H</strong> (<em>array-like</em>) -- Coefficient matrix.</p></li>
-<li><p><strong>errSq</strong> (<em>array-like</em>) -- Squared absolute error array.</p></li>
+<li><p><strong>yEq</strong> (<em>np.array</em>) -- Equalized output array.</p></li>
+<li><p><strong>H</strong> (<em>np.array</em>) -- Coefficient matrix.</p></li>
+<li><p><strong>errSq</strong> (<em>np.array</em>) -- Squared absolute error array.</p></li>
 <li><p><strong>Hiter</strong> (<em>list</em>) -- History of coefficient matrices.</p></li>
 </ul>
 </p>
@@ -140,6 +140,10 @@
 </dl>
 <p class="rubric">Notes</p>
 <p>Algorithms available: 'cma', 'rde', 'nlms', 'dd-lms', 'da-rde', 'rls', 'dd-rls', 'static'.</p>
+<p class="rubric">References</p>
+<p>[1] P. S. R. Diniz, Adaptive Filtering: Algorithms and Practical Implementation. Springer US, 2012.</p>
+<p>[2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.</p>
+<p>[3] E. P. Da Silva e D. Zibar, “Widely Linear Equalization for IQ Imbalance and Skew Compensation in Optical Coherent Receivers”, Journal of Lightwave Technology, vol. 34, nº 15, p. 3577–3586, ago. 2016, doi: 10.1109/JLT.2016.2577716.</p>
 </dd></dl>
 
 </section>

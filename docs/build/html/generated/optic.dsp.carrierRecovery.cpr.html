@@ -109,7 +109,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Ei</strong> (<em>complex-valued ndarray</em>) -- received constellation symbols.</p></li>
+<li><p><strong>Ei</strong> (<em>complex-valued np.array</em>) -- received constellation symbols.</p></li>
 <li><p><strong>param</strong> (<em>core.param object</em><em>, </em><em>optional</em>) -- <p>configuration parameters. The default is [].</p>
 <ul>
 <li><p>param.alg: CPR algorithm to be used ['bps', 'ddpll', or 'viterbi']</p></li>
@@ -133,7 +133,7 @@
 <li><p>param.N: length of the moving average window. The default is 35.</p></li>
 </ul>
 </p></li>
-<li><p><strong>symbTx</strong> (<em>complex-valued ndarray</em><em>, </em><em>optional</em>) -- Transmitted symbol sequence. The default is [].</p></li>
+<li><p><strong>symbTx</strong> (<em>complex-valued np.array</em><em>, </em><em>optional</em>) -- Transmitted symbol sequence. The default is [].</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -142,8 +142,8 @@
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><ul class="simple">
-<li><p><strong>Eo</strong> (<em>complex-valued ndarray</em>) -- Phase-compensated signal.</p></li>
-<li><p><strong>θ</strong> (<em>real-valued ndarray</em>) -- Time-varying estimated phase-shifts.</p></li>
+<li><p><strong>Eo</strong> (<em>complex-valued np.array</em>) -- Phase-compensated signal.</p></li>
+<li><p><strong>θ</strong> (<em>real-valued np.array</em>) -- Time-varying estimated phase-shifts.</p></li>
 </ul>
 </p>
 </dd>

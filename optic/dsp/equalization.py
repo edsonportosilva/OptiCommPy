@@ -48,6 +48,11 @@ def edc(Ei, param):
     np.array
         CD compensated signal.
 
+    References
+    ----------
+
+    [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
+
     """
     try:
         Fs = param.Fs
