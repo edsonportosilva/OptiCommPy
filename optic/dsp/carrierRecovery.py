@@ -30,7 +30,7 @@ def cpr(Ei, param=None, symbTx=None):
 
     Parameters
     ----------
-    Ei : complex-valued ndarray
+    Ei : complex-valued np.array
         received constellation symbols.
     param : core.param object, optional
         configuration parameters. The default is [].
@@ -61,7 +61,7 @@ def cpr(Ei, param=None, symbTx=None):
 
         - param.N: length of the moving average window. The default is 35.
 
-    symbTx :complex-valued ndarray, optional
+    symbTx :complex-valued np.array, optional
         Transmitted symbol sequence. The default is [].
 
     Raises
@@ -72,9 +72,9 @@ def cpr(Ei, param=None, symbTx=None):
 
     Returns
     -------
-    Eo : complex-valued ndarray
+    Eo : complex-valued np.array
         Phase-compensated signal.
-    θ : real-valued ndarray
+    θ : real-valued np.array
         Time-varying estimated phase-shifts.
 
     """
@@ -139,18 +139,18 @@ def bps(Ei, N, constSymb, B):
 
     Parameters
     ----------
-    Ei : complex-valued ndarray
+    Ei : complex-valued np.array
         Received constellation symbols.
     N : int
         Half of the 2*N+1 average window.
-    constSymb : complex-valued ndarray
+    constSymb : complex-valued np.array
         Complex-valued constellation.
     B : int
         number of test phases.
 
     Returns
     -------
-    θ : real-valued ndarray
+    θ : real-valued np.array
         Time-varying estimated phase-shifts.
 
     """
@@ -190,7 +190,7 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
 
     Parameters
     ----------
-    Ei : complex-valued ndarray
+    Ei : complex-valued np.array
         Received constellation symbols.
     Ts : float scalar
         Symbol period.
@@ -200,16 +200,16 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
         Loop filter parameter 1.
     tau2 : float scalar
         Loop filter parameter 2.
-    constSymb : complex-valued ndarray
+    constSymb : complex-valued np.array
         Complex-valued ideal constellation symbols.
-    symbTx : complex-valued ndarray
+    symbTx : complex-valued np.array
         Transmitted symbol sequence.
-    pilotInd : int ndarray
+    pilotInd : int np.array
         Indexes of pilot-symbol locations.
 
     Returns
     -------
-    θ : real-valued ndarray
+    θ : real-valued np.array
         Time-varying estimated phase-shifts.
 
     References
@@ -268,7 +268,7 @@ def viterbi(Ei, N=35, M=4):
 
     Parameters
     ----------
-    Ei : ndarray
+    Ei : np.array
         Input signal.
     N : int, optional
         Size of the moving average window.
@@ -277,7 +277,7 @@ def viterbi(Ei, N=35, M=4):
 
     Returns
     -------
-    ndarray, float
+    np.array, float
         Estimated phase error.
     """
     return (
@@ -294,7 +294,7 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
 
     Parameters
     ----------
-    Ei : ndarray
+    Ei : np.array
         Input signal.
     Fs : float
         Sampling frequency.
@@ -303,7 +303,7 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
 
     Returns
     -------
-    ndarray, float
+    np.array, float
         - The output signal after applying frequency offset correction.
         - The estimated frequency offset.
 

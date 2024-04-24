@@ -27,7 +27,7 @@ def gardnerTED(x):
 
     Parameters
     ----------
-    x : numpy.ndarray
+    x : numpy.np.array
         Input array of size 3 representing a segment of the received signal.
 
     Returns
@@ -45,7 +45,7 @@ def gardnerTEDnyquist(x):
 
     Parameters
     ----------
-    x : numpy.ndarray
+    x : numpy.np.array
         Input array of size 3 representing a segment of the received signal.
 
     Returns
@@ -63,7 +63,7 @@ def interpolator(x, t):
 
     Parameters
     ----------
-    x : numpy.ndarray
+    x : numpy.np.array
         Input array of size 4 representing the values for cubic interpolation.
     t : float
         Interpolation parameter.
@@ -87,7 +87,7 @@ def gardnerClockRecovery(Ei, param=None):
 
     Parameters
     ----------
-    Ei : numpy.ndarray
+    Ei : numpy.np.array
         Input array representing the received signal.
     param : core.parameter
         Clock recovery parameters:
@@ -192,7 +192,7 @@ def calcClockDrift(t_nco_values):
 
     Parameters
     ----------
-    t_nco_values : ndarray
+    t_nco_values : np.array
         An array containing the relative time delay values provided to the NCO.  
 
     Returns

@@ -119,7 +119,7 @@ def rrcFilterTaps(t, alpha, Ts):
 
     Returns
     -------
-    coeffs : ndarray
+    coeffs : np.array
         RRC filter coefficients.
 
     References
@@ -167,7 +167,7 @@ def rcFilterTaps(t, alpha, Ts):
 
     Returns
     -------
-    coeffs : ndarray
+    coeffs : np.array
         RC filter coefficients.
 
     References
@@ -249,7 +249,7 @@ def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
 
     Parameters
     ----------
-    x : ndarray
+    x : np.array
         Input signal.
     param : core.parameter
         Resampling parameters:
@@ -261,7 +261,7 @@ def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
 
     Returns
     -------
-    y : ndarray
+    y : np.array
         Resampled signal.
 
     """
@@ -444,7 +444,7 @@ def resample(Ei, param):
 
     Parameters
     ----------
-    Ei : ndarray
+    Ei : np.array
         Input signal.
     param : core.parameter
         Resampling parameters:
@@ -456,7 +456,7 @@ def resample(Ei, param):
 
     Returns
     -------
-    Eo : ndarray
+    Eo : np.array
         Resampled signal.
 
     """
@@ -503,7 +503,7 @@ def symbolSync(rx, tx, SpS, mode="amp"):
 
     Returns
     -------
-    tx : ndarray
+    tx : np.array
         Transmitted sequence synchronized to rx.
 
     """
@@ -602,13 +602,13 @@ def gaussianComplexNoise(shapeOut, σ2=1.0):
     Parameters
     ----------
     shapeOut : tuple of int
-        Shape of ndarray to be generated.
+        Shape of np.array to be generated.
     σ2 : float, optional
         Variance of the noise (default is 1).
 
     Returns
     -------
-    noise : ndarray
+    noise : np.array
         Generated complex circular Gaussian noise.
     """
     return np.random.normal(0, np.sqrt(σ2 / 2), shapeOut) + 1j * np.random.normal(
@@ -624,13 +624,13 @@ def gaussianNoise(shapeOut, σ2=1.0):
     Parameters
     ----------
     shapeOut : tuple of int
-        Shape of ndarray to be generated.
+        Shape of np.array to be generated.
     σ2 : float, optional
         Variance of the noise (default is 1).
 
     Returns
     -------
-    noise : ndarray
+    noise : np.array
         Generated Gaussian noise.
     """
     return np.random.normal(0, np.sqrt(σ2), shapeOut)
@@ -671,14 +671,14 @@ def movingAverage(x, N):
 
     Parameters
     ----------
-    x : numpy.ndarray
+    x : numpy.np.array
         Input 2D array with shape (M, N), where M is the number of samples and N is the number of columns.
     N : int
         Size of the sliding window.
 
     Returns
     -------
-    numpy.ndarray
+    numpy.np.array
         2D array containing the sliding window moving averages along each column.
 
     Notes
@@ -709,7 +709,7 @@ def delaySignal(sig, delay, fs):
     """
     Apply a time delay to a signal sampled at fs samples per second using FFT/IFFT algorithms.
     
-    Parameters:
+    Parameters
     ----------
     sig : array_like
         The input signal.
@@ -718,7 +718,7 @@ def delaySignal(sig, delay, fs):
     fs : float
         Sampling frequency of the signal (in samples per second).
     
-    Returns:
+    Returns
     -------
     array_like
         The delayed signal.

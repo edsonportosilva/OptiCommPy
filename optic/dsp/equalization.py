@@ -72,9 +72,9 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    dx : array-like, optional
+    dx : np.array, optional
         Syncronized exact symbol sequence corresponding to the received input array x.
     param : object, optional
         Parameter object containing the following attributes:
@@ -89,7 +89,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
 
         - SpS : int, samples per symbol (default: 2)
 
-        - H : array-like, coefficient matrix (default: [])
+        - H : np.array, coefficient matrix (default: [])
 
         - L : int or list of ints, length of the output of the training section (default: [])
 
@@ -109,11 +109,11 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
 
     Returns
     -------
-    yEq : array-like
+    yEq : np.array
         Equalized output array.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    errSq : array-like
+    errSq : np.array
         Squared absolute error array.
     Hiter : list
         History of coefficient matrices.
@@ -265,15 +265,15 @@ def coreAdaptEq(x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, a
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    dx : array-like
+    dx : np.array
         Exact constellation radius array.
     SpS : int
         Samples per symbol.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    H_ : array-like
+    H_ : np.array
         Augmented coefficient matrix.
     L : int
         Length of the output.
@@ -289,20 +289,20 @@ def coreAdaptEq(x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, a
         Run widely-linear mode
     alg : str
         Equalizer algorithm.
-    constSymb : array-like
+    constSymb : np.array
         Constellation symbols.
 
     Returns
     -------
-    yEq : array-like
+    yEq : np.array
         Equalized output array.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    H_ : array-like
+    H_ : np.array
         Augmented coefficient matrix.
-    errSq : array-like
+    errSq : np.array
         Squared absolute error array.
-    Hiter : array-like
+    Hiter : np.array
         History of coefficient matrices.
 
     """
@@ -398,17 +398,17 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    dx : array-like
+    dx : np.array
         Desired output array.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     mu : float
         Step size for the update.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    H_ : array-like
+    H_ : np.array
         Augmented coefficient matrix.
     nModes : int
         Number of modes.
@@ -417,11 +417,11 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    H : array-like
+    H : np.array
         Updated augmented coefficient matrix.
-    err_sq : array-like
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -453,28 +453,28 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    dx : array-like
+    dx : np.array
         Desired output array.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     λ : float
         Forgetting factor.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    Sd : array-like
+    Sd : np.array
         Inverse correlation matrix.
     nModes : int
         Number of modes.
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    Sd : array-like
+    Sd : np.array
         Updated inverse correlation matrix.
-    err_sq : array-like
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -517,17 +517,17 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    constSymb : array-like
+    constSymb : np.array
         Array of constellation symbols.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     mu : float
         Step size for the update.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    H_ : array-like
+    H_ : np.array
         Augmented coefficient matrix.
     nModes : int
         Number of modes.
@@ -536,11 +536,11 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    H_ : array-like
+    H_ : np.array
         Updated augmented coefficient matrix.
-    err_sq : array-like
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -579,28 +579,28 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    constSymb : array-like
+    constSymb : np.array
         Array of constellation symbols.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     λ : float
         Forgetting factor.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    Sd : array-like
+    Sd : np.array
         Inverse correlation matrix.
     nModes : int
         Number of modes.
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    Sd : array-like
+    Sd : np.array
         Updated inverse correlation matrix.
-    err_sq : array-like
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -649,17 +649,17 @@ def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    R : array-like
+    R : np.array
         Correlation array.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     mu : float
         Step size parameter.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    H_ : array-like
+    H_ : np.array
         Augmented coefficient matrix.
     nModes : int
         Number of modes.
@@ -668,11 +668,11 @@ def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    H_ : array-like
+    H_ : np.array
         Updated augmented coefficient matrix.
-    err_sq : array-like
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -706,17 +706,17 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    R : array-like
+    R : np.array
         Constellation radius array.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     mu : float
         Step size parameter.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    H_ : array-like
+    H_ : np.array
         Augmented coefficient matrix.
     nModes : int
         Number of modes.
@@ -725,11 +725,11 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    H_ : array-like
+    H_ : np.array
         Updated augmented coefficient matrix.
-    err_sq : array-like
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -772,17 +772,17 @@ def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    dx : array-like
+    dx : np.array
         Exact constellation radius array.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     mu : float
         Step size parameter.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    H_ : array-like
+    H_ : np.array
         Augmented coefficient matrix.
     nModes : int
         Number of modes.
@@ -791,11 +791,11 @@ def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    H_ : array-like
+    H_ : np.array
         Updated augmented coefficient matrix.
-    err_sq : array-like
+    err_sq : np.array
         Squared absolute error.
 
     """
