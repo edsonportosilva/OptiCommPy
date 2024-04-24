@@ -1,2 +1,2 @@
 opticommpy>=0.6.0
-nbsphinx
+nbsphinx>=0.93
