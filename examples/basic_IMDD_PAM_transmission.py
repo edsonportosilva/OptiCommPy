@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -28,7 +28,7 @@ import numpy as np
 from commpy.utilities  import upsample
 from optic.models.devices import mzm, photodiode, edfa
 from optic.models.channels import linearFiberChannel
-from optic.comm.modulation import GrayMapping, modulateGray, demodulateGray
+from optic.comm.modulation import grayMapping, modulateGray, demodulateGray
 from optic.comm.metrics import  theoryBER
 from optic.dsp.core import pulseShape, lowPassFIR, pnorm, signal_power
 
@@ -199,7 +199,7 @@ symbRx = symbRx - symbRx.mean()
 symbRx = pnorm(symbRx)
 
 # demodulate symbols to bits with minimum Euclidean distance 
-const = GrayMapping(M,'pam') # get PAM constellation
+const = grayMapping(M,'pam') # get PAM constellation
 Es = signal_power(const) # calculate the average energy per symbol of the PAM constellation
 
 bitsRx = demodulateGray(np.sqrt(Es)*symbRx, M, 'pam')
@@ -255,7 +255,7 @@ powerValues = np.arange(-20,-4) # power values at the input of the pin receiver
 BER = np.zeros(powerValues.shape)
 Pb = np.zeros(powerValues.shape)
 
-const = GrayMapping(M,'pam') # get PAM constellation
+const = grayMapping(M,'pam') # get PAM constellation
 Es = signal_power(const) # calculate the average energy per symbol of the PAM constellation
     
 discard = 100
@@ -362,7 +362,7 @@ paramPD.Fs = Fs
 BER = np.zeros(distance.shape)
 Pb = np.zeros(distance.shape)
 
-const = GrayMapping(M,'pam') # get PAM constellation
+const = grayMapping(M,'pam') # get PAM constellation
 Es = signal_power(const) # calculate the average energy per symbol of the PAM constellation
     
 discard = 100

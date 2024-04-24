@@ -11,3 +11,6 @@
 /OptiCommPy.egg-info
 optic/.vscode/settings.json
 .vscode/settings.json
+/.ipynb_checkpoints
+/examples/.ipynb_checkpoints
+/examples/.pylint.d

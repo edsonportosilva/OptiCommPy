@@ -7,55 +7,62 @@ DSP algorithms for carrier phase and frequency recovery (:mod:`optic.dsp.carrier
    :toctree: generated/
    :nosignatures:
 
-   bps            -- Blind phase search (BPS) phase recovery algorithm
-   ddpll          -- Decision-directed phase-locked loop (DD-PLL) phase recovery algorithm
+   bps            -- Blind phase search (BPS) carrier phase recovery algorithm
+   ddpll          -- Decision-directed phase-locked loop (DD-PLL) carrier phase recovery algorithm
+   viterbi        -- Viterbi & Viterbi carrier phase recovery algorithm
    fourthPowerFOE -- Frequency offset (FO) estimation and compensation with the 4th-power method
    cpr            -- General function to call and configure any of the CPR algorithms in this module   
 """
+import logging as logg
 
 import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
 
-from optic.dsp.core import pnorm
-from optic.comm.modulation import GrayMapping
+from optic.dsp.core import pnorm, movingAverage
+from optic.comm.modulation import grayMapping
 
 
-def cpr(Ei, symbTx=None, paramCPR=None):
+def cpr(Ei, param=None, symbTx=None):
     """
     Carrier phase recovery function (CPR)
 
     Parameters
     ----------
-    Ei : complex-valued ndarray
+    Ei : complex-valued np.array
         received constellation symbols.
-    symbTx :complex-valued ndarray, optional
-        Transmitted symbol sequence. The default is [].
-    paramCPR : core.param object, optional
+    param : core.param object, optional
         configuration parameters. The default is [].
-        
+
+        - param.alg: CPR algorithm to be used ['bps', 'ddpll', or 'viterbi']
+
         BPS params:
-            
-        - paramCPR.alg: CPR algorithm to be used ['bps' or 'ddpll']
 
-        - paramCPR.M: constellation order. The default is 4.
+        - param.M: constellation order. The default is 4.
 
-        - paramCPR.N: length of BPS the moving average window. The default is 35.    
+        - param.N: length of BPS the moving average window. The default is 35.
 
-        - paramCPR.B: number of BPS test phases. The default is 64.
-        
+        - param.B: number of BPS test phases. The default is 64.
+
         DDPLL params:
-            
-        - paramCPR.tau1: DDPLL loop filter param. 1. The default is 1/2*pi*10e6.
-        
-        - paramCPR.tau2: DDPLL loop filter param. 2. The default is 1/2*pi*10e6.
 
-        - paramCPR.Kv: DDPLL loop filter gain. The default is 0.1.
+        - param.tau1: DDPLL loop filter param. 1. The default is 1/2*pi*10e6.
 
-        - paramCPR.Ts: symbol period. The default is 1/32e9.
+        - param.tau2: DDPLL loop filter param. 2. The default is 1/2*pi*10e6.
 
-        - paramCPR.pilotInd: indexes of pilot-symbol locations.
+        - param.Kv: DDPLL loop filter gain. The default is 0.1.
+
+        - param.Ts: symbol period. The default is 1/32e9.
+
+        - param.pilotInd: indexes of pilot-symbol locations.
+
+        Viterbi params:
+
+        - param.N: length of the moving average window. The default is 35.
+
+    symbTx :complex-valued np.array, optional
+        Transmitted symbol sequence. The default is [].
 
     Raises
     ------
@@ -65,27 +72,29 @@ def cpr(Ei, symbTx=None, paramCPR=None):
 
     Returns
     -------
-    Eo : complex-valued ndarray
+    Eo : complex-valued np.array
         Phase-compensated signal.
-    θ : real-valued ndarray
+    θ : real-valued np.array
         Time-varying estimated phase-shifts.
 
     """
     if symbTx is None:
-        symbTx = []
-    if paramCPR is None:
-        paramCPR = []
+        symbTx = np.zeros(Ei.shape)
+    if param is None:
+        param = []
+
     # check input parameters
-    alg = getattr(paramCPR, "alg", "bps")
-    M = getattr(paramCPR, "M", 4)
-    constType = getattr(paramCPR, 'constType','qam')
-    B = getattr(paramCPR, "B", 64)
-    N = getattr(paramCPR, "N", 35)
-    Kv = getattr(paramCPR, "Kv", 0.1)
-    tau1 = getattr(paramCPR, "tau1", 1 / (2 * np.pi * 10e6))
-    tau2 = getattr(paramCPR, "tau2", 1 / (2 * np.pi * 10e6))
-    Ts = getattr(paramCPR, "Ts", 1 / 32e9)
-    pilotInd = getattr(paramCPR, "pilotInd", np.array([len(Ei) + 1]))
+    alg = getattr(param, "alg", "bps")
+    M = getattr(param, "M", 4)
+    constType = getattr(param, "constType", "qam")
+    B = getattr(param, "B", 64)
+    N = getattr(param, "N", 35)
+    Kv = getattr(param, "Kv", 0.1)
+    tau1 = getattr(param, "tau1", 1 / (2 * np.pi * 10e6))
+    tau2 = getattr(param, "tau2", 1 / (2 * np.pi * 10e6))
+    Ts = getattr(param, "Ts", 1 / 32e9)
+    pilotInd = getattr(param, "pilotInd", np.array([len(Ei) + 1]))
+    returnPhases = getattr(param, "returnPhases", False)
 
     try:
         Ei.shape[1]
@@ -93,27 +102,34 @@ def cpr(Ei, symbTx=None, paramCPR=None):
         Ei = Ei.reshape(len(Ei), 1)
 
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     constSymb = pnorm(constSymb)
 
     # 4th power frequency offset estimation/compensation
-    Ei, _ = fourthPowerFOE(Ei, 1/Ts)
+    logg.info(f"Running frequency offset compensation...")
+    Ei, _ = fourthPowerFOE(Ei, 1 / Ts)
     Ei = pnorm(Ei)
 
     if alg == "ddpll":
+        logg.info(f"Running DDPLL carrier phase recovery...")
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
+        logg.info(f"Running BPS carrier phase recovery...")
         θ = bps(Ei, N // 2, constSymb, B)
+    elif alg == "viterbi":
+        logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")
+        θ = viterbi(Ei, N)
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
     θ = np.unwrap(4 * θ, axis=0) / 4
 
-    Eo = Ei * np.exp(1j * θ)
+    Eo = pnorm(Ei * np.exp(1j * θ))
 
     if Eo.shape[1] == 1:
         Eo = Eo[:]
         θ = θ[:]
-    return Eo, θ
+
+    return (Eo, θ) if returnPhases else Eo
 
 
 @njit
@@ -123,18 +139,18 @@ def bps(Ei, N, constSymb, B):
 
     Parameters
     ----------
-    Ei : complex-valued ndarray
+    Ei : complex-valued np.array
         Received constellation symbols.
     N : int
         Half of the 2*N+1 average window.
-    constSymb : complex-valued ndarray
+    constSymb : complex-valued np.array
         Complex-valued constellation.
     B : int
         number of test phases.
 
     Returns
     -------
-    θ : real-valued ndarray
+    θ : real-valued np.array
         Time-varying estimated phase-shifts.
 
     """
@@ -152,7 +168,6 @@ def bps(Ei, N, constSymb, B):
     L = x.shape[0]
 
     for n in range(nModes):
-
         dist = np.zeros((B, constSymb.shape[0]), dtype="float")
         dmin = np.zeros((B, 2 * N + 1), dtype="float")
 
@@ -175,7 +190,7 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
 
     Parameters
     ----------
-    Ei : complex-valued ndarray
+    Ei : complex-valued np.array
         Received constellation symbols.
     Ts : float scalar
         Symbol period.
@@ -185,23 +200,23 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
         Loop filter parameter 1.
     tau2 : float scalar
         Loop filter parameter 2.
-    constSymb : complex-valued ndarray
+    constSymb : complex-valued np.array
         Complex-valued ideal constellation symbols.
-    symbTx : complex-valued ndarray
+    symbTx : complex-valued np.array
         Transmitted symbol sequence.
-    pilotInd : int ndarray
+    pilotInd : int np.array
         Indexes of pilot-symbol locations.
 
     Returns
     -------
-    θ : real-valued ndarray
+    θ : real-valued np.array
         Time-varying estimated phase-shifts.
 
     References
-    -------
-    [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel 
-    estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.    
-    
+    ----------
+    [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel
+    estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
+
     """
     nSymbols, nModes = Ei.shape
 
@@ -219,7 +234,6 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     u = np.zeros(3, dtype=np.float64)  # [u_f, u_d1, u_d]
 
     for n in range(nModes):
-
         u[2] = 0  # Output of phase detector (residual phase error)
         u[0] = 0  # Output of loop filter
 
@@ -243,9 +257,35 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
             u[0] = np.sum(a1b * u)
 
             # Estimate the phase error for the next symbol
-            if k < Ei.shape[0]-1:
+            if k < Ei.shape[0] - 1:
                 θ[k + 1, n] = θ[k, n] - Kv * u[0]
     return θ
+
+
+def viterbi(Ei, N=35, M=4):
+    """
+    Viterbi & Viterbi carrier phase recovery algorithm.
+
+    Parameters
+    ----------
+    Ei : np.array
+        Input signal.
+    N : int, optional
+        Size of the moving average window.
+    M : int, optional
+        M-th power order.
+
+    Returns
+    -------
+    np.array, float
+        Estimated phase error.
+    """
+    return (
+        -np.unwrap(
+            np.angle(movingAverage(Ei**M, N)) / M, period=2 * np.pi / M, axis=0
+        )
+        - np.pi / 4
+    )
 
 
 def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
@@ -254,7 +294,7 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
 
     Parameters
     ----------
-    Ei : ndarray
+    Ei : np.array
         Input signal.
     Fs : float
         Sampling frequency.
@@ -263,7 +303,7 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
 
     Returns
     -------
-    ndarray, float
+    np.array, float
         - The output signal after applying frequency offset correction.
         - The estimated frequency offset.
 
@@ -275,7 +315,7 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
 
     nModes = Ei.shape[1]
     Eo = Ei.copy()
-    t = np.arange(0, Eo.shape[0])*1/Fs
+    t = np.arange(0, Eo.shape[0]) * 1 / Fs
 
     for n in range(nModes):
         f4 = 10 * np.log10(np.abs(fftshift(fft(Ei[:, n] ** 4))))

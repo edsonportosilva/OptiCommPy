@@ -1,7 +1,7 @@
 """
-========================================================
-Models for optical devices (:mod:`optic.models.devices`)
-========================================================
+=======================================================================
+Models for optoelectronic devices (:mod:`optic.models.devices`)
+=======================================================================
 
 .. autosummary::
    :toctree: generated/
@@ -16,16 +16,24 @@ Models for optical devices (:mod:`optic.models.devices`)
    coherentReceiver      -- Optical coherent receiver (single polarization)
    pdmCoherentReceiver   -- Optical polarization-multiplexed coherent receiver
    edfa                  -- Simple EDFA model (gain + AWGN noise)
+   basicLaserModel       -- Laser model with Maxwellian random walk phase noise and RIN
+   adc                   -- Analog-to-digital converter (ADC) model
 """
 
 
-"""Basic physical models for optical devices."""
+"""Basic physical models for optical/electronic devices."""
 import logging as logg
 
 import numpy as np
 import scipy.constants as const
 from optic.utils import parameters, dBm2W
-from optic.dsp.core import lowPassFIR, gaussianComplexNoise, phaseNoise
+from optic.dsp.core import (
+    lowPassFIR,
+    gaussianComplexNoise,
+    phaseNoise,
+    clockSamplingInterp,
+    quantizer,
+)
 
 try:
     from optic.dsp.coreGPU import firFilter
@@ -49,6 +57,10 @@ def pm(Ai, u, Vπ):
     -------
     Ao : np.array
         Modulated optical field at the output of the PM.
+
+    References
+    ----------
+    [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
 
     """
     try:
@@ -89,6 +101,12 @@ def mzm(Ai, u, param=None):
     -------
     Ao : np.array
         Modulated optical field at the output of the MZM.
+
+    References
+    ----------
+    [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
+    
+    [2] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
     if param is None:
@@ -140,6 +158,10 @@ def iqm(Ai, u, param=None):
     -------
     Ao : complex-valued np.array
         Modulated optical field at the output of the IQM.
+
+    References
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
     if param is None:
@@ -197,6 +219,10 @@ def pbs(E, θ=0):
     Ey : (N,) np.array
         Ey output single pol. field.
 
+    References
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
+
     """
     try:
         assert E.shape[1] == 2, "E need to be a (N,2) or a (N,) np.array"
@@ -249,6 +275,10 @@ def photodiode(E, param=None):
     -------
     ipd : np.array
           photocurrent.
+
+    References
+    ----------
+    [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
 
     """
     if param is None:
@@ -331,6 +361,11 @@ def balancedPD(E1, E2, param=None):
     ibpd : np.array
            Balanced photocurrent.
 
+    References
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
+    
+    [2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.
     """
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
@@ -355,6 +390,11 @@ def hybrid_2x4_90deg(Es, Elo):
     Eo : np.array
         Optical hybrid outputs.
 
+    References
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
+
+    [2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.
     """
     assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
@@ -393,6 +433,11 @@ def coherentReceiver(Es, Elo, param=None):
     s : np.array
         Downconverted signal after balanced detection.
 
+    References
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
+
+    [2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.
     """
     assert Es.shape == (len(Es),), "Es need to have a (N,) shape"
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
@@ -428,6 +473,11 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     S : np.array
         Downconverted signal after balanced detection.
 
+    References
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
+
+    [2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.
     """
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
@@ -461,6 +511,10 @@ def edfa(Ei, param=None):
     Eo : np.array
         Amplified noisy optical signal.
 
+    References
+    ----------
+    [1] R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber Networks," in Journal of Lightwave Technology, vol. 28, no. 4, pp. 662-701, 2010, doi: 10.1109/JLT.2009.2039464.
+
     """
     try:
         Fs = param.Fs
@@ -491,44 +545,138 @@ def edfa(Ei, param=None):
 
     return Ei * np.sqrt(G_lin) + noise
 
+
 def basicLaserModel(param=None):
     """
     Laser model with Maxwellian random walk phase noise and RIN.
 
     Parameters
-    ----------  
+    ----------
     param : parameter object (struct), optional
         Parameters of the laser.
 
-        - param.P: laser power [W]
-        - param.lambda: laser wavelength [m]
-        - param.lw: laser linewidth [Hz]
-        - param.Fs: sampling rate [Hz]
-        - param.Ns: number of signal samples
+        - param.P: laser power [W] [default: 10 dBm]
+        - param.lw: laser linewidth [Hz] [default: 1 kHz]
+        - param.RIN_var: variance of the RIN noise [default: 1e-20]
+        - param.Fs: sampling rate [samples/s]
+        - param.Ns: number of signal samples [default: 1e3]
 
     Returns
     -------
     optical_signal : np.array
           Optical signal with phase noise and RIN.
 
+    References
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
+
     """
     try:
         Fs = param.Fs
     except AttributeError:
         logg.error("Simulation sampling frequency (Fs) not provided.")
-  
-    P = getattr(param,"P", 10)                # Laser power in dBm    
-    lw = getattr(param,"lw", 1e3)             # Linewidth in Hz
-    RIN_var = getattr(param,"RIN_var", 1e-20) # RIN variance    
-    Ns = getattr(param,"Ns", 1000)            # Number of samples of the signal
 
-    t = np.arange(0, Ns)* 1 / Fs
-    
-    # Simulate Maxwellian random walk phase noise    
-    pn = phaseNoise(lw, Ns, 1/Fs)
+    P = getattr(param, "P", 10)  # Laser power in dBm
+    lw = getattr(param, "lw", 1e3)  # Linewidth in Hz
+    RIN_var = getattr(param, "RIN_var", 1e-20)  # RIN variance
+    Ns = getattr(param, "Ns", 1000)  # Number of samples of the signal
+
+    t = np.arange(0, Ns) * 1 / Fs
+
+    # Simulate Maxwellian random walk phase noise
+    pn = phaseNoise(lw, Ns, 1 / Fs)
 
     # Simulate relative intensity noise  (RIN)[todo:check correct model]
     deltaP = gaussianComplexNoise(pn.shape, RIN_var)
-    
-    # Return optical signal       
-    return np.sqrt(dBm2W(P))*np.exp(1j*pn) + deltaP
+
+    # Return optical signal
+    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * pn) 
+
+
+def adc(Ei, param):
+    """
+    Analog-to-digital converter (ADC) model.
+
+    Parameters
+    ----------
+    Ei : ndarray
+        Input signal.
+    param : core.parameter
+        Resampling parameters:
+            - param.Fs_in  : sampling frequency of the input signal [default: 1 sample/s]
+            - param.Fs_out : sampling frequency of the output signal [default: 1 sample/s]
+            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [default: 0 s]
+            - param.nBits : number of bits used for quantization [default: 8 bits]
+            - param.Vmax : maximum value for the ADC's full-scale range [default: 1V]
+            - param.Vmin : minimum value for the ADC's full-scale range [default: -1V]
+            - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
+            - param.N : number of taps of the anti-aliasing filters [default: 201]
+
+    Returns
+    -------
+    Eo : ndarray
+        Resampled and quantized signal.
+
+    """
+    # Check and set default values for input parameters
+    param.Fs_in = getattr(param, "Fs_in", 1)
+    param.Fs_out = getattr(param, "Fs_out", 1)
+    param.jitter_rms = getattr(param, "jitter_rms", 0)
+    param.nBits = getattr(param, "nBits", 8)
+    param.Vmax = getattr(param, "Vmax", 1)
+    param.Vmin = getattr(param, "Vmin", -1)
+    param.AAF = getattr(param, "AAF", True)
+    param.N = getattr(param, "N", 201)
+
+    # Extract individual parameters for ease of use
+    Fs_in = param.Fs_in
+    Fs_out = param.Fs_out
+    jitter_rms = param.jitter_rms
+    nBits = param.nBits
+    Vmax = param.Vmax
+    Vmin = param.Vmin
+    AAF = param.AAF
+    N = param.N
+
+    # Reshape the input signal if needed to handle single-dimensional inputs
+    try:
+        Ei.shape[1]
+    except IndexError:
+        Ei = Ei.reshape(len(Ei), 1)
+
+    # Get the number of modes (columns) in the input signal
+    nModes = Ei.shape[1]
+
+    # Apply anti-aliasing filters if AAF is enabled
+    if AAF:
+        # Anti-aliasing filters:
+        Ntaps = min(Ei.shape[0], N)
+        hi = lowPassFIR(param.Fs_out / 2, param.Fs_in, Ntaps, typeF="rect")
+        ho = lowPassFIR(param.Fs_out / 2, param.Fs_out, Ntaps, typeF="rect")
+
+        Ei = firFilter(hi, Ei)
+
+    if np.iscomplexobj(Ei):
+        # Signal interpolation to the ADC's sampling frequency
+        Eo = clockSamplingInterp(
+            Ei.reshape(-1, nModes).real, Fs_in, Fs_out, jitter_rms
+        ) + 1j * clockSamplingInterp(
+            Ei.reshape(-1, nModes).imag, Fs_in, Fs_out, jitter_rms
+        )
+
+        # Uniform quantization of the signal according to the number of bits of the ADC
+        Eo = quantizer(Eo.real, nBits, Vmax, Vmin) + 1j * quantizer(
+            Eo.imag, nBits, Vmax, Vmin
+        )
+    else:
+        # Signal interpolation to the ADC's sampling frequency
+        Eo = clockSamplingInterp(Ei.reshape(-1, nModes), Fs_in, Fs_out, jitter_rms)
+
+        # Uniform quantization of the signal according to the number of bits of the ADC
+        Eo = quantizer(Eo, nBits, Vmax, Vmin)
+
+    # Apply anti-aliasing filters to the output if AAF is enabled
+    if AAF:
+        Eo = firFilter(ho, Eo)
+
+    return Eo

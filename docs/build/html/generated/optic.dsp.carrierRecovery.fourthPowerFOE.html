@@ -11,16 +11,18 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=db0e1f0c"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="optic.dsp.carrierRecovery.cpr" href="optic.dsp.carrierRecovery.cpr.html" />
-    <link rel="prev" title="optic.dsp.carrierRecovery.ddpll" href="optic.dsp.carrierRecovery.ddpll.html" /> 
+    <link rel="prev" title="optic.dsp.carrierRecovery.viterbi" href="optic.dsp.carrierRecovery.viterbi.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,11 +47,9 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Available features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../test_WDM_transmission.html">Simulation of coherent WDM transmission</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
 <ul class="current">
@@ -60,18 +60,17 @@
 <li class="toctree-l2 current"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.carrierRecovery.bps.html">optic.dsp.carrierRecovery.bps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.carrierRecovery.ddpll.html">optic.dsp.carrierRecovery.ddpll</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.dsp.carrierRecovery.fourthPowerFOE</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#optic.dsp.carrierRecovery.fourthPowerFOE"><code class="docutils literal notranslate"><span class="pre">fourthPowerFOE</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.carrierRecovery.viterbi.html">optic.dsp.carrierRecovery.viterbi</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.dsp.carrierRecovery.fourthPowerFOE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.carrierRecovery.cpr.html">optic.dsp.carrierRecovery.cpr</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-clock-and-timming-recovery-optic-dsp-clockrecovery">DSP algorithms for clock and timming recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.clockRecovery</span></code>)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../models.html">Physical Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../utils.html">General utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">General Utilities</a></li>
 </ul>
 
         </div>
@@ -100,15 +99,15 @@
            <div itemprop="articleBody">
              
   <section id="optic-dsp-carrierrecovery-fourthpowerfoe">
-<h1>optic.dsp.carrierRecovery.fourthPowerFOE<a class="headerlink" href="#optic-dsp-carrierrecovery-fourthpowerfoe" title="Link to this heading"></a></h1>
+<h1>optic.dsp.carrierRecovery.fourthPowerFOE<a class="headerlink" href="#optic-dsp-carrierrecovery-fourthpowerfoe" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.carrierRecovery.fourthPowerFOE">
-<span class="sig-name descname"><span class="pre">fourthPowerFOE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotSpec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.fourthPowerFOE" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fourthPowerFOE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotSpec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.fourthPowerFOE" title="Permalink to this definition"></a></dt>
 <dd><p>Estimate the frequency offset (FO) with the 4th-power method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Ei</strong> (<em>ndarray</em>) -- Input signal.</p></li>
+<li><p><strong>Ei</strong> (<em>np.array</em>) -- Input signal.</p></li>
 <li><p><strong>Fs</strong> (<em>float</em>) -- Sampling frequency.</p></li>
 <li><p><strong>plotSpec</strong> (<em>bool</em><em>, </em><em>optional</em>) -- Whether to plot the spectrum. Default is False.</p></li>
 </ul>
@@ -121,7 +120,7 @@
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray, float</p>
+<dd class="field-odd"><p>np.array, float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -132,7 +131,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="optic.dsp.carrierRecovery.ddpll.html" class="btn btn-neutral float-left" title="optic.dsp.carrierRecovery.ddpll" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="optic.dsp.carrierRecovery.viterbi.html" class="btn btn-neutral float-left" title="optic.dsp.carrierRecovery.viterbi" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="optic.dsp.carrierRecovery.cpr.html" class="btn btn-neutral float-right" title="optic.dsp.carrierRecovery.cpr" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

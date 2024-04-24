@@ -30,16 +30,16 @@ def gaussianComplexNoise(shapeOut, σ2=1.0):
     """
     Generate complex circular Gaussian noise.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     shapeOut : tuple of int
-        Shape of ndarray to be generated.
+        Shape of np.array to be generated.
     σ2 : float, optional
         Variance of the noise (default is 1).
 
-    Returns:
-    --------
-    noise : ndarray
+    Returns
+    -------
+    noise : np.array
         Generated complex circular Gaussian noise.
     """
     return normal(0, np.sqrt(σ2 / 2), shapeOut) + 1j * normal(
@@ -67,6 +67,10 @@ def edfa(Ei, param):
     -------
     Eo : np.array
         Amplified noisy optical signal.
+
+    References
+    ----------
+    [1] R. -J. Essiambre,et al, "Capacity Limits of Optical Fiber Networks," in Journal of Lightwave Technology, vol. 28, no. 4, pp. 662-701, 2010, doi: 10.1109/JLT.2009.2039464.
 
     """
     try:
@@ -136,12 +140,21 @@ def ssfm(Ei, param):
 
         - param.prgsBar: display progress bar? bolean variable [default:True]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
     param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
+
+    References
+    ----------
+    [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013. 
+
+    [2] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
+
 
     """
     try:
@@ -162,6 +175,7 @@ def ssfm(Ei, param):
     param.NF = getattr(param, "NF", 4.5)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -175,6 +189,7 @@ def ssfm(Ei, param):
     prec = param.prec
     prgsBar = param.prgsBar
     saveSpanN = param.saveSpanN
+    returnParameters = param.returnParameters
 
     Nspans = int(np.floor(Ltotal / Lspan))
     Nsteps = int(np.floor(Lspan / hz))
@@ -256,7 +271,7 @@ def ssfm(Ei, param):
             len(Ech),
         )
 
-    return Ech, param
+    return (Ech, param) if returnParameters else Ech
 
 
 def manakovSSF(Ei, param):
@@ -305,12 +320,22 @@ def manakovSSF(Ei, param):
 
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
     param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
+
+    References
+    ----------
+    [1] D. Marcuse, C. R. Menyuk, e P. K. A. Wai, “Application of the Manakov-PMD equation to studies of signal propagation in optical fibers with randomly varying birefringence”, Journal of Lightwave Technology, vol. 15, nº 9, p. 1735–1745, 1997, doi: 10.1109/50.622902.
+
+    [2] P. Serena, C. Lasagni, S. Musetti, e A. Bononi, “On Numerical Simulations of Ultra-Wideband Long-Haul Optical Communication Systems”, Journal of Lightwave Technology, vol. 38, nº 5, p. 1019–1031, 2020, doi: 10.1109/JLT.2019.2938580.
+
+    [3] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
 
     """
     try:
@@ -335,6 +360,7 @@ def manakovSSF(Ei, param):
     param.maxNlinPhaseRot = getattr(param, "maxNlinPhaseRot", 2e-2)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -352,6 +378,7 @@ def manakovSSF(Ei, param):
     saveSpanN = param.saveSpanN
     nlprMethod = param.nlprMethod
     maxNlinPhaseRot = param.maxNlinPhaseRot
+    returnParameters = param.returnParameters
 
     Nspans = int(np.floor(Ltotal / Lspan))
 
@@ -400,6 +427,7 @@ def manakovSSF(Ei, param):
         Ech_spans = cp.zeros((Ei_.shape[0], Ei_.shape[1] * len(saveSpanN))).astype(prec)
         indRecSpan = 0
 
+    logg.info(f"Running Manakov SSF model on GPU...")
     for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
         Ex_conv = Ech_x.copy()
         Ey_conv = Ech_y.copy()
@@ -487,7 +515,7 @@ def manakovSSF(Ei, param):
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
 
-    return Ech, param
+    return (Ech, param) if returnParameters else Ech
 
 
 def nlinPhaseRot(Ex, Ey, Pch, γ):
@@ -583,12 +611,21 @@ def manakovDBP(Ei, param):
 
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
+
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear backward propagation.
     param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
+    
+    References
+    ----------
+    [1] E. Ip e J. M. Kahn, “Compensation of dispersion and nonlinear impairments using digital backpropagation”, Journal of Lightwave Technology, vol. 26, nº 20, p. 3416–3425, 2008, doi: 10.1109/JLT.2008.927791.
+
+    [2] E. Ip, “Nonlinear compensation using backpropagation for polarization-multiplexed transmission”, Journal of Lightwave Technology, vol. 28, nº 6, p. 939–951, mar. 2010, doi: 10.1109/JLT.2010.2040135.
 
     """
     try:
@@ -612,6 +649,7 @@ def manakovDBP(Ei, param):
     param.maxNlinPhaseRot = getattr(param, "maxNlinPhaseRot", 2e-2)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -628,6 +666,7 @@ def manakovDBP(Ei, param):
     saveSpanN = param.saveSpanN
     nlprMethod = param.nlprMethod
     maxNlinPhaseRot = param.maxNlinPhaseRot
+    returnParameters = param.returnParameters
 
     Nspans = int(np.floor(Ltotal / Lspan))
 
@@ -753,7 +792,7 @@ def manakovDBP(Ei, param):
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
 
-    return Ech, param
+    return (Ech, param) if returnParameters else Ech
 
 
 def setPowerforParSSFM(sig, powers):

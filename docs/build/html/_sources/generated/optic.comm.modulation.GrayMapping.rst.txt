@@ -1,6 +1,6 @@
-﻿optic.comm.modulation.GrayMapping
+﻿optic.comm.modulation.grayMapping
 =================================
 
 .. currentmodule:: optic.comm.modulation
 
-.. autofunction:: GrayMapping
+.. autofunction:: grayMapping

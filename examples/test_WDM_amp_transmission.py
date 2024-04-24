@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -24,12 +24,12 @@ if 'google.colab' in str(get_ipython()):
     cd('/content/OptiCommPy/')
     # ! pip install . 
 
+# +
 import matplotlib.pyplot as plt
 import numpy as np
 
 from optic.dsp.core import pulseShape, firFilter, decimate, symbolSync, pnorm, signal_power
-from optic.models.devices import pdmCoherentReceiver
-from optic.models.channels import phaseNoise
+from optic.models.devices import pdmCoherentReceiver, basicLaserModel
 
 try:
     from optic.models.modelsGPU import manakovSSF
@@ -37,7 +37,7 @@ except:
     from optic.models.channels import manakovSSF
 
 from optic.models.tx import simpleWDMTx
-from optic.core import parameters
+from optic.utils import parameters
 from optic.dsp.equalization import edc, mimoAdaptEqualizer
 from optic.dsp.carrierRecovery import cpr
 from optic.comm.metrics import fastBERcalc, monteCarloGMI, monteCarloMI, calcEVM
@@ -48,15 +48,16 @@ import scipy.constants as const
 from optic.models.amplification import edfaSM,OSA
 
 import os.path as path
+# -
 
 import logging as logg
 logg.getLogger().setLevel(logg.INFO)
 logg.basicConfig(format='%(message)s')
 
-# %%
 from IPython.core.display import HTML
 from IPython.core.pylabtools import figsize
 
+# +
 HTML("""
 <style>
 .output_png {
@@ -67,10 +68,9 @@ HTML("""
 </style>
 """)
 
-# %%
 figsize(10, 3)
+# -
 
-# %%
 # %load_ext autoreload
 # %autoreload 2
 # %load_ext line_profiler
@@ -80,7 +80,6 @@ figsize(10, 3)
 # ## Parameters
 # -
 
-# %%
 # Transmitter parameters:
 paramTx = parameters()
 paramTx.M   = 16           # order of the modulation format
@@ -97,7 +96,7 @@ paramTx.freqSpac = 37.5e9  # WDM grid spacing
 paramTx.Nmodes = 2         # number of signal modes [2 for polarization multiplexed signals]
 paramTx.Nbits = int(np.log2(paramTx.M)*1e5) # total number of bits per polarization
 
-# %%
+# +
 # Optical channel parameters:
 paramCh = parameters()
 paramCh.Ltotal = 100      # total link distance [km]
@@ -111,10 +110,11 @@ paramCh.maxIter = 5      # maximum number of convergence iterations per step
 paramCh.tol = 1e-5       # error tolerance per step
 paramCh.prgsBar = True   # show progress bar?
 paramCh.amp = None
+paramCh.Fs = paramTx.Rs*paramTx.SpS # sampling rate
 
-Fs = paramTx.Rs*paramTx.SpS # sampling rate
+Fs = paramCh.Fs
+# -
 
-# %%
 # EDFA parameters
 param_edfa = parameters()
 # gain control
@@ -159,7 +159,7 @@ ax.set_ylim([-80,-40])
 # **Nonlinear fiber propagation with the split-step Fourier method**
 
 # nonlinear signal propagation
-sigWDM, paramCh = manakovSSF(sigWDM_Tx, Fs, paramCh)
+sigWDM = manakovSSF(sigWDM_Tx, paramCh)
 
 # +
 
@@ -194,7 +194,6 @@ ax.set_ylim([-80,-40])
 
 # **Optical WDM spectrum before and after transmission**
 
-# %%
 # plot psd
 plt.figure(figsize=(10, 3))
 plt.xlim(paramCh.Fc-Fs/2,paramCh.Fc+Fs/2);
@@ -206,37 +205,41 @@ plt.title('optical WDM spectrum');
 
 # **WDM channels coherent detection and demodulation**
 
+# +
 # parameters
 chIndex  = int(np.floor(paramTx.Nch/2))      # index of the channel to be demodulated
 
-Fc = paramCh.Fc
-Ts = 1/Fs
 freqGrid = paramTx.freqGrid
+π  = np.pi
+t  = np.arange(0, len(sigWDM))*1/Fs
 
 print('Demodulating channel #%d , fc: %.4f THz, λ: %.4f nm\n'\
-      %(chIndex, (Fc + freqGrid[chIndex])/1e12, const.c/(Fc + freqGrid[chIndex])/1e-9))
+      %(chIndex, (paramCh.Fc + freqGrid[chIndex])/1e12, const.c/(paramCh.Fc + freqGrid[chIndex])/1e-9))
 
 symbTx = symbTx_[:,:,chIndex]
 
 # local oscillator (LO) parameters:
-FO      = 150e6                # frequency offset
+FO      = 150e6                 # frequency offset
 Δf_lo   = freqGrid[chIndex]+FO  # downshift of the channel to be demodulated
-lw      = 100e3                 # linewidth
-Plo_dBm = 10                    # power in dBm
-Plo     = 10**(Plo_dBm/10)*1e-3 # power in W
-ϕ_lo    = 0                     # initial phase in rad    
+
+# generate CW laser LO field
+paramLO = parameters()
+paramLO.P = 10              # power in dBm
+paramLO.lw = 100e3          # laser linewidth
+paramLO.RIN_var = 0
+paramLO.Ns = len(sigWDM)
+paramLO.Fs = Fs
+
+sigLO = basicLaserModel(paramLO)
+sigLO = sigLO*np.exp(1j*2*π*Δf_lo*t) # add frequency offset  
 
 print('Local oscillator P: %.2f dBm, lw: %.2f kHz, FO: %.2f MHz\n'\
-      %(Plo_dBm, lw/1e3, FO/1e6))
-
-# generate LO field
-π       = np.pi
-t       = np.arange(0, len(sigWDM_Amp))*Ts
-ϕ_pn_lo = phaseNoise(lw, len(sigWDM_Amp), Ts)
-sigLO   = np.sqrt(Plo)*np.exp(1j*(2*π*Δf_lo*t + ϕ_lo + ϕ_pn_lo))
+      %(paramLO.P, paramLO.lw/1e3, FO/1e6))
+# -
 
 # **polarization multiplexed coherent optical receiver**
 
+# +
 # photodiodes parameters
 paramPD = parameters()
 paramPD.B = paramTx.Rs
@@ -248,9 +251,11 @@ sigRx = pdmCoherentReceiver(sigWDM_Amp, sigLO, θsig, paramPD)
 
 # plot received constellations
 pconst(sigRx[0::paramTx.SpS,:], R=3);
+# -
 
 # **Matched filtering and CD compensation**
 
+# +
 # Matched filtering
 if paramTx.pulse == 'nrz':
     pulse = pulseShape('nrz', paramTx.SpS)
@@ -263,15 +268,23 @@ sigRx = firFilter(pulse, sigRx)
 # plot constellations after matched filtering
 pconst(sigRx[0::paramTx.SpS,:], R=3);
 
+# +
 # CD compensation
-sigRx = edc(sigRx, paramCh.Ltotal, paramCh.D, Fc-Δf_lo, Fs)
+paramEDC = parameters()
+paramEDC.L = paramCh.Ltotal
+paramEDC.D = paramCh.D
+paramEDC.Fc = paramCh.Fc-Δf_lo
+paramEDC.Fs = Fs
+
+sigRx = edc(sigRx, paramEDC)
 
 # plot constellations after CD compensation
 pconst(sigRx[0::paramTx.SpS,:], R=3);
+# -
 
 # **Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences**
 
-# %%
+# +
 # decimation
 paramDec = parameters()
 paramDec.SpS_in  = paramTx.SpS
@@ -279,16 +292,16 @@ paramDec.SpS_out = 2
 sigRx = decimate(sigRx, paramDec)
 
 symbRx = symbolSync(sigRx, symbTx, 2)
+# -
 
 # **Power normalization**
 
-# %%
 x = pnorm(sigRx)
 d = pnorm(symbRx)
 
 # **Adaptive equalization**
 
-# %%
+# +
 # adaptive equalization parameters
 paramEq = parameters()
 paramEq.nTaps = 15
@@ -306,41 +319,34 @@ else:
     paramEq.alg = ['da-rde','rde'] # M-QAM
     paramEq.mu = [5e-3, 2e-4] 
 
-y_EQ, H, errSq, Hiter = mimoAdaptEqualizer(x, dx=d, paramEq=paramEq)
+y_EQ = mimoAdaptEqualizer(x, paramEq, d)
 
 #plot constellations after adaptive equalization
 discard = 5000
 pconst(y_EQ[discard:-discard,:]);
+# -
 
 # **Carrier phase recovery**
 
-# %%
+# +
 paramCPR = parameters()
 paramCPR.alg = 'bps'
 paramCPR.M   = paramTx.M
 paramCPR.N   = 75
 paramCPR.B   = 64
-paramCPR.pilotInd = np.arange(0, len(y_EQ), 20) 
 
-y_CPR, θ = cpr(y_EQ, symbTx=d, paramCPR=paramCPR)
-
-y_CPR = pnorm(y_CPR)
-
-plt.figure(figsize=(10, 3))
-plt.title('CPR estimated phase')
-plt.plot(θ,'-')
-plt.xlim(0, len(θ))
-plt.grid()
+y_CPR = cpr(y_EQ, paramCPR)
 
 discard = 500
 
 #plot constellations after CPR
 pconst([y_CPR[discard:-discard,:],d[discard:-discard,:]], pType='fast')
 pconst(y_CPR[discard:-discard,:]);
+# -
 
 # ### Evaluate transmission metrics
 
-# %%
+# +
 ind = np.arange(discard, d.shape[0]-discard)
 BER, SER, SNR = fastBERcalc(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')
 GMI, NGMI = monteCarloGMI(y_CPR[ind,:], d[ind,:], paramTx.M, 'qam')

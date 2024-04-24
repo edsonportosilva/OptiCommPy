@@ -11,15 +11,17 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=db0e1f0c"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="optic.dsp.carrierRecovery.fourthPowerFOE" href="optic.dsp.carrierRecovery.fourthPowerFOE.html" />
+    <link rel="next" title="optic.dsp.carrierRecovery.viterbi" href="optic.dsp.carrierRecovery.viterbi.html" />
     <link rel="prev" title="optic.dsp.carrierRecovery.bps" href="optic.dsp.carrierRecovery.bps.html" /> 
 </head>
 
@@ -45,11 +47,9 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Available features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../test_WDM_transmission.html">Simulation of coherent WDM transmission</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
 <ul class="current">
@@ -59,19 +59,18 @@
 <li class="toctree-l2"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-equalization-optic-dsp-equalization">DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.carrierRecovery.bps.html">optic.dsp.carrierRecovery.bps</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.dsp.carrierRecovery.ddpll</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#optic.dsp.carrierRecovery.ddpll"><code class="docutils literal notranslate"><span class="pre">ddpll</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.dsp.carrierRecovery.ddpll</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.carrierRecovery.viterbi.html">optic.dsp.carrierRecovery.viterbi</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.carrierRecovery.fourthPowerFOE.html">optic.dsp.carrierRecovery.fourthPowerFOE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.carrierRecovery.cpr.html">optic.dsp.carrierRecovery.cpr</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-clock-and-timming-recovery-optic-dsp-clockrecovery">DSP algorithms for clock and timming recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.clockRecovery</span></code>)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../models.html">Physical Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../utils.html">General utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">General Utilities</a></li>
 </ul>
 
         </div>
@@ -100,29 +99,29 @@
            <div itemprop="articleBody">
              
   <section id="optic-dsp-carrierrecovery-ddpll">
-<h1>optic.dsp.carrierRecovery.ddpll<a class="headerlink" href="#optic-dsp-carrierrecovery-ddpll" title="Link to this heading"></a></h1>
+<h1>optic.dsp.carrierRecovery.ddpll<a class="headerlink" href="#optic-dsp-carrierrecovery-ddpll" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.carrierRecovery.ddpll">
-<span class="sig-name descname"><span class="pre">ddpll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pilotInd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.ddpll" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">ddpll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pilotInd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.carrierRecovery.ddpll" title="Permalink to this definition"></a></dt>
 <dd><p>Decision-directed Phase-locked Loop (DDPLL) algorithm</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Ei</strong> (<em>complex-valued ndarray</em>) -- Received constellation symbols.</p></li>
+<li><p><strong>Ei</strong> (<em>complex-valued np.array</em>) -- Received constellation symbols.</p></li>
 <li><p><strong>Ts</strong> (<em>float scalar</em>) -- Symbol period.</p></li>
 <li><p><strong>Kv</strong> (<em>float scalar</em>) -- Loop filter gain.</p></li>
 <li><p><strong>tau1</strong> (<em>float scalar</em>) -- Loop filter parameter 1.</p></li>
 <li><p><strong>tau2</strong> (<em>float scalar</em>) -- Loop filter parameter 2.</p></li>
-<li><p><strong>constSymb</strong> (<em>complex-valued ndarray</em>) -- Complex-valued ideal constellation symbols.</p></li>
-<li><p><strong>symbTx</strong> (<em>complex-valued ndarray</em>) -- Transmitted symbol sequence.</p></li>
-<li><p><strong>pilotInd</strong> (<em>int ndarray</em>) -- Indexes of pilot-symbol locations.</p></li>
+<li><p><strong>constSymb</strong> (<em>complex-valued np.array</em>) -- Complex-valued ideal constellation symbols.</p></li>
+<li><p><strong>symbTx</strong> (<em>complex-valued np.array</em>) -- Transmitted symbol sequence.</p></li>
+<li><p><strong>pilotInd</strong> (<em>int np.array</em>) -- Indexes of pilot-symbol locations.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>θ</strong> -- Time-varying estimated phase-shifts.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>real-valued ndarray</p>
+<dd class="field-odd"><p>real-valued np.array</p>
 </dd>
 </dl>
 <p class="rubric">References</p>
@@ -137,7 +136,7 @@ estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="optic.dsp.carrierRecovery.bps.html" class="btn btn-neutral float-left" title="optic.dsp.carrierRecovery.bps" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="optic.dsp.carrierRecovery.fourthPowerFOE.html" class="btn btn-neutral float-right" title="optic.dsp.carrierRecovery.fourthPowerFOE" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="optic.dsp.carrierRecovery.viterbi.html" class="btn btn-neutral float-right" title="optic.dsp.carrierRecovery.viterbi" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

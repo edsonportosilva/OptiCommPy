@@ -11,11 +11,13 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=db0e1f0c"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -45,11 +47,9 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Available features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../test_WDM_transmission.html">Simulation of coherent WDM transmission</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
 <ul class="current">
@@ -58,18 +58,16 @@
 <li class="toctree-l2"><a class="reference internal" href="../dsp.html#core-digital-signal-processing-utilities-optic-dsp-core">Core digital signal processing utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code>)</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-equalization-optic-dsp-equalization">DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.equalization.edc.html">optic.dsp.equalization.edc</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.dsp.equalization.mimoAdaptEqualizer</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#optic.dsp.equalization.mimoAdaptEqualizer"><code class="docutils literal notranslate"><span class="pre">mimoAdaptEqualizer</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.dsp.equalization.mimoAdaptEqualizer</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-clock-and-timming-recovery-optic-dsp-clockrecovery">DSP algorithms for clock and timming recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.clockRecovery</span></code>)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../models.html">Physical Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../utils.html">General utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">General Utilities</a></li>
 </ul>
 
         </div>
@@ -98,28 +96,28 @@
            <div itemprop="articleBody">
              
   <section id="optic-dsp-equalization-mimoadaptequalizer">
-<h1>optic.dsp.equalization.mimoAdaptEqualizer<a class="headerlink" href="#optic-dsp-equalization-mimoadaptequalizer" title="Link to this heading"></a></h1>
+<h1>optic.dsp.equalization.mimoAdaptEqualizer<a class="headerlink" href="#optic-dsp-equalization-mimoadaptequalizer" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.equalization.mimoAdaptEqualizer">
-<span class="sig-name descname"><span class="pre">mimoAdaptEqualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramEq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.mimoAdaptEqualizer" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">mimoAdaptEqualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.mimoAdaptEqualizer" title="Permalink to this definition"></a></dt>
 <dd><p>N-by-N MIMO adaptive equalizer.</p>
-<p>Algorithms available: 'cma', 'rde', 'nlms', 'dd-lms', 'da-rde', 'rls', 'dd-rls', 'static'.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>array-like</em>) -- Input array.</p></li>
-<li><p><strong>dx</strong> (<em>array-like</em><em>, </em><em>optional</em>) -- Syncronized exact symbol sequence corresponding to the received input array x.</p></li>
-<li><p><strong>paramEq</strong> (<em>object</em><em>, </em><em>optional</em>) -- <p>Parameter object containing the following attributes:</p>
+<li><p><strong>x</strong> (<em>np.array</em>) -- Input array.</p></li>
+<li><p><strong>dx</strong> (<em>np.array</em><em>, </em><em>optional</em>) -- Syncronized exact symbol sequence corresponding to the received input array x.</p></li>
+<li><p><strong>param</strong> (<em>object</em><em>, </em><em>optional</em>) -- <p>Parameter object containing the following attributes:</p>
 <ul>
 <li><p>numIter : int, number of pre-convergence iterations (default: 1)</p></li>
 <li><p>nTaps : int, number of filter taps (default: 15)</p></li>
 <li><p>mu : float or list of floats, step size parameter(s) (default: [1e-3])</p></li>
 <li><p>lambdaRLS : float, RLS forgetting factor (default: 0.99)</p></li>
 <li><p>SpS : int, samples per symbol (default: 2)</p></li>
-<li><p>H : array-like, coefficient matrix (default: [])</p></li>
+<li><p>H : np.array, coefficient matrix (default: [])</p></li>
 <li><p>L : int or list of ints, length of the output of the training section (default: [])</p></li>
 <li><p>Hiter : list, history of coefficient matrices (default: [])</p></li>
 <li><p>storeCoeff : bool, flag indicating whether to store coefficient matrices (default: False)</p></li>
+<li><p>runWL: bool, flag indicating whether to run the equalizer in the widely-linear mode. (default: False)</p></li>
 <li><p>alg : str or list of strs, specifying the equalizer algorithm(s) (default: ['nlms'])</p></li>
 <li><p>constType : str, constellation type (default: 'qam')</p></li>
 <li><p>M : int, modulation order (default: 4)</p></li>
@@ -130,14 +128,21 @@
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>yEq</strong> (<em>array-like</em>) -- Equalized output array.</p></li>
-<li><p><strong>H</strong> (<em>array-like</em>) -- Coefficient matrix.</p></li>
-<li><p><strong>errSq</strong> (<em>array-like</em>) -- Squared absolute error array.</p></li>
+<li><p><strong>yEq</strong> (<em>np.array</em>) -- Equalized output array.</p></li>
+<li><p><strong>H</strong> (<em>np.array</em>) -- Coefficient matrix.</p></li>
+<li><p><strong>errSq</strong> (<em>np.array</em>) -- Squared absolute error array.</p></li>
 <li><p><strong>Hiter</strong> (<em>list</em>) -- History of coefficient matrices.</p></li>
 </ul>
 </p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>Algorithms available: 'cma', 'rde', 'nlms', 'dd-lms', 'da-rde', 'rls', 'dd-rls', 'static'.</p>
+<p class="rubric">References</p>
+<p>[1] P. S. R. Diniz, Adaptive Filtering: Algorithms and Practical Implementation. Springer US, 2012.</p>
+<p>[2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.</p>
+<p>[3] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.</p>
+<p>[4] E. P. Da Silva e D. Zibar, “Widely Linear Equalization for IQ Imbalance and Skew Compensation in Optical Coherent Receivers”, Journal of Lightwave Technology, vol. 34, nº 15, p. 3577–3586, ago. 2016, doi: 10.1109/JLT.2016.2577716.</p>
 </dd></dl>
 
 </section>

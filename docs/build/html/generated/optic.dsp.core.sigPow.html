@@ -11,11 +11,13 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=db0e1f0c"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -45,39 +47,44 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Available features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../test_WDM_transmission.html">Simulation of coherent WDM transmission</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../comm.html">Digital Communications Utilities</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../dsp.html">Digital Signal Processing (DSP)</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../dsp.html#core-digital-signal-processing-utilities-optic-dsp-core">Core digital signal processing utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.core</span></code>)</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.dsp.core.sigPow</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#optic.dsp.core.sigPow"><code class="docutils literal notranslate"><span class="pre">sigPow</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.dsp.core.sigPow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.signal_power.html">optic.dsp.core.signal_power</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.firFilter.html">optic.dsp.core.firFilter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.rrcFilterTaps.html">optic.dsp.core.rrcFilterTaps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.rcFilterTaps.html">optic.dsp.core.rcFilterTaps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.pulseShape.html">optic.dsp.core.pulseShape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.clockSamplingInterp.html">optic.dsp.core.clockSamplingInterp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.quantizer.html">optic.dsp.core.quantizer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.lowPassFIR.html">optic.dsp.core.lowPassFIR</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.decimate.html">optic.dsp.core.decimate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.resample.html">optic.dsp.core.resample</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.upsample.html">optic.dsp.core.upsample</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.symbolSync.html">optic.dsp.core.symbolSync</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.finddelay.html">optic.dsp.core.finddelay</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.pnorm.html">optic.dsp.core.pnorm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.gaussianComplexNoise.html">optic.dsp.core.gaussianComplexNoise</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.gaussianNoise.html">optic.dsp.core.gaussianNoise</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.phaseNoise.html">optic.dsp.core.phaseNoise</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.dsp.core.movingAverage.html">optic.dsp.core.movingAverage</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-equalization-optic-dsp-equalization">DSP algorithms for equalization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.equalization</span></code>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-carrier-phase-and-frequency-recovery-optic-dsp-carrierrecovery">DSP algorithms for carrier phase and frequency recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.carrierRecovery</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dsp.html#dsp-algorithms-for-clock-and-timming-recovery-optic-dsp-clockrecovery">DSP algorithms for clock and timming recovery (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.dsp.clockRecovery</span></code>)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../models.html">Physical Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../utils.html">General utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">General Utilities</a></li>
 </ul>
 
         </div>
@@ -106,10 +113,10 @@
            <div itemprop="articleBody">
              
   <section id="optic-dsp-core-sigpow">
-<h1>optic.dsp.core.sigPow<a class="headerlink" href="#optic-dsp-core-sigpow" title="Link to this heading"></a></h1>
+<h1>optic.dsp.core.sigPow<a class="headerlink" href="#optic-dsp-core-sigpow" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.core.sigPow">
-<span class="sig-name descname"><span class="pre">sigPow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.sigPow" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">sigPow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.core.sigPow" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate the average power of x per mode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

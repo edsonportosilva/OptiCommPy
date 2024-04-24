@@ -1,6 +1,6 @@
-﻿optic.comm.modulation.GrayCode
+﻿optic.comm.modulation.grayCode
 ==============================
 
 .. currentmodule:: optic.comm.modulation
 
-.. autofunction:: GrayCode
+.. autofunction:: grayCode

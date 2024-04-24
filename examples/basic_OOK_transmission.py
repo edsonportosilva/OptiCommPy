@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -28,7 +28,7 @@ import numpy as np
 from commpy.utilities  import upsample
 from optic.models.devices import mzm, photodiode, edfa
 from optic.models.channels import linearFiberChannel
-from optic.comm.modulation import GrayMapping, modulateGray
+from optic.comm.modulation import modulateGray
 from optic.dsp.core import pulseShape, lowPassFIR, pnorm, signal_power
 
 try:

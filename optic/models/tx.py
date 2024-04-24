@@ -14,7 +14,7 @@ from tqdm.notebook import tqdm
 
 from optic.dsp.core import pnorm, pulseShape, signal_power, upsample, phaseNoise
 from optic.models.devices import iqm
-from optic.comm.modulation import GrayMapping, modulateGray
+from optic.comm.modulation import grayMapping, modulateGray
 
 try:
     from optic.dsp.coreGPU import firFilter
@@ -128,7 +128,7 @@ def simpleWDMTx(param):
     Psig = 0
 
     # constellation symbols info
-    const = GrayMapping(param.M, param.constType)
+    const = grayMapping(param.M, param.constType)
     Es = np.mean(np.abs(const) ** 2)
 
     # pulse shaping filter

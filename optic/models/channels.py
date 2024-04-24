@@ -9,8 +9,7 @@ Models for fiber optic channels (:mod:`optic.models.channels`)
    linearFiberChannel   -- Linear optical fiber channel model.
    ssfm                 -- Nonlinear fiber optic channel model based on the NLSE equation.
    manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.   
-   awgn                 -- AWGN channel model.
-   phaseNoise           -- Phase noise model.
+   awgn                 -- AWGN channel model.   
 """
 
 
@@ -20,7 +19,6 @@ import logging as logg
 import numpy as np
 import scipy.constants as const
 from scipy.linalg import norm
-from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 from optic.utils import parameters
@@ -49,10 +47,18 @@ def linearFiberChannel(Ei, param):
 
         - param.Fs: sampling frequency [Hz] [default: None]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
     Returns
     -------
     Eo : np.array
         Optical field at the output of the fiber.
+
+    References
+    ----------
+    [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
+
+    [2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
 
     """
     try:
@@ -65,11 +71,13 @@ def linearFiberChannel(Ei, param):
     param.alpha = getattr(param, "alpha", 0.2)
     param.D = getattr(param, "D", 16)
     param.Fc = getattr(param, "Fc", 193.1e12)
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     L = param.L
     alpha = param.alpha
     D = param.D
     Fc = param.Fc
+    returnParameters = param.returnParameters
 
     # c  = 299792458   # speed of light [m/s](vacuum)
     c_kms = const.c / 1e3
@@ -98,7 +106,7 @@ def linearFiberChannel(Ei, param):
             Eo.size,
         )
 
-    return Eo
+    return (Eo, param) if returnParameters else Eo
 
 
 def ssfm(Ei, param=None):
@@ -138,12 +146,20 @@ def ssfm(Ei, param=None):
 
         - param.prgsBar: display progress bar? bolean variable [default:True]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
     param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
+  
+    References
+    ----------
+    [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013. 
+
+    [2] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
 
     """
     try:
@@ -163,6 +179,7 @@ def ssfm(Ei, param=None):
     param.amp = getattr(param, "amp", "edfa")
     param.NF = getattr(param, "NF", 4.5)
     param.prgsBar = getattr(param, "prgsBar", True)
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -175,6 +192,7 @@ def ssfm(Ei, param=None):
     amp = param.amp
     NF = param.NF
     prgsBar = param.prgsBar
+    returnParameters = param.returnParameters
 
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
@@ -230,10 +248,14 @@ def ssfm(Ei, param=None):
             Ech = Ech * np.exp(0)
 
     return (
-        Ech.reshape(
-            len(Ech),
-        ),
-        param,
+        (
+            Ech.reshape(
+                len(Ech),
+            ),
+            param,
+        )
+        if returnParameters
+        else Ech
     )
 
 
@@ -284,12 +306,22 @@ def manakovSSF(Ei, param):
 
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
 
+        - param.returnParameters: bool, return channel parameters [default: False]
+
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
     param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
+
+    References
+    ----------
+    [1] D. Marcuse, C. R. Menyuk, e P. K. A. Wai, “Application of the Manakov-PMD equation to studies of signal propagation in optical fibers with randomly varying birefringence”, Journal of Lightwave Technology, vol. 15, nº 9, p. 1735–1745, 1997, doi: 10.1109/50.622902.
+
+    [2] P. Serena, C. Lasagni, S. Musetti, e A. Bononi, “On Numerical Simulations of Ultra-Wideband Long-Haul Optical Communication Systems”, Journal of Lightwave Technology, vol. 38, nº 5, p. 1019–1031, 2020, doi: 10.1109/JLT.2019.2938580.
+
+    [3] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
 
     """
     try:
@@ -314,6 +346,7 @@ def manakovSSF(Ei, param):
     param.maxNlinPhaseRot = getattr(param, "maxNlinPhaseRot", 2e-2)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
+    param.returnParameters = getattr(param, "returnParameters", False)
 
     Ltotal = param.Ltotal
     Lspan = param.Lspan
@@ -331,6 +364,7 @@ def manakovSSF(Ei, param):
     saveSpanN = param.saveSpanN
     nlprMethod = param.nlprMethod
     maxNlinPhaseRot = param.maxNlinPhaseRot
+    returnParameters = param.returnParameters
 
     # channel parameters
     c_kms = const.c / 1e3  # speed of light (vacuum) in km/s
@@ -367,6 +401,7 @@ def manakovSSF(Ei, param):
         Ech_spans = np.zeros((Ei.shape[0], Ei.shape[1] * len(saveSpanN))).astype(prec)
         indRecSpan = 0
 
+    logg.info(f"Running Manakov SSF model on CPU...")
     for spanN in tqdm(range(1, Nspans + 1), disable=not (prgsBar)):
         Ex_conv = Ech_x.copy()
         Ey_conv = Ech_y.copy()
@@ -452,7 +487,10 @@ def manakovSSF(Ei, param):
         Ech[:, 0::2] = Ech_x.T
         Ech[:, 1::2] = Ech_y.T
 
-    return Ech, param
+    if returnParameters:
+        return Ech, param
+    else:
+        return Ech
 
 
 def nlinPhaseRot(Ex, Ey, Pch, γ):
@@ -526,6 +564,10 @@ def awgn(sig, snr, Fs=1, B=1, complexNoise=True):
     -------
     np.array
         Input signal plus noise.
+
+    References
+    ----------
+    [1] P. Massoud Salehi e J. Proakis, Digital Communications. McGraw-Hill Education, 2007.
 
     """
     snr_lin = 10 ** (snr / 10)

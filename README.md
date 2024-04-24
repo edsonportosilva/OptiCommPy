@@ -11,7 +11,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 
 </p>
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommPy/HEAD?urlpath=lab) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8125665.svg)](https://doi.org/10.5281/zenodo.8125665)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommPy/HEAD?urlpath=lab) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10304945.svg)](https://doi.org/10.5281/zenodo.10304945)
 
 
 ## Available features
@@ -22,6 +22,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 * Standard digital signal processing (DSP) blocks employed in coherent optical receivers, such as:
   - *Signal resampling.* 
   - *Matched filtering.*
+  - *Clock recovery.*
   - *Electronic chromatic dispersion compensation (EDC)*.
   - *Several NxN MIMO adaptive equalization algorithms*.
   - *Carrier phase recovery algorithms.* 
@@ -41,15 +42,19 @@ If you want to contribute to this project, implement the feature you want and se
 
 ## Requirements/Dependencies
 
-- python>=3.2
-- numpy>=1.9.2
-- scipy>=0.15.0
-- matplotlib>=1.4.3
-- scikit-commpy>=0.7.0
-- numba>=0.54.1
-- tqdm>=4.64.1
-- simple-pid>=1.0.1
-- mpl-scatter-density>=0.7.0
+-  python>=3.2
+-  numpy>=1.9.2
+-  scipy>=0.15.0
+-  matplotlib>=3.7.0
+-  scikit-commpy>=0.7.0
+-  numba>=0.54.1
+-  tqdm>=4.64.1
+-  simple-pid>=1.0.1
+-  mpl-scatter-density>=0.7.0
+-  pandas>=2.0.0
+-  sphinx-rtd-theme>=1.2.2
+-  nbsphinx>=0.9.3
+-  nbsphinx-link>=1.3.0
 
 ## Installation
 
@@ -64,13 +69,6 @@ Cloning the repository from GitHub:
 ```
 $ git clone https://github.com/edsonportosilva/OptiCommPy.git
 $ cd OptiCommPy
-$ python setup.py install
-```
-or 
-
-```
-$ git clone https://github.com/edsonportosilva/OptiCommPy.git
-$ cd OptiCommPy
 $ pip install .
 ```
 ## Documentation
@@ -78,4 +76,4 @@ We are continuously making efforts to improve the code documentation. You can fi
 
 ## Citing this repository
 
-Edson Porto da Silva, Adolfo Herbster, Carlos Daniel Fontes da Silva, & Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.6.0-alpha (v0.6.0-alpha). Zenodo. https://doi.org/10.5281/zenodo.8125665
+Edson Porto da Silva, Adolfo Herbster, Carlos Daniel Fontes da Silva, & Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.7.0-alpha (v0.7.0-alpha). Zenodo. https://doi.org/10.5281/zenodo.10304945

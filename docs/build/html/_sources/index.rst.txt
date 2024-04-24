@@ -4,25 +4,23 @@
    contain the root `toctree` directive.
 
 .. .. image:: logo_OptiCommpy.jpg
-..    :width: 500px  
-..    :align: center
+..     :width: 500px  
+..     :align: center
 
 Welcome to OptiCommPy's documentation!
 ======================================
 
-**OptiCommPy** is a Python-based framework to simulate systems, subsystems, and 
-components of fiber optic communication systems, for educational and research purposes.
-
 .. note::
 
    This project is under active development.
-   
-.. toctree::
-    :maxdepth: 2
-    :caption: Reference
 
-    welcome
-    usage
+.. include:: ../../README.rst
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Examples
+   
+    test_WDM_transmission
 
 .. toctree::
     :maxdepth: 2

@@ -11,11 +11,13 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=db0e1f0c"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -45,27 +47,24 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Available features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../test_WDM_transmission.html">Simulation of coherent WDM transmission</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../comm.html">Digital Communications Utilities</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../comm.html#digital-modulation-utilities-optic-comm-modulation">Digital modulation utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.modulation</span></code>)</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../comm.html#metrics-for-signal-and-performance-characterization-optic-comm-metrics">Metrics for signal and performance characterization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.metrics</span></code>)</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.metrics.bert.html">optic.comm.metrics.bert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.metrics.fastBERcalc.html">optic.comm.metrics.fastBERcalc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.metrics.calcLLR.html">optic.comm.metrics.calcLLR</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.metrics.monteCarloGMI.html">optic.comm.metrics.monteCarloGMI</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.comm.metrics.monteCarloMI</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#optic.comm.metrics.monteCarloMI"><code class="docutils literal notranslate"><span class="pre">monteCarloMI</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.comm.metrics.monteCarloMI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.metrics.Qfunc.html">optic.comm.metrics.Qfunc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.metrics.calcEVM.html">optic.comm.metrics.calcEVM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.metrics.theoryBER.html">optic.comm.metrics.theoryBER</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.metrics.theoryMI.html">optic.comm.metrics.theoryMI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.metrics.calcLinOSNR.html">optic.comm.metrics.calcLinOSNR</a></li>
 </ul>
 </li>
@@ -75,7 +74,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../dsp.html">Digital Signal Processing (DSP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../models.html">Physical Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../utils.html">General utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">General Utilities</a></li>
 </ul>
 
         </div>
@@ -104,10 +103,10 @@
            <div itemprop="articleBody">
              
   <section id="optic-comm-metrics-montecarlomi">
-<h1>optic.comm.metrics.monteCarloMI<a class="headerlink" href="#optic-comm-metrics-montecarlomi" title="Link to this heading"></a></h1>
+<h1>optic.comm.metrics.monteCarloMI<a class="headerlink" href="#optic-comm-metrics-montecarlomi" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.comm.metrics.monteCarloMI">
-<span class="sig-name descname"><span class="pre">monteCarloMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.comm.metrics.monteCarloMI" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">monteCarloMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.comm.metrics.monteCarloMI" title="Permalink to this definition"></a></dt>
 <dd><p>Monte Carlo based mutual information (MI) estimation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -126,6 +125,8 @@
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.</p>
 </dd></dl>
 
 </section>
