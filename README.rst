@@ -4,6 +4,7 @@
 
 .. image:: https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/logo_OptiCommPy.jpg
    :width: 500px
+   :align: center
 
 **OptiCommPy** is a Python-based framework to simulate systems, subsystems, and 
 components of fiber optic communication systems, for educational and research purposes.
