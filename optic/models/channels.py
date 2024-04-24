@@ -149,6 +149,10 @@ def ssfm(Ei, param=None):
     param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
 
+    References
+    ----------
+    [1] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
+    
     """
     try:
         Fs = param.Fs
@@ -303,6 +307,11 @@ def manakovSSF(Ei, param):
     param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
 
+    References
+    ----------
+    [1] D. Marcuse, C. R. Menyuk, e P. K. A. Wai, “Application of the Manakov-PMD equation to studies of signal propagation in optical fibers with randomly varying birefringence”, Journal of Lightwave Technology, vol. 15, nº 9, p. 1735–1745, 1997, doi: 10.1109/50.622902.
+    [2] P. Serena, C. Lasagni, S. Musetti, e A. Bononi, “On Numerical Simulations of Ultra-Wideband Long-Haul Optical Communication Systems”, Journal of Lightwave Technology, vol. 38, nº 5, p. 1019–1031, 2020, doi: 10.1109/JLT.2019.2938580.
+    [3] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.    
     """
     try:
         Fs = param.Fs
