@@ -253,16 +253,19 @@
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">delaySignal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Apply a time delay to a signal sampled at fs samples per second using FFT/IFFT algorithms.</p>
-<dl class="simple">
-<dt>sig<span class="classifier">array_like</span></dt><dd><p>The input signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sig</strong> (<em>array_like</em>) -- The input signal.</p></li>
+<li><p><strong>delay</strong> (<em>float</em>) -- The time delay to apply to the signal (in seconds).</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) -- Sampling frequency of the signal (in samples per second).</p></li>
+</ul>
 </dd>
-<dt>delay<span class="classifier">float</span></dt><dd><p>The time delay to apply to the signal (in seconds).</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The delayed signal.</p>
 </dd>
-<dt>fs<span class="classifier">float</span></dt><dd><p>Sampling frequency of the signal (in samples per second).</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>array_like</dt><dd><p>The delayed signal.</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
 </dd>
 </dl>
 </dd></dl>
