@@ -51,7 +51,7 @@ Several types of analysis can be conducted to characterize transmission performa
 
 ![Performance metrics for different transmission distances and received optical powers, characterizing the increasing penalty from chromatic dispersion with the distance in a 10 Gb/s OOK transmission system. (a) BER vs received optical power for different transmission distances; (b) Q-factor vs received optical power for different transmission distances.](metrics.png)
 
-A collection of examples of utilization of OptiCommPy to build several different simulation setups, including advanced setups with non-linear fiber propagation models, WDM transmission, and coherent detection can be found in https://github.com/edsonportosilva/OptiCommPy/tree/main/examples. Additionally, benchmarks quantifying the speedups achieved when using GPU acceleration are provided.
+A collection of examples of utilization of OptiCommPy to build several different simulation setups, including advanced setups with non-linear fiber propagation models, WDM transmission, and coherent detection can be found in https://github.com/edsonportosilva/OptiCommPy/tree/main/examples. Additionally, benchmarks quantifying the speedups achieved by using GPU acceleration are provided.
 
 # Acknowledgements
 
