@@ -19,7 +19,8 @@ Welcome to OptiCommPy's documentation!
 .. toctree::
     :maxdepth: 1
     :caption: Examples
-   
+    
+    JOSS_paper_example
     test_WDM_transmission
 
 .. toctree::
