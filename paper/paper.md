@@ -34,6 +34,7 @@ Whether in the research or development stages, the study of optical communicatio
 Presently, a variety of optical communication simulation toolboxes are accessible. While the majority of these are proprietary software packages [@OptiSystem], [@vpi], [@optsim], a few are open-source but are designed to operate within proprietary software environments such as Matlab&reg;
 [@robochameleon], [@optilux]. In this scenario, OptiCommPy is intended to be an open-source alternative simulation tool for educational and research purposes.
 
+# OptiCommPy code structure
 The module structure of the OptiCommPy package is illustrated in Fig. 1. At the top level, the package is named `optic`, containing five sub-packages: `comm, models, dsp, utils`, and `plot`.
 
 ![Structure of modules of the OptiCommPy package.](OptiCommPy.png)
@@ -50,7 +51,7 @@ Several types of analysis can be conducted to characterize transmission performa
 
 ![Performance metrics for different transmission distances and received optical powers, characterizing the increasing penalty from chromatic dispersion with the distance in a 10 Gb/s OOK transmission system. (a) BER vs received optical power for different transmission distances; (b) Q-factor vs received optical power for different transmission distances.](metrics.png)
 
-A collection of examples of utilization of OptiCommPy to build several different simulation setups, including advanced setups with non-linear fiber propagation models, WDM transmission, and coherent detection can be found in https://github.com/edsonportosilva/OptiCommPy/tree/main/examples.
+A collection of examples of utilization of OptiCommPy to build several different simulation setups, including advanced setups with non-linear fiber propagation models, WDM transmission, and coherent detection can be found in https://github.com/edsonportosilva/OptiCommPy/tree/main/examples. Additionally, benchmarks quantifying the speedups achieved when using GPU acceleration are provided.
 
 # Acknowledgements
 
