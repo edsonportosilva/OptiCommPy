@@ -19,6 +19,10 @@ def firFilter(h, x, prec=None):
     -------
     y : np.array
         Output (filtered) signal.
+
+    References
+    ----------
+    [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
     """
     try:
         x.shape[1]

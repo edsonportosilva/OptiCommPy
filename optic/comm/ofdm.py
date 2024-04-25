@@ -118,6 +118,10 @@ def modulateOFDM(symb, param):
     -------
     np.array
         Complex-valued array representing the OFDM symbols sequence transmitted.  
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
     # Check and set default values for input parameters
     Nfft = getattr(param, "Nfft", 512)
@@ -199,6 +203,10 @@ def demodulateOFDM(sig, param):
     -----
     - The input signal must be sampled at one sample per symbol.
     - This function performs demodulation of the OFDM signal according to the provided parameters, including channel estimation and single tap equalization.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
     # Check and set default values for input parameters
     Nfft = getattr(param, "Nfft", 512)
