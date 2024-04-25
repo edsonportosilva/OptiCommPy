@@ -103,137 +103,6 @@
 </pre></div>
 </div>
 </div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">help</span><span class="p">(</span><span class="n">Image</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Help on class Image in module IPython.core.display:
-
-class Image(DisplayObject)
- |  Image(data=None, url=None, filename=None, format=None, embed=None, width=None, height=None, retina=False, unconfined=False, metadata=None, alt=None)
- |
- |  Method resolution order:
- |      Image
- |      DisplayObject
- |      builtins.object
- |
- |  Methods defined here:
- |
- |  __init__(self, data=None, url=None, filename=None, format=None, embed=None, width=None, height=None, retina=False, unconfined=False, metadata=None, alt=None)
- |      Create a PNG/JPEG/GIF image object given raw data.
- |
- |      When this object is returned by an input cell or passed to the
- |      display function, it will result in the image being displayed
- |      in the frontend.
- |
- |      Parameters
- |      ----------
- |      data : unicode, str or bytes
- |          The raw image data or a URL or filename to load the data from.
- |          This always results in embedded image data.
- |
- |      url : unicode
- |          A URL to download the data from. If you specify `url=`,
- |          the image data will not be embedded unless you also specify `embed=True`.
- |
- |      filename : unicode
- |          Path to a local file to load the data from.
- |          Images from a file are always embedded.
- |
- |      format : unicode
- |          The format of the image data (png/jpeg/jpg/gif). If a filename or URL is given
- |          for format will be inferred from the filename extension.
- |
- |      embed : bool
- |          Should the image data be embedded using a data URI (True) or be
- |          loaded using an &lt;img&gt; tag. Set this to True if you want the image
- |          to be viewable later with no internet connection in the notebook.
- |
- |          Default is `True`, unless the keyword argument `url` is set, then
- |          default value is `False`.
- |
- |          Note that QtConsole is not able to display images if `embed` is set to `False`
- |
- |      width : int
- |          Width in pixels to which to constrain the image in html
- |
- |      height : int
- |          Height in pixels to which to constrain the image in html
- |
- |      retina : bool
- |          Automatically set the width and height to half of the measured
- |          width and height.
- |          This only works for embedded images because it reads the width/height
- |          from image data.
- |          For non-embedded images, you can just set the desired display width
- |          and height directly.
- |
- |      unconfined : bool
- |          Set unconfined=True to disable max-width confinement of the image.
- |
- |      metadata : dict
- |          Specify extra metadata to attach to the image.
- |
- |      alt : unicode
- |          Alternative text for the image, for use by screen readers.
- |
- |      Examples
- |      --------
- |      embedded image data, works in qtconsole and notebook
- |      when passed positionally, the first arg can be any of raw image data,
- |      a URL, or a filename from which to load image data.
- |      The result is always embedding image data for inline images.
- |
- |      &gt;&gt;&gt; Image(&#39;https://www.google.fr/images/srpr/logo3w.png&#39;) # doctest: +SKIP
- |      &lt;IPython.core.display.Image object&gt;
- |
- |      &gt;&gt;&gt; Image(&#39;/path/to/image.jpg&#39;)
- |      &lt;IPython.core.display.Image object&gt;
- |
- |      &gt;&gt;&gt; Image(b&#39;RAW_PNG_DATA...&#39;)
- |      &lt;IPython.core.display.Image object&gt;
- |
- |      Specifying Image(url=...) does not embed the image data,
- |      it only generates ``&lt;img&gt;`` tag with a link to the source.
- |      This will not work in the qtconsole or offline.
- |
- |      &gt;&gt;&gt; Image(url=&#39;https://www.google.fr/images/srpr/logo3w.png&#39;)
- |      &lt;IPython.core.display.Image object&gt;
- |
- |  reload(self)
- |      Reload the raw data from file or URL.
- |
- |  ----------------------------------------------------------------------
- |  Methods inherited from DisplayObject:
- |
- |  __repr__(self)
- |      Return repr(self).
- |
- |  ----------------------------------------------------------------------
- |  Data descriptors inherited from DisplayObject:
- |
- |  __dict__
- |      dictionary for instance variables (if defined)
- |
- |  __weakref__
- |      list of weak references to the object (if defined)
- |
- |  ----------------------------------------------------------------------
- |  Data and other attributes inherited from DisplayObject:
- |
- |  metadata = None
-
-</pre></div></div>
-</div>
 <section id="Getting-started">
 <h1>Getting started<a class="headerlink" href="#Getting-started" title="Permalink to this heading"></a></h1>
 <p>In this notebook, a basic illustrative example of the usage of the OptiCommPy package is presented.</p>
@@ -253,7 +122,7 @@ class Image(DisplayObject)
 </pre></div>
 </div>
 <div class="output_area docutils container">
-<img alt="_images/JOSS_paper_example_3_0.png" class="no-scaled-link" src="_images/JOSS_paper_example_3_0.png" style="width: 600px;" />
+<img alt="_images/JOSS_paper_example_2_0.png" class="no-scaled-link" src="_images/JOSS_paper_example_2_0.png" style="width: 600px;" />
 </div>
 </div>
 <p>It consists of a 10 Gb/s NRZ OOK transmission over 100 km of optical fiber with direct detection at the receiver assuming a photodiode with 10 GHz of bandwidth. The fiber channel is modeled as a linear propagation medium exhibiting loss and chromatic dispersion. All the simulation parameters are listed in the table below.</p>
@@ -587,14 +456,14 @@ C:\Users\edson.DESKTOP-54IJM4F\AppData\Local\Temp\ipykernel_29680\2042705777.py:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/JOSS_paper_example_15_1.png" src="_images/JOSS_paper_example_15_1.png" />
+<img alt="_images/JOSS_paper_example_14_1.png" src="_images/JOSS_paper_example_14_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/JOSS_paper_example_15_2.png" src="_images/JOSS_paper_example_15_2.png" />
+<img alt="_images/JOSS_paper_example_14_2.png" src="_images/JOSS_paper_example_14_2.png" />
 </div>
 </div>
 <p>These plots clearly illustrate that system performance deteriorates with longer transmission distances, which is primarily attributed to the cumulative impact of chromatic dispersion and the noise sources at the photodiode, resulting in increased signal degradation.</p>
