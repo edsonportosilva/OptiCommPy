@@ -88,6 +88,10 @@ def firFilter(h, x):
     -------
     y : np.array
         Output (filtered) signal.
+
+    References
+    ----------
+    [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
     """
     try:
         x.shape[1]
@@ -339,6 +343,10 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
     h : np.array
         Filter coefficients.
 
+    References
+    ----------
+    [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
+
     """
     fu = fc / fa
     d = (N - 1) / 2
@@ -381,6 +389,10 @@ def upsample(x, factor):
 
     If the input signal is a 2D array, the upsampling is performed
     column-wise.
+
+    References
+    ----------
+    [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
     """
     try:
         xUp = np.zeros((factor * x.shape[0], x.shape[1]), dtype=x.dtype)
@@ -411,6 +423,10 @@ def decimate(Ei, param):
     -------
     Eo : np.array
         Decimated signal.
+
+    References
+    ----------
+    [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
 
     """
     try:
@@ -458,6 +474,10 @@ def resample(Ei, param):
     -------
     Eo : np.array
         Resampled signal.
+
+    References
+    ----------
+    [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
 
     """
     try:
@@ -654,6 +674,10 @@ def phaseNoise(lw, Nsamples, Ts):
     -------
     phi : np.array
         realization of the phase noise process.
+
+    References
+    ----------
+    [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
     σ2 = 2 * np.pi * lw * Ts
