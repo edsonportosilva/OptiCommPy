@@ -8,6 +8,7 @@ Customized functions for plotting and vizualization (:mod:`optic.plot`)
 
    pconst                     -- Generate custom constellation plots      
    constHist                  -- Generate histogram for constellation plots
+   plotColoredConst           -- Colored constellation scatter plot
    plotDecisionBoundaries     -- Plot decision boundaries of the detector
    eyediagram                 -- Plots eyediagrams of communication signals
    plotPSD                    -- Plot power spectral density of signals
@@ -30,45 +31,46 @@ from optic.comm.modulation import detector
 from optic.utils import dB2lin
 import warnings
 
-warnings.filterwarnings('ignore', r'All-NaN (slice|axis) encountered')
+warnings.filterwarnings("ignore", r"All-NaN (slice|axis) encountered")
+
 
 def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
     """
     Plot signal constellations.
-    
+
     Parameters
     ----------
     x : complex signals or list of complex signals
         Input signals.
-    
+
     lim : bool, optional
-        Flag indicating whether to limit the axes to the radius of the signal. 
+        Flag indicating whether to limit the axes to the radius of the signal.
         Defaults to True.
-    
+
     R : float, optional
-        Scaling factor for the radius of the signal. 
+        Scaling factor for the radius of the signal.
         Defaults to 1.25.
-    
+
     pType : str, optional
         Type of plot. "fancy" for scatter_density plot, "fast" for fast plot.
         Defaults to "fancy".
-    
+
     cmap : str, optional
         Color map for scatter_density plot.
         Defaults to "turbo".
-    
+
     whiteb : bool, optional
         Flag indicating whether to use white background for scatter_density plot.
         Defaults to True.
-    
+
     Returns
     -------
     fig : Figure
         Figure object.
-    
+
     ax : Axes or array of Axes
         Axes object(s).
-    
+
     """
     if type(x) == list:
         for ind, _ in enumerate(x):
@@ -104,13 +106,14 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
         fig = plt.figure()
 
         if type(x) == list:
-            for k in range(nSubPts):           
-
+            for k in range(nSubPts):
                 for ind in range(len(x)):
                     if pType == "fancy":
                         if ind == 0:
-                            ax = fig.add_subplot(nRows, nCols, Position[k], projection='scatter_density')
-                        ax = constHist(x[ind][:, k], ax, radius, cmap, whiteb)
+                            ax = fig.add_subplot(
+                                nRows, nCols, Position[k], projection="scatter_density"
+                            )
+                        ax = constHist(x[ind][:, k], ax, cmap, whiteb)
                     elif pType == "fast":
                         if ind == 0:
                             ax = fig.add_subplot(nRows, nCols, Position[k])
@@ -126,10 +129,12 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
                     ax.set_xlim(-radius, radius)
                     ax.set_ylim(-radius, radius)
         else:
-            for k in range(nSubPts):                
+            for k in range(nSubPts):
                 if pType == "fancy":
-                    ax = fig.add_subplot(nRows, nCols, Position[k], projection='scatter_density')
-                    ax = constHist(x[:, k], ax, radius, cmap, whiteb)
+                    ax = fig.add_subplot(
+                        nRows, nCols, Position[k], projection="scatter_density"
+                    )
+                    ax = constHist(x[:, k], ax, cmap, whiteb)
                 elif pType == "fast":
                     ax = fig.add_subplot(nRows, nCols, Position[k])
                     ax.plot(x[:, k].real, x[:, k].imag, ".")
@@ -148,10 +153,10 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
 
     elif nSubPts == 1:
         fig = plt.figure()
-        #ax = plt.gca()
+        # ax = plt.gca()
         if pType == "fancy":
-            ax = fig.add_subplot(1, 1, 1, projection='scatter_density')
-            ax = constHist(x[:, 0], ax, radius, cmap, whiteb)
+            ax = fig.add_subplot(1, 1, 1, projection="scatter_density")
+            ax = constHist(x[:, 0], ax, cmap, whiteb)
         elif pType == "fast":
             ax = plt.gca()
             ax.plot(x.real, x.imag, ".")
@@ -169,7 +174,7 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
     return fig, ax
 
 
-def constHist(symb, ax, radius, cmap="turbo", whiteb=True):
+def constHist(symb, ax, cmap="turbo", whiteb=True):
     """
     Generate histogram-based constellation plot.
 
@@ -179,8 +184,6 @@ def constHist(symb, ax, radius, cmap="turbo", whiteb=True):
         Complex-valued constellation symbols.
     ax : axis object handle
         axis of the plot.
-    radius : real scalar
-        Parameter to adjust the x,y-range of the plot.
 
     Returns
     -------
@@ -189,15 +192,102 @@ def constHist(symb, ax, radius, cmap="turbo", whiteb=True):
 
     """
     cmap = copy.copy(cm.get_cmap(cmap))
-    if  whiteb:
+    if whiteb:
         cmap.set_under(alpha=0)
-    
-    ax.scatter_density(symb.real, symb.imag, cmap=cmap, 
-                             vmin=0.25, vmax=np.nanmax,
-                             dpi=72, downres_factor=2)
+
+    ax.scatter_density(
+        symb.real,
+        symb.imag,
+        cmap=cmap,
+        vmin=0.25,
+        vmax=np.nanmax,
+        dpi=72,
+        downres_factor=2,
+    )
     return ax
 
-def plotDecisionBoundaries(constSymb, px=None, SNR=20, rule='MAP', gridStep=0.001, d=0.5, cmap=plt.cm.turbo):
+
+def plotColoredConst(
+    symb,
+    constSymb,
+    px=None,
+    SNR=20,
+    rule="MAP",
+    cmap=plt.cm.turbo,
+    fig=None,
+    ax=None,
+):
+    """
+    Colored constellation scatter plot.
+
+    Parameters
+    ----------
+    symb : np.array
+        Complex-valued constellation symbols.
+    constSymb : np.array
+        Complex-valued constellation symbols used for detection.
+    px : array_like, optional
+        Prior probabilities of symbols.
+    SNR : float, optional
+        Signal-to-Noise Ratio (SNR) in decibels (dB). Default is 20 dB.
+    rule : str, optional
+        Detection rule, either "MAP" for Maximum A Posteriori or "ML" for Maximum Likelihood.
+        Default is "MAP".
+    cmap : matplotlib.colors.Colormap, optional
+        Colormap for coloring the constellation symbols. Default is matplotlib.cm.turbo.
+    fig : matplotlib.figure.Figure, optional
+        Figure object for the plot. If None, a new figure is created. Default is None.
+    ax : matplotlib.axes.Axes, optional
+        Axes object for the plot. If None, a new axes is created. Default is None.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure object for the plot.
+    ax : matplotlib.axes.Axes
+        Axes object for the plot.
+
+    Notes
+    -----
+    This function generates a scatter plot of complex-valued constellation symbols with colors
+    representing the corresponding decided constellation symbols based on detection results.
+
+    The detected symbols are determined using a detector based on the provided input symbols, noise
+    variance, detection rule, and prior probabilities (if available).
+    """
+    cmap = copy.copy(cm.get_cmap(cmap))
+
+    σ2 = 1 / dB2lin(SNR)
+
+    _, pos = detector(symb, σ2, constSymb, rule=rule, px=px)  # detector
+
+    # plot received symbols with colors that depend
+    # on the respective decided constellation symbol
+    colors = cmap(np.linspace(0, 1, len(constSymb)))
+
+    # Create plot
+    if fig is None and ax is None:
+        fig, ax = plt.subplots()
+
+    ax.scatter(symb.real, symb.imag, c=[colors[ind] for ind in pos], marker=".", s=0.5)
+    ax.axis("square")
+    ax.set_xlabel("In-Phase (I)")
+    ax.set_ylabel("Quadrature (Q)")
+
+    return fig, ax
+
+
+def plotDecisionBoundaries(
+    constSymb,
+    px=None,
+    SNR=20,
+    rule="MAP",
+    gridStep=0.001,
+    d=0.5,
+    cmap=plt.cm.turbo,
+    fig=None,
+    ax=None,
+):
     """
     Plot decision boundaries for a given constellation symbols.
 
@@ -218,13 +308,25 @@ def plotDecisionBoundaries(constSymb, px=None, SNR=20, rule='MAP', gridStep=0.00
         Default is 0.5.
     cmap : str or Colormap, optional
         Colormap to be used for the contour plot. Default is 'turbo'.
+    fig : matplotlib.figure.Figure, optional
+        Figure object for the plot. If None, a new figure is created. Default is None.
+    ax : matplotlib.axes.Axes, optional
+        Axes object for the plot. If None, a new axes is created. Default is None.
 
     Returns
     -------
     fig : matplotlib.figure.Figure
         The created matplotlib figure.
     ax : matplotlib.axes.Axes
-        The created matplotlib axes.   
+        The created matplotlib axes.
+
+    Notes
+    -----
+    This function plots decision boundaries for a given set of constellation symbols in the complex plane.
+    It uses the specified signal-to-noise ratio (SNR), detection rule, and prior probabilities (if available)
+    to determine the decision boundaries.
+
+    The decision boundaries are plotted using a contour plot with colors representing the different decision regions.
     """
 
     # Normalize constellation symbols
@@ -233,32 +335,39 @@ def plotDecisionBoundaries(constSymb, px=None, SNR=20, rule='MAP', gridStep=0.00
     # If px is None, assume equal probabilities for symbols
     if px is None:
         M = len(constSymb)
-        px = (1/M) * np.ones(M)
+        px = (1 / M) * np.ones(M)
 
     # Define the range for the grid
     x_min, x_max = min(constSymb.real) - d, max(constSymb.real) + d
     y_min, y_max = min(constSymb.imag) - d, max(constSymb.imag) + d
 
     # Create the grid
-    gI, gQ = np.meshgrid(np.arange(x_min, x_max, gridStep), np.arange(y_min, y_max, gridStep))
-    
+    gI, gQ = np.meshgrid(
+        np.arange(x_min, x_max, gridStep), np.arange(y_min, y_max, gridStep)
+    )
+
     r = gI.ravel() + 1j * gQ.ravel()
 
     # Calculate noise variance from SNR
     σ2 = 1 / dB2lin(SNR)
 
     # Use MAP detector for a Gaussian channel
-    dec, pos = detector(r, σ2, constSymb, rule=rule, px=px)  # detector
-    
+    _, pos = detector(r, σ2, constSymb, rule=rule, px=px)  # detector
+
     # Reshape for plotting
-    Z = pos.reshape(gI.shape)+1
+    Z = pos.reshape(gI.shape) + 1
 
     # Create contour plot of decision boundaries
-    fig, ax = plt.subplots()
-    ax.contourf(gI, gQ, Z, 2*len(constSymb), cmap=cmap)
-    ax.axis('square')
+    if fig is None and ax is None:
+        fig, ax = plt.subplots()
+
+    ax.contourf(gI, gQ, Z, 2 * len(constSymb), cmap=cmap)
+    ax.axis("square")
+    ax.set_xlabel("In-Phase (I)")
+    ax.set_ylabel("Quadrature (Q)")
 
     return fig, ax
+
 
 def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     """
@@ -319,9 +428,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
                 ]
             )
 
-            H, xedges, yedges = np.histogram2d(
-                taxis, y_, bins=350, range=imRange
-            )
+            H, xedges, yedges = np.histogram2d(taxis, y_, bins=350, range=imRange)
 
             H = H.T
             H = gaussian_filter(H, sigma=1.0)
@@ -339,14 +446,14 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             y[x == 0] = np.nan
 
             plt.plot(x / SpS, y, color="blue", alpha=0.8, label=plotlabel_)
-            plt.xlim(min(x / SpS), max(x / SpS)) 
+            plt.xlim(min(x / SpS), max(x / SpS))
 
             if plotlabel is not None:
                 plt.legend(loc="upper left")
 
         plt.xlabel("symbol period (Ts)")
         plt.ylabel("amplitude")
-        plt.title(f"eye diagram {plotlabel_}")        
+        plt.title(f"eye diagram {plotlabel_}")
         plt.grid(alpha=0.15)
         plt.show()
 
@@ -391,9 +498,9 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
         label = " "
 
     try:
-       sig.shape[1]       
+        sig.shape[1]
     except IndexError:
-       sig = sig.reshape(len(sig), 1)
+        sig = sig.reshape(len(sig), 1)
 
     for indMode in range(sig.shape[1]):
         plt.psd(
@@ -410,17 +517,19 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
     return fig, plt.gca()
 
 
-def animateConstGIF(x, figName, 
-                    xlabel='In-Phase (I)', 
-                    ylabel='Quadrature (Q)', 
-                    title=[], 
-                    color='b', 
-                    centralAxes=False,
-                    squareAxes=True, 
-                    fram=200, 
-                    inter=20, 
-                    radius=2,
-                   ):
+def animateConstGIF(
+    x,
+    figName,
+    xlabel="In-Phase (I)",
+    ylabel="Quadrature (Q)",
+    title=[],
+    color="b",
+    centralAxes=False,
+    squareAxes=True,
+    fram=200,
+    inter=20,
+    radius=2,
+):
     """
     Create and save a constellation plot animation as GIF
 
@@ -451,32 +560,32 @@ def animateConstGIF(x, figName,
     """
 
     figAnin = plt.figure()
-       
+
     min_xy = -radius
     max_xy = radius
-   
-    ax = plt.axes(            
+
+    ax = plt.axes(
         ylim=(
-             min_xy,
-             max_xy,
+            min_xy,
+            max_xy,
         ),
         xlim=(
-             min_xy,
-             max_xy,
+            min_xy,
+            max_xy,
         ),
     )
 
-    (line,) = ax.plot([], [], color+'.')
+    (line,) = ax.plot([], [], color + ".")
     ax.grid()
 
     if centralAxes:
-        ax.spines['left'].set_position('center')
-        ax.spines['bottom'].set_position('center')
-        ax.spines['right'].set_color('none')
-        ax.spines['top'].set_color('none')
-        ax.xaxis.set_ticks_position('bottom')
-        ax.yaxis.set_ticks_position('left')
-        
+        ax.spines["left"].set_position("center")
+        ax.spines["bottom"].set_position("center")
+        ax.spines["right"].set_color("none")
+        ax.spines["top"].set_color("none")
+        ax.xaxis.set_ticks_position("bottom")
+        ax.yaxis.set_ticks_position("left")
+
     period = int(len(x) / fram)
     indx = np.arange(0, len(x), period)
 
@@ -489,14 +598,15 @@ def animateConstGIF(x, figName,
     if title:
         plt.title(title)
 
-    def init():        
+    def init():
         line.set_data([], [])
-        return line,
+        return (line,)
 
-    def animate(i): 
-        line.set_data(x[indx[i]-period:indx[i]].real, x[indx[i]-period:indx[i]].imag)
-        return line,
-                   
+    def animate(i):
+        line.set_data(
+            x[indx[i] - period : indx[i]].real, x[indx[i] - period : indx[i]].imag
+        )
+        return (line,)
 
     anim = FuncAnimation(
         figAnin,
@@ -509,6 +619,7 @@ def animateConstGIF(x, figName,
 
     anim.save(figName, dpi=200, writer="imagemagick")
     plt.close()
+
 
 def randomCmap(nColors=100, low=0.1, high=0.99):
     """
@@ -526,9 +637,11 @@ def randomCmap(nColors=100, low=0.1, high=0.99):
     Returns
     -------
     matplotlib.colors.ListedColormap
-        Random colormap with the specified number of colors and random RGB values.  
+        Random colormap with the specified number of colors and random RGB values.
     """
-    randRGBcolors = [(np.random.uniform(low=low, high=high, size=(1,3))) for i in range(nColors)]
-    new_cmap  = ListedColormap(randRGBcolors, 'new_map', N=nColors)
-    
+    randRGBcolors = [
+        (np.random.uniform(low=low, high=high, size=(1, 3))) for i in range(nColors)
+    ]
+    new_cmap = ListedColormap(randRGBcolors, "new_map", N=nColors)
+
     return new_cmap

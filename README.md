@@ -42,15 +42,20 @@ If you want to contribute to this project, implement the feature you want and se
 
 ## Requirements/Dependencies
 
-- python>=3.2
-- numpy>=1.9.2
-- scipy>=0.15.0
-- matplotlib>=1.4.3
-- scikit-commpy>=0.7.0
-- numba>=0.54.1
-- tqdm>=4.64.1
-- simple-pid>=1.0.1
-- mpl-scatter-density>=0.7.0
+-  python>=3.2
+-  numpy>=1.9.2
+-  scipy>=0.15.0
+-  matplotlib>=3.7.0
+-  scikit-commpy>=0.7.0
+-  numba>=0.54.1
+-  tqdm>=4.64.1
+-  simple-pid>=1.0.1
+-  mpl-scatter-density>=0.7.0
+-  pandas>=2.0.0
+-  sphinx-rtd-theme>=1.2.2
+-  nbsphinx>=0.9.3
+-  nbsphinx-link>=1.3.0
+-  cupy-cuda12x >= 13.1.0 (optional, in case GPU processing is desired)
 
 ## Installation
 
@@ -61,13 +66,6 @@ pip install OptiCommPy
 ```
 
 Cloning the repository from GitHub:
-
-```
-$ git clone https://github.com/edsonportosilva/OptiCommPy.git
-$ cd OptiCommPy
-$ python setup.py install
-```
-or 
 
 ```
 $ git clone https://github.com/edsonportosilva/OptiCommPy.git

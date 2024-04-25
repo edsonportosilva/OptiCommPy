@@ -6,7 +6,7 @@ from setuptools import setup
 # Taken from scikit-commpy setup.py
 DISTNAME = "OptiCommPy"
 DESCRIPTION = "Optical Communications Algorithms with Python"
-LONG_DESCRIPTION = open("README.md", encoding="utf8").read()
+LONG_DESCRIPTION = open("README.rst", encoding="utf8").read()
 MAINTAINER = "Edson Porto da Silva"
 MAINTAINER_EMAIL = "edsonporto88@gmail.com"
 URL = "https://github.com/edsonportosilva/OptiCommPy"
@@ -44,6 +44,8 @@ setup(
         "mpl-scatter-density>=0.7.0",
         "pandas>=2.0.0",
         "sphinx-rtd-theme>=1.2.2",
+        "nbsphinx>=0.9.3",
+        "nbsphinx-link>=1.3.0"
     ],
     #'package' package must contain files (see list above)
     # This dict maps the package name =to=> directories

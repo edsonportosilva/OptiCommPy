@@ -48,6 +48,13 @@ def edc(Ei, param):
     np.array
         CD compensated signal.
 
+    References
+    ----------
+
+    [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
+
+    [2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.
+
     """
     try:
         Fs = param.Fs
@@ -61,6 +68,7 @@ def edc(Ei, param):
 
     param.alpha = 0
     param.D = -param.D
+    logg.info(f"Running CD compensation...")
 
     return linearFiberChannel(Ei, param)
 
@@ -68,13 +76,13 @@ def edc(Ei, param):
 def mimoAdaptEqualizer(x, param=None, dx=None):
     """
     N-by-N MIMO adaptive equalizer.
-
-    Algorithms available: 'cma', 'rde', 'nlms', 'dd-lms', 'da-rde', 'rls', 'dd-rls', 'static'.
-
+    
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
+    dx : np.array, optional
+        Syncronized exact symbol sequence corresponding to the received input array x.
     param : object, optional
         Parameter object containing the following attributes:
 
@@ -88,13 +96,15 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
 
         - SpS : int, samples per symbol (default: 2)
 
-        - H : array-like, coefficient matrix (default: [])
+        - H : np.array, coefficient matrix (default: [])
 
         - L : int or list of ints, length of the output of the training section (default: [])
 
         - Hiter : list, history of coefficient matrices (default: [])
 
         - storeCoeff : bool, flag indicating whether to store coefficient matrices (default: False)
+
+        - runWL: bool, flag indicating whether to run the equalizer in the widely-linear mode. (default: False)
 
         - alg : str or list of strs, specifying the equalizer algorithm(s) (default: ['nlms'])
 
@@ -104,22 +114,30 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
 
         - prgsBar : bool, flag indicating whether to display progress bar (default: True)
 
-        - returnResults : bool, return filters, MSE and filters per iteration
-
-    dx : array-like, optional
-        Syncronized exact symbol sequence corresponding to the received input array x.
-
     Returns
     -------
-    yEq : array-like
+    yEq : np.array
         Equalized output array.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    errSq : array-like
+    errSq : np.array
         Squared absolute error array.
     Hiter : list
         History of coefficient matrices.
 
+    Notes
+    -----
+    Algorithms available: 'cma', 'rde', 'nlms', 'dd-lms', 'da-rde', 'rls', 'dd-rls', 'static'.
+
+    References
+    ----------
+    [1] P. S. R. Diniz, Adaptive Filtering: Algorithms and Practical Implementation. Springer US, 2012.
+
+    [2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
+
+    [3] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.
+
+    [4] E. P. Da Silva e D. Zibar, “Widely Linear Equalization for IQ Imbalance and Skew Compensation in Optical Coherent Receivers”, Journal of Lightwave Technology, vol. 34, nº 15, p. 3577–3586, ago. 2016, doi: 10.1109/JLT.2016.2577716.
     """
     if dx is None:
         dx = []
@@ -133,9 +151,11 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     lambdaRLS = getattr(param, "lambdaRLS", 0.99)
     SpS = getattr(param, "SpS", 2)
     H = getattr(param, "H", [])
+    H_ = getattr(param, "H_", [])
     L = getattr(param, "L", [])
     Hiter = getattr(param, "Hiter", [])
     storeCoeff = getattr(param, "storeCoeff", False)
+    runWL = getattr(param, "runWL", False)
     alg = getattr(param, "alg", ["nlms"])
     constType = getattr(param, "constType", "qam")
     M = getattr(param, "M", 4)
@@ -180,6 +200,11 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
             H[
                 initH + initH * nModes, int(np.floor(H.shape[1] / 2))
             ] = 1  # Central spike initialization
+    if not H_:  # if H_ is not defined      
+        H_ = np.zeros((nModes**2, nTaps), dtype="complex")
+
+
+    logg.info(f"Running adaptive equalizer...")
     # Equalizer training:
     if type(alg) == list:
         yEq = np.zeros((totalNumSymb, x.shape[1]), dtype="complex")
@@ -196,16 +221,18 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
                     logg.info(
                         f"{runAlg} pre-convergence training iteration #%d", indIter
                     )
-                    yEq[nStart:nEnd, :], H, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
+                    yEq[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
                         x[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
                         dx[nStart:nEnd, :],
                         SpS,
                         H,
+                        H_,
                         L[indstage],
                         mu[indstage],
                         lambdaRLS,
                         nTaps,
                         storeCoeff,
+                        runWL,
                         runAlg,
                         constSymb,
                     )
@@ -213,16 +240,18 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
                         f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd])
                     )
             else:
-                yEq[nStart:nEnd, :], H, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
+                yEq[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
                     x[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
                     dx[nStart:nEnd, :],
                     SpS,
                     H,
+                    H_,
                     L[indstage],
                     mu[indstage],
                     lambdaRLS,
                     nTaps,
                     storeCoeff,
+                    runWL,
                     runAlg,
                     constSymb,
                 )
@@ -237,26 +266,31 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
             logg.info(f"{alg}MSE = %.6f.", np.nanmean(errSq))
 
     if returnResults:
-        return (yEq, H, errSq, Hiter) if storeCoeff else (yEq, H, errSq)
+        if runWL:
+            return yEq, H, H_, errSq, Hiter
+        else: 
+            return yEq, H, errSq, Hiter
     else:
         return yEq
 
 
 @njit
-def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSymb):
+def coreAdaptEq(x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, alg, constSymb):
     """
     Adaptive equalizer core processing function
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    dx : array-like
+    dx : np.array
         Exact constellation radius array.
     SpS : int
         Samples per symbol.
-    H : array-like
+    H : np.array
         Coefficient matrix.
+    H_ : np.array
+        Augmented coefficient matrix.
     L : int
         Length of the output.
     mu : float
@@ -267,20 +301,24 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSy
         Number of taps.
     storeCoeff : bool
         Flag indicating whether to store coefficient matrices.
+    runWL : bool
+        Run widely-linear mode
     alg : str
         Equalizer algorithm.
-    constSymb : array-like
+    constSymb : np.array
         Constellation symbols.
 
     Returns
     -------
-    yEq : array-like
+    yEq : np.array
         Equalized output array.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    errSq : array-like
+    H_ : np.array
+        Augmented coefficient matrix.
+    errSq : np.array
         Squared absolute error array.
-    Hiter : array-like
+    Hiter : np.array
         History of coefficient matrices.
 
     """
@@ -328,20 +366,25 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSy
             outEq += (
                 H[indMode + N * nModes, :] @ inEq
             )  # add contribution from the Nth mode to the equalizer's output
+            if runWL:
+                outEq += (
+                    H_[indMode + N * nModes, :] @ np.conj(inEq)
+                )  # add augmented contribution from the Nth mode to the equalizer's output
+
         yEq[ind, :] = outEq.T
 
         # update equalizer taps acording to the specified
         # algorithm and save squared error:
         if alg == "nlms":
-            H, errSq[:, ind] = nlmsUp(x[indIn, :], dx[ind, :], outEq, mu, H, nModes)
+            H, H_, errSq[:, ind] = nlmsUp(x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL)
         elif alg == "cma":
-            H, errSq[:, ind] = cmaUp(x[indIn, :], Rcma, outEq, mu, H, nModes)
+            H, H_, errSq[:, ind] = cmaUp(x[indIn, :], Rcma, outEq, mu, H, H_, nModes, runWL)
         elif alg == "dd-lms":
-            H, errSq[:, ind] = ddlmsUp(x[indIn, :], constSymb, outEq, mu, H, nModes)
+            H, H_, errSq[:, ind] = ddlmsUp(x[indIn, :], constSymb, outEq, mu, H, H_, nModes, runWL)
         elif alg == "rde":
-            H, errSq[:, ind] = rdeUp(x[indIn, :], Rrde, outEq, mu, H, nModes)
+            H, H_, errSq[:, ind] = rdeUp(x[indIn, :], Rrde, outEq, mu, H, H_, nModes, runWL)
         elif alg == "da-rde":
-            H, errSq[:, ind] = dardeUp(x[indIn, :], dx[ind, :], outEq, mu, H, nModes)
+            H, H_, errSq[:, ind] = dardeUp(x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL)
         elif alg == "rls":
             H, Sd, errSq[:, ind] = rlsUp(
                 x[indIn, :], dx[ind, :], outEq, lambdaRLS, H, Sd, nModes
@@ -360,34 +403,41 @@ def coreAdaptEq(x, dx, SpS, H, L, mu, lambdaRLS, nTaps, storeCoeff, alg, constSy
             Hiter[:, :, ind] = H
         else:
             Hiter[:, :, 0] = H
-    return yEq, H, errSq, Hiter
+
+    return yEq, H, H_, errSq, Hiter
 
 
 @njit
-def nlmsUp(x, dx, outEq, mu, H, nModes):
+def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
     """
     Coefficient update with the NLMS algorithm.
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    dx : array-like
+    dx : np.array
         Desired output array.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     mu : float
         Step size for the update.
-    H : array-like
+    H : np.array
         Coefficient matrix.
+    H_ : np.array
+        Augmented coefficient matrix.
     nModes : int
         Number of modes.
+    runWL: bool
+        Run widely-linear mode.
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    err_sq : array-like
+    H : np.array
+        Updated augmented coefficient matrix.
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -406,8 +456,11 @@ def nlmsUp(x, dx, outEq, mu, H, nModes):
         H[indUpdTaps, :] += (
             mu * errDiag @ np.conj(inAdaptPar)
         )  # gradient descent update
-    return H, np.abs(err) ** 2
-
+        if runWL:
+            H_[indUpdTaps, :] += (
+                mu * errDiag @ inAdaptPar
+            )  # gradient descent update
+    return H, H_, np.abs(err) ** 2
 
 @njit
 def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
@@ -416,28 +469,28 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    dx : array-like
+    dx : np.array
         Desired output array.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     λ : float
         Forgetting factor.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    Sd : array-like
+    Sd : np.array
         Inverse correlation matrix.
     nModes : int
         Number of modes.
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    Sd : array-like
+    Sd : np.array
         Updated inverse correlation matrix.
-    err_sq : array-like
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -474,30 +527,36 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
 
 
 @njit
-def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
+def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
     """
     Coefficient update with the DD-LMS algorithm.
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    constSymb : array-like
+    constSymb : np.array
         Array of constellation symbols.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     mu : float
         Step size for the update.
-    H : array-like
+    H : np.array
         Coefficient matrix.
+    H_ : np.array
+        Augmented coefficient matrix.
     nModes : int
         Number of modes.
+    runWL: bool
+        Run widely-linear mode.
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    err_sq : array-like
+    H_ : np.array
+        Updated augmented coefficient matrix.
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -521,8 +580,12 @@ def ddlmsUp(x, constSymb, outEq, mu, H, nModes):
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
             mu * errDiag @ np.conj(inAdaptPar)
-        )  # gradient descent update
-    return H, np.abs(err) ** 2
+        )  # gradient descent update        
+        if runWL:
+            H_[indUpdTaps, :] += (
+                mu * errDiag @ inAdaptPar
+            )  # gradient descent update   
+    return H, H_, np.abs(err) ** 2
 
 
 @njit
@@ -532,28 +595,28 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    constSymb : array-like
+    constSymb : np.array
         Array of constellation symbols.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     λ : float
         Forgetting factor.
-    H : array-like
+    H : np.array
         Coefficient matrix.
-    Sd : array-like
+    Sd : np.array
         Inverse correlation matrix.
     nModes : int
         Number of modes.
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    Sd : array-like
+    Sd : np.array
         Updated inverse correlation matrix.
-    err_sq : array-like
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -596,30 +659,36 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
 
 
 @njit
-def cmaUp(x, R, outEq, mu, H, nModes):
+def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
     """
     Coefficient update with the CMA algorithm.
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    R : array-like
+    R : np.array
         Correlation array.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     mu : float
         Step size parameter.
-    H : array-like
+    H : np.array
         Coefficient matrix.
+    H_ : np.array
+        Augmented coefficient matrix.
     nModes : int
         Number of modes.
+    runWL: bool
+        Run widely-linear mode.
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    err_sq : array-like
+    H_ : np.array
+        Updated augmented coefficient matrix.
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -639,34 +708,44 @@ def cmaUp(x, R, outEq, mu, H, nModes):
         H[indUpdTaps, :] += (
             mu * prodErrOut @ np.conj(inAdaptPar)
         )  # gradient descent update
-    return H, np.abs(err) ** 2
+        if runWL:
+            H_[indUpdTaps, :] += (
+            mu * prodErrOut @ inAdaptPar
+            )  # gradient descent update
+    return H, H_, np.abs(err) ** 2
 
 
 @njit
-def rdeUp(x, R, outEq, mu, H, nModes):
+def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
     """
     Coefficient update with the RDE algorithm.
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    R : array-like
+    R : np.array
         Constellation radius array.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     mu : float
         Step size parameter.
-    H : array-like
+    H : np.array
         Coefficient matrix.
+    H_ : np.array
+        Augmented coefficient matrix.
     nModes : int
         Number of modes.
+    runWL: bool
+        Run widely-linear mode.
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    err_sq : array-like
+    H_ : np.array
+        Updated augmented coefficient matrix.
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -694,34 +773,45 @@ def rdeUp(x, R, outEq, mu, H, nModes):
         H[indUpdTaps, :] += (
             mu * prodErrOut @ np.conj(inAdaptPar)
         )  # gradient descent update
-    return H, np.abs(err) ** 2
+        if runWL:
+            H_[indUpdTaps, :] += (
+            mu * prodErrOut @ inAdaptPar
+            )  # gradient descent update
+
+    return H, H_, np.abs(err) ** 2
 
 
 @njit
-def dardeUp(x, dx, outEq, mu, H, nModes):
+def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
     """
     Coefficient update with the data-aided RDE algorithm.
 
     Parameters
     ----------
-    x : array-like
+    x : np.array
         Input array.
-    dx : array-like
+    dx : np.array
         Exact constellation radius array.
-    outEq : array-like
+    outEq : np.array
         Equalized output array.
     mu : float
         Step size parameter.
-    H : array-like
+    H : np.array
         Coefficient matrix.
+    H_ : np.array
+        Augmented coefficient matrix.
     nModes : int
         Number of modes.
+    runWL: bool
+        Run widely-linear mode.
 
     Returns
     -------
-    H : array-like
+    H : np.array
         Updated coefficient matrix.
-    err_sq : array-like
+    H_ : np.array
+        Updated augmented coefficient matrix.
+    err_sq : np.array
         Squared absolute error.
 
     """
@@ -748,7 +838,11 @@ def dardeUp(x, dx, outEq, mu, H, nModes):
         H[indUpdTaps, :] += (
             mu * prodErrOut @ np.conj(inAdaptPar)
         )  # gradient descent update
-    return H, np.abs(err) ** 2
+        if runWL:
+            H_[indUpdTaps, :] += (
+            mu * prodErrOut @ inAdaptPar
+            )  # gradient descent update
+    return H, H_, np.abs(err) ** 2
 
 
 def dbp(Ei, Fs, Ltotal, Lspan, hz=0.5, alpha=0.2, gamma=1.3, D=16, Fc=193.1e12):

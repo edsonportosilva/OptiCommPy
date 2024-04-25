@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting started &mdash; OptiCommPy 0.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Simulation of coherent WDM transmission" href="test_WDM_transmission.html" />
+    <link rel="prev" title="Welcome to OptiCommPy&#39;s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OptiCommPy
+          </a>
+              <div class="version">
+                0.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Defining-the-model-to-be-simulated">Defining the model to be simulated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Simulating-a-basic-IM/DD-model">Simulating a basic IM/DD model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Generating-BER-vs-P_{in},-Q-vs-P_{in}-curves">Generating BER vs <span class="math notranslate nohighlight">\(P_{in}\)</span>, Q vs <span class="math notranslate nohighlight">\(P_{in}\)</span> curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#References">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="test_WDM_transmission.html">Simulation of coherent WDM transmission</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital Communications Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">Digital Signal Processing (DSP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Physical Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">General Utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OptiCommPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Getting started</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/JOSS_paper_example.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="s1">&#39;google.colab&#39;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">get_ipython</span><span class="p">()):</span>
+    <span class="o">!</span><span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>https://github.com/edsonportosilva/OptiCommPy
+    <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">chdir</span> <span class="k">as</span> <span class="n">cd</span>
+    <span class="n">cd</span><span class="p">(</span><span class="s1">&#39;/content/OptiCommPy/&#39;</span><span class="p">)</span>
+    <span class="o">!</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+</pre></div>
+</div>
+</div>
+<section id="Getting-started">
+<h1>Getting started<a class="headerlink" href="#Getting-started" title="Permalink to this heading"></a></h1>
+<p>In this notebook, a basic illustrative example of the usage of the OptiCommPy package is presented.</p>
+<section id="Defining-the-model-to-be-simulated">
+<h2>Defining the model to be simulated<a class="headerlink" href="#Defining-the-model-to-be-simulated" title="Permalink to this heading"></a></h2>
+<p>To demonstrate the basic features of OptiCommPy, in this notebook a simulation of a On-Off Keying (OOK) transmission system based on intensity modulation and direct-detection (IM/DD) is presented. A schematic for the transmission system to be simulated is shown in the figure below.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Image</span><span class="p">(</span><span class="s2">&quot;./figures/BasicIMDD.png&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="_images/JOSS_paper_example_4_0.png" class="no-scaled-link" src="_images/JOSS_paper_example_4_0.png" style="width: 600px;" />
+</div>
+</div>
+<p>It consists of a 10 Gb/s NRZ OOK transmission over 100 km of optical fiber with direct detection at the receiver assuming a photodiode with 10 GHz of bandwidth. The fiber channel is modeled as a linear propagation medium exhibiting loss and chromatic dispersion. All the simulation parameters are listed in the table below.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Order of the modulation format (<span class="math notranslate nohighlight">\(M\)</span>)</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>Symbol rate (<span class="math notranslate nohighlight">\(R_s\)</span>)</p></td>
+<td><p>10 Gb/s</p></td>
+</tr>
+<tr class="row-even"><td><p>Pulse shape</p></td>
+<td><p>NRZ</p></td>
+</tr>
+<tr class="row-odd"><td><p>Laser output power (<span class="math notranslate nohighlight">\(P_i\)</span>)</p></td>
+<td><p><span class="math notranslate nohighlight">\(3\)</span> dBm</p></td>
+</tr>
+<tr class="row-even"><td><p>MZM <span class="math notranslate nohighlight">\(V_\pi\)</span> voltage</p></td>
+<td><p>2.0 V</p></td>
+</tr>
+<tr class="row-odd"><td><p>MZM bias voltage (<span class="math notranslate nohighlight">\(V_b\)</span>)</p></td>
+<td><p>-1.0 V</p></td>
+</tr>
+<tr class="row-even"><td><p>Total link distance (<span class="math notranslate nohighlight">\(L\)</span>)</p></td>
+<td><p>100 km</p></td>
+</tr>
+<tr class="row-odd"><td><p>Fiber loss parameter (<span class="math notranslate nohighlight">\(\alpha\)</span>)</p></td>
+<td><p>0.2 dB/km</p></td>
+</tr>
+<tr class="row-even"><td><p>Fiber dispersion parameter (<span class="math notranslate nohighlight">\(D\)</span>)</p></td>
+<td><p>16 ps/nm/km</p></td>
+</tr>
+<tr class="row-odd"><td><p>Central optical frequency (<span class="math notranslate nohighlight">\(F_c\)</span>)</p></td>
+<td><p><span class="math notranslate nohighlight">\(193.1\)</span> THz</p></td>
+</tr>
+<tr class="row-even"><td><p>Photodiode bandwidth (<span class="math notranslate nohighlight">\(B\)</span>)</p></td>
+<td><p><span class="math notranslate nohighlight">\(10\)</span> GHz</p></td>
+</tr>
+<tr class="row-odd"><td><p>Simulation sampling rate (<span class="math notranslate nohighlight">\(F_s\)</span>)</p></td>
+<td><p>160 GSamples/s</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="Simulating-a-basic-IM/DD-model">
+<h2>Simulating a basic IM/DD model<a class="headerlink" href="#Simulating-a-basic-IM/DD-model" title="Permalink to this heading"></a></h2>
+<p>To build the corresponding simulation setup with OptiCommPy, first the necessary functions need to be imported as</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">optic.models.devices</span> <span class="kn">import</span> <span class="n">mzm</span><span class="p">,</span> <span class="n">photodiode</span>
+<span class="kn">from</span> <span class="nn">optic.models.channels</span> <span class="kn">import</span> <span class="n">linearFiberChannel</span>
+<span class="kn">from</span> <span class="nn">optic.comm.modulation</span> <span class="kn">import</span> <span class="n">modulateGray</span>
+<span class="kn">from</span> <span class="nn">optic.comm.metrics</span> <span class="kn">import</span> <span class="n">bert</span>
+<span class="kn">from</span> <span class="nn">optic.dsp.core</span> <span class="kn">import</span> <span class="n">firFilter</span><span class="p">,</span> <span class="n">pulseShape</span><span class="p">,</span> <span class="n">upsample</span><span class="p">,</span> <span class="n">pnorm</span>
+<span class="kn">from</span> <span class="nn">optic.utils</span> <span class="kn">import</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">dBm2W</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">erfc</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+</pre></div>
+</div>
+</div>
+<p>Given that each element in the simulation requires a specific set of parameters, the subsequent step involves defining all necessary parameters to establish the desired simulation setup, as illustrated in the next cell.</p>
+<p>In this particular example, we assume that the electrical signal driving the optical modulator is a binary non-return-to-zero (NRZ) signal. The optical modulator is modeled as an ideal Mach-Zehnder Modulator (MZM). The fiber channel is considered linear and affected only by loss and chromatic dispersion. Lastly, at the receiver, a photodiode with a frequency response limited to 10 GHz is configured, subject to the influence of thermal and shot noise.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># simulation parameters</span>
+<span class="n">SpS</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># samples per symbol</span>
+<span class="n">M</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># order of the modulation format</span>
+<span class="n">Rs</span> <span class="o">=</span> <span class="mf">10e9</span>  <span class="c1"># Symbol rate</span>
+<span class="n">Fs</span> <span class="o">=</span> <span class="n">SpS</span> <span class="o">*</span> <span class="n">Rs</span>  <span class="c1"># Signal sampling frequency (samples/second)</span>
+<span class="n">Pi_dBm</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># laser optical power at the input of the MZM in dBm</span>
+<span class="n">Pi</span> <span class="o">=</span> <span class="n">dBm2W</span><span class="p">(</span><span class="n">Pi_dBm</span><span class="p">)</span>  <span class="c1"># convert from dBm to W</span>
+
+<span class="c1"># typical NRZ pulse</span>
+<span class="n">pulse</span> <span class="o">=</span> <span class="n">pulseShape</span><span class="p">(</span><span class="s2">&quot;nrz&quot;</span><span class="p">,</span> <span class="n">SpS</span><span class="p">)</span>
+<span class="n">pulse</span> <span class="o">=</span> <span class="n">pulse</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">pulse</span><span class="p">))</span>  <span class="c1"># normalize to 1 Vpp</span>
+
+<span class="c1"># MZM parameters</span>
+<span class="n">paramMZM</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramMZM</span><span class="o">.</span><span class="n">Vpi</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">paramMZM</span><span class="o">.</span><span class="n">Vb</span> <span class="o">=</span> <span class="o">-</span><span class="n">paramMZM</span><span class="o">.</span><span class="n">Vpi</span> <span class="o">/</span> <span class="mi">2</span>
+
+<span class="c1"># linear fiber optical channel parameters</span>
+<span class="n">paramCh</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="mi">100</span>        <span class="c1"># total link distance [km]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.2</span>    <span class="c1"># fiber loss parameter [dB/km]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="mi">16</span>         <span class="c1"># fiber dispersion parameter [ps/nm/km]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">Fc</span> <span class="o">=</span> <span class="mf">193.1e12</span>  <span class="c1"># central optical frequency [Hz]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">Fs</span> <span class="o">=</span> <span class="n">Fs</span>
+
+<span class="c1"># photodiode parameters</span>
+<span class="n">paramPD</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramPD</span><span class="o">.</span><span class="n">ideal</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">paramPD</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">Rs</span>
+<span class="n">paramPD</span><span class="o">.</span><span class="n">Fs</span> <span class="o">=</span> <span class="n">Fs</span>
+</pre></div>
+</div>
+</div>
+<p>After defining all the required parameters, the core simulation code in the next cell establishes the signal flow through each OptiCommPy model, extending from the initial bit source to the direct-detection optical receiver. Starting with a pseudorandom bit sequence, the signal undergoes upsampling and pulse shaping, resulting in a series of binary non-return-to-zero (NRZ) pulses. The electrical NRZ signal then drives the MZM, biased at the quadrature point. An ideal laser generates the optical
+carrier, free from phase and intensity noise. This optical signal, upon exiting the MZM, traverses the linear fiber channel, where it is subjected to losses and chromatic dispersion. Finally, the signal is detected by a photodiode.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Simulation</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Starting simulation...&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># generate pseudo-random bit sequence</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>  <span class="c1"># fixing the seed to get reproducible results</span>
+<span class="n">bitsTx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
+
+<span class="c1"># generate 2-PAM modulated symbol sequence</span>
+<span class="n">symbTx</span> <span class="o">=</span> <span class="n">modulateGray</span><span class="p">(</span><span class="n">bitsTx</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="s2">&quot;pam&quot;</span><span class="p">)</span>
+
+<span class="c1"># upsampling</span>
+<span class="n">symbolsUp</span> <span class="o">=</span> <span class="n">upsample</span><span class="p">(</span><span class="n">symbTx</span><span class="p">,</span> <span class="n">SpS</span><span class="p">)</span>
+
+<span class="c1"># pulse shaping</span>
+<span class="n">sigTx</span> <span class="o">=</span> <span class="n">firFilter</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="n">symbolsUp</span><span class="p">)</span>
+
+<span class="c1"># optical modulation</span>
+<span class="n">Ai</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Pi</span><span class="p">)</span>  <span class="c1"># ideal cw laser constant envelope</span>
+<span class="n">sigTxo</span> <span class="o">=</span> <span class="n">mzm</span><span class="p">(</span><span class="n">Ai</span><span class="p">,</span> <span class="n">sigTx</span><span class="p">,</span> <span class="n">paramMZM</span><span class="p">)</span>
+
+<span class="c1"># linear fiber channel model</span>
+<span class="n">sigCh</span> <span class="o">=</span> <span class="n">linearFiberChannel</span><span class="p">(</span><span class="n">sigTxo</span><span class="p">,</span> <span class="n">paramCh</span><span class="p">)</span>
+
+<span class="c1"># noisy PD (thermal noise + shot noise + bandwidth limit)</span>
+<span class="n">I_Rx</span> <span class="o">=</span> <span class="n">photodiode</span><span class="p">(</span><span class="n">sigCh</span><span class="p">,</span> <span class="n">paramPD</span><span class="p">)</span>
+
+<span class="c1"># capture samples in the middle of signaling intervals</span>
+<span class="n">I_Rx</span> <span class="o">=</span> <span class="n">I_Rx</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="n">SpS</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;simulation completed.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Starting simulation...simulation completed.
+</pre></div></div>
+</div>
+<p>After detecting the optical signal and getting the corresponding photocurrent <code class="docutils literal notranslate"><span class="pre">I_Rx</span></code>, signal quality metrics can then be evaluated in order to quantify the transmission performance. For OOK optical transmission systems, the most common metrics are the BER and the quality-factor (Q-factor), which can be calculated from the <code class="docutils literal notranslate"><span class="pre">I_Rx</span></code> using the function <code class="docutils literal notranslate"><span class="pre">bert</span></code> available from <code class="docutils literal notranslate"><span class="pre">optic.comm.metrics</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># calculate the BER and Q-factor</span>
+<span class="n">BER</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">bert</span><span class="p">(</span><span class="n">I_Rx</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Transmission performance metrics:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Q-factor = </span><span class="si">{</span><span class="n">Q</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BER = </span><span class="si">{</span><span class="n">BER</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># theoretical error probability from Q-factor</span>
+<span class="n">Pb</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">erfc</span><span class="p">(</span><span class="n">Q</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pb = </span><span class="si">{</span><span class="n">Pb</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Transmission performance metrics:
+Q-factor = 3.49
+BER = 2.80e-04
+Pb = 2.44e-04
+
+</pre></div></div>
+</div>
+</section>
+<section id="Generating-BER-vs-P_{in},-Q-vs-P_{in}-curves">
+<h2>Generating BER vs <span class="math notranslate nohighlight">\(P_{in}\)</span>, Q vs <span class="math notranslate nohighlight">\(P_{in}\)</span> curves<a class="headerlink" href="#Generating-BER-vs-P_{in},-Q-vs-P_{in}-curves" title="Permalink to this heading"></a></h2>
+<p>Starting from this basic setup, we can conduct a comprehensive analysis via Monte Carlo simulations to characterize transmission performance across various system parameters. For instance, by repeating the same simulation with different optical launch powers and transmission distances, we can generate performance curves that depict BER and Q-factor as functions of received optical power at varying transmission distances. The corresponding code is shown in the next cell.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tqdm.notebook</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="c1"># simulation parameters</span>
+<span class="n">SpS</span> <span class="o">=</span> <span class="mi">16</span>        <span class="c1"># Samples per symbol</span>
+<span class="n">M</span> <span class="o">=</span> <span class="mi">2</span>           <span class="c1"># order of the modulation format</span>
+<span class="n">Rs</span> <span class="o">=</span> <span class="mf">10e9</span>       <span class="c1"># Symbol rate (for the OOK case, Rs = Rb)</span>
+<span class="n">Fs</span> <span class="o">=</span> <span class="n">SpS</span><span class="o">*</span><span class="n">Rs</span>     <span class="c1"># Signal sampling frequency (samples/second)</span>
+<span class="n">Ts</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">Fs</span>       <span class="c1"># Sampling period</span>
+
+<span class="c1"># MZM parameters</span>
+<span class="n">paramMZM</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramMZM</span><span class="o">.</span><span class="n">Vpi</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">paramMZM</span><span class="o">.</span><span class="n">Vb</span> <span class="o">=</span> <span class="o">-</span><span class="n">paramMZM</span><span class="o">.</span><span class="n">Vpi</span><span class="o">/</span><span class="mi">2</span>
+
+<span class="c1"># typical NRZ pulse</span>
+<span class="n">pulse</span> <span class="o">=</span> <span class="n">pulseShape</span><span class="p">(</span><span class="s1">&#39;nrz&#39;</span><span class="p">,</span> <span class="n">SpS</span><span class="p">)</span>
+<span class="n">pulse</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">/</span><span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">pulse</span><span class="p">))</span>
+
+<span class="c1"># linear fiber optical channel parameters</span>
+<span class="n">paramCh</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># total link distance [km]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.2</span>  <span class="c1"># fiber loss parameter [dB/km]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># fiber dispersion parameter [ps/nm/km]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">Fc</span> <span class="o">=</span> <span class="mf">193.1e12</span>  <span class="c1"># central optical frequency [Hz]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">Fs</span> <span class="o">=</span> <span class="n">Fs</span>
+
+<span class="c1"># photodiode parameters</span>
+<span class="n">paramPD</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramPD</span><span class="o">.</span><span class="n">ideal</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">paramPD</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">Rs</span>
+<span class="n">paramPD</span><span class="o">.</span><span class="n">Fs</span> <span class="o">=</span> <span class="n">Fs</span>
+
+<span class="n">powerValues</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">9</span><span class="p">)</span> <span class="c1"># power values at the input of the pin receiver</span>
+<span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># distances</span>
+
+<span class="n">BER</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">powerValues</span><span class="p">)))</span>
+<span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">powerValues</span><span class="p">)))</span>
+
+<span class="k">for</span> <span class="n">indL</span><span class="p">,</span> <span class="n">L</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">distances</span><span class="p">)):</span>
+    <span class="n">paramCh</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="n">L</span>  <span class="c1"># total link distance [km]</span>
+    <span class="k">for</span> <span class="n">indPi</span><span class="p">,</span> <span class="n">Pi_dBm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">powerValues</span><span class="p">):</span>
+        <span class="n">Pi</span> <span class="o">=</span> <span class="n">dBm2W</span><span class="p">(</span><span class="n">Pi_dBm</span> <span class="o">+</span> <span class="n">L</span><span class="o">*</span><span class="n">paramCh</span><span class="o">.</span><span class="n">alpha</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="c1"># optical signal power in W at the MZM input</span>
+
+        <span class="c1"># generate pseudo-random bit sequence</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>  <span class="c1"># fixing the seed to get reproducible results</span>
+        <span class="n">bitsTx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="o">**</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bitsTx</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="c1"># generate ook modulated symbol sequence</span>
+        <span class="n">symbTx</span> <span class="o">=</span> <span class="n">modulateGray</span><span class="p">(</span><span class="n">bitsTx</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="s1">&#39;pam&#39;</span><span class="p">)</span>
+        <span class="n">symbTx</span> <span class="o">=</span> <span class="n">pnorm</span><span class="p">(</span><span class="n">symbTx</span><span class="p">)</span> <span class="c1"># power normalization</span>
+
+        <span class="c1"># upsampling</span>
+        <span class="n">symbolsUp</span> <span class="o">=</span> <span class="n">upsample</span><span class="p">(</span><span class="n">symbTx</span><span class="p">,</span> <span class="n">SpS</span><span class="p">)</span>
+
+        <span class="c1"># pulse formatting</span>
+        <span class="n">sigTx</span> <span class="o">=</span> <span class="n">firFilter</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="n">symbolsUp</span><span class="p">)</span>
+
+        <span class="c1"># optical modulation</span>
+        <span class="n">Ai</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Pi</span><span class="p">)</span>
+        <span class="n">sigTxo</span> <span class="o">=</span> <span class="n">mzm</span><span class="p">(</span><span class="n">Ai</span><span class="p">,</span> <span class="n">sigTx</span><span class="p">,</span> <span class="n">paramMZM</span><span class="p">)</span>
+
+        <span class="c1"># linear fiber channel model</span>
+        <span class="n">sigCh</span> <span class="o">=</span> <span class="n">linearFiberChannel</span><span class="p">(</span><span class="n">sigTxo</span><span class="p">,</span> <span class="n">paramCh</span><span class="p">)</span>
+
+        <span class="c1"># pin receiver</span>
+        <span class="n">I_Rx</span> <span class="o">=</span> <span class="n">photodiode</span><span class="p">(</span><span class="n">sigCh</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">paramPD</span><span class="p">)</span>
+        <span class="n">I_Rx</span> <span class="o">=</span> <span class="n">I_Rx</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">I_Rx</span><span class="p">)</span>
+
+        <span class="c1"># capture samples in the middle of signaling intervals</span>
+        <span class="n">I_Rx</span> <span class="o">=</span> <span class="n">I_Rx</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="n">SpS</span><span class="p">]</span>
+
+        <span class="c1"># calculate the BER and Q-factor</span>
+        <span class="n">BER</span><span class="p">[</span><span class="n">indL</span><span class="p">,</span> <span class="n">indPi</span><span class="p">],</span> <span class="n">Q</span><span class="p">[</span><span class="n">indL</span><span class="p">,</span> <span class="n">indPi</span><span class="p">]</span> <span class="o">=</span> <span class="n">bert</span><span class="p">(</span><span class="n">I_Rx</span><span class="p">)</span>
+
+<span class="c1">#         print(f&#39;\nPin = {Pi_dBm:.2f} dBm&#39;)</span>
+<span class="c1">#         print(&#39;\nReceived signal parameters:&#39;)</span>
+<span class="c1">#         print(f&#39;Q-factor = {Q[indL, indPi]:.2f} &#39;)</span>
+<span class="c1">#         print(f&#39;BER = {BER[indL, indPi]:.2e}&#39;)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "0696076b84b748ccaccf2e32f9aa964b", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">markers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;o&#39;</span><span class="p">,</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="s1">&#39;*&#39;</span><span class="p">,</span><span class="s1">&#39;d&#39;</span><span class="p">,</span><span class="s1">&#39;^&#39;</span><span class="p">]</span>
+
+<span class="n">Prx</span> <span class="o">=</span> <span class="n">powerValues</span> <span class="c1">#- paramCh.L*paramCh.alpha</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">indL</span><span class="p">,</span> <span class="n">L</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">distances</span><span class="p">):</span>
+   <span class="c1"># Prx = powerValues - L*paramCh.alpha</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Prx</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">BER</span><span class="p">[</span><span class="n">indL</span><span class="p">,:]),</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="n">markers</span><span class="p">[</span><span class="n">indL</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">L</span><span class="si">}</span><span class="s1"> km&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;log10(BER)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$P_</span><span class="si">{RX}</span><span class="s1">$ [dBm]&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;BER vs input power at the receiver&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">Prx</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">Prx</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">indL</span><span class="p">,</span> <span class="n">L</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">distances</span><span class="p">):</span>
+   <span class="c1"># Prx = powerValues - L*paramCh.alpha</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Prx</span><span class="p">,</span> <span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">Q</span><span class="p">[</span><span class="n">indL</span><span class="p">,:]),</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="n">markers</span><span class="p">[</span><span class="n">indL</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">L</span><span class="si">}</span><span class="s1"> km&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Q-factor [dB]&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$P_</span><span class="si">{RX}</span><span class="s1">$ [dBm]&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Q-factor vs input power at the receiver&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="c1">#plt.ylim(-10,0)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">Prx</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">Prx</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+C:\Users\edson.DESKTOP-54IJM4F\AppData\Local\Temp\ipykernel_3648\2042705777.py:8: RuntimeWarning: divide by zero encountered in log10
+  plt.plot(Prx, np.log10(BER[indL,:]),&#39;--&#39;, marker=markers[indL], label=f&#39;{L} km&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/JOSS_paper_example_16_1.png" src="_images/JOSS_paper_example_16_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/JOSS_paper_example_16_2.png" src="_images/JOSS_paper_example_16_2.png" />
+</div>
+</div>
+<p>These plots clearly illustrate that system performance deteriorates with longer transmission distances, which is primarily attributed to the cumulative impact of chromatic dispersion and the noise sources at the photodiode, resulting in increased signal degradation.</p>
+</section>
+<section id="References">
+<h2>References<a class="headerlink" href="#References" title="Permalink to this heading"></a></h2>
+<p>[1] G. P. Agrawal, Fiber-Optic Communication Systems. John Wiley &amp; Sons, 2021.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to OptiCommPy&#39;s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="test_WDM_transmission.html" class="btn btn-neutral float-right" title="Simulation of coherent WDM transmission" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

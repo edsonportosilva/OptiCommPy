@@ -69,10 +69,13 @@ def grayMapping(M, constType):
 
     Returns
     -------
-    const : ndarray
+    const : np.array
         constellation symbols (sorted according their corresponding
         Gray bit sequence as integer decimal).
-
+    
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
     if M != 2 and constType == "ook":
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
@@ -119,8 +122,12 @@ def pamConst(M):
 
     Returns
     -------
-    ndarray
+    np.array
         1D PAM constellation.
+    
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
     L = int(M - 1)
     return np.arange(-L, L + 1, 2)
@@ -137,8 +144,12 @@ def qamConst(M):
 
     Returns
     -------
-    const : ndarray
+    const : np.array
         Complex square M-QAM constellation.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
     L = int(np.sqrt(M) - 1)
 
@@ -167,8 +178,12 @@ def pskConst(M):
 
     Returns
     -------
-    ndarray
+    np.array
         Complex M-PSK constellation.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
     # generate complex M-PSK constellation
     pskPhases = np.arange(0, 2 * np.pi, 2 * np.pi / M)
@@ -188,12 +203,14 @@ def apskConst(M, m1=None, phaseOffset=None):
 
     Returns
     -------
-    const : ndarray
+    const : np.array
         APSK constellation
 
     References
     ----------
-    Z. Liu, et al "APSK Constellation with Gray Mapping," IEEE Communications Letters, vol. 15, no. 12, pp. 1271-1273, December 2011
+    [1] Z. Liu, et al "APSK Constellation with Gray Mapping," IEEE Communications Letters, vol. 15, no. 12, pp. 1271-1273, 2011.
+
+    [2] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
     if m1 is None:
         if M == 16:
@@ -253,8 +270,12 @@ def minEuclid(symb, const):
 
     Returns
     -------
-    array of int
+    np.array of int
         indexes of the closest constellation symbols.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
     """
     ind = np.zeros(symb.shape, dtype=np.int64)
@@ -279,6 +300,10 @@ def demap(indSymb, bitMap):
     -------
     decBits : np.array
         Sequence of demapped bits.
+    
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
     """
     M = bitMap.shape[0]
@@ -297,13 +322,13 @@ def detector(r, σ2, constSymb, px=None, rule='MAP'):
 
     Parameters
     ----------
-    r : ndarray
+    r : np.array
         The received signal.
     σ2 : float
         The noise variance.
-    constSymb : ndarray
+    constSymb : np.array
         The constellation symbols.
-    px : ndarray, optional
+    px : np.array, optional
         The prior probabilities of each symbol. If None, uniform priors are assumed.
     rule : str, optional
         The detection rule to use. Either 'MAP' (default) or 'ML'.
@@ -312,12 +337,16 @@ def detector(r, σ2, constSymb, px=None, rule='MAP'):
     -------
     tuple
         A tuple containing:
-            - ndarray: The detected symbols.
-            - ndarray: The indices of the detected symbols in the constellation.
+            - np.array: The detected symbols.
+            - np.array: The indices of the detected symbols in the constellation.
 
     Notes:
     ------
     If `px` is None or `rule` is 'ML', uniform priors are assumed.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
     if px is None or rule == 'ML':
         px = 1 / constSymb.size * np.ones(constSymb.size)
@@ -376,6 +405,10 @@ def modulateGray(bits, M, constType):
     -------
     array of complex constellation symbols
         bits modulated to complex constellation symbols.
+    
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
     """
     if M != 2 and constType == "ook":
@@ -409,6 +442,10 @@ def demodulateGray(symb, M, constType):
     -------
     array of ints
         sequence of demodulated bits.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
     """
     if M != 2 and constType == "ook":

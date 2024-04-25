@@ -1,97 +1,58 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="English" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="English" > <!--<![endif]-->
+<html class="writer-html5" lang="English">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>optic.dsp.equalization.mimoAdaptEqualizer &mdash; OptiCommPy 0.6.0 documentation</title>
-  
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
 
   
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-  
-  
-
-  
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="optic.dsp.carrierRecovery.bps" href="optic.dsp.carrierRecovery.bps.html" />
     <link rel="prev" title="optic.dsp.equalization.edc" href="optic.dsp.equalization.edc.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../index.html" class="icon icon-home"> OptiCommPy
           
-
-          
+          <a href="../index.html" class="icon icon-home">
+            OptiCommPy
           </a>
-
-          
-            
-            
               <div class="version">
                 0.6
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Available features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../JOSS_paper_example.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../test_WDM_transmission.html">Simulation of coherent WDM transmission</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
 <ul class="current">
@@ -112,93 +73,54 @@
 <li class="toctree-l1"><a class="reference internal" href="../utils.html">General Utilities</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">OptiCommPy</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="../dsp.html">Digital Signal Processing (DSP)</a> &raquo;</li>
-        
-      <li>optic.dsp.equalization.mimoAdaptEqualizer</li>
-    
-    
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../dsp.html">Digital Signal Processing (DSP)</a></li>
+      <li class="breadcrumb-item active">optic.dsp.equalization.mimoAdaptEqualizer</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../_sources/generated/optic.dsp.equalization.mimoAdaptEqualizer.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="optic-dsp-equalization-mimoadaptequalizer">
-<h1>optic.dsp.equalization.mimoAdaptEqualizer<a class="headerlink" href="#optic-dsp-equalization-mimoadaptequalizer" title="Permalink to this heading">¶</a></h1>
+             
+  <section id="optic-dsp-equalization-mimoadaptequalizer">
+<h1>optic.dsp.equalization.mimoAdaptEqualizer<a class="headerlink" href="#optic-dsp-equalization-mimoadaptequalizer" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.dsp.equalization.mimoAdaptEqualizer">
-<span class="sig-name descname"><span class="pre">mimoAdaptEqualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramEq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.mimoAdaptEqualizer" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mimoAdaptEqualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.dsp.equalization.mimoAdaptEqualizer" title="Permalink to this definition"></a></dt>
 <dd><p>N-by-N MIMO adaptive equalizer.</p>
-<p>Algorithms available: 'cma', 'rde', 'nlms', 'dd-lms', 'da-rde', 'rls', 'dd-rls', 'static'.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>array-like</em>) -- Input array.</p></li>
-<li><p><strong>dx</strong> (<em>array-like</em><em>, </em><em>optional</em>) -- Syncronized exact symbol sequence corresponding to the received input array x.</p></li>
-<li><p><strong>paramEq</strong> (<em>object</em><em>, </em><em>optional</em>) -- <p>Parameter object containing the following attributes:</p>
+<li><p><strong>x</strong> (<em>np.array</em>) -- Input array.</p></li>
+<li><p><strong>dx</strong> (<em>np.array</em><em>, </em><em>optional</em>) -- Syncronized exact symbol sequence corresponding to the received input array x.</p></li>
+<li><p><strong>param</strong> (<em>object</em><em>, </em><em>optional</em>) -- <p>Parameter object containing the following attributes:</p>
 <ul>
 <li><p>numIter : int, number of pre-convergence iterations (default: 1)</p></li>
 <li><p>nTaps : int, number of filter taps (default: 15)</p></li>
 <li><p>mu : float or list of floats, step size parameter(s) (default: [1e-3])</p></li>
 <li><p>lambdaRLS : float, RLS forgetting factor (default: 0.99)</p></li>
 <li><p>SpS : int, samples per symbol (default: 2)</p></li>
-<li><p>H : array-like, coefficient matrix (default: [])</p></li>
+<li><p>H : np.array, coefficient matrix (default: [])</p></li>
 <li><p>L : int or list of ints, length of the output of the training section (default: [])</p></li>
 <li><p>Hiter : list, history of coefficient matrices (default: [])</p></li>
 <li><p>storeCoeff : bool, flag indicating whether to store coefficient matrices (default: False)</p></li>
+<li><p>runWL: bool, flag indicating whether to run the equalizer in the widely-linear mode. (default: False)</p></li>
 <li><p>alg : str or list of strs, specifying the equalizer algorithm(s) (default: ['nlms'])</p></li>
 <li><p>constType : str, constellation type (default: 'qam')</p></li>
 <li><p>M : int, modulation order (default: 4)</p></li>
@@ -207,67 +129,56 @@
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>yEq</strong> (<em>array-like</em>) -- Equalized output array.</p></li>
-<li><p><strong>H</strong> (<em>array-like</em>) -- Coefficient matrix.</p></li>
-<li><p><strong>errSq</strong> (<em>array-like</em>) -- Squared absolute error array.</p></li>
+<li><p><strong>yEq</strong> (<em>np.array</em>) -- Equalized output array.</p></li>
+<li><p><strong>H</strong> (<em>np.array</em>) -- Coefficient matrix.</p></li>
+<li><p><strong>errSq</strong> (<em>np.array</em>) -- Squared absolute error array.</p></li>
 <li><p><strong>Hiter</strong> (<em>list</em>) -- History of coefficient matrices.</p></li>
 </ul>
 </p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>Algorithms available: 'cma', 'rde', 'nlms', 'dd-lms', 'da-rde', 'rls', 'dd-rls', 'static'.</p>
+<p class="rubric">References</p>
+<p>[1] P. S. R. Diniz, Adaptive Filtering: Algorithms and Practical Implementation. Springer US, 2012.</p>
+<p>[2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.</p>
+<p>[3] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.</p>
+<p>[4] E. P. Da Silva e D. Zibar, “Widely Linear Equalization for IQ Imbalance and Skew Compensation in Optical Coherent Receivers”, Journal of Lightwave Technology, vol. 34, nº 15, p. 3577–3586, ago. 2016, doi: 10.1109/JLT.2016.2577716.</p>
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="optic.dsp.carrierRecovery.bps.html" class="btn btn-neutral float-right" title="optic.dsp.carrierRecovery.bps" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="optic.dsp.equalization.edc.html" class="btn btn-neutral float-left" title="optic.dsp.equalization.edc" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="optic.dsp.equalization.edc.html" class="btn btn-neutral float-left" title="optic.dsp.equalization.edc" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="optic.dsp.carrierRecovery.bps.html" class="btn btn-neutral float-right" title="optic.dsp.carrierRecovery.bps" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster
-
-    </p>
+    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
