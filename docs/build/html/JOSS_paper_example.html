@@ -57,7 +57,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#Defining-the-model-to-be-simulated">Defining the model to be simulated</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Simulating-a-basic-IM/DD-model">Simulating a basic IM/DD model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Generating-BER-vs-Pin-Q-vs-Pin-curves">Generating BER vs Pin Q vs Pin curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Generating-BER-vs-P_{in},-Q-vs-P_{in}-curves">Generating BER vs <span class="math notranslate nohighlight">\(P_{in}\)</span>, Q vs <span class="math notranslate nohighlight">\(P_{in}\)</span> curves</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#References">References</a></li>
 </ul>
 </li>
@@ -324,8 +324,8 @@ Pb = 2.44e-04
 </pre></div></div>
 </div>
 </section>
-<section id="Generating-BER-vs-Pin-Q-vs-Pin-curves">
-<h2>Generating BER vs Pin Q vs Pin curves<a class="headerlink" href="#Generating-BER-vs-Pin-Q-vs-Pin-curves" title="Permalink to this heading"></a></h2>
+<section id="Generating-BER-vs-P_{in},-Q-vs-P_{in}-curves">
+<h2>Generating BER vs <span class="math notranslate nohighlight">\(P_{in}\)</span>, Q vs <span class="math notranslate nohighlight">\(P_{in}\)</span> curves<a class="headerlink" href="#Generating-BER-vs-P_{in},-Q-vs-P_{in}-curves" title="Permalink to this heading"></a></h2>
 <p>Starting from this basic setup, we can conduct a comprehensive analysis via Monte Carlo simulations to characterize transmission performance across various system parameters. For instance, by repeating the same simulation with different optical launch powers and transmission distances, we can generate performance curves that depict BER and Q-factor as functions of received optical power at varying transmission distances. The corresponding code is shown in the next cell.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
@@ -417,7 +417,7 @@ Pb = 2.44e-04
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "17d9583e8c54421799cac264dba4266d", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "0696076b84b748ccaccf2e32f9aa964b", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
@@ -462,7 +462,7 @@ Pb = 2.44e-04
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-C:\Users\edson.DESKTOP-54IJM4F\AppData\Local\Temp\ipykernel_18320\2042705777.py:8: RuntimeWarning: divide by zero encountered in log10
+C:\Users\edson.DESKTOP-54IJM4F\AppData\Local\Temp\ipykernel_3648\2042705777.py:8: RuntimeWarning: divide by zero encountered in log10
   plt.plot(Prx, np.log10(BER[indL,:]),&#39;--&#39;, marker=markers[indL], label=f&#39;{L} km&#39;)
 </pre></div></div>
 </div>
