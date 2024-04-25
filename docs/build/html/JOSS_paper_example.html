@@ -58,6 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#Defining-the-model-to-be-simulated">Defining the model to be simulated</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Simulating-a-basic-IM/DD-model">Simulating a basic IM/DD model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Generating-BER-vs-Pin-Q-vs-Pin-curves">Generating BER vs Pin Q vs Pin curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#References">References</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="test_WDM_transmission.html">Simulation of coherent WDM transmission</a></li>
@@ -95,8 +96,21 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+  <p><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="s1">&#39;google.colab&#39;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">get_ipython</span><span class="p">()):</span>
+    <span class="o">!</span><span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>https://github.com/edsonportosilva/OptiCommPy
+    <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">chdir</span> <span class="k">as</span> <span class="n">cd</span>
+    <span class="n">cd</span><span class="p">(</span><span class="s1">&#39;/content/OptiCommPy/&#39;</span><span class="p">)</span>
+    <span class="o">!</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
@@ -110,7 +124,7 @@
 <h2>Defining the model to be simulated<a class="headerlink" href="#Defining-the-model-to-be-simulated" title="Permalink to this heading"></a></h2>
 <p>To demonstrate the basic features of OptiCommPy, in this notebook a simulation of a On-Off Keying (OOK) transmission system based on intensity modulation and direct-detection (IM/DD) is presented. A schematic for the transmission system to be simulated is shown in the figure below.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Image</span><span class="p">(</span><span class="s2">&quot;./figures/BasicIMDD.png&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
@@ -118,11 +132,11 @@
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
-<img alt="_images/JOSS_paper_example_2_0.png" class="no-scaled-link" src="_images/JOSS_paper_example_2_0.png" style="width: 600px;" />
+<img alt="_images/JOSS_paper_example_4_0.png" class="no-scaled-link" src="_images/JOSS_paper_example_4_0.png" style="width: 600px;" />
 </div>
 </div>
 <p>It consists of a 10 Gb/s NRZ OOK transmission over 100 km of optical fiber with direct detection at the receiver assuming a photodiode with 10 GHz of bandwidth. The fiber channel is modeled as a linear propagation medium exhibiting loss and chromatic dispersion. All the simulation parameters are listed in the table below.</p>
@@ -176,7 +190,7 @@
 <h2>Simulating a basic IM/DD model<a class="headerlink" href="#Simulating-a-basic-IM/DD-model" title="Permalink to this heading"></a></h2>
 <p>To build the corresponding simulation setup with OptiCommPy, first the necessary functions need to be imported as</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -194,7 +208,7 @@
 <p>Given that each element in the simulation requires a specific set of parameters, the subsequent step involves defining all necessary parameters to establish the desired simulation setup, as illustrated in the next cell.</p>
 <p>In this particular example, we assume that the electrical signal driving the optical modulator is a binary non-return-to-zero (NRZ) signal. The optical modulator is modeled as an ideal Mach-Zehnder Modulator (MZM). The fiber channel is considered linear and affected only by loss and chromatic dispersion. Lastly, at the receiver, a photodiode with a frequency response limited to 10 GHz is configured, subject to the influence of thermal and shot noise.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># simulation parameters</span>
@@ -233,7 +247,7 @@
 <p>After defining all the required parameters, the core simulation code in the next cell establishes the signal flow through each OptiCommPy model, extending from the initial bit source to the direct-detection optical receiver. Starting with a pseudorandom bit sequence, the signal undergoes upsampling and pulse shaping, resulting in a series of binary non-return-to-zero (NRZ) pulses. The electrical NRZ signal then drives the MZM, biased at the quadrature point. An ideal laser generates the optical
 carrier, free from phase and intensity noise. This optical signal, upon exiting the MZM, traverses the linear fiber channel, where it is subjected to losses and chromatic dispersion. Finally, the signal is detected by a photodiode.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Simulation</span>
@@ -280,7 +294,7 @@ Starting simulation...simulation completed.
 </div>
 <p>After detecting the optical signal and getting the corresponding photocurrent <code class="docutils literal notranslate"><span class="pre">I_Rx</span></code>, signal quality metrics can then be evaluated in order to quantify the transmission performance. For OOK optical transmission systems, the most common metrics are the BER and the quality-factor (Q-factor), which can be calculated from the <code class="docutils literal notranslate"><span class="pre">I_Rx</span></code> using the function <code class="docutils literal notranslate"><span class="pre">bert</span></code> available from <code class="docutils literal notranslate"><span class="pre">optic.comm.metrics</span></code>.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># calculate the BER and Q-factor</span>
@@ -314,7 +328,7 @@ Pb = 2.44e-04
 <h2>Generating BER vs Pin Q vs Pin curves<a class="headerlink" href="#Generating-BER-vs-Pin-Q-vs-Pin-curves" title="Permalink to this heading"></a></h2>
 <p>Starting from this basic setup, we can conduct a comprehensive analysis via Monte Carlo simulations to characterize transmission performance across various system parameters. For instance, by repeating the same simulation with different optical launch powers and transmission distances, we can generate performance curves that depict BER and Q-factor as functions of received optical power at varying transmission distances. The corresponding code is shown in the next cell.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tqdm.notebook</span> <span class="kn">import</span> <span class="n">tqdm</span>
@@ -403,10 +417,10 @@ Pb = 2.44e-04
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "12612dae25e24d0f9e412822cd784514", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "17d9583e8c54421799cac264dba4266d", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">markers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;o&#39;</span><span class="p">,</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="s1">&#39;*&#39;</span><span class="p">,</span><span class="s1">&#39;d&#39;</span><span class="p">,</span><span class="s1">&#39;^&#39;</span><span class="p">]</span>
@@ -448,7 +462,7 @@ Pb = 2.44e-04
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-C:\Users\edson.DESKTOP-54IJM4F\AppData\Local\Temp\ipykernel_29680\2042705777.py:8: RuntimeWarning: divide by zero encountered in log10
+C:\Users\edson.DESKTOP-54IJM4F\AppData\Local\Temp\ipykernel_18320\2042705777.py:8: RuntimeWarning: divide by zero encountered in log10
   plt.plot(Prx, np.log10(BER[indL,:]),&#39;--&#39;, marker=markers[indL], label=f&#39;{L} km&#39;)
 </pre></div></div>
 </div>
@@ -456,17 +470,21 @@ C:\Users\edson.DESKTOP-54IJM4F\AppData\Local\Temp\ipykernel_29680\2042705777.py:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/JOSS_paper_example_14_1.png" src="_images/JOSS_paper_example_14_1.png" />
+<img alt="_images/JOSS_paper_example_16_1.png" src="_images/JOSS_paper_example_16_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/JOSS_paper_example_14_2.png" src="_images/JOSS_paper_example_14_2.png" />
+<img alt="_images/JOSS_paper_example_16_2.png" src="_images/JOSS_paper_example_16_2.png" />
 </div>
 </div>
 <p>These plots clearly illustrate that system performance deteriorates with longer transmission distances, which is primarily attributed to the cumulative impact of chromatic dispersion and the noise sources at the photodiode, resulting in increased signal degradation.</p>
+</section>
+<section id="References">
+<h2>References<a class="headerlink" href="#References" title="Permalink to this heading"></a></h2>
+<p>[1] G. P. Agrawal, Fiber-Optic Communication Systems. John Wiley &amp; Sons, 2021.</p>
 </section>
 </section>
 
