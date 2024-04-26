@@ -53,8 +53,8 @@ setup(
     package_data={"optic": files},
     #'runner' is in the root.
     scripts=["runner"],
-    test_suite="nose.collector",
-    tests_require=["nose"],
+    test_suite="tests",
+    tests_require=["pytest", "unittest"],
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     classifiers=[
