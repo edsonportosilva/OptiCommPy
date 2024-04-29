@@ -76,7 +76,11 @@ def cpr(Ei, param=None, symbTx=None):
         Phase-compensated signal.
     θ : real-valued np.array
         Time-varying estimated phase-shifts.
-
+    
+    References
+    ----------
+    [1] T. Pfau, S. Hoffmann, e R. Noé, “Hardware-efficient coherent digital receiver concept with feedforward carrier recovery for M-QAM constellations”, Journal of Lightwave Technology, vol. 27, nº 8, p. 989–999, 2009, doi: 10.1109/JLT.2008.2010511.
+    [2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
     """
     if symbTx is None:
         symbTx = np.zeros(Ei.shape)
@@ -153,6 +157,9 @@ def bps(Ei, N, constSymb, B):
     θ : real-valued np.array
         Time-varying estimated phase-shifts.
 
+    References
+    ----------
+    [1] T. Pfau, S. Hoffmann, e R. Noé, “Hardware-efficient coherent digital receiver concept with feedforward carrier recovery for M-QAM constellations”, Journal of Lightwave Technology, vol. 27, nº 8, p. 989–999, 2009, doi: 10.1109/JLT.2008.2010511.
     """
     nModes = Ei.shape[1]
 
@@ -214,9 +221,7 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
 
     References
     ----------
-    [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel
-    estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
-
+    [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
     """
     nSymbols, nModes = Ei.shape
 
@@ -279,6 +284,10 @@ def viterbi(Ei, N=35, M=4):
     -------
     np.array, float
         Estimated phase error.
+    
+    References
+    ----------
+    [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
     """
     return (
         -np.unwrap(
@@ -306,7 +315,10 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
     np.array, float
         - The output signal after applying frequency offset correction.
         - The estimated frequency offset.
-
+    
+    References
+    ----------
+    [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
     """
     Nfft = Ei.shape[0]
 
