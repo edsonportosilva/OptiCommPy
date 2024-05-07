@@ -41,7 +41,6 @@ setup(
         "numba>=0.54.0,<=0.57",
         "simple-pid>=1.0.1",
         "mpl-scatter-density>=0.7.0",
-        "pandas>=2.0.0",
         "sphinx-rtd-theme>=1.2.2",
         "nbsphinx>=0.9.3",
         "nbsphinx-link>=1.3.0"
