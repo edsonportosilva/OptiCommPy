@@ -22,7 +22,9 @@ extensions = ['sphinx.ext.autodoc',
                'sphinx.ext.autosummary', 
                'sphinx.ext.intersphinx',
                'sphinx.ext.napoleon',
-               'sphinx_rtd_theme']
+               'sphinx_rtd_theme',
+               'nbsphinx',
+               'nbsphinx_link']
 
 templates_path = ['_templates']
 exclude_patterns = []

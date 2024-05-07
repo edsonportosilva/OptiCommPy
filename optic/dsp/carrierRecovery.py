@@ -13,6 +13,7 @@ DSP algorithms for carrier phase and frequency recovery (:mod:`optic.dsp.carrier
    fourthPowerFOE -- Frequency offset (FO) estimation and compensation with the 4th-power method
    cpr            -- General function to call and configure any of the CPR algorithms in this module   
 """
+import logging as logg
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,7 +21,7 @@ from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
 
 from optic.dsp.core import pnorm, movingAverage
-from optic.comm.modulation import GrayMapping
+from optic.comm.modulation import grayMapping
 
 
 def cpr(Ei, param=None, symbTx=None):
@@ -29,7 +30,7 @@ def cpr(Ei, param=None, symbTx=None):
 
     Parameters
     ----------
-    Ei : complex-valued ndarray
+    Ei : complex-valued np.array
         received constellation symbols.
     param : core.param object, optional
         configuration parameters. The default is [].
@@ -60,7 +61,7 @@ def cpr(Ei, param=None, symbTx=None):
 
         - param.N: length of the moving average window. The default is 35.
 
-    symbTx :complex-valued ndarray, optional
+    symbTx :complex-valued np.array, optional
         Transmitted symbol sequence. The default is [].
 
     Raises
@@ -71,11 +72,18 @@ def cpr(Ei, param=None, symbTx=None):
 
     Returns
     -------
-    Eo : complex-valued ndarray
+    Eo : complex-valued np.array
         Phase-compensated signal.
-    θ : real-valued ndarray
+    θ : real-valued np.array
         Time-varying estimated phase-shifts.
+    
+    References
+    ----------
+    [1] T. Pfau, S. Hoffmann, e R. Noé, “Hardware-efficient coherent digital receiver concept with feedforward carrier recovery for M-QAM constellations”, Journal of Lightwave Technology, vol. 27, nº 8, p. 989–999, 2009, doi: 10.1109/JLT.2008.2010511.
 
+    [2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
+    
+    [3] H. Meyer, Digital Communication Receivers: Synchronization, Channel estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
     """
     if symbTx is None:
         symbTx = np.zeros(Ei.shape)
@@ -101,18 +109,22 @@ def cpr(Ei, param=None, symbTx=None):
         Ei = Ei.reshape(len(Ei), 1)
 
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     constSymb = pnorm(constSymb)
 
     # 4th power frequency offset estimation/compensation
+    logg.info(f"Running frequency offset compensation...")
     Ei, _ = fourthPowerFOE(Ei, 1 / Ts)
     Ei = pnorm(Ei)
 
     if alg == "ddpll":
+        logg.info(f"Running DDPLL carrier phase recovery...")
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
+        logg.info(f"Running BPS carrier phase recovery...")
         θ = bps(Ei, N // 2, constSymb, B)
     elif alg == "viterbi":
+        logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")
         θ = viterbi(Ei, N)
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
@@ -134,20 +146,23 @@ def bps(Ei, N, constSymb, B):
 
     Parameters
     ----------
-    Ei : complex-valued ndarray
+    Ei : complex-valued np.array
         Received constellation symbols.
     N : int
         Half of the 2*N+1 average window.
-    constSymb : complex-valued ndarray
+    constSymb : complex-valued np.array
         Complex-valued constellation.
     B : int
         number of test phases.
 
     Returns
     -------
-    θ : real-valued ndarray
+    θ : real-valued np.array
         Time-varying estimated phase-shifts.
 
+    References
+    ----------
+    [1] T. Pfau, S. Hoffmann, e R. Noé, “Hardware-efficient coherent digital receiver concept with feedforward carrier recovery for M-QAM constellations”, Journal of Lightwave Technology, vol. 27, nº 8, p. 989–999, 2009, doi: 10.1109/JLT.2008.2010511.
     """
     nModes = Ei.shape[1]
 
@@ -185,7 +200,7 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
 
     Parameters
     ----------
-    Ei : complex-valued ndarray
+    Ei : complex-valued np.array
         Received constellation symbols.
     Ts : float scalar
         Symbol period.
@@ -195,23 +210,21 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
         Loop filter parameter 1.
     tau2 : float scalar
         Loop filter parameter 2.
-    constSymb : complex-valued ndarray
+    constSymb : complex-valued np.array
         Complex-valued ideal constellation symbols.
-    symbTx : complex-valued ndarray
+    symbTx : complex-valued np.array
         Transmitted symbol sequence.
-    pilotInd : int ndarray
+    pilotInd : int np.array
         Indexes of pilot-symbol locations.
 
     Returns
     -------
-    θ : real-valued ndarray
+    θ : real-valued np.array
         Time-varying estimated phase-shifts.
 
     References
     ----------
-    [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel
-    estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
-
+    [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
     """
     nSymbols, nModes = Ei.shape
 
@@ -263,7 +276,7 @@ def viterbi(Ei, N=35, M=4):
 
     Parameters
     ----------
-    Ei : ndarray
+    Ei : np.array
         Input signal.
     N : int, optional
         Size of the moving average window.
@@ -272,8 +285,12 @@ def viterbi(Ei, N=35, M=4):
 
     Returns
     -------
-    ndarray, float
+    np.array, float
         Estimated phase error.
+    
+    References
+    ----------
+    [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
     """
     return (
         -np.unwrap(
@@ -289,7 +306,7 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
 
     Parameters
     ----------
-    Ei : ndarray
+    Ei : np.array
         Input signal.
     Fs : float
         Sampling frequency.
@@ -298,10 +315,13 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
 
     Returns
     -------
-    ndarray, float
+    np.array, float
         - The output signal after applying frequency offset correction.
         - The estimated frequency offset.
-
+    
+    References
+    ----------
+    [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
     """
     Nfft = Ei.shape[0]
 

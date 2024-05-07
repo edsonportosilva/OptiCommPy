@@ -30,7 +30,7 @@ import scipy.constants as const
 
 from optic.utils import dB2lin
 from optic.dsp.core import pnorm, signal_power
-from optic.comm.modulation import GrayMapping, demodulateGray, minEuclid
+from optic.comm.modulation import grayMapping, demodulateGray, minEuclid
 
 
 def bert(Irx, bitsTx=None, seed=123):
@@ -39,10 +39,10 @@ def bert(Irx, bitsTx=None, seed=123):
 
     Parameters
     ----------
-    Irx : numpy.ndarray
+    Irx : numpy.np.array
         Received signal intensity values.
 
-    bitsTx : numpy.ndarray, optional
+    bitsTx : numpy.np.array, optional
         Transmitted bit sequence. If not provided, a random bit sequence is generated.
 
     seed : int, optional
@@ -73,16 +73,9 @@ def bert(Irx, bitsTx=None, seed=123):
     The function then applies the optimal decision rule to estimate the received bit sequence `bitsRx`. The Bit Error Rate (BER) is calculated
     by comparing `bitsRx` to `bitsTx`.
 
-    Example
-    -------
-    >>> Irx = np.array([0.1, 0.8, 0.2, 0.7, 0.3])
-    >>> bitsTx = np.array([0, 1, 0, 1, 0])
-    >>> BER, Q = ook_BERT(Irx, bitsTx)
-    >>> print(f"BER: {BER}, Q-factor: {Q}")
-
     References
     ----------
-    Agrawal, Govind P. Fiber-optic communication systems. John Wiley & Sons, 2012.
+    [1] Agrawal, Govind P. Fiber-optic communication systems. John Wiley & Sons, 2012.
 
     """
     if bitsTx is None:
@@ -138,12 +131,16 @@ def fastBERcalc(rx, tx, M, constType):
     SNR : np.array
         Estimated SNR from the received constellation.
 
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
+
     """
     if M != 2 and constType == "ook":
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     Es = np.mean(np.abs(constSymb) ** 2)
 
     # We want all the signal sequences to be disposed in columns:
@@ -209,6 +206,10 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap, px):
     LLRs : np.array
         sequence of calculated LLRs.
 
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
+
     """
     M = len(constSymb)
     b = int(np.log2(M))
@@ -249,12 +250,16 @@ def monteCarloGMI(rx, tx, M, constType, px=None):
         Generalized mutual information values.
     NGMI : np.array
         Normalized mutual information.
+    
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
 
     """
     if px is None:
         px = []
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
 
     # get bit mapping
     b = int(np.log2(M))
@@ -344,13 +349,17 @@ def monteCarloMI(rx, tx, M, constType, px=None):
     MI : np.array
         Estimated MI values.
 
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
+
     """
     if px is None:
         px = []
     if len(px) == 0:  # if px is not defined
         px = 1 / M * np.ones(M)  # assume uniform distribution
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     Es = np.sum(np.abs(constSymb) ** 2 * px)
     constSymb = constSymb / np.sqrt(Es)
 
@@ -381,7 +390,7 @@ def monteCarloMI(rx, tx, M, constType, px=None):
 
     for k in range(nModes):
         σ2 = noiseVar[k]
-        MI[k] = calcMI(rx[:, k], tx[:, k], σ2, constSymb, px)
+        MI[k] = calcMI(rx[:, k], tx[:, k], σ2, constSymb, px)[0]
     return MI
 
 
@@ -407,6 +416,10 @@ def calcMI(rx, tx, σ2, constSymb, pX):
     -------
     scalar
         Estimated mutual information.
+
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
 
     """
     N = len(rx)
@@ -448,6 +461,10 @@ def Qfunc(x):
     -------
     scalar
         value of Q(x).
+    
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
     """
     return 0.5 - 0.5 * erf(x / np.sqrt(2))
@@ -473,6 +490,12 @@ def calcEVM(symb, M, constType, symbTx=None):
     EVM : np.array
         Error vector magnitude (EVM) per signal dimension.
 
+    References
+    ----------
+    [1] R. A. Shafik, et al, “On the error vector magnitude as a performance metric and comparative analysis”, em 2006 International Conference on Emerging Technologies, 2006, p. 27–31. doi: 10.1109/ICET.2006.335992.
+
+    [2] H. A. Mahmoud e H. Arslan, “Error vector magnitude to SNR conversion for nondata-aided receivers”, IEEE Transactions on Wireless Communications, vol. 8, nº 5, p. 2694–2704, 2009, doi: 10.1109/TWC.2009.080862.
+
     """
     if symbTx is None:
         symbTx = []
@@ -492,7 +515,7 @@ def calcEVM(symb, M, constType, symbTx=None):
             symbTx = symbTx.reshape(len(symbTx), 1)
         symbTx = pnorm(symbTx)
     # constellation parameters
-    constSymb = GrayMapping(M, constType)
+    constSymb = grayMapping(M, constType)
     constSymb = pnorm(constSymb)
 
     EVM = np.zeros(symb.shape[1])
@@ -532,6 +555,10 @@ def theoryBER(M, EbN0, constType):
     -------
     Pb : scalar
         Theoretical probability of bit error.
+    
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
     """
     EbN0lin = 10 ** (EbN0 / 10)
@@ -576,6 +603,10 @@ def condEntropy(yI, yQ, const, pX, ind, σ):
     -------
     float
         conditional entropy H(X|Y=y).
+
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
     """
     π = np.pi
     prob = 0
@@ -656,8 +687,12 @@ def theoryMI(M, constType, SNR, pX=None, symetry=True, lim=np.inf, tol=1e-3):
     -------
     float
         Mutual information for the given parameters.
+    
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
     """
-    constSymb = GrayMapping(M, constType)  # get constellation
+    constSymb = grayMapping(M, constType)  # get constellation
     Es = signal_power(constSymb)  # calculate average symbol energy
     constSymb = constSymb / np.sqrt(Es)  # normalize average symbol energy
 
@@ -830,6 +865,14 @@ def calcLinOSNR(Ns, Pin, α, Ls, OSNRin, NF=4.5, Fc=193.1e12, Bref=12.5e9):
     -------
     OSNR : np.array
         OSNR values in dB at the output of each fiber span.
+
+    References
+    ----------
+    [1] J. G. Proakis; M. Salehi, Communication Systems Engineering, 2nd Edition. Pearson, 2002.
+
+    [2] R. -J. Essiambre, et al, "Capacity Limits of Optical Fiber Networks,"  Journal of Lightwave Technology, vol. 28, no. 4, p. 662-701, 2010, doi: 10.1109/JLT.2009.2039464.
+
+    [3] R. Schober, P. Bayvel, e F. D. Pasquale, “Analytical model for the calculation of the optical signal-to-noise ratio (SNR) of WDM EDFA chains”, Optical and Quantum Electronics, vol. 31, no 3, p. 237–241. 1999, doi: 10.1023/A:1006948826091.
 
     """
     G = α * Ls

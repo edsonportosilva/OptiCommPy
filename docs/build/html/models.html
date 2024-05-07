@@ -1,97 +1,56 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="English" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="English" > <!--<![endif]-->
+<html class="writer-html5" lang="English" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Physical Models &mdash; OptiCommPy 0.6.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  
-  
-  
-
-  
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="optic.models.devices.pm" href="generated/optic.models.devices.pm.html" />
-    <link rel="prev" title="optic.dsp.clockRecovery.gardnerClockRecovery" href="generated/optic.dsp.clockRecovery.gardnerClockRecovery.html" /> 
+    <link rel="prev" title="optic.dsp.clockRecovery.calcClockDrift" href="generated/optic.dsp.clockRecovery.calcClockDrift.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="index.html" class="icon icon-home"> OptiCommPy
           
-
-          
+          <a href="index.html" class="icon icon-home">
+            OptiCommPy
           </a>
-
-          
-            
-            
               <div class="version">
                 0.6
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="welcome.html">Available features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="test_WDM_transmission.html">Simulation of coherent WDM transmission</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
 <ul class="current">
@@ -133,12 +92,6 @@
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.models.amplification.edfaSM.html">optic.models.amplification.edfaSM</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#functions-adapted-to-run-with-gpu-cupy-processing-optic-models-modelsgpu">Functions adapted to run with GPU (CuPy) processing (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.modelsGPU</span></code>)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.modelsGPU.ssfm.html">optic.models.modelsGPU.ssfm</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.modelsGPU.manakovSSF.html">optic.models.modelsGPU.manakovSSF</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/optic.models.modelsGPU.edfa.html">optic.models.modelsGPU.edfa</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="#advanced-models-for-optical-transmitters-optic-models-tx">Advanced models for optical transmitters (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.tx</span></code>)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.models.tx.simpleWDMTx.html">optic.models.tx.simpleWDMTx</a></li>
 </ul>
@@ -149,77 +102,35 @@
 <li class="toctree-l1"><a class="reference internal" href="utils.html">General Utilities</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">OptiCommPy</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
-      <li>Physical Models</li>
-    
-    
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Physical Models</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/models.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="physical-models">
-<h1>Physical Models<a class="headerlink" href="#physical-models" title="Permalink to this heading">¶</a></h1>
-<div class="section" id="models-for-optoelectronic-devices-optic-models-devices">
-<h2>Models for optoelectronic devices (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.devices</span></code>)<a class="headerlink" href="#models-for-optoelectronic-devices-optic-models-devices" title="Permalink to this heading">¶</a></h2>
+             
+  <section id="physical-models">
+<h1>Physical Models<a class="headerlink" href="#physical-models" title="Permalink to this heading"></a></h1>
+<section id="models-for-optoelectronic-devices-optic-models-devices">
+<h2>Models for optoelectronic devices (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.devices</span></code>)<a class="headerlink" href="#models-for-optoelectronic-devices-optic-models-devices" title="Permalink to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.models.devices.pm.html#optic.models.devices.pm" title="optic.models.devices.pm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pm</span></code></a>(Ai, u, Vπ)</p></td>
 <td><p>Optical Phase Modulator (PM).</p></td>
@@ -264,7 +175,7 @@
 <span class="sig-name descname"><span class="pre">adc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Analog-to-digital converter (ADC) model.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>ndarray</em>) -- Input signal.</p></li>
 <li><p><strong>param</strong> (<em>core.parameter</em>) -- <dl class="simple">
@@ -283,10 +194,10 @@
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Resampled and quantized signal.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
@@ -297,7 +208,7 @@
 <span class="sig-name descname"><span class="pre">balancedPD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Balanced photodiode (BPD).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>E1</strong> (<em>np.array</em>) -- Input optical field.</p></li>
 <li><p><strong>E2</strong> (<em>np.array</em>) -- Input optical field.</p></li>
@@ -316,13 +227,16 @@
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ibpd</strong> -- Balanced photocurrent.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.</p>
+<p>[2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -330,7 +244,7 @@
 <span class="sig-name descname"><span class="pre">basicLaserModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Laser model with Maxwellian random walk phase noise and RIN.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>param</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- <p>Parameters of the laser.</p>
 <ul class="simple">
 <li><p>param.P: laser power [W] [default: 10 dBm]</p></li>
@@ -341,13 +255,15 @@
 </ul>
 </p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>optical_signal</strong> -- Optical signal with phase noise and RIN.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -355,20 +271,23 @@
 <span class="sig-name descname"><span class="pre">coherentReceiver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Es</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Single polarization coherent optical front-end.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Es</strong> (<em>np.array</em>) -- Input signal optical field.</p></li>
 <li><p><strong>Elo</strong> (<em>np.array</em>) -- Input LO optical field.</p></li>
 <li><p><strong>param</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- Parameters of the photodiodes.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>s</strong> -- Downconverted signal after balanced detection.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.</p>
+<p>[2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -376,7 +295,7 @@
 <span class="sig-name descname"><span class="pre">edfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Implement simple EDFA model.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input signal field.</p></li>
 <li><p><strong>param</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- <p>Parameters of the edfa.</p>
@@ -389,13 +308,15 @@
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Amplified noisy optical signal.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] R. -J. Essiambre,et al, &quot;Capacity Limits of Optical Fiber Networks,&quot; in Journal of Lightwave Technology, vol. 28, no. 4, pp. 662-701, 2010, doi: 10.1109/JLT.2009.2039464.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -403,19 +324,22 @@
 <span class="sig-name descname"><span class="pre">hybrid_2x4_90deg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Es</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elo</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Optical 2 x 4 90° hybrid.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Es</strong> (<em>np.array</em>) -- Input signal optical field.</p></li>
 <li><p><strong>Elo</strong> (<em>np.array</em>) -- Input LO optical field.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Optical hybrid outputs.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.</p>
+<p>[2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -423,7 +347,7 @@
 <span class="sig-name descname"><span class="pre">iqm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ai</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Optical In-Phase/Quadrature Modulator (IQM).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ai</strong> (<em>scalar</em><em> or </em><em>np.array</em>) -- Amplitude of the optical field at the input of the IQM.</p></li>
 <li><p><strong>u</strong> (<em>complex-valued np.array</em>) -- Modulator's driving signal (complex-valued baseband).</p></li>
@@ -437,13 +361,15 @@
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>Ao</strong> -- Modulated optical field at the output of the IQM.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>complex-valued np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -451,7 +377,7 @@
 <span class="sig-name descname"><span class="pre">mzm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ai</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Optical Mach-Zehnder Modulator (MZM).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ai</strong> (<em>scalar</em><em> or </em><em>np.array</em>) -- Amplitude of the optical field at the input of the MZM.</p></li>
 <li><p><strong>u</strong> (<em>np.array</em>) -- Electrical driving signal.</p></li>
@@ -463,13 +389,16 @@
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>Ao</strong> -- Modulated optical field at the output of the MZM.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.</p>
+<p>[2] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -477,13 +406,13 @@
 <span class="sig-name descname"><span class="pre">pbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">θ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Polarization beam splitter (PBS).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>E</strong> (<em>(</em><em>N</em><em>,</em><em>2</em><em>) </em><em>np.array</em>) -- Input pol. multiplexed optical field.</p></li>
 <li><p><strong>θ</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Rotation angle of input field in radians. The default is 0.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>Ex</strong> (<em>(N,) np.array</em>) -- Ex output single pol. field.</p></li>
 <li><p><strong>Ey</strong> (<em>(N,) np.array</em>) -- Ey output single pol. field.</p></li>
@@ -491,6 +420,8 @@
 </p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -498,7 +429,7 @@
 <span class="sig-name descname"><span class="pre">pdmCoherentReceiver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Es</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">θsig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Polarization multiplexed coherent optical front-end.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Es</strong> (<em>np.array</em>) -- Input signal optical field.</p></li>
 <li><p><strong>Elo</strong> (<em>np.array</em>) -- Input LO optical field.</p></li>
@@ -506,13 +437,16 @@
 <li><p><strong>param</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- Parameters of the photodiodes.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>S</strong> -- Downconverted signal after balanced detection.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.</p>
+<p>[2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -520,7 +454,7 @@
 <span class="sig-name descname"><span class="pre">photodiode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Pin photodiode (PD).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>E</strong> (<em>np.array</em>) -- Input optical field.</p></li>
 <li><p><strong>param</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- <p>Parameters of the photodiode.</p>
@@ -539,13 +473,15 @@
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ipd</strong> -- photocurrent.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -553,30 +489,28 @@
 <span class="sig-name descname"><span class="pre">pm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ai</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vπ</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Optical Phase Modulator (PM).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ai</strong> (<em>scalar</em><em> or </em><em>np.array</em>) -- Amplitude of the optical field at the input of the PM.</p></li>
 <li><p><strong>u</strong> (<em>np.array</em>) -- Electrical driving signal.</p></li>
 <li><p><strong>Vπ</strong> (<em>scalar</em>) -- PM's Vπ voltage.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>Ao</strong> -- Modulated optical field at the output of the PM.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="models-for-fiber-optic-channels-optic-models-channels">
-<h2>Models for fiber optic channels (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.channels</span></code>)<a class="headerlink" href="#models-for-fiber-optic-channels-optic-models-channels" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="models-for-fiber-optic-channels-optic-models-channels">
+<h2>Models for fiber optic channels (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.channels</span></code>)<a class="headerlink" href="#models-for-fiber-optic-channels-optic-models-channels" title="Permalink to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.models.channels.linearFiberChannel.html#optic.models.channels.linearFiberChannel" title="optic.models.channels.linearFiberChannel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">linearFiberChannel</span></code></a>(Ei, param)</p></td>
 <td><p>Simulate signal propagation through a linear fiber channel.</p></td>
@@ -597,7 +531,7 @@
 <span class="sig-name descname"><span class="pre">awgn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">complexNoise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Implement a basic AWGN channel model.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sig</strong> (<em>np.array</em>) -- Input signal.</p></li>
 <li><p><strong>snr</strong> (<em>scalar</em>) -- Signal-to-noise ratio in dB.</p></li>
@@ -606,13 +540,15 @@
 <li><p><strong>complexNoise</strong> (<em>bool</em>) -- Generate complex-valued noise. The default is True.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Input signal plus noise.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] P. Massoud Salehi e J. Proakis, Digital Communications. McGraw-Hill Education, 2007.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -620,7 +556,7 @@
 <span class="sig-name descname"><span class="pre">linearFiberChannel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Simulate signal propagation through a linear fiber channel.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical field.</p></li>
 <li><p><strong>param</strong> (<em>parameter object</em><em>  (</em><em>struct</em><em>)</em>) -- <p>Object with physical/simulation parameters of the optical channel.</p>
@@ -630,17 +566,21 @@
 <li><p>param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]</p></li>
 <li><p>param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]</p></li>
 <li><p>param.Fs: sampling frequency [Hz] [default: None]</p></li>
+<li><p>param.returnParameters: bool, return channel parameters [default: False]</p></li>
 </ul>
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Optical field at the output of the fiber.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.</p>
+<p>[2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -648,7 +588,7 @@
 <span class="sig-name descname"><span class="pre">manakovSSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Run the Manakov split-step Fourier model (symmetric, dual-pol.).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical signal field.</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
@@ -671,11 +611,12 @@
 <li><p>param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]</p></li>
 <li><p>param.prgsBar: display progress bar? bolean variable [default:True]</p></li>
 <li><p>param.saveSpanN: specify the span indexes to be outputted [default:[]]</p></li>
+<li><p>param.returnParameters: bool, return channel parameters [default: False]</p></li>
 </ul>
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>Ech</strong> (<em>np.array</em>) -- Optical signal after nonlinear propagation.</p></li>
 <li><p><strong>param</strong> (<em>parameter object  (struct)</em>) -- Object with physical/simulation parameters used in the split-step alg.</p></li>
@@ -683,6 +624,10 @@
 </p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] D. Marcuse, C. R. Menyuk, e P. K. A. Wai, “Application of the Manakov-PMD equation to studies of signal propagation in optical fibers with randomly varying birefringence”, Journal of Lightwave Technology, vol. 15, nº 9, p. 1735–1745, 1997, doi: 10.1109/50.622902.</p>
+<p>[2] P. Serena, C. Lasagni, S. Musetti, e A. Bononi, “On Numerical Simulations of Ultra-Wideband Long-Haul Optical Communication Systems”, Journal of Lightwave Technology, vol. 38, nº 5, p. 1019–1031, 2020, doi: 10.1109/JLT.2019.2938580.</p>
+<p>[3] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -690,7 +635,7 @@
 <span class="sig-name descname"><span class="pre">ssfm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Split-step Fourier method (symmetric, single-pol.).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical signal field.</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
@@ -708,11 +653,12 @@
 <li><p>param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']</p></li>
 <li><p>param.NF: edfa noise figure [dB] [default: 4.5 dB]</p></li>
 <li><p>param.prgsBar: display progress bar? bolean variable [default:True]</p></li>
+<li><p>param.returnParameters: bool, return channel parameters [default: False]</p></li>
 </ul>
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>Ech</strong> (<em>np.array</em>) -- Optical signal after nonlinear propagation.</p></li>
 <li><p><strong>param</strong> (<em>parameter object  (struct)</em>) -- Object with physical/simulation parameters used in the split-step alg.</p></li>
@@ -720,16 +666,15 @@
 </p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013.</p>
+<p>[2] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="models-for-optical-amplifiers-optic-models-amplification">
-<h2>Models for optical amplifiers (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.amplification</span></code>)<a class="headerlink" href="#models-for-optical-amplifiers-optic-models-amplification" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="models-for-optical-amplifiers-optic-models-amplification">
+<h2>Models for optical amplifiers (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.amplification</span></code>)<a class="headerlink" href="#models-for-optical-amplifiers-optic-models-amplification" title="Permalink to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.models.amplification.OSA.html#optic.models.amplification.OSA" title="optic.models.amplification.OSA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OSA</span></code></a>(x, Fs[, Fc])</p></td>
 <td><p>Plot the optical spectrum of the signal in X and Y polarizations.</p></td>
@@ -768,14 +713,14 @@
 <span class="sig-name descname"><span class="pre">OSA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Plot the optical spectrum of the signal in X and Y polarizations.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>np.array</em>) -- Signal</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
 <li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Central optical frequency. The default is 193.1e12.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>plot</p>
 </dd>
 </dl>
@@ -786,16 +731,16 @@
 <span class="sig-name descname"><span class="pre">getN2Pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Determines the number of carriers at the metastable level, considering the spectral and spatial Giles algorithm.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>P</strong> (<em>np.array</em>) -- Signal power (signal + pump + ASE).</p></li>
 <li><p><strong>properties</strong> (<em>object with constants and edfa parameters.</em>) -- </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>norm2</strong> -- Number of carriers at the metastable level.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -806,17 +751,17 @@
 <span class="sig-name descname"><span class="pre">getOverlapInt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n2_norm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_edf</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Determines the overlap integral between the field envelope and the doping profile.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n2_norm</strong> (<em>np.array</em>) -- Number of carriers at the metastable level.</p></li>
 <li><p><strong>properties</strong> (<em>object</em>) -- With constants and edfa parameters.</p></li>
 <li><p><strong>param_edf</strong> (<em>object</em>) -- With edf parameters.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>overlapIntegral</strong> -- Overlap integral between the field envelope and the doping profile.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -827,14 +772,14 @@
 <span class="sig-name descname"><span class="pre">get_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xunits='m'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yunits='dBm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window=&lt;function</span> <span class="pre">window_none&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sides='twosided'</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculates the optical spectrum of the signal.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>np.array</em>) -- Signal</p></li>
 <li><p><strong>Fs</strong> (<em>scalar</em>) -- Sampling frequency in Hz.</p></li>
 <li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Central optical frequency. The default is 193.1e12.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>spectrum</strong> (<em>np.array</em>) -- Signal's FFT</p></li>
 <li><p><strong>frequency</strong> (<em>np.array</em>) -- Frequency array &#64; Fc.</p></li>
@@ -849,7 +794,7 @@
 <span class="sig-name descname"><span class="pre">gilesSpatial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_edf</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Routine used to solve the EDFA rate and propagation equations, considering the spatial Giles algorithm.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>P</strong> (<em>np.array</em>) -- Signal power (signal + pump + ASE).</p></li>
 <li><p><strong>z</strong> (<em>scalar</em><em> (</em><em>float</em><em>)</em>) -- Position - erbium doped fiber [0 - edf length].</p></li>
@@ -857,10 +802,10 @@
 <li><p><strong>param_edf</strong> (<em>object with constants and edf parameters.</em>) -- </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Increment of the amplified optical signal.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -871,214 +816,26 @@
 <span class="sig-name descname"><span class="pre">gilesSpectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Routine used to solve the EDFA rate and propagation equations, considering the spectral Giles algorithm.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>P</strong> (<em>np.array</em>) -- Signal power (signal + pump + ASE).</p></li>
 <li><p><strong>z</strong> (<em>scalar</em><em> (</em><em>float</em><em>)</em>) -- Position - erbium doped fiber [0 - edf length].</p></li>
 <li><p><strong>properties</strong> (<em>object with constants and edfa parameters.</em>) -- </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>Eo</strong> -- Increment of the amplified optical signal.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="functions-adapted-to-run-with-gpu-cupy-processing-optic-models-modelsgpu">
-<h2>Functions adapted to run with GPU (CuPy) processing (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.modelsGPU</span></code>)<a class="headerlink" href="#functions-adapted-to-run-with-gpu-cupy-processing-optic-models-modelsgpu" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="advanced-models-for-optical-transmitters-optic-models-tx">
+<h2>Advanced models for optical transmitters (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.tx</span></code>)<a class="headerlink" href="#advanced-models-for-optical-transmitters-optic-models-tx" title="Permalink to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.models.modelsGPU.ssfm.html#optic.models.modelsGPU.ssfm" title="optic.models.modelsGPU.ssfm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ssfm</span></code></a>(Ei, param)</p></td>
-<td><p>Split-step Fourier method (symmetric, single-pol.).</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.models.modelsGPU.manakovSSF.html#optic.models.modelsGPU.manakovSSF" title="optic.models.modelsGPU.manakovSSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">manakovSSF</span></code></a>(Ei, param)</p></td>
-<td><p>Run the Manakov split-step Fourier model (symmetric, dual-pol.).</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.models.modelsGPU.edfa.html#optic.models.modelsGPU.edfa" title="optic.models.modelsGPU.edfa"><code class="xref py py-obj docutils literal notranslate"><span class="pre">edfa</span></code></a>(Ei, param)</p></td>
-<td><p>Implement simple EDFA model.</p></td>
-</tr>
-</tbody>
-</table>
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">edfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Implement simple EDFA model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>Ei</strong> (<em>np.array</em>) -- Input signal field.</p></li>
-<li><p><strong>param</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- <p>Parameters of the edfa.</p>
-<ul>
-<li><p>param.G : amplifier gain in dB. The default is 20.</p></li>
-<li><p>param.NF : EDFA noise figure in dB. The default is 4.5.</p></li>
-<li><p>param.Fc : central optical frequency. The default is 193.1e12.</p></li>
-<li><p>param.Fs : sampling frequency in samples/second.</p></li>
-</ul>
-</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>Eo</strong> -- Amplified noisy optical signal.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.array</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">gaussianComplexNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapeOut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Generate complex circular Gaussian noise.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>shapeOut</strong> (<em>tuple of int</em>) -- Shape of ndarray to be generated.</p></li>
-<li><p><strong>σ2</strong> (<em>float</em><em>, </em><em>optional</em>) -- Variance of the noise (default is 1).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>noise</strong> -- Generated complex circular Gaussian noise.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">manakovDBP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Run the Manakov SSF digital backpropagation (symmetric, dual-pol.).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical signal field.</p></li>
-<li><p><strong>param</strong> (<em>parameter object</em><em>  (</em><em>struct</em><em>)</em>) -- <p>Object with physical/simulation parameters of the optical channel.</p>
-<ul>
-<li><p>param.Ltotal: total fiber length [km][default: 400 km]</p></li>
-<li><p>param.Lspan: span length [km][default: 80 km]</p></li>
-<li><p>param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]</p></li>
-<li><p>param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]</p></li>
-<li><p>param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]</p></li>
-<li><p>param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]</p></li>
-<li><p>param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]</p></li>
-<li><p>param.Fs: simulation sampling frequency [samples/second][default: None]</p></li>
-<li><p>param.prec: numerical precision [default: cp.complex128]</p></li>
-<li><p>param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']</p></li>
-<li><p>param.maxIter: max number of iter. in the trap. integration [default: 10]</p></li>
-<li><p>param.tol: convergence tol. of the trap. integration.[default: 1e-5]</p></li>
-<li><p>param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]</p></li>
-<li><p>param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]</p></li>
-<li><p>param.prgsBar: display progress bar? bolean variable [default:True]</p></li>
-<li><p>param.saveSpanN: specify the span indexes to be outputted [default:[]]</p></li>
-</ul>
-</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>Ech</strong> (<em>np.array</em>) -- Optical signal after nonlinear backward propagation.</p></li>
-<li><p><strong>param</strong> (<em>parameter object  (struct)</em>) -- Object with physical/simulation parameters used in the split-step alg.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">manakovSSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Run the Manakov split-step Fourier model (symmetric, dual-pol.).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical signal field.</p></li>
-<li><p><strong>param</strong> (<em>parameter object</em><em>  (</em><em>struct</em><em>)</em>) -- <p>Object with physical/simulation parameters of the optical channel.</p>
-<ul>
-<li><p>param.Ltotal: total fiber length [km][default: 400 km]</p></li>
-<li><p>param.Lspan: span length [km][default: 80 km]</p></li>
-<li><p>param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]</p></li>
-<li><p>param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]</p></li>
-<li><p>param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]</p></li>
-<li><p>param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]</p></li>
-<li><p>param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]</p></li>
-<li><p>param.Fs: simulation sampling frequency [samples/second][default: None]</p></li>
-<li><p>param.prec: numerical precision [default: cp.complex128]</p></li>
-<li><p>param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']</p></li>
-<li><p>param.NF: edfa noise figure [dB] [default: 4.5 dB]</p></li>
-<li><p>param.maxIter: max number of iter. in the trap. integration [default: 10]</p></li>
-<li><p>param.tol: convergence tol. of the trap. integration.[default: 1e-5]</p></li>
-<li><p>param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]</p></li>
-<li><p>param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]</p></li>
-<li><p>param.prgsBar: display progress bar? bolean variable [default:True]</p></li>
-<li><p>param.saveSpanN: specify the span indexes to be outputted [default:[]]</p></li>
-</ul>
-</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>Ech</strong> (<em>np.array</em>) -- Optical signal after nonlinear propagation.</p></li>
-<li><p><strong>param</strong> (<em>parameter object  (struct)</em>) -- Object with physical/simulation parameters used in the split-step alg.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">ssfm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Split-step Fourier method (symmetric, single-pol.).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>Ei</strong> (<em>np.array</em>) -- Input optical signal field.</p></li>
-<li><p><strong>param</strong> (<em>parameter object</em><em>  (</em><em>struct</em><em>)</em>) -- <p>Object with physical/simulation parameters of the optical channel.</p>
-<ul>
-<li><p>param.Ltotal: total fiber length [km][default: 400 km]</p></li>
-<li><p>param.Lspan: span length [km][default: 80 km]</p></li>
-<li><p>param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]</p></li>
-<li><p>param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]</p></li>
-<li><p>param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]</p></li>
-<li><p>param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]</p></li>
-<li><p>param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]</p></li>
-<li><p>param.Fs: simulation sampling frequency [samples/second][default: None]</p></li>
-<li><p>param.prec: numerical precision [default: cp.complex128]</p></li>
-<li><p>param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']</p></li>
-<li><p>param.NF: edfa noise figure [dB] [default: 4.5 dB]</p></li>
-<li><p>param.prgsBar: display progress bar? bolean variable [default:True]</p></li>
-</ul>
-</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>Ech</strong> (<em>np.array</em>) -- Optical signal after nonlinear propagation.</p></li>
-<li><p><strong>param</strong> (<em>parameter object  (struct)</em>) -- Object with physical/simulation parameters used in the split-step alg.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-</div>
-<div class="section" id="advanced-models-for-optical-transmitters-optic-models-tx">
-<h2>Advanced models for optical transmitters (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.tx</span></code>)<a class="headerlink" href="#advanced-models-for-optical-transmitters-optic-models-tx" title="Permalink to this heading">¶</a></h2>
-<table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.models.tx.simpleWDMTx.html#optic.models.tx.simpleWDMTx" title="optic.models.tx.simpleWDMTx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simpleWDMTx</span></code></a>(param)</p></td>
 <td><p>Implement a simple WDM transmitter.</p></td>
@@ -1092,7 +849,7 @@
 <p>Generates a complex baseband waveform representing a WDM signal with
 arbitrary number of carriers</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>param</strong> (<em>system parameters of the WDM transmitter.</em>) -- <p>optic.core.parameter object.</p>
 <ul class="simple">
 <li><p>param.M: modulation order [default: 16].</p></li>
@@ -1112,7 +869,7 @@ arbitrary number of carriers</p>
 </ul>
 </p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>sigTxWDM</strong> (<em>np.array</em>) -- WDM signal.</p></li>
 <li><p><strong>symbTxWDM</strong> (<em>np.array</em>) -- Array of symbols per WDM carrier.</p></li>
@@ -1123,56 +880,38 @@ arbitrary number of carriers</p>
 </dl>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="generated/optic.models.devices.pm.html" class="btn btn-neutral float-right" title="optic.models.devices.pm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="generated/optic.dsp.clockRecovery.gardnerClockRecovery.html" class="btn btn-neutral float-left" title="optic.dsp.clockRecovery.gardnerClockRecovery" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="generated/optic.dsp.clockRecovery.calcClockDrift.html" class="btn btn-neutral float-left" title="optic.dsp.clockRecovery.calcClockDrift" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="generated/optic.models.devices.pm.html" class="btn btn-neutral float-right" title="optic.models.devices.pm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster
-
-    </p>
+    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

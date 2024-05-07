@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulation of coherent WDM transmission &mdash; OptiCommPy 0.6.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/nbsphinx-code-cells.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Digital Communications Utilities" href="comm.html" />
+    <link rel="prev" title="Getting started" href="getting_started.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OptiCommPy
+          </a>
+              <div class="version">
+                0.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Simulation of coherent WDM transmission</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Transmitter">Transmitter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Nonlinear-fiber-model">Nonlinear fiber model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Vector-Manakov-Equation">Vector Manakov Equation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Nonlinear-fiber-propagation-with-a-symmetric-split-step-Fourier-method">Nonlinear fiber propagation with a symmetric split-step Fourier method</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Coherent-detection,-digital-signal-processing-and-data-demodulation">Coherent detection, digital signal processing and data demodulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Optical-coherent-receiver">Optical coherent receiver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Matched-filtering-and-CD-compensation">Matched filtering and CD compensation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Downsampling-to-2-samples/symbol-and-re-synchronization-with-transmitted-sequences">Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Power-normalization">Power normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Adaptive-equalization">Adaptive equalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Carrier-phase-recovery">Carrier phase recovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Evaluate-transmission-metrics">Evaluate transmission metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#References">References</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="comm.html">Digital Communications Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">Digital Signal Processing (DSP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Physical Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">General Utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OptiCommPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Simulation of coherent WDM transmission</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/test_WDM_transmission.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></p>
+<section id="Simulation-of-coherent-WDM-transmission">
+<h1>Simulation of coherent WDM transmission<a class="headerlink" href="#Simulation-of-coherent-WDM-transmission" title="Permalink to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="s1">&#39;google.colab&#39;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">get_ipython</span><span class="p">()):</span>
+    <span class="o">!</span> git clone -b main https://github.com/edsonportosilva/OptiCommPy
+    <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">chdir</span> <span class="k">as</span> <span class="n">cd</span>
+    <span class="n">cd</span><span class="p">(</span><span class="s1">&#39;/content/OptiCommPy/&#39;</span><span class="p">)</span>
+    <span class="o">!</span> pip install .
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">optic.dsp.core</span> <span class="kn">import</span> <span class="n">pulseShape</span><span class="p">,</span> <span class="n">firFilter</span><span class="p">,</span> <span class="n">decimate</span><span class="p">,</span> <span class="n">symbolSync</span><span class="p">,</span> <span class="n">pnorm</span><span class="p">,</span> <span class="n">signal_power</span>
+<span class="kn">from</span> <span class="nn">optic.models.devices</span> <span class="kn">import</span> <span class="n">pdmCoherentReceiver</span><span class="p">,</span> <span class="n">basicLaserModel</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">optic.models.modelsGPU</span> <span class="kn">import</span> <span class="n">manakovSSF</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">optic.models.channels</span> <span class="kn">import</span> <span class="n">manakovSSF</span>
+
+<span class="kn">from</span> <span class="nn">optic.models.tx</span> <span class="kn">import</span> <span class="n">simpleWDMTx</span>
+<span class="kn">from</span> <span class="nn">optic.utils</span> <span class="kn">import</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">dBm2W</span>
+<span class="kn">from</span> <span class="nn">optic.dsp.equalization</span> <span class="kn">import</span> <span class="n">edc</span><span class="p">,</span> <span class="n">mimoAdaptEqualizer</span>
+<span class="kn">from</span> <span class="nn">optic.dsp.carrierRecovery</span> <span class="kn">import</span> <span class="n">cpr</span>
+<span class="kn">from</span> <span class="nn">optic.comm.metrics</span> <span class="kn">import</span> <span class="n">fastBERcalc</span><span class="p">,</span> <span class="n">monteCarloGMI</span><span class="p">,</span> <span class="n">monteCarloMI</span><span class="p">,</span> <span class="n">calcEVM</span>
+<span class="kn">from</span> <span class="nn">optic.plot</span> <span class="kn">import</span> <span class="n">pconst</span><span class="p">,</span> <span class="n">plotPSD</span>
+
+<span class="kn">import</span> <span class="nn">scipy.constants</span> <span class="k">as</span> <span class="nn">const</span>
+
+<span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">logg</span>
+<span class="n">logg</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logg</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.core.display</span> <span class="kn">import</span> <span class="n">HTML</span>
+<span class="kn">from</span> <span class="nn">IPython.core.pylabtools</span> <span class="kn">import</span> <span class="n">figsize</span>
+
+<span class="n">HTML</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">&lt;style&gt;</span>
+<span class="s2">.output_png {</span>
+<span class="s2">    display: table-cell;</span>
+<span class="s2">    text-align: center;</span>
+<span class="s2">    vertical-align: middle;</span>
+<span class="s2">}</span>
+<span class="s2">&lt;/style&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<style>
+.output_png {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+}
+</style></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figsize</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+<span class="c1">#%load_ext line_profiler</span>
+</pre></div>
+</div>
+</div>
+<section id="Summary">
+<h2>Summary<a class="headerlink" href="#Summary" title="Permalink to this heading"></a></h2>
+<p>OptiCommPy is a Python package for simulating optical communication systems, including Wavelength Division Multiplexing (WDM) systems. This notebook shows an example of how to use OptiCommPy to run a simulation of a coherent WDM system with several modulated co-propagating optical carriers.</p>
+</section>
+<section id="Transmitter">
+<h2>Transmitter<a class="headerlink" href="#Transmitter" title="Permalink to this heading"></a></h2>
+<p>The initial step involves defining a comprehensive set of parameters for the WDM transmitters. The table below outlines a specific WDM system configuration where <span class="math notranslate nohighlight">\(11\times32\)</span>GBd PDM-16QAM carriers are generated, following a frequency grid of 37.5 GHz that is centered precisely at the optical frequency of 193.1 THz. Each carrier is modulated with a Nyquist spectrum, by means of a root-raised-cosine (RRC) pulse-shaping filter with a rolloff factor of 0.01. The continuous-wave (CW) lasers
+utilized in this setup are characterized by linewidths of 100 kHz, with each modulated carrier boasting an output power of -2 dBm.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>M</p></td>
+<td><p>Order of the modulation format</p></td>
+<td><p>16</p></td>
+</tr>
+<tr class="row-odd"><td><p>Rs</p></td>
+<td><p>Symbol rate [baud]</p></td>
+<td><p>32e9</p></td>
+</tr>
+<tr class="row-even"><td><p>SpS</p></td>
+<td><p>Samples per symbol</p></td>
+<td><p>16</p></td>
+</tr>
+<tr class="row-odd"><td><p>pulse</p></td>
+<td><p>Pulse shaping filter</p></td>
+<td><p>'rrc'</p></td>
+</tr>
+<tr class="row-even"><td><p>Ntaps</p></td>
+<td><p>Number of pulse shaping filter coefficients</p></td>
+<td><p>4096</p></td>
+</tr>
+<tr class="row-odd"><td><p>alphaRRC</p></td>
+<td><p>RRC rolloff</p></td>
+<td><p>0.01</p></td>
+</tr>
+<tr class="row-even"><td><p>Pch_dBm</p></td>
+<td><p>Power per WDM channel [dBm]</p></td>
+<td><p>-2</p></td>
+</tr>
+<tr class="row-odd"><td><p>Nch</p></td>
+<td><p>Number of WDM channels</p></td>
+<td><p>11</p></td>
+</tr>
+<tr class="row-even"><td><p>Fc</p></td>
+<td><p>Central frequency of the WDM spectrum [Hz]</p></td>
+<td><p>193.1e12</p></td>
+</tr>
+<tr class="row-odd"><td><p>lw</p></td>
+<td><p>Laser linewidth [Hz]</p></td>
+<td><p>100e3</p></td>
+</tr>
+<tr class="row-even"><td><p>freqSpac</p></td>
+<td><p>WDM grid spacing [Hz]</p></td>
+<td><p>37.5e9</p></td>
+</tr>
+<tr class="row-odd"><td><p>Nmodes</p></td>
+<td><p>Number of polarization modes</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>Nbits</p></td>
+<td><p>Total number of bits per polarization</p></td>
+<td><p>400000</p></td>
+</tr>
+</tbody>
+</table>
+<p>The number of samples per symbol (SpS) adopted in the simulation is set to 16, meaning that the signals are represented at a corresponding sampling rate (Fs) of Fs = 16<span class="math notranslate nohighlight">\(\times\)</span>Rs = 512 GSa/s, where Rs is the symbol rate (i.e. 32GBd). The total bandwidth simulated in this setup is 11$:nbsphinx-math:<a href="#id1"><span class="problematic" id="id2">`</span></a>times`$37.5 GHz = 412.5 GHz, which is below Fs, thus avoiding aliasing in the extremes of the spectrum. The total simulated interval corresponds to 100000 signaling periods, corresponding
+to 400000 bits transmitted per polarization per WDM carrier.</p>
+<p><strong>Polarization multiplexed WDM signal generation</strong></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Transmitter parameters:</span>
+<span class="n">paramTx</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">M</span>   <span class="o">=</span> <span class="mi">16</span>           <span class="c1"># order of the modulation format</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">Rs</span>  <span class="o">=</span> <span class="mf">32e9</span>         <span class="c1"># symbol rate [baud]</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span> <span class="o">=</span> <span class="mi">16</span>           <span class="c1"># samples per symbol</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">pulse</span> <span class="o">=</span> <span class="s1">&#39;rrc&#39;</span>      <span class="c1"># pulse shaping filter</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">Ntaps</span> <span class="o">=</span> <span class="mi">4096</span>     <span class="c1"># number of pulse shaping filter coefficients</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">alphaRRC</span> <span class="o">=</span> <span class="mf">0.01</span>    <span class="c1"># RRC rolloff</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">Pch_dBm</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>        <span class="c1"># power per WDM channel [dBm]</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">Nch</span>     <span class="o">=</span> <span class="mi">11</span>       <span class="c1"># number of WDM channels</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">Fc</span>      <span class="o">=</span> <span class="mf">193.1e12</span> <span class="c1"># central optical frequency of the WDM spectrum</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">lw</span>      <span class="o">=</span> <span class="mf">100e3</span>    <span class="c1"># laser linewidth in Hz</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">freqSpac</span> <span class="o">=</span> <span class="mf">37.5e9</span>  <span class="c1"># WDM grid spacing</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">Nmodes</span> <span class="o">=</span> <span class="mi">2</span>         <span class="c1"># number of signal modes [2 for polarization multiplexed signals]</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">Nbits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">)</span><span class="o">*</span><span class="mf">1e5</span><span class="p">)</span> <span class="c1"># total number of bits per polarization</span>
+
+<span class="c1"># generate WDM signal</span>
+<span class="n">sigWDM_Tx</span><span class="p">,</span> <span class="n">symbTx_</span><span class="p">,</span> <span class="n">paramTx</span> <span class="o">=</span> <span class="n">simpleWDMTx</span><span class="p">(</span><span class="n">paramTx</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "322e60ffcb1445169d6b5ea5276ba64f", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+channel 0        fc : 192.9125 THz
+  mode #0        power: -5.01 dBm
+  mode #1        power: -5.01 dBm
+channel 0        power: -2.00 dBm
+
+channel 1        fc : 192.9500 THz
+  mode #0        power: -5.01 dBm
+  mode #1        power: -5.01 dBm
+channel 1        power: -2.00 dBm
+
+channel 2        fc : 192.9875 THz
+  mode #0        power: -5.01 dBm
+  mode #1        power: -5.01 dBm
+channel 2        power: -2.00 dBm
+
+channel 3        fc : 193.0250 THz
+  mode #0        power: -5.01 dBm
+  mode #1        power: -5.01 dBm
+channel 3        power: -2.00 dBm
+
+channel 4        fc : 193.0625 THz
+  mode #0        power: -5.01 dBm
+  mode #1        power: -5.01 dBm
+channel 4        power: -2.00 dBm
+
+channel 5        fc : 193.1000 THz
+  mode #0        power: -5.01 dBm
+  mode #1        power: -5.01 dBm
+channel 5        power: -2.00 dBm
+
+channel 6        fc : 193.1375 THz
+  mode #0        power: -5.01 dBm
+  mode #1        power: -5.01 dBm
+channel 6        power: -2.00 dBm
+
+channel 7        fc : 193.1750 THz
+  mode #0        power: -5.01 dBm
+  mode #1        power: -5.01 dBm
+channel 7        power: -2.00 dBm
+
+channel 8        fc : 193.2125 THz
+  mode #0        power: -5.01 dBm
+  mode #1        power: -5.01 dBm
+channel 8        power: -2.00 dBm
+
+channel 9        fc : 193.2500 THz
+  mode #0        power: -5.01 dBm
+  mode #1        power: -5.01 dBm
+channel 9        power: -2.00 dBm
+
+channel 10       fc : 193.2875 THz
+  mode #0        power: -5.01 dBm
+  mode #1        power: -5.01 dBm
+channel 10       power: -2.00 dBm
+
+total WDM signal power: 8.41 dBm
+</pre></div></div>
+</div>
+</section>
+<section id="Nonlinear-fiber-model">
+<h2>Nonlinear fiber model<a class="headerlink" href="#Nonlinear-fiber-model" title="Permalink to this heading"></a></h2>
+<section id="Vector-Manakov-Equation">
+<h3>Vector Manakov Equation<a class="headerlink" href="#Vector-Manakov-Equation" title="Permalink to this heading"></a></h3>
+<p>When considering two polarizations propagating over an optical fiber, the Manakov model can be used to describe the coupled propagation of two orthogonal polarization components, taking into account their mutual interactions and the characteristics of the fiber such as attenuation, nonlinearity and dispersion.</p>
+<p>The vectorial Manakov equation is a system of coupled nonlinear Schrödinger equations (NLSEs) for the two polarizations, <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span>, written in the following form:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial E_x(z,t)}{\partial z} +\frac{\alpha}{2}E_x(z,t) + j\frac{\beta_2}{2}\frac{\partial^2 E_x(z,t)}{\partial t^2} - j\frac{8\gamma}{9}\left(|E_x(z,t)|^2 + |E_y(z,t)|^2\right)E_x(z,t) = 0\]</div>
+<div class="math notranslate nohighlight">
+\[\frac{\partial E_y(z,t)}{\partial z} +\frac{\alpha}{2}E_y(z,t) + j\frac{\beta_2}{2}\frac{\partial^2 E_y(z,t)}{\partial t^2} - j\frac{8\gamma}{9}\left(|E_x(z,t)|^2 + |E_y(z,t)|^2\right)E_y(z,t) = 0\]</div>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(E_x(z,t)\)</span> and <span class="math notranslate nohighlight">\(E_y(z,t)\)</span> are the complex-valued electric field envelopes for the <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> polarizations, respectively.</p></li>
+<li><p><span class="math notranslate nohighlight">\(z\)</span> is the propagation distance along the fiber.</p></li>
+<li><p><span class="math notranslate nohighlight">\(t\)</span> is time.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\beta_2\)</span> is the group velocity dispersion (GVD) parameter of the fiber.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\gamma\)</span> is the nonlinear coefficient of the fiber.</p></li>
+</ul>
+<p>These equations model the linear effects of fiber attenuation and chromatic dispersion, and the nonlinear distortions originated from self-phase modulation (SPM), cross-phase modulation (XPM) and four-wave-mixing (FWM). The Manakov model is formulated under the assumption that the impact of polarization mode dispersion (PMD) effects is significantly smaller compared to the nonlinear effects and the characteristic length scales involved. This assumption implies that the beat length associated
+with PMD is much shorter than the nonlinear effective length of the fiber. In this context, the resulting nonlinear term in the Manakov equation represents an averaged effect of the fiber’s nonlinearity, accounting for the rapid variations in the polarization states as the optical signal propagates through the fiber. This averaging captures the overall influence of the fiber’s nonlinearity on the signal, considering the dynamic changes in polarization states over short distances.</p>
+</section>
+<section id="Nonlinear-fiber-propagation-with-a-symmetric-split-step-Fourier-method">
+<h3>Nonlinear fiber propagation with a symmetric split-step Fourier method<a class="headerlink" href="#Nonlinear-fiber-propagation-with-a-symmetric-split-step-Fourier-method" title="Permalink to this heading"></a></h3>
+<p>The Split-Step Fourier Method (SSFM) is a powerful numerical technique extensively utilized in optical fiber communications to solve the NLSE, which governs the propagation of optical signals in fibers. It’s designed to handle the intricate interplay of linear and nonlinear effects accumulated over long propagation distances. The fundamental concept of SSFM involves breaking down the complicated task of describing the signal propagation over long distances of fiber into a iterative sequence of
+simple calculation steps, involving time and frequency domain representations of the propagating signal. By assuming the independence of linear and nonlinear effects at each small propagation step, they can be applied to the signals independently in an iterative manner, ensuring accurate modeling of optical phenomena.</p>
+<p>The coupled Manakov equations described above can be numerically integrated via split-step Fourier methods. A pseudocode for the SSFM algorithm is shown below.</p>
+<p><em>Pseudocode of the SSFM that solves the Manakov propagation model</em></p>
+<ol class="arabic">
+<li><p><em>Initialize:</em></p>
+<ul class="simple">
+<li><p>Parameters: <span class="math notranslate nohighlight">\(L\)</span>, <span class="math notranslate nohighlight">\(h_z\)</span>, <span class="math notranslate nohighlight">\(\Delta t\)</span>, <span class="math notranslate nohighlight">\(E_x(z=0,t)\)</span>, <span class="math notranslate nohighlight">\(E_x(z=0,t)\)</span> (input fields)</p></li>
+</ul>
+</li>
+<li><p><em>Loop for propagation over :math:`L`:</em></p>
+<p>for <span class="math notranslate nohighlight">\(z = 0\)</span> to <span class="math notranslate nohighlight">\(L\)</span> with step <span class="math notranslate nohighlight">\(h_z\)</span>:</p>
+<p><em>Half-linear step</em>:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(E_x(z,t)\gets \mathrm{IFFT}\left\lbrace\exp\left[\left(-\frac{\alpha}{2}-j\frac{\beta_2 \omega^2}{2}\right) h_z/2\right] \mathrm{FFT}[E_x(z,t)]\right\rbrace\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(E_y(z,t)\gets \mathrm{IFFT}\left\lbrace\exp\left[\left(-\frac{\alpha}{2}-j\frac{\beta_2 \omega^2}{2}\right) h_z/2\right]  \mathrm{FFT}[E_y(z,t)]\right\rbrace\)</span></p></li>
+</ul>
+<p><em>Nonlinear phase rotation step:</em></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(E_x(z,t) \gets E_x(z,t)\exp\left[-j8\gamma/9 \left(|E_x(z,t)|^2 + |E_y(z,t)|^2\right) h_z\right]\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(E_y(z,t) \gets E_y(z,t)\exp\left[-j8\gamma/9 \left(|E_x(z,t)|^2 + |E_y(z,t)|^2\right) h_z\right]\)</span></p></li>
+</ul>
+<p><em>Half-linear step</em>:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(E_x(z,t)\gets \mathrm{IFFT}\left\lbrace\exp\left[\left(-\frac{\alpha}{2}-j\frac{\beta_2 \omega^2}{2}\right) h_z/2\right] \mathrm{FFT}[E_x(z,t)]\right\rbrace\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(E_y(z,t)\gets \mathrm{IFFT}\left\lbrace\exp\left[\left(-\frac{\alpha}{2}-j\frac{\beta_2 \omega^2}{2}\right) h_z/2\right] \mathrm{FFT}[E_y(z,t)]\right\rbrace\)</span></p></li>
+</ul>
+<p><em>Propagation:</em> $ z = z + h_z$</p>
+</li>
+<li><p><em>Output:</em> Final <span class="math notranslate nohighlight">\(E_x(z=L,t)\)</span>, <span class="math notranslate nohighlight">\(E_y(z=L,t)\)</span> for analysis.</p></li>
+</ol>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Ltotal</p></td>
+<td><p>Total link distance [km]</p></td>
+<td><p>700</p></td>
+</tr>
+<tr class="row-odd"><td><p>Lspan</p></td>
+<td><p>Span length [km]</p></td>
+<td><p>50</p></td>
+</tr>
+<tr class="row-even"><td><p>alpha</p></td>
+<td><p>Fiber loss parameter [dB/km]</p></td>
+<td><p>0.2</p></td>
+</tr>
+<tr class="row-odd"><td><p>D</p></td>
+<td><p>Fiber dispersion parameter [ps/nm/km]</p></td>
+<td><p>16</p></td>
+</tr>
+<tr class="row-even"><td><p>gamma</p></td>
+<td><p>Fiber nonlinear parameter [1/(W.km)]</p></td>
+<td><p>1.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>Fc</p></td>
+<td><p>Central optical frequency of the WDM spectrum</p></td>
+<td><p>193.1e12</p></td>
+</tr>
+<tr class="row-even"><td><p>hz</p></td>
+<td><p>Step-size of the split-step Fourier method [km]</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>maxIter</p></td>
+<td><p>Maximum number of convergence iterations per step</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-even"><td><p>tol</p></td>
+<td><p>Error tolerance per step</p></td>
+<td><p>1e-5</p></td>
+</tr>
+<tr class="row-odd"><td><p>nlprMethod</p></td>
+<td><p>Use adaptive step-size based on maximum nonlinear phase-shift</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-even"><td><p>maxNlinPhaseRot</p></td>
+<td><p>Maximum nonlinear phase-shift per step</p></td>
+<td><p>2e-2</p></td>
+</tr>
+<tr class="row-odd"><td><p>prgsBar</p></td>
+<td><p>Show progress bar</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-even"><td><p>Fs</p></td>
+<td><p>Sampling rate</p></td>
+<td><p>Calculated</p></td>
+</tr>
+</tbody>
+</table>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># optical channel parameters</span>
+<span class="n">paramCh</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">Ltotal</span> <span class="o">=</span> <span class="mi">700</span>     <span class="c1"># total link distance [km]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">Lspan</span>  <span class="o">=</span> <span class="mi">50</span>      <span class="c1"># span length [km]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.2</span>      <span class="c1"># fiber loss parameter [dB/km]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="mi">16</span>           <span class="c1"># fiber dispersion parameter [ps/nm/km]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="mf">1.3</span>      <span class="c1"># fiber nonlinear parameter [1/(W.km)]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">Fc</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">Fc</span>  <span class="c1"># central optical frequency of the WDM spectrum</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">hz</span> <span class="o">=</span> <span class="mf">0.5</span>         <span class="c1"># step-size of the split-step Fourier method [km]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">maxIter</span> <span class="o">=</span> <span class="mi">5</span>      <span class="c1"># maximum number of convergence iterations per step</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-5</span>       <span class="c1"># error tolerance per step</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">nlprMethod</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># use adaptive step-size based o maximum nonlinear phase-shift</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">maxNlinPhaseRot</span> <span class="o">=</span> <span class="mf">2e-2</span> <span class="c1"># maximum nonlinear phase-shift per step</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">prgsBar</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1"># show progress bar</span>
+<span class="c1">#paramCh.saveSpanN = [1, 5, 9, 14]</span>
+<span class="n">paramCh</span><span class="o">.</span><span class="n">Fs</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">Rs</span><span class="o">*</span><span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span> <span class="c1"># sampling rate</span>
+
+<span class="c1"># nonlinear signal propagation</span>
+<span class="n">sigWDM</span> <span class="o">=</span> <span class="n">manakovSSF</span><span class="p">(</span><span class="n">sigWDM_Tx</span><span class="p">,</span> <span class="n">paramCh</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "b5ea1796392a46b1a22146263b2db209", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<p><strong>Optical WDM spectrum before and after transmission</strong></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># plot psd</span>
+<span class="n">Fs</span> <span class="o">=</span> <span class="n">paramCh</span><span class="o">.</span><span class="n">Fs</span>
+<span class="n">fig</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">plotPSD</span><span class="p">(</span><span class="n">sigWDM_Tx</span><span class="p">,</span> <span class="n">Fs</span><span class="p">,</span> <span class="n">paramCh</span><span class="o">.</span><span class="n">Fc</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Tx&#39;</span><span class="p">);</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plotPSD</span><span class="p">(</span><span class="n">sigWDM</span><span class="p">,</span> <span class="n">Fs</span><span class="p">,</span> <span class="n">paramCh</span><span class="o">.</span><span class="n">Fc</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Rx&#39;</span><span class="p">);</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">set_figheight</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">set_figwidth</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;optical WDM spectrum&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/test_WDM_transmission_16_0.png" src="_images/test_WDM_transmission_16_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Coherent-detection,-digital-signal-processing-and-data-demodulation">
+<h2>Coherent detection, digital signal processing and data demodulation<a class="headerlink" href="#Coherent-detection,-digital-signal-processing-and-data-demodulation" title="Permalink to this heading"></a></h2>
+<section id="Optical-coherent-receiver">
+<h3>Optical coherent receiver<a class="headerlink" href="#Optical-coherent-receiver" title="Permalink to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Receiver</span>
+
+<span class="c1"># parameters</span>
+<span class="n">chIndex</span>  <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">paramTx</span><span class="o">.</span><span class="n">Nch</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>      <span class="c1"># index of the channel to be demodulated</span>
+
+<span class="n">Fc</span> <span class="o">=</span> <span class="n">paramCh</span><span class="o">.</span><span class="n">Fc</span>
+<span class="n">Ts</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">Fs</span>
+<span class="n">freqGrid</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">freqGrid</span>
+<span class="n">π</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="n">t</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sigWDM</span><span class="p">))</span><span class="o">*</span><span class="n">Ts</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Demodulating channel #</span><span class="si">%d</span><span class="s1"> , fc: </span><span class="si">%.4f</span><span class="s1"> THz, λ: </span><span class="si">%.4f</span><span class="s1"> nm</span><span class="se">\n</span><span class="s1">&#39;</span>\
+      <span class="o">%</span><span class="p">(</span><span class="n">chIndex</span><span class="p">,</span> <span class="p">(</span><span class="n">Fc</span> <span class="o">+</span> <span class="n">freqGrid</span><span class="p">[</span><span class="n">chIndex</span><span class="p">])</span><span class="o">/</span><span class="mf">1e12</span><span class="p">,</span> <span class="n">const</span><span class="o">.</span><span class="n">c</span><span class="o">/</span><span class="p">(</span><span class="n">Fc</span> <span class="o">+</span> <span class="n">freqGrid</span><span class="p">[</span><span class="n">chIndex</span><span class="p">])</span><span class="o">/</span><span class="mf">1e-9</span><span class="p">))</span>
+
+<span class="n">symbTx</span> <span class="o">=</span> <span class="n">symbTx_</span><span class="p">[:,:,</span><span class="n">chIndex</span><span class="p">]</span>
+
+<span class="c1"># local oscillator (LO) parameters:</span>
+<span class="n">FO</span>      <span class="o">=</span> <span class="mf">150e6</span>                 <span class="c1"># frequency offset</span>
+<span class="n">Δf_lo</span>   <span class="o">=</span> <span class="n">freqGrid</span><span class="p">[</span><span class="n">chIndex</span><span class="p">]</span><span class="o">+</span><span class="n">FO</span>  <span class="c1"># downshift of the channel to be demodulated</span>
+
+<span class="c1"># generate CW laser LO field</span>
+<span class="n">paramLO</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramLO</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="mi">10</span>              <span class="c1"># power in dBm</span>
+<span class="n">paramLO</span><span class="o">.</span><span class="n">lw</span> <span class="o">=</span> <span class="mf">100e3</span>          <span class="c1"># laser linewidth</span>
+<span class="n">paramLO</span><span class="o">.</span><span class="n">RIN_var</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">paramLO</span><span class="o">.</span><span class="n">Ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sigWDM</span><span class="p">)</span>
+<span class="n">paramLO</span><span class="o">.</span><span class="n">Fs</span> <span class="o">=</span> <span class="n">Fs</span>
+
+<span class="n">sigLO</span> <span class="o">=</span> <span class="n">basicLaserModel</span><span class="p">(</span><span class="n">paramLO</span><span class="p">)</span>
+<span class="n">sigLO</span> <span class="o">=</span> <span class="n">sigLO</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">π</span><span class="o">*</span><span class="n">Δf_lo</span><span class="o">*</span><span class="n">t</span><span class="p">)</span> <span class="c1"># add frequency offset</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Local oscillator P: </span><span class="si">%.2f</span><span class="s1"> dBm, lw: </span><span class="si">%.2f</span><span class="s1"> kHz, FO: </span><span class="si">%.2f</span><span class="s1"> MHz</span><span class="se">\n</span><span class="s1">&#39;</span>\
+      <span class="o">%</span><span class="p">(</span><span class="n">paramLO</span><span class="o">.</span><span class="n">P</span><span class="p">,</span> <span class="n">paramLO</span><span class="o">.</span><span class="n">lw</span><span class="o">/</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">FO</span><span class="o">/</span><span class="mf">1e6</span><span class="p">))</span>
+
+<span class="c1"># polarization multiplexed coherent optical receiver</span>
+
+<span class="c1"># photodiodes parameters</span>
+<span class="n">paramPD</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramPD</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">Rs</span>
+<span class="n">paramPD</span><span class="o">.</span><span class="n">Fs</span> <span class="o">=</span> <span class="n">Fs</span>
+<span class="n">paramPD</span><span class="o">.</span><span class="n">ideal</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">θsig</span> <span class="o">=</span> <span class="n">π</span><span class="o">/</span><span class="mi">3</span> <span class="c1"># polarization rotation angle</span>
+<span class="n">sigRx</span> <span class="o">=</span> <span class="n">pdmCoherentReceiver</span><span class="p">(</span><span class="n">sigWDM</span><span class="p">,</span> <span class="n">sigLO</span><span class="p">,</span> <span class="n">θsig</span><span class="p">,</span> <span class="n">paramPD</span><span class="p">)</span>
+
+<span class="c1"># plot received constellations</span>
+<span class="n">pconst</span><span class="p">(</span><span class="n">sigRx</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span><span class="p">,:],</span> <span class="n">R</span><span class="o">=</span><span class="mi">3</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Demodulating channel #5 , fc: 193.1000 THz, λ: 1552.5244 nm
+
+Local oscillator P: 10.00 dBm, lw: 100.00 kHz, FO: 150.00 MHz
+
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/test_WDM_transmission_18_1.png" src="_images/test_WDM_transmission_18_1.png" />
+</div>
+</div>
+</section>
+<section id="Matched-filtering-and-CD-compensation">
+<h3>Matched filtering and CD compensation<a class="headerlink" href="#Matched-filtering-and-CD-compensation" title="Permalink to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Rx filtering</span>
+
+<span class="c1"># Matched filtering</span>
+<span class="k">if</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">pulse</span> <span class="o">==</span> <span class="s1">&#39;nrz&#39;</span><span class="p">:</span>
+    <span class="n">pulse</span> <span class="o">=</span> <span class="n">pulseShape</span><span class="p">(</span><span class="s1">&#39;nrz&#39;</span><span class="p">,</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">pulse</span> <span class="o">==</span> <span class="s1">&#39;rrc&#39;</span><span class="p">:</span>
+    <span class="n">pulse</span> <span class="o">=</span> <span class="n">pulseShape</span><span class="p">(</span><span class="s1">&#39;rrc&#39;</span><span class="p">,</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">paramTx</span><span class="o">.</span><span class="n">Ntaps</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">paramTx</span><span class="o">.</span><span class="n">alphaRRC</span><span class="p">,</span> <span class="n">Ts</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="n">paramTx</span><span class="o">.</span><span class="n">Rs</span><span class="p">)</span>
+
+<span class="n">pulse</span> <span class="o">=</span> <span class="n">pnorm</span><span class="p">(</span><span class="n">pulse</span><span class="p">)</span>
+<span class="n">sigRx</span> <span class="o">=</span> <span class="n">firFilter</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="n">sigRx</span><span class="p">)</span>
+
+<span class="c1"># plot constellations after matched filtering</span>
+<span class="n">pconst</span><span class="p">(</span><span class="n">sigRx</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span><span class="p">,:],</span> <span class="n">R</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># CD compensation</span>
+<span class="n">paramEDC</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramEDC</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="n">paramCh</span><span class="o">.</span><span class="n">Ltotal</span>
+<span class="n">paramEDC</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">paramCh</span><span class="o">.</span><span class="n">D</span>
+<span class="n">paramEDC</span><span class="o">.</span><span class="n">Fc</span> <span class="o">=</span> <span class="n">Fc</span><span class="o">-</span><span class="n">Δf_lo</span>
+<span class="n">paramEDC</span><span class="o">.</span><span class="n">Fs</span> <span class="o">=</span> <span class="n">Fs</span>
+
+<span class="n">sigRx</span> <span class="o">=</span> <span class="n">edc</span><span class="p">(</span><span class="n">sigRx</span><span class="p">,</span> <span class="n">paramEDC</span><span class="p">)</span>
+
+<span class="c1"># plot constellations after CD compensation</span>
+<span class="n">pconst</span><span class="p">(</span><span class="n">sigRx</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span><span class="p">,:],</span> <span class="n">R</span><span class="o">=</span><span class="mi">3</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/test_WDM_transmission_20_0.png" src="_images/test_WDM_transmission_20_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/test_WDM_transmission_20_1.png" src="_images/test_WDM_transmission_20_1.png" />
+</div>
+</div>
+</section>
+<section id="Downsampling-to-2-samples/symbol-and-re-synchronization-with-transmitted-sequences">
+<h3>Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences<a class="headerlink" href="#Downsampling-to-2-samples/symbol-and-re-synchronization-with-transmitted-sequences" title="Permalink to this heading"></a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># decimation</span>
+<span class="n">paramDec</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramDec</span><span class="o">.</span><span class="n">SpS_in</span>  <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span>
+<span class="n">paramDec</span><span class="o">.</span><span class="n">SpS_out</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">sigRx</span> <span class="o">=</span> <span class="n">decimate</span><span class="p">(</span><span class="n">sigRx</span><span class="p">,</span> <span class="n">paramDec</span><span class="p">)</span>
+
+<span class="n">symbRx</span> <span class="o">=</span> <span class="n">symbolSync</span><span class="p">(</span><span class="n">sigRx</span><span class="p">,</span> <span class="n">symbTx</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Power-normalization">
+<h3>Power normalization<a class="headerlink" href="#Power-normalization" title="Permalink to this heading"></a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">pnorm</span><span class="p">(</span><span class="n">sigRx</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">pnorm</span><span class="p">(</span><span class="n">symbRx</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Adaptive-equalization">
+<h3>Adaptive equalization<a class="headerlink" href="#Adaptive-equalization" title="Permalink to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># adaptive equalization parameters</span>
+<span class="n">paramEq</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramEq</span><span class="o">.</span><span class="n">nTaps</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">paramEq</span><span class="o">.</span><span class="n">SpS</span> <span class="o">=</span> <span class="n">paramDec</span><span class="o">.</span><span class="n">SpS_out</span>
+<span class="n">paramEq</span><span class="o">.</span><span class="n">numIter</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">paramEq</span><span class="o">.</span><span class="n">storeCoeff</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">paramEq</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span>
+<span class="n">paramEq</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mf">0.2</span><span class="o">*</span><span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.8</span><span class="o">*</span><span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+<span class="n">paramEq</span><span class="o">.</span><span class="n">prgsBar</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="k">if</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+    <span class="n">paramEq</span><span class="o">.</span><span class="n">alg</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;cma&#39;</span><span class="p">,</span><span class="s1">&#39;cma&#39;</span><span class="p">]</span> <span class="c1"># QPSK</span>
+    <span class="n">paramEq</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="p">[</span><span class="mf">5e-3</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">]</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">paramEq</span><span class="o">.</span><span class="n">alg</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;da-rde&#39;</span><span class="p">,</span><span class="s1">&#39;rde&#39;</span><span class="p">]</span> <span class="c1"># M-QAM</span>
+    <span class="n">paramEq</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="p">[</span><span class="mf">5e-3</span><span class="p">,</span> <span class="mf">2e-4</span><span class="p">]</span>
+
+<span class="n">y_EQ</span> <span class="o">=</span> <span class="n">mimoAdaptEqualizer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">paramEq</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+
+<span class="c1">#plot constellations after adaptive equalization</span>
+<span class="n">discard</span> <span class="o">=</span> <span class="mi">5000</span>
+<span class="n">pconst</span><span class="p">(</span><span class="n">y_EQ</span><span class="p">[</span><span class="n">discard</span><span class="p">:</span><span class="o">-</span><span class="n">discard</span><span class="p">,:],</span> <span class="n">R</span><span class="o">=</span><span class="mf">1.5</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+da-rde - training stage #0
+da-rde pre-convergence training iteration #0
+da-rde MSE = 0.020055.
+da-rde pre-convergence training iteration #1
+da-rde MSE = 0.017908.
+da-rde pre-convergence training iteration #2
+da-rde MSE = 0.017852.
+da-rde pre-convergence training iteration #3
+da-rde MSE = 0.017813.
+da-rde pre-convergence training iteration #4
+da-rde MSE = 0.017786.
+rde - training stage #1
+rde MSE = 0.012695.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/test_WDM_transmission_26_1.png" src="_images/test_WDM_transmission_26_1.png" />
+</div>
+</div>
+</section>
+<section id="Carrier-phase-recovery">
+<h3>Carrier phase recovery<a class="headerlink" href="#Carrier-phase-recovery" title="Permalink to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">paramCPR</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramCPR</span><span class="o">.</span><span class="n">alg</span> <span class="o">=</span> <span class="s1">&#39;bps&#39;</span>
+<span class="n">paramCPR</span><span class="o">.</span><span class="n">M</span>   <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span>
+<span class="n">paramCPR</span><span class="o">.</span><span class="n">N</span>   <span class="o">=</span> <span class="mi">75</span>
+<span class="n">paramCPR</span><span class="o">.</span><span class="n">B</span>   <span class="o">=</span> <span class="mi">64</span>
+
+<span class="n">y_CPR</span> <span class="o">=</span> <span class="n">cpr</span><span class="p">(</span><span class="n">y_EQ</span><span class="p">,</span> <span class="n">paramCPR</span><span class="p">)</span>
+
+<span class="n">discard</span> <span class="o">=</span> <span class="mi">5000</span>
+
+<span class="c1">#plot constellations after CPR</span>
+<span class="n">pconst</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">discard</span><span class="p">:</span><span class="o">-</span><span class="n">discard</span><span class="p">,:]);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/test_WDM_transmission_28_0.png" src="_images/test_WDM_transmission_28_0.png" />
+</div>
+</div>
+</section>
+<section id="Evaluate-transmission-metrics">
+<h3>Evaluate transmission metrics<a class="headerlink" href="#Evaluate-transmission-metrics" title="Permalink to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">discard</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">discard</span><span class="p">)</span>
+
+<span class="c1"># remove phase and polarization ambiguities for QPSK signals</span>
+<span class="k">if</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">symbTx</span>
+    <span class="c1"># find rotations after CPR and/or polarizations swaps possibly added at the output the adaptive equalizer:</span>
+    <span class="n">rot0</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pnorm</span><span class="p">(</span><span class="n">symbTx</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">pnorm</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span><span class="mi">0</span><span class="p">])),</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pnorm</span><span class="p">(</span><span class="n">symbTx</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">pnorm</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span><span class="mi">0</span><span class="p">]))]</span>
+    <span class="n">rot1</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pnorm</span><span class="p">(</span><span class="n">symbTx</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">pnorm</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span><span class="mi">1</span><span class="p">])),</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pnorm</span><span class="p">(</span><span class="n">symbTx</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">pnorm</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span><span class="mi">1</span><span class="p">]))]</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rot0</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rot1</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">y_CPR_</span> <span class="o">=</span> <span class="n">y_CPR</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># undo swap and rotation</span>
+        <span class="n">y_CPR</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">pnorm</span><span class="p">(</span><span class="n">rot1</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rot1</span><span class="p">))]</span><span class="o">*</span><span class="n">y_CPR_</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">y_CPR</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pnorm</span><span class="p">(</span><span class="n">rot0</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rot0</span><span class="p">))]</span><span class="o">*</span><span class="n">y_CPR_</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># undo rotation</span>
+        <span class="n">y_CPR</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">pnorm</span><span class="p">(</span><span class="n">rot0</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rot0</span><span class="p">))]</span><span class="o">*</span><span class="n">y_CPR</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">y_CPR</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pnorm</span><span class="p">(</span><span class="n">rot1</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rot1</span><span class="p">))]</span><span class="o">*</span><span class="n">y_CPR</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+
+
+<span class="n">BER</span><span class="p">,</span> <span class="n">SER</span><span class="p">,</span> <span class="n">SNR</span> <span class="o">=</span> <span class="n">fastBERcalc</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;qam&#39;</span><span class="p">)</span>
+<span class="n">GMI</span><span class="p">,</span> <span class="n">NGMI</span> <span class="o">=</span> <span class="n">monteCarloGMI</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;qam&#39;</span><span class="p">)</span>
+<span class="n">MI</span>       <span class="o">=</span> <span class="n">monteCarloMI</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;qam&#39;</span><span class="p">)</span>
+<span class="n">EVM</span>      <span class="o">=</span> <span class="n">calcEVM</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;qam&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">,:])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;      pol.X      pol.Y      &#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39; SER: </span><span class="si">%.2e</span><span class="s1">,  </span><span class="si">%.2e</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">SER</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">SER</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39; BER: </span><span class="si">%.2e</span><span class="s1">,  </span><span class="si">%.2e</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">BER</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">BER</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39; SNR: </span><span class="si">%.2f</span><span class="s1"> dB,  </span><span class="si">%.2f</span><span class="s1"> dB&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">SNR</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">SNR</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39; EVM: </span><span class="si">%.2f</span><span class="s1"> </span><span class="si">%%</span><span class="s1">,    </span><span class="si">%.2f</span><span class="s1"> </span><span class="si">%%</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">EVM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">EVM</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  MI: </span><span class="si">%.2f</span><span class="s1"> bits, </span><span class="si">%.2f</span><span class="s1"> bits&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">MI</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">MI</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39; GMI: </span><span class="si">%.2f</span><span class="s1"> bits, </span><span class="si">%.2f</span><span class="s1"> bits&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">GMI</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">GMI</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;NGMI: </span><span class="si">%.2f</span><span class="s1">,      </span><span class="si">%.2f</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">NGMI</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">NGMI</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+      pol.X      pol.Y
+ SER: 0.00e+00,  1.11e-05
+ BER: 0.00e+00,  2.78e-06
+ SNR: 21.62 dB,  21.59 dB
+ EVM: 0.69 %,    0.69 %
+  MI: 4.00 bits, 4.00 bits
+ GMI: 4.00 bits, 4.00 bits
+NGMI: 1.00,      1.00
+</pre></div></div>
+</div>
+</section>
+<section id="References">
+<h3>References<a class="headerlink" href="#References" title="Permalink to this heading"></a></h3>
+<p>[1] D. Marcuse, C. R. Menyuk, e P. K. A. Wai, “Application of the Manakov-PMD equation to studies of signal propagation in optical fibers with randomly varying birefringence”, Journal of Lightwave Technology, vol. 15, nº 9, p. 1735–1745, 1997, doi: 10.1109/50.622902.</p>
+<p>[2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.</p>
+<p>[3] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+<script type="application/vnd.jupyter.widget-state+json">
+{"0cec9d9b71ba45018460f4942672e73b": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "0d0d223577654c0980520ed48c4866a7": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "FloatProgressModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "FloatProgressModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "ProgressView", "bar_style": "success", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_b70bb6363ff64ccbb7087900ef892eb5", "max": 14, "min": 0, "orientation": "horizontal", "style": "IPY_MODEL_d4247b94ef5c4a439cd4af9458125fc2", "value": 14}}, "0ef4e5276a4344638674b547b859a129": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "305e5dc45df947c4b3640746643c4a26": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HBoxModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HBoxModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HBoxView", "box_style": "", "children": ["IPY_MODEL_b07e3d1c0eee407ba3a2b6b3498edb61", "IPY_MODEL_e0f8d22f269246b9b4ed8c6c7e61aeae", "IPY_MODEL_5b6ae8306e70477580b6203d44e33a38"], "layout": "IPY_MODEL_0ef4e5276a4344638674b547b859a129"}}, "32ef48a5dd1d4a2cb94e5409dd572d74": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "5773596ed660451aac75b1f0b2a052e5": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "596d425cdf7f4a0697238e3664c5195f": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "DescriptionStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "DescriptionStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "description_width": ""}}, "5b6ae8306e70477580b6203d44e33a38": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HTMLModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HTMLView", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_5773596ed660451aac75b1f0b2a052e5", "placeholder": "\u200b", "style": "IPY_MODEL_f6e0856c07ed4069940d749b31c5d6d5", "value": " 5/5 [00:29&lt;00:00,  2.62s/it]"}}, "6a786005faa04fd8b7c5e69dc70df06a": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "7b1b87f7b77049a691df25723928eef3": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "92a22dde2b5e4ab882f824d5dff0d377": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HTMLModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HTMLView", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_6a786005faa04fd8b7c5e69dc70df06a", "placeholder": "\u200b", "style": "IPY_MODEL_994d17059a9b47f0b2ed3654712fb0c3", "value": " 14/14 [00:57&lt;00:00,  3.82s/it]"}}, "994d17059a9b47f0b2ed3654712fb0c3": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "DescriptionStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "DescriptionStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "description_width": ""}}, "9eef6ad9e86b4434b244d76fb90653b2": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "b07e3d1c0eee407ba3a2b6b3498edb61": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HTMLModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HTMLView", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_0cec9d9b71ba45018460f4942672e73b", "placeholder": "\u200b", "style": "IPY_MODEL_596d425cdf7f4a0697238e3664c5195f", "value": "100%"}}, "b70bb6363ff64ccbb7087900ef892eb5": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "c5a9e5d034e64b00b295e93140f51e72": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "DescriptionStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "DescriptionStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "description_width": ""}}, "d4247b94ef5c4a439cd4af9458125fc2": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "ProgressStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "ProgressStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "bar_color": null, "description_width": ""}}, "d751e4cdab95433f8fabdaebf41d630a": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "ProgressStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "ProgressStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "bar_color": null, "description_width": ""}}, "d7ec57b1b19d4660a0548563dd43f97c": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HBoxModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HBoxModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HBoxView", "box_style": "", "children": ["IPY_MODEL_f973387453444cc4b5fbec8658506a3a", "IPY_MODEL_0d0d223577654c0980520ed48c4866a7", "IPY_MODEL_92a22dde2b5e4ab882f824d5dff0d377"], "layout": "IPY_MODEL_7b1b87f7b77049a691df25723928eef3"}}, "e0f8d22f269246b9b4ed8c6c7e61aeae": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "FloatProgressModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "FloatProgressModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "ProgressView", "bar_style": "success", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_9eef6ad9e86b4434b244d76fb90653b2", "max": 5, "min": 0, "orientation": "horizontal", "style": "IPY_MODEL_d751e4cdab95433f8fabdaebf41d630a", "value": 5}}, "f6e0856c07ed4069940d749b31c5d6d5": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "DescriptionStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "DescriptionStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "description_width": ""}}, "f973387453444cc4b5fbec8658506a3a": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HTMLModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HTMLView", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_32ef48a5dd1d4a2cb94e5409dd572d74", "placeholder": "\u200b", "style": "IPY_MODEL_c5a9e5d034e64b00b295e93140f51e72", "value": "100%"}}}
+</script></section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="getting_started.html" class="btn btn-neutral float-left" title="Getting started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="comm.html" class="btn btn-neutral float-right" title="Digital Communications Utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

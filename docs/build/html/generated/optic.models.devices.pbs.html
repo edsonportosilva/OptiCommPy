@@ -1,97 +1,56 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="English" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="English" > <!--<![endif]-->
+<html class="writer-html5" lang="English" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>optic.models.devices.pbs &mdash; OptiCommPy 0.6.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  
-  
-  
-
-  
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="optic.models.devices.hybrid_2x4_90deg" href="optic.models.devices.hybrid_2x4_90deg.html" />
     <link rel="prev" title="optic.models.devices.iqm" href="optic.models.devices.iqm.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../index.html" class="icon icon-home"> OptiCommPy
           
-
-          
+          <a href="../index.html" class="icon icon-home">
+            OptiCommPy
           </a>
-
-          
-            
-            
               <div class="version">
                 0.6
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../welcome.html">Available features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html#requirements-dependencies">Requirements/Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../test_WDM_transmission.html">Simulation of coherent WDM transmission</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
 <ul class="current">
@@ -115,7 +74,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../models.html#models-for-fiber-optic-channels-optic-models-channels">Models for fiber optic channels (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.channels</span></code>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../models.html#models-for-optical-amplifiers-optic-models-amplification">Models for optical amplifiers (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.amplification</span></code>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../models.html#functions-adapted-to-run-with-gpu-cupy-processing-optic-models-modelsgpu">Functions adapted to run with GPU (CuPy) processing (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.modelsGPU</span></code>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../models.html#advanced-models-for-optical-transmitters-optic-models-tx">Advanced models for optical transmitters (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.tx</span></code>)</a></li>
 </ul>
 </li>
@@ -123,84 +81,45 @@
 <li class="toctree-l1"><a class="reference internal" href="../utils.html">General Utilities</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">OptiCommPy</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="../models.html">Physical Models</a> &raquo;</li>
-        
-      <li>optic.models.devices.pbs</li>
-    
-    
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../models.html">Physical Models</a></li>
+      <li class="breadcrumb-item active">optic.models.devices.pbs</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../_sources/generated/optic.models.devices.pbs.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="optic-models-devices-pbs">
-<h1>optic.models.devices.pbs<a class="headerlink" href="#optic-models-devices-pbs" title="Permalink to this heading">¶</a></h1>
+             
+  <section id="optic-models-devices-pbs">
+<h1>optic.models.devices.pbs<a class="headerlink" href="#optic-models-devices-pbs" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.models.devices.pbs">
-<span class="sig-name descname"><span class="pre">pbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">θ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.pbs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">pbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">θ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.devices.pbs" title="Permalink to this definition"></a></dt>
 <dd><p>Polarization beam splitter (PBS).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>E</strong> (<em>(</em><em>N</em><em>,</em><em>2</em><em>) </em><em>np.array</em>) -- Input pol. multiplexed optical field.</p></li>
 <li><p><strong>θ</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Rotation angle of input field in radians. The default is 0.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>Ex</strong> (<em>(N,) np.array</em>) -- Ex output single pol. field.</p></li>
 <li><p><strong>Ey</strong> (<em>(N,) np.array</em>) -- Ey output single pol. field.</p></li>
@@ -208,57 +127,41 @@
 </p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p>[1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.</p>
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="optic.models.devices.hybrid_2x4_90deg.html" class="btn btn-neutral float-right" title="optic.models.devices.hybrid_2x4_90deg" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="optic.models.devices.iqm.html" class="btn btn-neutral float-left" title="optic.models.devices.iqm" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="optic.models.devices.iqm.html" class="btn btn-neutral float-left" title="optic.models.devices.iqm" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="optic.models.devices.hybrid_2x4_90deg.html" class="btn btn-neutral float-right" title="optic.models.devices.hybrid_2x4_90deg" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster
-
-    </p>
+    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
