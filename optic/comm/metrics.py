@@ -555,11 +555,17 @@ def theoryBER(M, EbN0, constType):
     -------
     Pb : scalar
         Theoretical probability of bit error.
-    
+
+    Notes
+    -----
+    The values of error probability obtained with this function are good approximations for moderate to high SNR regime (see [1]).
+    All cases assume Gray mapped constellations. For low SNR values and high constellation cardinalities (Pb>1e-1), the results 
+    should underestimate the real error probability.
+
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
-
+   
     """
     EbN0lin = 10 ** (EbN0 / 10)
     k = np.log2(M)
