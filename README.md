@@ -11,7 +11,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 
 </p>
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommPy/HEAD?urlpath=lab) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10304945.svg)](https://doi.org/10.5281/zenodo.10304945)
+![PyPI](https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package) ![PyPI - Downloads](https://img.shields.io/pypi/dm/OptiCommPy) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10304945.svg)](https://doi.org/10.5281/zenodo.10304945)
 
 
 ## Available features
