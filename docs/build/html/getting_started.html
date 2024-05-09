@@ -1,15 +1,13 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="English">
+<html class="writer-html5" lang="English" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Getting started &mdash; OptiCommPy 0.6.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
-      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
-
-  
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/nbsphinx-code-cells.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -20,7 +18,7 @@
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -88,7 +86,7 @@
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Getting started</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/JOSS_paper_example.nblink.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/getting_started.nblink.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -102,10 +100,10 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="s1">&#39;google.colab&#39;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">get_ipython</span><span class="p">()):</span>
-    <span class="o">!</span><span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>https://github.com/edsonportosilva/OptiCommPy
+    <span class="o">!</span> git clone -b main https://github.com/edsonportosilva/OptiCommPy
     <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">chdir</span> <span class="k">as</span> <span class="n">cd</span>
     <span class="n">cd</span><span class="p">(</span><span class="s1">&#39;/content/OptiCommPy/&#39;</span><span class="p">)</span>
-    <span class="o">!</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.
+    <span class="o">!</span> pip install .
 </pre></div>
 </div>
 </div>
@@ -136,7 +134,7 @@
 </pre></div>
 </div>
 <div class="output_area docutils container">
-<img alt="_images/JOSS_paper_example_4_0.png" class="no-scaled-link" src="_images/JOSS_paper_example_4_0.png" style="width: 600px;" />
+<img alt="_images/getting_started_4_0.png" class="no-scaled-link" src="_images/getting_started_4_0.png" style="width: 600px;" />
 </div>
 </div>
 <p>It consists of a 10 Gb/s NRZ OOK transmission over 100 km of optical fiber with direct detection at the receiver assuming a photodiode with 10 GHz of bandwidth. The fiber channel is modeled as a linear propagation medium exhibiting loss and chromatic dispersion. All the simulation parameters are listed in the table below.</p>
@@ -470,14 +468,14 @@ C:\Users\edson.DESKTOP-54IJM4F\AppData\Local\Temp\ipykernel_3648\2042705777.py:8
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/JOSS_paper_example_16_1.png" src="_images/JOSS_paper_example_16_1.png" />
+<img alt="_images/getting_started_16_1.png" src="_images/getting_started_16_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/JOSS_paper_example_16_2.png" src="_images/JOSS_paper_example_16_2.png" />
+<img alt="_images/getting_started_16_2.png" src="_images/getting_started_16_2.png" />
 </div>
 </div>
 <p>These plots clearly illustrate that system performance deteriorates with longer transmission distances, which is primarily attributed to the cumulative impact of chromatic dispersion and the noise sources at the photodiode, resulting in increased signal degradation.</p>

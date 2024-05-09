@@ -65,15 +65,13 @@ Requirements/Dependencies
 -------------------------
 
 -  python>=3.2
--  numpy>=1.9.2
--  scipy>=0.15.0
+-  numpy>=1.24.4
+-  scipy>=1.13.0
 -  matplotlib>=3.7.0
--  scikit-commpy>=0.7.0
--  numba>=0.54.1
+-  numba>=0.54.1,<=0.57.0
 -  tqdm>=4.64.1
 -  simple-pid>=1.0.1
 -  mpl-scatter-density>=0.7.0
--  pandas>=2.0.0
 -  sphinx-rtd-theme>=1.2.2
 -  nbsphinx>=0.9.3
 -  nbsphinx-link>=1.3.0

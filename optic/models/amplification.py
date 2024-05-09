@@ -29,7 +29,7 @@ from scipy import interpolate
 from numpy.fft import fft, ifft, fftfreq
 from scipy.integrate import solve_ivp
 
-import pandas as pd
+# import pandas as pd
 from scipy.signal import find_peaks
 from scipy.constants import lambda2nu
 from scipy import signal
