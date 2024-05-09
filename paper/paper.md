@@ -47,7 +47,7 @@ The `dsp` sub-package is a collection of DSP algorithms ranging from basic signa
 
 Finally, the `utils` and the `plot` sub-packages provide functions that implement a few general utilities and custom plotting functions to visualize signals (eyediagram plots, constellation plots, etc).
 
-Several types of analysis can be conducted to characterize transmission performance across various system parameters. For instance, one can generate performance curves that depict BER and Q-factor as functions of received optical power at varying transmission distances, as illustrated in Fig. 3. 
+Several types of analysis can be conducted to characterize transmission performance across various system parameters. For instance, one can generate performance curves that depict BER and Q-factor as functions of received optical power at varying transmission distances, as illustrated in Fig. 2. 
 
 ![Performance metrics for different transmission distances and received optical powers, characterizing the increasing penalty from chromatic dispersion with the distance in a 10 Gb/s OOK transmission system. (a) BER vs received optical power for different transmission distances; (b) Q-factor vs received optical power for different transmission distances.](metrics.png)
 
