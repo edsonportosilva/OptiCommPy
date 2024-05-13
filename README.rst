@@ -16,7 +16,7 @@ components of fiber optic communication systems, for educational and research pu
      :width: 600px  
      :align: center
 
-|Binder| |Documentation Status| |DOI|
+|PyPI| |PyPI - Downloads| |Documentation Status| |DOI|
 
 Available features
 ------------------
@@ -108,8 +108,8 @@ Edson Porto da Silva, Adolfo Herbster, Carlos Daniel Fontes da Silva, &
 Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.7.0-alpha
 (v0.7.0-alpha). Zenodo. https://doi.org/10.5281/zenodo.10304945
 
-.. |Binder| image:: https://mybinder.org/badge_logo.svg
-   :target: https://mybinder.org/v2/gh/edsonportosilva/OptiCommPy/HEAD?urlpath=lab
+.. |PyPI| image:: https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package
+.. |PyPI - Downloads| image:: https://img.shields.io/pypi/dm/OptiCommPy
 .. |Documentation Status| image:: https://readthedocs.org/projects/opticommpy/badge/?version=latest
    :target: https://opticommpy.readthedocs.io/en/latest/?badge=latest
 .. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.10304945.svg
