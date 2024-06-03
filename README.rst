@@ -105,15 +105,15 @@ Citing this repository
 ----------------------
 
 Edson Porto da Silva, Adolfo Herbster, Carlos Daniel Fontes da Silva, &
-Joaquin Matres. (2023). edsonportosilva/OptiCommPy: v0.7.0-alpha
-(v0.7.0-alpha). Zenodo. https://doi.org/10.5281/zenodo.10304945
+Joaquin Matres. (2024). edsonportosilva/OptiCommPy: v0.9.0-alpha
+(v0.9.0-alpha). Zenodo. https://doi.org/10.5281/zenodo.11450597
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package
 .. |PyPI - Downloads| image:: https://img.shields.io/pypi/dm/OptiCommPy
 .. |Documentation Status| image:: https://readthedocs.org/projects/opticommpy/badge/?version=latest
    :target: https://opticommpy.readthedocs.io/en/latest/?badge=latest
-.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.10304945.svg
-   :target: https://doi.org/10.5281/zenodo.10304945
+.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.11450597.svg
+   :target: https://doi.org/10.5281/zenodo.11450597
 
    
 
