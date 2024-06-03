@@ -11,7 +11,7 @@ MAINTAINER = "Edson Porto da Silva"
 MAINTAINER_EMAIL = "edsonporto88@gmail.com"
 URL = "https://github.com/edsonportosilva/OptiCommPy"
 LICENSE = "GPL-3.0 license"
-VERSION = "0.7.0"
+VERSION = "0.8.0"
 
 # This is a list of files to install, and where
 # (relative to the 'root' dir, where setup.py is)
