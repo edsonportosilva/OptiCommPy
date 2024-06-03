@@ -104,9 +104,8 @@ You can find the latest documentation in
 Citing this repository
 ----------------------
 
-Edson Porto da Silva, Adolfo Herbster, Carlos Daniel Fontes da Silva, &
-Joaquin Matres. (2024). edsonportosilva/OptiCommPy: v0.9.0-alpha
-(v0.9.0-alpha). Zenodo. https://doi.org/10.5281/zenodo.11450597
+Edson Porto da Silva, & Adolfo Herbster. (2024). OptiCommPy: Open-source Simulation of Fiber Optic Communications with Python (v0.9.0-alpha). 
+Zenodo. https://doi.org/10.5281/zenodo.11450597
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package
 .. |PyPI - Downloads| image:: https://img.shields.io/pypi/dm/OptiCommPy
