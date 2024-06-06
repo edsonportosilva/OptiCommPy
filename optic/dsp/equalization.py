@@ -19,7 +19,7 @@ import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-from optic.dsp.core import pnorm
+from optic.dsp.core import pnorm, blockwiseFFTConvolution
 from optic.models.channels import linearFiberChannel
 from optic.comm.modulation import grayMapping
 
@@ -61,16 +61,44 @@ def edc(Ei, param):
     except AttributeError:
         logg.error("Simulation sampling frequency (Fs) not provided.")
 
+    try:
+        nModes = Ei.shape[1]
+    except IndexError:
+        nModes = 1
+        Ei = Ei.reshape(Ei.size, nModes)
+
     # check input parameters
-    param.L = getattr(param, "L", 50)
-    param.D = getattr(param, "D", 16)
-    param.Fc = getattr(param, "Fc", 193.1e12)
+    L = getattr(param, "L", 50)
+    D = getattr(param, "D", 16)
+    Fc = getattr(param, "Fc", 193.1e12)
+    Rs = getattr(param, "Rs", 32e9)
+    NfilterCoeffs = getattr(param, "NfilterCoeffs", None)
+    Nfft = getattr(param, "Nfft", None)
+    
+    # c  = 299792458   # speed of light [m/s](vacuum)
+    c_kms = const.c / 1e3
+    λ = c_kms / Fc    
+    β2 = -(D * λ**2) / (2 * np.pi * c_kms)
 
-    param.alpha = 0
-    param.D = -param.D
+    if NfilterCoeffs is None:
+        NfilterCoeffs = int(2*np.ceil(6.67*np.abs(β2)*L*Rs**2*(Fs/Rs)))
+
+    if Nfft is None:
+       Nfft = 2**int(np.ceil(np.log2(NfilterCoeffs)))
+        
+    ω = 2 * np.pi * Fs * fftfreq(NfilterCoeffs)
+      
+    H =  np.exp(-1j * (β2 / 2) * (ω**2) * L)
+   
     logg.info(f"Running CD compensation...")
+    logg.info(f"CD filter length: {NfilterCoeffs} taps, FFT size: {Nfft}")
 
-    return linearFiberChannel(Ei, param)
+    Eo = np.zeros(Ei.shape, dtype=Ei.dtype)
+
+    for indMode in range(nModes):
+        Eo[:,indMode] = blockwiseFFTConvolution(Ei[:,indMode], H, NFFT=Nfft, freqDomainFilter=True)
+   
+    return Eo
 
 
 def mimoAdaptEqualizer(x, param=None, dx=None):
