@@ -751,25 +751,25 @@ def delaySignal(sig, delay, fs):
     N = len(sig)    
 
     # Calculate the length of zero padding needed
-    pad_length = int(np.ceil(delay * fs))
+    padLen = int(np.ceil(delay * fs))
     
     # Zero-pad the signal to avoid circular shift
-    sig_padded = np.pad(sig, (0, pad_length), mode='constant')
+    sigPad = np.pad(sig, (0, padLen), mode='constant')
        
     # Compute the frequency vector
-    freq = fftshift(fftfreq(len(sig_padded), d=1/fs))
+    freq = fftshift(fftfreq(len(sigPad), d=1/fs))
     
     # Compute the FFT of the signal
-    sig_fft = fftshift(fft(sig_padded))
+    sigFFT = fftshift(fft(sigPad))
     
     # Apply the phase shift corresponding to the time delay
-    phase_shift = np.exp(-1j * 2 * np.pi * freq * delay)
-    delayed_sig_fft = fftshift(sig_fft * phase_shift)
+    H = np.exp(-1j * 2 * np.pi * freq * delay)
+    delayedSigFFT = fftshift(sigFFT * H)
     
     # Compute the IFFT of the delayed signal
-    delayed_sig = ifft(delayed_sig_fft)[:N]
+    delayedSig = ifft(delayedSigFFT)[:N]
     
-    return delayed_sig
+    return delayedSig
 
 
 def blockwiseFFTConvolution(x, h, NFFT=None, freqDomainFilter=False):
