@@ -808,17 +808,17 @@ def blockwiseFFTConvolution(x, h, NFFT=None, freqDomainFilter=False):
     if NFFT is None:
         NFFT = 2**int(np.ceil(np.log2(M)))
 
-    if NFFT > M:
+    if NFFT >= M:
         L = NFFT - M + 1 # block length required       
     else:
         raise ValueError('FFT size is smaller than filter length')
 
     if freqDomainFilter:         
-        h = np.pad(np.fft.fftshift(np.fft.ifft(h)), (0, L-1), mode='constant', constant_values=0+0j)               
+        h = np.pad(fftshift(ifft(h)), (0, L-1), mode='constant', constant_values=0+0j)               
     else:
         h = np.pad(h, (0, L-1), mode='constant', constant_values=0+0j)
 
-    H = np.fft.fft(h) # frequency response 
+    H = fft(h) # frequency response 
 
     discard = M-1                         # number of samples to be discarded after IFFT (overlap samples)
     numBlocks = int(np.ceil(sigLen/L))    # total number of FFT blocks to be processed
@@ -828,16 +828,17 @@ def blockwiseFFTConvolution(x, h, NFFT=None, freqDomainFilter=False):
     x = np.pad(x, (0, padLen + D), mode='constant', constant_values=0+0j) 
     
     # pre-allocate output
-    y = np.zeros(x.shape, dtype='complex')
+    y = np.zeros(len(x), dtype='complex')
 
     # overlap-and-save blockwise processing
     x = np.pad(x, (M-1, 0), mode='constant', constant_values=0+0j) 
 
     start_idx = 0
     end_idx  = NFFT
+       
     for blk in range(numBlocks):        
-        X = np.fft.fft(x[start_idx:end_idx:])
-        y_blk = np.fft.ifft(X * H)        
+        X = fft(x[start_idx:end_idx])
+        y_blk = ifft(X * H)        
         y[blk*L:(blk+1)*L] = y_blk[discard:]    
         start_idx += L
         end_idx = start_idx + NFFT       
