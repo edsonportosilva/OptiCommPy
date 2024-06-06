@@ -770,3 +770,76 @@ def delaySignal(sig, delay, fs):
     delayed_sig = ifft(delayed_sig_fft)[:N]
     
     return delayed_sig
+
+
+def blockwiseFFTConvolution(x, h, NFFT=None, freqDomainFilter=False):
+    """
+    Implements convolution using the overlap-and-save FFT method.
+
+    Parameters
+    ----------
+    x : ndarray
+        Input signal.
+    h : ndarray
+        Filter impulse response.
+    NFFT : int, optional
+        FFT size to be used. Must be greater than the length of the filter.
+        If None, it will be set to the next power of 2 greater than or equal
+        to the length of the filter. Default is None.
+    freqDomainFilter : bool, optional
+        If True, `h` is assumed to be the frequency response of the filter.
+        If False, the FFT of `h` will be computed. Default is False.
+
+    Returns
+    -------
+    y : ndarray
+        The filtered output signal.
+
+    Raises
+    ------
+    ValueError
+        If NFFT is not greater than the length of the filter `h`.
+
+    """    
+    sigLen = len(x)    # length of the input signal
+    M = len(h)         # length of the filter impulse response
+    D = (M-1)//2       # filter delay
+
+    if NFFT is None:
+        NFFT = 2**int(np.ceil(np.log2(M)))
+
+    if NFFT > M:
+        L = NFFT - M + 1 # block length required       
+    else:
+        raise ValueError('FFT size is smaller than filter length')
+
+    if freqDomainFilter:         
+        h = np.pad(np.fft.fftshift(np.fft.ifft(h)), (0, L-1), mode='constant', constant_values=0+0j)               
+    else:
+        h = np.pad(h, (0, L-1), mode='constant', constant_values=0+0j)
+
+    H = np.fft.fft(h) # frequency response 
+
+    discard = M-1                         # number of samples to be discarded after IFFT (overlap samples)
+    numBlocks = int(np.ceil(sigLen/L))    # total number of FFT blocks to be processed
+    padLen = numBlocks*L - sigLen         # pad length necessary to complete an integer number of blocks
+
+    # pad signal with padLen zeros + D zeros (to compensate for filter delay) 
+    x = np.pad(x, (0, padLen + D), mode='constant', constant_values=0+0j) 
+    
+    # pre-allocate output
+    y = np.zeros(x.shape, dtype='complex')
+
+    # overlap-and-save blockwise processing
+    x = np.pad(x, (M-1, 0), mode='constant', constant_values=0+0j) 
+
+    start_idx = 0
+    end_idx  = NFFT
+    for blk in range(numBlocks):        
+        X = np.fft.fft(x[start_idx:end_idx:])
+        y_blk = np.fft.ifft(X * H)        
+        y[blk*L:(blk+1)*L] = y_blk[discard:]    
+        start_idx += L
+        end_idx = start_idx + NFFT       
+
+    return y[D:-padLen]
