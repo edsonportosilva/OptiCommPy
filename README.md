@@ -11,7 +11,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 
 </p>
 
-![PyPI](https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package) ![PyPI - Downloads](https://img.shields.io/pypi/dm/OptiCommPy) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11450597.svg)](https://doi.org/10.5281/zenodo.11450597)
+![PyPI](https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package) ![PyPI - Downloads](https://img.shields.io/pypi/dm/OptiCommPy) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11450597.svg)](https://doi.org/10.5281/zenodo.11450597) [![DOI](https://joss.theoj.org/papers/10.21105/joss.06600/status.svg)](https://doi.org/10.21105/joss.06600)
 
 
 ## Available features
@@ -75,4 +75,4 @@ We are continuously making efforts to improve the code documentation. You can fi
 
 ## Citing this repository
 
-Edson Porto da Silva, & Adolfo Herbster. (2024). OptiCommPy: Open-source Simulation of Fiber Optic Communications with Python (v0.9.0-alpha). Zenodo. https://doi.org/10.5281/zenodo.11450597
+Edson Porto da Silva, & Adolfo Fernandes Herbster. (2024). OptiCommPy: Open-source Simulation of Fiber Optic Communications with Python. Journal of Open Source Software, 9(98), 6600, https://doi.org/10.21105/joss.06600
