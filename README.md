@@ -75,4 +75,4 @@ We are continuously making efforts to improve the code documentation. You can fi
 
 ## Citing this repository
 
-Edson Porto da Silva, & Adolfo Fernandes Herbster. (2024). OptiCommPy: Open-source Simulation of Fiber Optic Communications with Python. Journal of Open Source Software, 9(98), 6600, https://doi.org/10.21105/joss.06600
+Edson Porto da Silva, Adolfo Fernandes Herbster. "OptiCommPy: Open-source Simulation of Fiber Optic Communications with Python", *Journal of Open Source Software*, 9(98), 6600, (2024) https://doi.org/10.21105/joss.06600
