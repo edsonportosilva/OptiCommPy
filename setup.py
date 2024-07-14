@@ -43,7 +43,8 @@ setup(
         "mpl-scatter-density>=0.7.0",
         "sphinx-rtd-theme>=1.2.2",
         "nbsphinx>=0.9.3",
-        "nbsphinx-link>=1.3.0"
+        "nbsphinx-link>=1.3.0",
+        "scikit-commpy>=0.8.0"
     ],
     #'package' package must contain files (see list above)
     # This dict maps the package name =to=> directories
