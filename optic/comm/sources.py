@@ -35,94 +35,106 @@ def bitSource(nbits, mode='random', order=None, seed=None):
     elif mode == 'prbs':
         if order is None:
             Warning("PRBS order not specified. Using the default order 23.")
-            bits = prbsSequence(nbits)
+            prbs = prbsGenerator()
         else:
-            bits = prbsSequence(nbits, order)
+            prbs = prbsGenerator(order)
+
+        if len(prbs) < nbits:
+            prbs = np.tile(prbs, nbits//len(prbs)+1)
+        
+        bits = prbs[:nbits]
 
     return bits
 
 @njit
-def prbsSequence(length, order=23):
+def prbsGenerator(order=23):
+
     """
-    Generate a Pseudo-Random Binary Sequence (PRBS) based on the specified order.
+    Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.
 
     Parameters
     ----------
-    length : int
-        The length of the PRBS sequence to generate.
     order : int
-        The order of the PRBS sequence. Valid orders are 7, 9, 11, 13, 15, 23, 31.
+        The order of the PRBS sequence. Supported orders are 7, 9, 11, 13, 15, 23, 31.
 
     Returns
     -------
     np.ndarray
-        An array of binary values (0 and 1) representing the PRBS sequence.
+        A NumPy array of bits representing the PRBS sequence.
+    """    
+    # Predefined taps for each PRBS order
+    taps = {
+        7: (6, 5),     # PRBS-7: x^7 + x^6 + 1
+        9: (8, 4),     # PRBS-9: x^9 + x^5 + 1
+        11: (10, 8),   # PRBS-11: x^11 + x^9 + 1
+        13: (12, 11),  # PRBS-13: x^13 + x^12 + 1
+        15: (14, 13),  # PRBS-15: x^15 + x^14 + 1
+        23: (22, 17),  # PRBS-23: x^23 + x^18 + 1
+        31: (30, 27)   # PRBS-31: x^31 + x^28 + 1
+        }
+
+    if order not in taps:
+        raise ValueError(f"Order {order} not supported. Choose from {list(taps.keys())}.")
+
+    # Initialize parameters
+    lenPRBS = 2**order-1
+    tap_a, tap_b = taps[order]
+        
+    bits = np.zeros(lenPRBS, dtype=np.int64)  
+    
+    lfsr = 1          
+    for i in range(1, lenPRBS):
+        fb = ((lfsr>>tap_a) ^ (lfsr>>tap_b) & 1)
+        lfsr = ((lfsr<<1) + fb) & (lenPRBS) 
+        bits[i-1] = fb   
+        
+    return bits
+
+def symbolSource(N, M=4, constType='qam', dist='uniform', shapingFactor = 0.01, px=None, seed=None):
+    """
+    Generate a random symbol sequence of length N based on the specified modulation scheme and order.
+
+    Parameters
+    ----------
+    N : int
+        Number of symbols to generate.
+    M : int
+        Modulation order. This defines the size of the constellation. Default is 4.
+    constType : str, optional
+        The type of modulation scheme. Supported types are 'qam', 'pam', 'psk', and 
+        'apsk'. Default is 'qam'.
+    dist : str, optional
+        The probability distribution to use for generating symbols. Can be 'uniform' 
+        or 'maxwell-boltzmann'. Default is 'uniform'.
+    shapingFactor : float, optional
+        The shaping factor used when the distribution is 'maxwell-boltzmann'. This 
+        controls the Gaussian shaping of the constellation points. Default is 0.01.
+    px : array-like, optional
+        Probability distribution of the constellation points. If `None`, the distribution 
+        is determined by `dist`. Default is `None`.
+    seed : int, optional
+        Seed for the random number generator to ensure reproducibility. Default is `None`.
+
+    Returns
+    -------
+    symbols : np.ndarray
+        A NumPy array of symbols randomly drawn from the specified constellation with the given probability distribution.
 
     Raises
     ------
     ValueError
-        If the specified order is not supported.
+        If an invalid constellation type is provided.
 
     Notes
     -----
-    The function uses Linear Feedback Shift Register (LFSR) technique to generate
-    the PRBS. Feedback taps for each order are defined based on known generator
-    polynomials.
+    The function generates symbols from a specified modulation scheme and applies either a uniform or Maxwell-Boltzmann
+    distribution to the constellation points. The Maxwell-Boltzmann distribution is shaped by the `shapingFactor`. If no
+    custom probability distribution `px` is provided, it defaults to uniform or Maxwell-Boltzmann depending on the `dist` argument.
 
     """
-    # Polynomial taps for orders 7, 9, 11, 13, 15, 23, 31 (can be extended as needed)
-    taps = {
-        7: np.array([7, 6]),     # PRBS-7: x^7 + x^6 + 1
-        9: np.array([9, 5]),     # PRBS-9: x^9 + x^5 + 1
-        11: np.array([11, 9]),   # PRBS-11: x^11 + x^9 + 1
-        13: np.array([13, 12]),  # PRBS-13: x^13 + x^12 + 1
-        15: np.array([15, 14]),  # PRBS-15: x^15 + x^14 + 1
-        23: np.array([23, 18]),  # PRBS-23: x^23 + x^18 + 1
-        31: np.array([31, 28])   # PRBS-31: x^31 + x^28 + 1
-    }
-    
-    if order not in taps:
-        raise ValueError("Order not supported. Available orders: 7, 9, 11, 13, 15, 23, 31.")
-        
-    # Initialize the LFSR with all ones (standard approach)
-    lfsr = np.ones(order, dtype=np.int64)  # Array with all ones
-    seq = np.zeros(length, dtype=np.int64)
-    
-    for i in range(length):
-        # Output bit is the last bit of the LFSR
-        seq[i] = lfsr[-1]
-        
-        # Calculate feedback bit using manual XOR of tap positions
-        feedback = 0
-        for tap in taps[order]:
-            feedback ^= lfsr[tap - 1]  # Adjust for zero-based index
-        
-        # Update LFSR: shift left and insert feedback bit into the MSB
-        lfsr = np.roll(lfsr, shift=-1)
-        lfsr[-1] = feedback
-    
-    return seq
+    if seed is not None:
+        np.random.seed(seed)
 
-def symbolSource(nSymbols, M, constType='qam', dist='uniform', shapingFactor = 0.01, px=None, seed=None):
-    """
-    Generate a random symbol sequence of length nbits based on the specified modulation order M.
-    
-    Parameters
-    ----------
-    nSymbols : int
-        Number of symbols in the sequence.
-    M : int
-        Modulation order (2, 4, 8, 16, 32, 64, 128, 256, etc.).
-    mode : str
-        Mode of operation. Options are 'random' or 'prbs'.
-    seed : int
-        Seed value for the random number generator.
-        
-    Returns
-    -------
-    symbols : ndarray
-        An array of random symbols.
-    """
     if constType == 'qam':
         constellation = qamConst(M)
     elif constType == 'pam':
@@ -144,6 +156,6 @@ def symbolSource(nSymbols, M, constType='qam', dist='uniform', shapingFactor = 0
     
     constellation = constellation / np.sqrt(np.sum(px*np.abs(constellation.flatten())**2))
    
-    symbols = np.random.choice(constellation.flatten(), nSymbols, p=px)
+    symbols = np.random.choice(constellation.flatten(), N, p=px)
     
     return symbols
