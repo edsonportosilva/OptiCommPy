@@ -94,6 +94,7 @@ def cpr(Ei, param=None, symbTx=None):
     alg = getattr(param, "alg", "bps")
     M = getattr(param, "M", 4)
     constType = getattr(param, "constType", "qam")
+    shapingFactor = getattr(param,'shapingFactor', 0)
     B = getattr(param, "B", 64)
     N = getattr(param, "N", 35)
     Kv = getattr(param, "Kv", 0.1)
@@ -109,8 +110,10 @@ def cpr(Ei, param=None, symbTx=None):
         Ei = Ei.reshape(len(Ei), 1)
 
     # constellation parameters
-    constSymb = grayMapping(M, constType)
-    constSymb = pnorm(constSymb)
+    constSymb = grayMapping(M, constType)    
+    px = np.exp(-shapingFactor*np.abs(constSymb)**2)
+    px = px / np.sum(px)
+    constSymb /= np.sqrt(np.sum(np.abs(constSymb)**2*px))
 
     # 4th power frequency offset estimation/compensation
     logg.info(f"Running frequency offset compensation...")
