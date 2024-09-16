@@ -131,7 +131,6 @@ def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor =
     The function generates symbols from a specified modulation scheme and applies either a uniform or Maxwell-Boltzmann
     distribution to the constellation points. The Maxwell-Boltzmann distribution is shaped by the `shapingFactor`. If no
     custom probability distribution `px` is provided, it defaults to uniform or Maxwell-Boltzmann depending on the `dist` argument.
-
     """
     if seed is not None:
         np.random.seed(seed)
