@@ -107,7 +107,7 @@ def bert(Irx, bitsTx=None, seed=123):
     return BER, Q
 
 
-def fastBERcalc(rx, tx, M, constType):
+def fastBERcalc(rx, tx, M, constType, px=None):
     """
     Monte Carlo BER/SER/SNR calculation.
 
@@ -121,6 +121,8 @@ def fastBERcalc(rx, tx, M, constType):
         Modulation order.
     constType : string
         Modulation type: 'qam', 'psk', 'pam' or 'ook'.
+    px : (M, 1) np.array
+        Prior symbol probabilities.
 
     Returns
     -------
@@ -139,10 +141,17 @@ def fastBERcalc(rx, tx, M, constType):
     if M != 2 and constType == "ook":
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
+
+    # constellation parameters
+    if px is None:
+        px = []
+    if len(px) == 0:  # if px is not defined
+        px = 1 / M * np.ones(M)  # assume uniform distribution
+
     # constellation parameters
     constSymb = grayMapping(M, constType)
-    Es = np.mean(np.abs(constSymb) ** 2)
-
+    Es = np.sum(np.abs(constSymb) ** 2 * px)
+    
     # We want all the signal sequences to be disposed in columns:
     try:
         if rx.shape[1] > rx.shape[0]:
