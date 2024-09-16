@@ -37,6 +37,8 @@ def cpr(Ei, param=None, symbTx=None):
 
         - param.alg: CPR algorithm to be used ['bps', 'ddpll', or 'viterbi']
 
+        - param.shapingFactor: shaping factor for the constellation (if probabilistic shaped with MB dist.).
+
         BPS params:
 
         - param.M: constellation order. The default is 4.
