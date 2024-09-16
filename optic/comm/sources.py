@@ -10,6 +10,7 @@ Sources of communication signals (:mod:`optic.comm.sources`)
 """
 import numpy as np
 from numba import njit
+from optic.comm.modulation import qamConst, pamConst, pskConst, apskConst
 
 def bitSource(nbits, mode='random', order=None, seed=None):
     """
@@ -102,3 +103,42 @@ def prbsSequence(length, order=23):
     
     return seq
 
+def symbolSource(nSymbols, M, constType='qam', px=None, seed=None):
+    """
+    Generate a random symbol sequence of length nbits based on the specified modulation order M.
+    
+    Parameters
+    ----------
+    nSymbols : int
+        Number of symbols in the sequence.
+    M : int
+        Modulation order (2, 4, 8, 16, 32, 64, 128, 256, etc.).
+    mode : str
+        Mode of operation. Options are 'random' or 'prbs'.
+    seed : int
+        Seed value for the random number generator.
+        
+    Returns
+    -------
+    symbols : ndarray
+        An array of random symbols.
+    """
+    if constType == 'qam':
+        constellation = qamConst(M)
+    elif constType == 'pam':
+        constellation = pamConst(M)
+    elif constType == 'psk':
+        constellation = pskConst(M)
+    elif constType == 'apsk':
+        constellation = apskConst(M)
+    else:   
+        raise ValueError("Invalid constellation type. Supported types are 'qam', 'pam', 'psk', and 'apsk'.")
+    
+    if px is None:
+        px = np.ones(M) / M
+    
+    constellation = constellation / np.sqrt(np.sum(px*np.abs(constellation.flatten())**2))
+   
+    symbols = np.random.choice(constellation.flatten(), nSymbols, p=px)
+    
+    return symbols
