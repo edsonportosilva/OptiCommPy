@@ -106,9 +106,9 @@ def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor =
         'apsk'. Default is 'qam'.
     dist : str, optional
         The probability distribution to use for generating symbols. Can be 'uniform' 
-        or 'maxwell-boltzmann'. Default is 'uniform'.
+        or 'Maxwell-Boltzmann'. Default is 'uniform'.
     shapingFactor : float, optional
-        The shaping factor used when the distribution is 'maxwell-boltzmann'. This 
+        The shaping factor used when the distribution is 'Maxwell-Boltzmann'. This 
         controls the Gaussian shaping of the constellation points. Default is 0.01.
     px : array-like, optional
         Probability distribution of the constellation points. If `None`, the distribution 
