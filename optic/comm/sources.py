@@ -6,7 +6,9 @@ Sources of communication signals (:mod:`optic.comm.sources`)
 .. autosummary::
    :toctree: generated/
 
-   bert                     -- Calculate BER and Q-factor for optical communication using On-Off Keying (OOK).   
+   bitSource          -- Generate a random bit sequence of length nbits.
+   prbsGenerator      -- Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.
+   symbolSource       -- Generate a random symbol sequence from a given modulation scheme.  
 """
 import numpy as np
 from numba import njit
@@ -48,7 +50,6 @@ def bitSource(nbits, mode='random', order=None, seed=None):
 
 @njit
 def prbsGenerator(order=23):
-
     """
     Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.
 
@@ -90,13 +91,13 @@ def prbsGenerator(order=23):
         
     return bits
 
-def symbolSource(N, M=4, constType='qam', dist='uniform', shapingFactor = 0.01, px=None, seed=None):
+def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor = 0.01, px=None, seed=None):
     """
-    Generate a random symbol sequence of length N based on the specified modulation scheme and order.
+    Generate a random symbol sequence of length nSymbols based on the specified modulation scheme and order.
 
     Parameters
     ----------
-    N : int
+    nSymbols : int
         Number of symbols to generate.
     M : int
         Modulation order. This defines the size of the constellation. Default is 4.
@@ -156,6 +157,6 @@ def symbolSource(N, M=4, constType='qam', dist='uniform', shapingFactor = 0.01, 
     
     constellation = constellation / np.sqrt(np.sum(px*np.abs(constellation.flatten())**2))
    
-    symbols = np.random.choice(constellation.flatten(), N, p=px)
+    symbols = np.random.choice(constellation.flatten(), nSymbols, p=px)
     
     return symbols
