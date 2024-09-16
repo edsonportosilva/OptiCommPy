@@ -15,6 +15,7 @@ from tqdm.notebook import tqdm
 from optic.dsp.core import pnorm, pulseShape, signal_power, upsample, phaseNoise
 from optic.models.devices import iqm
 from optic.comm.modulation import grayMapping, modulateGray
+from optic.comm.sources import symbolSource
 
 try:
     from optic.dsp.coreGPU import firFilter
@@ -78,7 +79,10 @@ def simpleWDMTx(param):
     param.M = getattr(param, "M", 16)
     param.constType = getattr(param, "constType", "qam")
     param.Rs = getattr(param, "Rs", 32e9)
-    param.SpS = getattr(param, "SpS", 16)
+    param.SpS = getattr(param, "SpS", 16)    
+    param.dist = getattr(param, "dist", "uniform")
+    param.shapingFactor = getattr(param, "shapingFactor", 0)
+    param.seed = getattr(param, "seed", None)
     param.Nbits = getattr(param, "Nbits", 60000)
     param.pulse = getattr(param, "pulse", "rrc")
     param.Ntaps = getattr(param, "Ntaps", 4096)
@@ -94,6 +98,13 @@ def simpleWDMTx(param):
     # transmitter parameters
     Ts = 1 / param.Rs  # symbol period [s]
     Fs = 1 / (Ts / param.SpS)  # sampling frequency [samples/s]
+    nSymbols = int(param.Nbits / np.log2(param.M)) # number of symbols per mode
+
+    # get constellation pmf
+    constSymb = grayMapping(param.M, param.constType)  
+    px = np.exp(-param.shapingFactor*np.abs(constSymb)**2)
+    px = px / np.sum(px)
+    param.px = px
 
     # central frequencies of the WDM channels
     freqGrid = (
@@ -117,7 +128,7 @@ def simpleWDMTx(param):
 
     π = np.pi
     # time array
-    t = np.arange(0, int(((param.Nbits) / np.log2(param.M)) * param.SpS))
+    t = np.arange(0, int(nSymbols * param.SpS))
 
     # allocate array
     sigTxWDM = np.zeros((len(t), param.Nmodes), dtype="complex")
@@ -126,10 +137,6 @@ def simpleWDMTx(param):
     )
 
     Psig = 0
-
-    # constellation symbols info
-    const = grayMapping(param.M, param.constType)
-    Es = np.mean(np.abs(const) ** 2)
 
     # pulse shaping filter
     if param.pulse == "nrz":
@@ -150,16 +157,15 @@ def simpleWDMTx(param):
                 "  mode #%d\t power: %.2f dBm"
                 % (indMode, 10 * np.log10((Pch[indCh] / param.Nmodes) / 1e-3))
             )
-
-            # generate random bits
-            bitsTx = np.random.randint(2, size=param.Nbits)
-
-            # map bits to constellation symbols
-            symbTx = modulateGray(bitsTx, param.M, param.constType)
-
-            # normalize symbols energy to 1
-            symbTx = symbTx / np.sqrt(Es)
-
+           
+            # Generate sequence of constellation symbols         
+            symbTx = symbolSource(nSymbols, 
+                                param.M, 
+                                param.constType, 
+                                param.dist, 
+                                param.shapingFactor,
+                                seed=param.seed)
+           
             symbTxWDM[:, indMode, indCh] = symbTx
 
             # upsampling
