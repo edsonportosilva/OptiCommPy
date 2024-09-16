@@ -103,7 +103,7 @@ def prbsSequence(length, order=23):
     
     return seq
 
-def symbolSource(nSymbols, M, constType='qam', px=None, seed=None):
+def symbolSource(nSymbols, M, constType='qam', dist='uniform', shapingFactor = 0.01, px=None, seed=None):
     """
     Generate a random symbol sequence of length nbits based on the specified modulation order M.
     
@@ -135,7 +135,12 @@ def symbolSource(nSymbols, M, constType='qam', px=None, seed=None):
         raise ValueError("Invalid constellation type. Supported types are 'qam', 'pam', 'psk', and 'apsk'.")
     
     if px is None:
-        px = np.ones(M) / M
+        if dist == 'uniform':
+            px = np.ones(M) / M
+        elif dist == 'maxwell-boltzmann':
+            px = np.exp(-shapingFactor*np.abs(constellation)**2)
+            px = px / np.sum(px)
+            px = px.flatten()
     
     constellation = constellation / np.sqrt(np.sum(px*np.abs(constellation.flatten())**2))
    
