@@ -159,6 +159,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     alg = getattr(param, "alg", ["nlms"])
     constType = getattr(param, "constType", "qam")
     M = getattr(param, "M", 4)
+    shapingFactor = getattr(param,'shapingFactor', 0)
     prgsBar = getattr(param, "prgsBar", True)
     returnResults = getattr(param, "returnResults", False)
 
@@ -185,8 +186,14 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
 
     # Defining training parameters:
     constSymb = grayMapping(M, constType)  # constellation
-    constSymb = pnorm(constSymb)  # normalized constellation symbols
 
+    # Calculate MB distribution
+    px = np.exp(-shapingFactor*np.abs(constSymb)**2)
+    px = px/np.sum(px)
+
+    # normalize reference constellation accouting for the probability mass function
+    constSymb /= np.sqrt(np.sum(np.abs(constSymb)**2*px)) 
+    
     totalNumSymb = int(np.fix((len(x) - nTaps) / SpS + 1))
 
     if not L:  # if L is not defined
