@@ -91,7 +91,7 @@ def prbsGenerator(order=23):
         
     return bits
 
-def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor = 0.01, px=None, seed=None):
+def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor = 0.0, px=None, seed=None):
     """
     Generate a random symbol sequence of length nSymbols based on the specified modulation scheme and order.
 
@@ -109,7 +109,7 @@ def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor =
         or 'Maxwell-Boltzmann'. Default is 'uniform'.
     shapingFactor : float, optional
         The shaping factor used when the distribution is 'Maxwell-Boltzmann'. This 
-        controls the Gaussian shaping of the constellation points. Default is 0.01.
+        controls the Gaussian shaping of the constellation points. Default is 0.0.
     px : array-like, optional
         Probability distribution of the constellation points. If `None`, the distribution 
         is determined by `dist`. Default is `None`.
