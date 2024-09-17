@@ -489,8 +489,8 @@ def calcEVM(symb, M, constType, symbTx=None):
         Sequence of noisy symbols.
     M : int
         Constellation order.
-    constType : TYPE
-        DESCRIPTION.
+    constType : string
+        Modulation type: 'pam', 'qam' or 'psk'
     symbTx : np.array, optional
         Sequence of transmitted symbols (noiseless). The default is [].
 
