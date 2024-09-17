@@ -10,6 +10,8 @@ Sources of communication signals (:mod:`optic.comm.sources`)
    prbsGenerator      -- Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.
    symbolSource       -- Generate a random symbol sequence from a given modulation scheme.  
 """
+import logging as logg
+
 import numpy as np
 from numba import njit
 from optic.comm.modulation import qamConst, pamConst, pskConst, apskConst
@@ -36,7 +38,7 @@ def bitSource(nbits, mode='random', order=None, seed=None):
         bits = np.random.randint(0, 2, nbits)
     elif mode == 'prbs':
         if order is None:
-            Warning("PRBS order not specified. Using the default order 23.")
+            logg.warn("PRBS order not specified. Using the default order 23.")
             prbs = prbsGenerator()
         else:
             prbs = prbsGenerator(order)
@@ -75,7 +77,7 @@ def prbsGenerator(order=23):
         }
 
     if order not in taps:
-        raise ValueError(f"Order {order} not supported. Choose from {list(taps.keys())}.")
+        raise ValueError(f"PRBS order {order} is not supported. Supported orders are 7, 9, 11, 13, 15, 23, 31.")
 
     # Initialize parameters
     lenPRBS = 2**order-1
@@ -91,7 +93,7 @@ def prbsGenerator(order=23):
         
     return bits
 
-def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor = 0.0, px=None, seed=None):
+def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor=0.0, px=None, seed=None):
     """
     Generate a random symbol sequence of length nSymbols based on the specified modulation scheme and order.
 
@@ -121,11 +123,6 @@ def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor =
     symbols : np.ndarray
         A NumPy array of symbols randomly drawn from the specified constellation with the given probability distribution.
 
-    Raises
-    ------
-    ValueError
-        If an invalid constellation type is provided.
-
     Notes
     -----
     The function generates symbols from a specified modulation scheme and applies either a uniform or Maxwell-Boltzmann
@@ -144,7 +141,7 @@ def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor =
     elif constType == 'apsk':
         constellation = apskConst(M)
     else:   
-        raise ValueError("Invalid constellation type. Supported types are 'qam', 'pam', 'psk', and 'apsk'.")
+        logg.error("Invalid constellation type. Supported types are 'qam', 'pam', 'psk', and 'apsk'.")
     
     if px is None:
         if dist == 'uniform':
