@@ -75,7 +75,26 @@ class parameters:
                 formatted_value = self.to_engineering_notation(value)
                 markdown += f"| {name} | {formatted_value} |\n"
         
-        return markdown
+        return print(markdown)
+
+    def latex_table(self):
+        attributes = vars(self)
+        latex = "\\begin{tabular}{|c|c|}\n"
+        latex += "\\hline\n"
+        latex += "Parameter Name & Value \\\\\n"
+        latex += "\\hline\n"
+        
+        for name, value in attributes.items():
+            if isinstance(value, (list, np.ndarray, tuple)):
+                latex += f"{name} & Array \\\\\n"
+            else:
+                # Apply engineering notation where necessary
+                formatted_value = self.to_engineering_notation(value)
+                latex += f"{name} & {formatted_value} \\\\\n"
+            latex += "\\hline\n"
+        
+        latex += "\\end{tabular}"
+        return print(latex)
 
 
 def lin2dB(x):
