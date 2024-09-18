@@ -1,7 +1,7 @@
 """
-================================================================================
+=============================================================
 Sources of communication signals (:mod:`optic.comm.sources`)
-================================================================================
+=============================================================
 
 .. autosummary::
    :toctree: generated/
@@ -16,15 +16,16 @@ import numpy as np
 from numba import njit
 from optic.comm.modulation import qamConst, pamConst, pskConst, apskConst
 
-def bitSource(nbits, mode='random', order=None, seed=None):
+
+def bitSource(nbits, mode="random", order=None, seed=None):
     """
     Generate a random bit sequence of length nbits.
-    
+
     Parameters
     ----------
     nbits : int
         Number of bits in the sequence.
-        
+
     Returns
     -------
     bits : ndarray
@@ -32,11 +33,11 @@ def bitSource(nbits, mode='random', order=None, seed=None):
     """
     if seed is not None:
         np.random.seed(seed)
-    if mode == 'random':
+    if mode == "random":
         if seed is not None:
-            np.random.seed(seed) # Seed the random number generator      
+            np.random.seed(seed)  # Seed the random number generator
         bits = np.random.randint(0, 2, nbits)
-    elif mode == 'prbs':
+    elif mode == "prbs":
         if order is None:
             logg.warn("PRBS order not specified. Using the default order 23.")
             prbs = prbsGenerator()
@@ -44,11 +45,12 @@ def bitSource(nbits, mode='random', order=None, seed=None):
             prbs = prbsGenerator(order)
 
         if len(prbs) < nbits:
-            prbs = np.tile(prbs, nbits//len(prbs)+1)
-        
+            prbs = np.tile(prbs, nbits // len(prbs) + 1)
+
         bits = prbs[:nbits]
 
     return bits
+
 
 @njit
 def prbsGenerator(order=23):
@@ -64,36 +66,47 @@ def prbsGenerator(order=23):
     -------
     np.ndarray
         A NumPy array of bits representing the PRBS sequence.
-    """    
+    """
     # Predefined taps for each PRBS order
     taps = {
-        7: (6, 5),     # PRBS-7: x^7 + x^6 + 1
-        9: (8, 4),     # PRBS-9: x^9 + x^5 + 1
-        11: (10, 8),   # PRBS-11: x^11 + x^9 + 1
+        7: (6, 5),  # PRBS-7: x^7 + x^6 + 1
+        9: (8, 4),  # PRBS-9: x^9 + x^5 + 1
+        11: (10, 8),  # PRBS-11: x^11 + x^9 + 1
         13: (12, 11),  # PRBS-13: x^13 + x^12 + 1
         15: (14, 13),  # PRBS-15: x^15 + x^14 + 1
         23: (22, 17),  # PRBS-23: x^23 + x^18 + 1
-        31: (30, 27)   # PRBS-31: x^31 + x^28 + 1
-        }
+        31: (30, 27),  # PRBS-31: x^31 + x^28 + 1
+    }
 
     if order not in taps:
-        raise ValueError(f"PRBS order {order} is not supported. Supported orders are 7, 9, 11, 13, 15, 23, 31.")
+        raise ValueError(
+            f"PRBS order {order} is not supported. Supported orders are 7, 9, 11, 13, 15, 23, 31."
+        )
 
     # Initialize parameters
-    lenPRBS = 2**order-1
+    lenPRBS = 2**order - 1
     tap_a, tap_b = taps[order]
-        
-    bits = np.zeros(lenPRBS, dtype=np.int64)  
-    
-    lfsr = 1          
+
+    bits = np.zeros(lenPRBS, dtype=np.int64)
+
+    lfsr = 1
     for i in range(1, lenPRBS):
-        fb = ((lfsr>>tap_a) ^ (lfsr>>tap_b) & 1)
-        lfsr = ((lfsr<<1) + fb) & (lenPRBS) 
-        bits[i-1] = fb   
-        
+        fb = (lfsr >> tap_a) ^ (lfsr >> tap_b) & 1
+        lfsr = ((lfsr << 1) + fb) & (lenPRBS)
+        bits[i - 1] = fb
+
     return bits
 
-def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor=0.0, px=None, seed=None):
+
+def symbolSource(
+    nSymbols,
+    M=4,
+    constType="qam",
+    dist="uniform",
+    shapingFactor=0.0,
+    px=None,
+    seed=None,
+):
     """
     Generate a random symbol sequence of length nSymbols based on the specified modulation scheme and order.
 
@@ -104,16 +117,16 @@ def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor=0
     M : int
         Modulation order. This defines the size of the constellation. Default is 4.
     constType : str, optional
-        The type of modulation scheme. Supported types are 'qam', 'pam', 'psk', and 
+        The type of modulation scheme. Supported types are 'qam', 'pam', 'psk', and
         'apsk'. Default is 'qam'.
     dist : str, optional
-        The probability distribution to use for generating symbols. Can be 'uniform' 
+        The probability distribution to use for generating symbols. Can be 'uniform'
         or 'Maxwell-Boltzmann'. Default is 'uniform'.
     shapingFactor : float, optional
-        The shaping factor used when the distribution is 'Maxwell-Boltzmann'. This 
+        The shaping factor used when the distribution is 'Maxwell-Boltzmann'. This
         controls the Gaussian shaping of the constellation points. Default is 0.0.
     px : array-like, optional
-        Probability distribution of the constellation points. If `None`, the distribution 
+        Probability distribution of the constellation points. If `None`, the distribution
         is determined by `dist`. Default is `None`.
     seed : int, optional
         Seed for the random number generator to ensure reproducibility. Default is `None`.
@@ -132,27 +145,31 @@ def symbolSource(nSymbols, M=4, constType='qam', dist='uniform', shapingFactor=0
     if seed is not None:
         np.random.seed(seed)
 
-    if constType == 'qam':
+    if constType == "qam":
         constellation = qamConst(M)
-    elif constType == 'pam':
+    elif constType == "pam":
         constellation = pamConst(M)
-    elif constType == 'psk':
+    elif constType == "psk":
         constellation = pskConst(M)
-    elif constType == 'apsk':
+    elif constType == "apsk":
         constellation = apskConst(M)
-    else:   
-        logg.error("Invalid constellation type. Supported types are 'qam', 'pam', 'psk', and 'apsk'.")
-    
+    else:
+        logg.error(
+            "Invalid constellation type. Supported types are 'qam', 'pam', 'psk', and 'apsk'."
+        )
+
     if px is None:
-        if dist == 'uniform':
+        if dist == "uniform":
             px = np.ones(M) / M
-        elif dist == 'maxwell-boltzmann':
-            px = np.exp(-shapingFactor*np.abs(constellation)**2)
+        elif dist == "maxwell-boltzmann":
+            px = np.exp(-shapingFactor * np.abs(constellation) ** 2)
             px = px / np.sum(px)
             px = px.flatten()
-    
-    constellation = constellation / np.sqrt(np.sum(px*np.abs(constellation.flatten())**2))
-   
+
+    constellation = constellation / np.sqrt(
+        np.sum(px * np.abs(constellation.flatten()) ** 2)
+    )
+
     symbols = np.random.choice(constellation.flatten(), nSymbols, p=px)
-    
+
     return symbols
