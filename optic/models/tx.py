@@ -53,7 +53,7 @@ def simpleWDMTx(param):
 
         - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
 
-        - param.powerPerCh: launched power per WDM channel [dBm][default:-3 dBm].
+        - param.powerPerChannel: launched power per WDM channel [dBm][default:-3 dBm].
 
         - param.nChannels: number of WDM channels [default: 5].
 
@@ -87,7 +87,7 @@ def simpleWDMTx(param):
     param.pulse = getattr(param, "pulse", "rrc")
     param.nPulseTaps = getattr(param, "nPulseTaps", 4096)
     param.pulseRollOff = getattr(param, "pulseRollOff", 0.01)
-    param.powerPerCh = getattr(param, "powerPerCh", -3)
+    param.powerPerChannel = getattr(param, "powerPerChannel", -3)
     param.nChannels = getattr(param, "nChannels", 5)
     param.Fc = getattr(param, "Fc", 193.1e12)
     param.laserLinewidth = getattr(param, "laserLinewidth", 0)
@@ -115,15 +115,15 @@ def simpleWDMTx(param):
     if (param.nChannels % 2) == 0:
         freqGrid += param.wdmGridSpacing / 2
 
-    if type(param.powerPerCh) == list:
+    if type(param.powerPerChannel) == list:
         assert (
-            len(param.powerPerCh) == param.nChannels
+            len(param.powerPerChannel) == param.nChannels
         ), "list length of power per channel does not match number of channels."
         Pch = (
-            10 ** (np.array(param.powerPerCh) / 10) * 1e-3
+            10 ** (np.array(param.powerPerChannel) / 10) * 1e-3
         )  # optical signal power per WDM channel
     else:
-        Pch = 10 ** (param.powerPerCh / 10) * 1e-3
+        Pch = 10 ** (param.powerPerChannel / 10) * 1e-3
         Pch = Pch * np.ones(param.nChannels)
 
     π = np.pi
