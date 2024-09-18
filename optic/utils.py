@@ -33,10 +33,49 @@ class parameters:
 
         """
         for attr, value in self.__dict__.items():
-            if isinstance(value, (int, float)) and value > 1000:
+            if isinstance(value, (int, float)) and value > 10000:
                 print(f"{attr}: {value:.2e}")
             else:
                 print(f"{attr}: {value}")
+
+    def to_engineering_notation(self, value):
+        prefixes = {
+            -12: 'p',  # pico
+            -9:  'n',  # nano
+            -6:  'µ',  # micro
+            -3:  'm',  # milli
+             0:  '',   # base unit (no prefix)
+             3:  'k',  # kilo
+             6:  'M',  # mega
+             9:  'G',  # giga
+            12:  'T',  # tera
+            15:  'P',  # peta
+        }
+
+        if isinstance(value, (int, float)) and (abs(value) >= 10000 or (0 < abs(value) < 0.0001)):
+            exponent = int(np.floor(np.log10(abs(value))))  # Calculate the exponent
+            exponent = (exponent // 3) * 3  # Round to nearest multiple of 3
+
+            scaled_value = value / (10 ** exponent)  # Scale the value
+            prefix = prefixes.get(exponent, '')  # Get the corresponding prefix
+
+            return f"{scaled_value:.1f} {prefix}"
+        return value
+
+    def table(self):
+        attributes = vars(self)
+        markdown = "| Parameter Name | Value |\n"
+        markdown += "|----------------|-----------------|\n"
+        
+        for name, value in attributes.items():
+            if isinstance(value, (list, np.ndarray, tuple)):
+                markdown += f"| {name} | Array |\n"
+            else:
+                # Apply engineering notation where necessary
+                formatted_value = self.to_engineering_notation(value)
+                markdown += f"| {name} | {formatted_value} |\n"
+        
+        return markdown
 
 
 def lin2dB(x):
