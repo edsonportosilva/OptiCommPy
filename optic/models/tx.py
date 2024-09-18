@@ -45,25 +45,25 @@ def simpleWDMTx(param):
 
         - param.SpS: samples per symbol [default: 16].
 
-        - param.Nbits: total number of bits per carrier [default: 60000].
+        - param.nBits: total number of bits per carrier [default: 60000].
 
         - param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc'].
 
-        - param.Ntaps: number of coefficients of the rrc filter [default: 4096].
+        - param.nPulseTaps: number of coefficients of the rrc filter [default: 4096].
 
-        - param.alphaRRC: rolloff do rrc filter [default: 0.01].
+        - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
 
-        - param.Pch_dBm: launched power per WDM channel [dBm][default:-3 dBm].
+        - param.powerPerCh: launched power per WDM channel [dBm][default:-3 dBm].
 
-        - param.Nch: number of WDM channels [default: 5].
+        - param.nChannels: number of WDM channels [default: 5].
 
         - param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz].
 
-        - param.lw: laser linewidth [Hz][default: 100 kHz].
+        - param.laserLinewidth: laser linewidth [Hz][default: 100 kHz].
 
-        - param.freqSpac: frequency spacing of the WDM grid [Hz][default: 40e9 Hz].
+        - param.wdmGridSpacing: frequency spacing of the WDM grid [Hz][default: 40e9 Hz].
 
-        - param.Nmodes: number of polarization modes [default: 1].
+        - param.nPolModes: number of polarization modes [default: 1].
 
     Returns
     -------
@@ -80,60 +80,60 @@ def simpleWDMTx(param):
     param.constType = getattr(param, "constType", "qam")
     param.Rs = getattr(param, "Rs", 32e9)
     param.SpS = getattr(param, "SpS", 16)    
-    param.dist = getattr(param, "dist", "uniform")
+    param.probabilityDistribution = getattr(param, "probabilityDistribution", "uniform")
     param.shapingFactor = getattr(param, "shapingFactor", 0)
     param.seed = getattr(param, "seed", None)
-    param.Nbits = getattr(param, "Nbits", 60000)
+    param.nBits = getattr(param, "nBits", 60000)
     param.pulse = getattr(param, "pulse", "rrc")
-    param.Ntaps = getattr(param, "Ntaps", 4096)
-    param.alphaRRC = getattr(param, "alphaRRC", 0.01)
-    param.Pch_dBm = getattr(param, "Pch_dBm", -3)
-    param.Nch = getattr(param, "Nch", 5)
+    param.nPulseTaps = getattr(param, "nPulseTaps", 4096)
+    param.pulseRollOff = getattr(param, "pulseRollOff", 0.01)
+    param.powerPerCh = getattr(param, "powerPerCh", -3)
+    param.nChannels = getattr(param, "nChannels", 5)
     param.Fc = getattr(param, "Fc", 193.1e12)
-    param.lw = getattr(param, "lw", 0)
-    param.freqSpac = getattr(param, "freqSpac", 50e9)
-    param.Nmodes = getattr(param, "Nmodes", 1)
+    param.laserLinewidth = getattr(param, "laserLinewidth", 0)
+    param.wdmGridSpacing = getattr(param, "wdmGridSpacing", 50e9)
+    param.nPolModes = getattr(param, "nPolModes", 1)
     param.prgsBar = getattr(param, "prgsBar", True)
 
     # transmitter parameters
     Ts = 1 / param.Rs  # symbol period [s]
     Fs = 1 / (Ts / param.SpS)  # sampling frequency [samples/s]
-    nSymbols = int(param.Nbits / np.log2(param.M)) # number of symbols per mode
+    nSymbols = int(param.nBits / np.log2(param.M)) # number of symbols per mode
 
     # get constellation pmf
     constSymb = grayMapping(param.M, param.constType)  
     px = np.exp(-param.shapingFactor*np.abs(constSymb)**2)
     px = px / np.sum(px)
-    param.px = px
+    param.pmf = px
 
     # central frequencies of the WDM channels
     freqGrid = (
-        np.arange(-np.floor(param.Nch / 2), np.floor(param.Nch / 2) + 1, 1)
-        * param.freqSpac
+        np.arange(-np.floor(param.nChannels / 2), np.floor(param.nChannels / 2) + 1, 1)
+        * param.wdmGridSpacing
     )
 
-    if (param.Nch % 2) == 0:
-        freqGrid += param.freqSpac / 2
+    if (param.nChannels % 2) == 0:
+        freqGrid += param.wdmGridSpacing / 2
 
-    if type(param.Pch_dBm) == list:
+    if type(param.powerPerCh) == list:
         assert (
-            len(param.Pch_dBm) == param.Nch
+            len(param.powerPerCh) == param.nChannels
         ), "list length of power per channel does not match number of channels."
         Pch = (
-            10 ** (np.array(param.Pch_dBm) / 10) * 1e-3
+            10 ** (np.array(param.powerPerCh) / 10) * 1e-3
         )  # optical signal power per WDM channel
     else:
-        Pch = 10 ** (param.Pch_dBm / 10) * 1e-3
-        Pch = Pch * np.ones(param.Nch)
+        Pch = 10 ** (param.powerPerCh / 10) * 1e-3
+        Pch = Pch * np.ones(param.nChannels)
 
     π = np.pi
     # time array
     t = np.arange(0, int(nSymbols * param.SpS))
 
     # allocate array
-    sigTxWDM = np.zeros((len(t), param.Nmodes), dtype="complex")
+    sigTxWDM = np.zeros((len(t), param.nPolModes), dtype="complex")
     symbTxWDM = np.zeros(
-        (len(t) // param.SpS, param.Nmodes, param.Nch), dtype="complex"
+        (len(t) // param.SpS, param.nPolModes, param.nChannels), dtype="complex"
     )
 
     Psig = 0
@@ -142,27 +142,27 @@ def simpleWDMTx(param):
     if param.pulse == "nrz":
         pulse = pulseShape("nrz", param.SpS)
     elif param.pulse == "rrc":
-        pulse = pulseShape("rrc", param.SpS, N=param.Ntaps, alpha=param.alphaRRC, Ts=Ts)
+        pulse = pulseShape("rrc", param.SpS, N=param.nPulseTaps, alpha=param.pulseRollOff, Ts=Ts)
 
     pulse = pulse / np.max(np.abs(pulse))
 
-    for indCh in tqdm(range(param.Nch), disable=not (param.prgsBar)):
+    for indCh in tqdm(range(param.nChannels), disable=not (param.prgsBar)):
         logg.info(
             "channel %d\t fc : %3.4f THz" % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
         )
 
         Pmode = 0
-        for indMode in range(param.Nmodes):
+        for indMode in range(param.nPolModes):
             logg.info(
                 "  mode #%d\t power: %.2f dBm"
-                % (indMode, 10 * np.log10((Pch[indCh] / param.Nmodes) / 1e-3))
+                % (indMode, 10 * np.log10((Pch[indCh] / param.nPolModes) / 1e-3))
             )
            
             # Generate sequence of constellation symbols         
             symbTx = symbolSource(nSymbols, 
                                 param.M, 
                                 param.constType, 
-                                param.dist, 
+                                param.probabilityDistribution, 
                                 param.shapingFactor,
                                 seed=param.seed)
            
@@ -176,11 +176,11 @@ def simpleWDMTx(param):
 
             # optical modulation
             if indMode == 0:  # generate LO field with phase noise
-                ϕ_pn_lo = phaseNoise(param.lw, len(sigTx), 1 / Fs)
+                ϕ_pn_lo = phaseNoise(param.laserLinewidth, len(sigTx), 1 / Fs)
                 sigLO = np.exp(1j * ϕ_pn_lo)
 
             sigTxCh = iqm(sigLO, 0.5 * sigTx)
-            sigTxCh = np.sqrt(Pch[indCh] / param.Nmodes) * pnorm(sigTxCh)
+            sigTxCh = np.sqrt(Pch[indCh] / param.nPolModes) * pnorm(sigTxCh)
 
             sigTxWDM[:, indMode] += sigTxCh * np.exp(
                 1j * 2 * π * (freqGrid[indCh] / Fs) * t
@@ -196,6 +196,6 @@ def simpleWDMTx(param):
 
     logg.info("total WDM signal power: %.2f dBm" % (10 * np.log10(Psig / 1e-3)))
 
-    param.freqGrid = freqGrid
+    param.wdmFreqGrid = freqGrid
 
     return sigTxWDM, symbTxWDM, param
