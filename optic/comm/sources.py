@@ -1,7 +1,7 @@
 """
-=============================================================
-Sources of communication signals (:mod:`optic.comm.sources`)
-=============================================================
+=========================================================
+Sources of discrete sequences (:mod:`optic.comm.sources`)
+=========================================================
 
 .. autosummary::
    :toctree: generated/
@@ -19,17 +19,27 @@ from optic.comm.modulation import qamConst, pamConst, pskConst, apskConst
 
 def bitSource(nbits, mode="random", order=None, seed=None):
     """
-    Generate a random bit sequence of length nbits.
+    Generate a sequence of bits of length `nbits` either as a random bit sequence 
+    or a pseudo-random binary sequence (PRBS).
 
     Parameters
     ----------
     nbits : int
-        Number of bits in the sequence.
+        The number of bits in the sequence.
+    mode : {'random', 'prbs'}, optional
+        The mode of the bit generation. If 'random', a sequence of random bits is generated.
+        If 'prbs', a pseudo-random binary sequence (PRBS) is generated. Default is 'random'.
+    order : int, optional
+        The order of the PRBS generator. Only used if `mode` is 'prbs'. If not specified, a 
+        default order of 23 is used.
+    seed : int, optional
+        The seed for the random number generator. Only applicable when `mode` is 'random'.
+        If not provided, a random seed will be used.
 
     Returns
     -------
-    bits : ndarray
-        An array of random bits.
+    bits : np.array
+        An array of bits of length `nbits`, either randomly generated or from a PRBS.
     """
     if seed is not None:
         np.random.seed(seed)
@@ -64,7 +74,7 @@ def prbsGenerator(order=23):
 
     Returns
     -------
-    np.ndarray
+    bits : np.array
         A NumPy array of bits representing the PRBS sequence.
     """
     # Predefined taps for each PRBS order
@@ -133,7 +143,7 @@ def symbolSource(
 
     Returns
     -------
-    symbols : np.ndarray
+    symbols : np.array
         A NumPy array of symbols randomly drawn from the specified constellation with the given probability distribution.
 
     Notes
