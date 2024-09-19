@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="English" >
+<html class="writer-html5" lang="English">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>optic.comm.modulation.grayCode &mdash; OptiCommPy 0.6.0 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>optic.comm.modulation.grayCode &mdash; OptiCommPy alpha 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -17,10 +19,12 @@
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="optic.comm.modulation.grayMapping" href="optic.comm.modulation.grayMapping.html" />
+    <link rel="prev" title="Digital Communications Utilities" href="../comm.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -35,7 +39,7 @@
             OptiCommPy
           </a>
               <div class="version">
-                0.6
+                0.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -51,8 +55,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../test_WDM_transmission.html">Simulation of coherent WDM transmission</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package documentation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../comm.html">Digital Communications Utilities</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../comm.html">Digital Communications Utilities</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../comm.html#digital-modulation-utilities-optic-comm-modulation">Digital modulation utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.modulation</span></code>)</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.comm.modulation.grayCode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.grayMapping.html">optic.comm.modulation.grayMapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.pamConst.html">optic.comm.modulation.pamConst</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.qamConst.html">optic.comm.modulation.qamConst</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.pskConst.html">optic.comm.modulation.pskConst</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.apskConst.html">optic.comm.modulation.apskConst</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.minEuclid.html">optic.comm.modulation.minEuclid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.demap.html">optic.comm.modulation.demap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.modulateGray.html">optic.comm.modulation.modulateGray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.demodulateGray.html">optic.comm.modulation.demodulateGray</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../comm.html#metrics-for-signal-and-performance-characterization-optic-comm-metrics">Metrics for signal and performance characterization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.metrics</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../comm.html#sources-of-discrete-sequences-optic-comm-sources">Sources of discrete sequences (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.sources</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../comm.html#ofdm-utilities-optic-comm-ofdm">OFDM utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.ofdm</span></code>)</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../dsp.html">Digital Signal Processing (DSP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../models.html">Physical Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
@@ -73,9 +95,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../comm.html">Digital Communications Utilities</a></li>
       <li class="breadcrumb-item active">optic.comm.modulation.grayCode</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/optic.comm.modulation.GrayCode.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/optic.comm.modulation.grayCode.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -107,7 +130,10 @@
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../comm.html" class="btn btn-neutral float-left" title="Digital Communications Utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="optic.comm.modulation.grayMapping.html" class="btn btn-neutral float-right" title="optic.comm.modulation.grayMapping" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
