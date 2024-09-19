@@ -40,6 +40,10 @@ def bitSource(nbits, mode="random", order=None, seed=None):
     -------
     bits : np.array
         An array of bits of length `nbits`, either randomly generated or from a PRBS.
+    References
+    ----------
+    [1] Wikipedia, "Pseudorandom binary sequence," https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence
+    [2] J. G. Proakis and M. Salehi, "Digital Communications," 5th ed., McGraw-Hill, 2008.
     """
     if seed is not None:
         np.random.seed(seed)
@@ -76,6 +80,10 @@ def prbsGenerator(order=23):
     -------
     bits : np.array
         A NumPy array of bits representing the PRBS sequence.
+
+    References
+    ----------
+    [1] Wikipedia, "Pseudorandom binary sequence," https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence
     """
     # Predefined taps for each PRBS order
     taps = {
@@ -149,8 +157,12 @@ def symbolSource(
     Notes
     -----
     The function generates symbols from a specified modulation scheme and applies either a uniform or Maxwell-Boltzmann
-    distribution to the constellation points. The Maxwell-Boltzmann distribution is shaped by the `shapingFactor`. If no
-    custom probability distribution `px` is provided, it defaults to uniform or Maxwell-Boltzmann depending on the `dist` argument.
+    distribution to the constellation points. The Maxwell-Boltzmann distribution has its shape parametrized shaped by the 
+    `shapingFactor`. Instead of using the default distributions, a custom probability distribution `px` can be provided.
+
+    References
+    ----------
+    [1] Junho Cho and Peter J. Winzer, "Probabilistic Constellation Shaping for Optical Fiber Communications," J. Lightwave Technol. 37, 1590-1607 (2019)
     """
     if seed is not None:
         np.random.seed(seed)
