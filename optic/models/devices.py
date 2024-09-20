@@ -271,6 +271,8 @@ def photodiode(E, param=None):
 
         - param.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
 
+        - param.seed: seed for the random number generator [default: None]
+
     Returns
     -------
     ipd : np.array
@@ -296,10 +298,14 @@ def photodiode(E, param=None):
     N = getattr(param, "N", 8000)
     fType = getattr(param, "fType", "rect")
     ideal = getattr(param, "ideal", True)
+    seed = getattr(param,"seed", None)
 
     assert R > 0, "PD responsivity should be a positive scalar"
 
     ipd = R * E * np.conj(E)  # ideal photocurrent
+
+    if seed is not None:
+        np.random.seed(seed) # set seed for reproducibility
 
     if not (ideal):
         try:
@@ -346,15 +352,15 @@ def balancedPD(E1, E2, param=None):
     param : parameter object (struct), optional
         Parameters of the photodiodes.
 
-        - param.R: photodiode responsivity [A/W][default: 1 A/W]
-        - param.Tc: temperature [°C][default: 25°C]
-        - param.Id: dark current [A][default: 5e-9 A]
-        - param.RL: impedance load [Ω] [default: 50Ω]
-        - param.B bandwidth [Hz][default: 30e9 Hz]
-        - param.Fs: sampling frequency [Hz] [default: 60e9 Hz]
-        - param.fType: frequency response type [default: 'rect']
-        - param.N: number of the frequency resp. filter taps. [default: 8001]
-        - param.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
+        - param.R: photodiode responsivity [A/W][default: 1 A/W].
+        - param.Tc: temperature [°C][default: 25°C].
+        - param.Id: dark current [A][default: 5e-9 A].
+        - param.RL: impedance load [Ω] [default: 50Ω].
+        - param.B bandwidth [Hz][default: 30e9 Hz].
+        - param.Fs: sampling frequency [Hz] [default: 60e9 Hz].
+        - param.fType: frequency response type [default: 'rect'].
+        - param.N: number of the frequency resp. filter taps. [default: 8001].
+        - param.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True].
 
     Returns
     -------
@@ -464,7 +470,7 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     Elo : np.array
         Input LO optical field.
     θsig : scalar, optional
-        Input polarization rotation angle in rad. The default is 0.
+        Input polarization rotation angle in rad. [default: 0 rad].
     param : parameter object (struct), optional
         Parameters of the photodiodes.
 
@@ -501,9 +507,9 @@ def edfa(Ei, param=None):
     param : parameter object (struct), optional
         Parameters of the edfa.
 
-        - param.G : amplifier gain in dB. The default is 20.
-        - param.NF : EDFA noise figure in dB. The default is 4.5.
-        - param.Fc : central optical frequency. The default is 193.1e12.
+        - param.G : amplifier gain in dB. [default: 20 dB].
+        - param.NF : EDFA noise figure in dB. [default: 4.5 dB].
+        - param.Fc : central optical frequency in Hz. [default: 193.1e12 Hz].
         - param.Fs : sampling frequency in samples/second.
 
     Returns
@@ -525,6 +531,7 @@ def edfa(Ei, param=None):
     G = getattr(param, "G", 20)
     NF = getattr(param, "NF", 4.5)
     Fc = getattr(param, "Fc", 193.1e12)
+    seed = getattr(param, "seed", None)
 
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
@@ -541,7 +548,7 @@ def edfa(Ei, param=None):
     N_ase = (G_lin - 1) * nsp * const.h * Fc
     p_noise = N_ase * Fs
 
-    noise = gaussianComplexNoise(Ei.shape, p_noise)
+    noise = gaussianComplexNoise(Ei.shape, p_noise, seed)
 
     return Ei * np.sqrt(G_lin) + noise
 
@@ -555,11 +562,12 @@ def basicLaserModel(param=None):
     param : parameter object (struct), optional
         Parameters of the laser.
 
-        - param.P: laser power [W] [default: 10 dBm]
-        - param.lw: laser linewidth [Hz] [default: 1 kHz]
-        - param.RIN_var: variance of the RIN noise [default: 1e-20]
-        - param.Fs: sampling rate [samples/s]
-        - param.Ns: number of signal samples [default: 1e3]
+        - param.P: laser power [W] [default: 10 dBm].
+        - param.lw: laser linewidth [Hz] [default: 1 kHz].
+        - param.RIN_var: variance of the RIN noise [default: 1e-20].
+        - param.Fs: sampling rate [samples/s].
+        - param.Ns: number of signal samples [default: 1e3].
+        - param.seed: seed for the random number generator [default: None].
 
     Returns
     -------
@@ -580,14 +588,15 @@ def basicLaserModel(param=None):
     lw = getattr(param, "lw", 1e3)  # Linewidth in Hz
     RIN_var = getattr(param, "RIN_var", 1e-20)  # RIN variance
     Ns = getattr(param, "Ns", 1000)  # Number of samples of the signal
+    seed = getattr(param, "seed", None)  # Seed for the random number generator
 
     t = np.arange(0, Ns) * 1 / Fs
 
     # Simulate Maxwellian random walk phase noise
-    pn = phaseNoise(lw, Ns, 1 / Fs)
+    pn = phaseNoise(lw, Ns, 1 / Fs, seed)
 
     # Simulate relative intensity noise  (RIN)[todo:check correct model]
-    deltaP = gaussianComplexNoise(pn.shape, RIN_var)
+    deltaP = gaussianComplexNoise(pn.shape, RIN_var, seed)
 
     # Return optical signal
     return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * pn) 
@@ -603,14 +612,14 @@ def adc(Ei, param):
         Input signal.
     param : core.parameter
         Resampling parameters:
-            - param.Fs_in  : sampling frequency of the input signal [default: 1 sample/s]
-            - param.Fs_out : sampling frequency of the output signal [default: 1 sample/s]
-            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [default: 0 s]
-            - param.nBits : number of bits used for quantization [default: 8 bits]
-            - param.Vmax : maximum value for the ADC's full-scale range [default: 1V]
-            - param.Vmin : minimum value for the ADC's full-scale range [default: -1V]
-            - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
-            - param.N : number of taps of the anti-aliasing filters [default: 201]
+            - param.Fs_in  : sampling frequency of the input signal [default: 1 sample/s].
+            - param.Fs_out : sampling frequency of the output signal [default: 1 sample/s].
+            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [default: 0 s].
+            - param.nBits : number of bits used for quantization [default: 8 bits].
+            - param.Vmax : maximum value for the ADC's full-scale range [default: 1V].
+            - param.Vmin : minimum value for the ADC's full-scale range [default: -1V].
+            - param.AAF : flag indicating whether to use anti-aliasing filters [default: True].
+            - param.N : number of taps of the anti-aliasing filters [default: 201].
 
     Returns
     -------

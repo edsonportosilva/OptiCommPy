@@ -26,7 +26,7 @@ from optic.utils import parameters
 from optic.dsp.core import signal_power
 
 
-def gaussianComplexNoise(shapeOut, σ2=1.0):
+def gaussianComplexNoise(shapeOut, σ2=1.0, seed=None):
     """
     Generate complex circular Gaussian noise.
 
@@ -36,12 +36,17 @@ def gaussianComplexNoise(shapeOut, σ2=1.0):
         Shape of np.array to be generated.
     σ2 : float, optional
         Variance of the noise (default is 1).
+    seed : int, optional
+        Seed for the random number generator (default is None).
 
     Returns
     -------
     noise : np.array
         Generated complex circular Gaussian noise.
     """
+    if seed is not None:
+        cp.random.seed(seed)
+
     return normal(0, np.sqrt(σ2 / 2), shapeOut) + 1j * normal(
         0, np.sqrt(σ2 / 2), shapeOut
     )
@@ -62,6 +67,7 @@ def edfa(Ei, param):
         - param.NF : EDFA noise figure in dB. The default is 4.5.
         - param.Fc : central optical frequency. The default is 193.1e12.
         - param.Fs : sampling frequency in samples/second.
+        - param.seed : seed for the random number generator. The default is None.
 
     Returns
     -------
@@ -83,6 +89,7 @@ def edfa(Ei, param):
     NF = getattr(param, "NF", 4.5)
     Fc = getattr(param, "Fc", 193.1e12)
     prec = getattr(param, "prec", cp.complex128)
+    seed = getattr(param, "seed", None)
 
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
@@ -99,7 +106,7 @@ def edfa(Ei, param):
     N_ase = (G_lin - 1) * nsp * const.h * Fc
     p_noise = N_ase * Fs
 
-    noise = gaussianComplexNoise(Ei.shape, p_noise)
+    noise = gaussianComplexNoise(Ei.shape, p_noise, seed)
     noise = cp.array(noise).astype(prec)
 
     return Ei * np.sqrt(G_lin) + noise
@@ -138,6 +145,8 @@ def ssfm(Ei, param):
 
         - param.NF: edfa noise figure [dB] [default: 4.5 dB]
 
+        - param.seed: seed for the random number generator [default: None].
+
         - param.prgsBar: display progress bar? bolean variable [default:True]
 
         - param.returnParameters: bool, return channel parameters [default: False]
@@ -173,6 +182,7 @@ def ssfm(Ei, param):
     param.prec = getattr(param, "prec", cp.complex128)
     param.amp = getattr(param, "amp", "edfa")
     param.NF = getattr(param, "NF", 4.5)
+    param.seed = getattr(param, "seed", None)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
     param.returnParameters = getattr(param, "returnParameters", False)
@@ -187,6 +197,7 @@ def ssfm(Ei, param):
     NF = param.NF
     Fc = param.Fc
     prec = param.prec
+    seed = param.seed
     prgsBar = param.prgsBar
     saveSpanN = param.saveSpanN
     returnParameters = param.returnParameters
@@ -208,6 +219,7 @@ def ssfm(Ei, param):
     paramAmp.Fc = Fc
     paramAmp.Fs = Fs
     paramAmp.prec = prec
+    paramAmp.seed = seed
 
     c_kms = cp.asarray(c_kms, dtype=prec)  # speed of light (vacuum) in km/s
     λ = cp.asarray(λ, dtype=prec)
@@ -316,6 +328,8 @@ def manakovSSF(Ei, param):
 
         - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
 
+        - param.seed: seed for the random number generator [default: None]
+
         - param.prgsBar: display progress bar? bolean variable [default:True]
 
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
@@ -358,6 +372,7 @@ def manakovSSF(Ei, param):
     param.tol = getattr(param, "tol", 1e-5)
     param.nlprMethod = getattr(param, "nlprMethod", True)
     param.maxNlinPhaseRot = getattr(param, "maxNlinPhaseRot", 2e-2)
+    param.seed = getattr(param, "seed", None)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
     param.returnParameters = getattr(param, "returnParameters", False)
@@ -378,6 +393,7 @@ def manakovSSF(Ei, param):
     saveSpanN = param.saveSpanN
     nlprMethod = param.nlprMethod
     maxNlinPhaseRot = param.maxNlinPhaseRot
+    seed = param.seed
     returnParameters = param.returnParameters
 
     Nspans = int(np.floor(Ltotal / Lspan))
@@ -396,6 +412,7 @@ def manakovSSF(Ei, param):
     paramAmp.Fc = Fc
     paramAmp.Fs = Fs
     paramAmp.prec = prec
+    paramAmp.seed = seed
 
     c_kms = cp.asarray(c_kms, dtype=prec)  # speed of light (vacuum) in km/s
     λ = cp.asarray(λ, dtype=prec)

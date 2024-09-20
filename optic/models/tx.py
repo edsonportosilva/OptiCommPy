@@ -45,6 +45,12 @@ def simpleWDMTx(param):
 
         - param.SpS: samples per symbol [default: 16].
 
+        - param.probabilityDistribution: probability distribution of the symbols [default: 'uniform'].
+
+        - param.shapingFactor: shaping factor of the symbols [default: 0].
+
+        - param.seed: seed for the random number generator [default: None].
+
         - param.nBits: total number of bits per carrier [default: 60000].
 
         - param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc'].
@@ -94,7 +100,7 @@ def simpleWDMTx(param):
     param.wdmGridSpacing = getattr(param, "wdmGridSpacing", 50e9)
     param.nPolModes = getattr(param, "nPolModes", 1)
     param.prgsBar = getattr(param, "prgsBar", True)
-
+    
     # transmitter parameters
     Ts = 1 / param.Rs  # symbol period [s]
     Fs = 1 / (Ts / param.SpS)  # sampling frequency [samples/s]
@@ -176,7 +182,7 @@ def simpleWDMTx(param):
 
             # optical modulation
             if indMode == 0:  # generate LO field with phase noise
-                ϕ_pn_lo = phaseNoise(param.laserLinewidth, len(sigTx), 1 / Fs)
+                ϕ_pn_lo = phaseNoise(param.laserLinewidth, len(sigTx), 1 / Fs, seed=param.seed)
                 sigLO = np.exp(1j * ϕ_pn_lo)
 
             sigTxCh = iqm(sigLO, 0.5 * sigTx)

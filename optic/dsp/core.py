@@ -615,7 +615,7 @@ def pnorm(x):
 
 
 @njit
-def gaussianComplexNoise(shapeOut, σ2=1.0):
+def gaussianComplexNoise(shapeOut, σ2=1.0, seed=None):
     """
     Generate complex circular Gaussian noise.
 
@@ -625,19 +625,24 @@ def gaussianComplexNoise(shapeOut, σ2=1.0):
         Shape of np.array to be generated.
     σ2 : float, optional
         Variance of the noise (default is 1).
+    seed : int, optional
+        Seed for the random number generator.
 
     Returns
     -------
     noise : np.array
         Generated complex circular Gaussian noise.
     """
+    if seed is not None:
+        np.random.seed(seed)
+
     return np.random.normal(0, np.sqrt(σ2 / 2), shapeOut) + 1j * np.random.normal(
         0, np.sqrt(σ2 / 2), shapeOut
     )
 
 
 @njit
-def gaussianNoise(shapeOut, σ2=1.0):
+def gaussianNoise(shapeOut, σ2=1.0, seed=None):
     """
     Generate Gaussian noise.
 
@@ -647,17 +652,22 @@ def gaussianNoise(shapeOut, σ2=1.0):
         Shape of np.array to be generated.
     σ2 : float, optional
         Variance of the noise (default is 1).
+    seed : int, optional
+        Seed for the random number generator.
 
     Returns
     -------
     noise : np.array
         Generated Gaussian noise.
     """
+    if seed is not None:
+        np.random.seed(seed)
+
     return np.random.normal(0, np.sqrt(σ2), shapeOut)
 
 
 @njit
-def phaseNoise(lw, Nsamples, Ts):
+def phaseNoise(lw, Nsamples, Ts, seed=None):
     """
     Generate realization of a random-walk phase-noise process.
 
@@ -669,6 +679,8 @@ def phaseNoise(lw, Nsamples, Ts):
         number of samples to be draw.
     Ts : scalar
         sampling period.
+    seed : int, optional
+        Seed for the random number generator.
 
     Returns
     -------
@@ -680,6 +692,9 @@ def phaseNoise(lw, Nsamples, Ts):
     [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
+    if seed is not None:
+        np.random.seed(seed)
+        
     σ2 = 2 * np.pi * lw * Ts
     phi = np.zeros(Nsamples)
 
