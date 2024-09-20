@@ -43,7 +43,9 @@ def bitSource(nbits, mode="random", order=None, seed=None):
     References
     ----------
     [1] Wikipedia, "Pseudorandom binary sequence," https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence
+
     [2] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
+    
     """
     if seed is not None:
         np.random.seed(seed)
