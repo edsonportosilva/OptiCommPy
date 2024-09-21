@@ -124,8 +124,8 @@ def symbolSource(param):
 
     Parameters
     ----------
-    param : object
-        An object containing the following attributes:
+    param : parameter object
+        Parameter object containing the following attributes:
         - nSymbols : int, optional. The number of symbols to generate. [default: 1000]
 
         - M : int, optional. The modulation order, defining the size of the constellation. [default: 4]
