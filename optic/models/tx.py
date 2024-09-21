@@ -109,9 +109,22 @@ def simpleWDMTx(param):
 
     # get constellation pmf
     constSymb = grayMapping(param.M, param.constType)
-    px = np.exp(-param.shapingFactor * np.abs(constSymb) ** 2)
-    px = px / np.sum(px)
+    if param.probabilityDistribution == "uniform":
+        px = np.ones(param.M) / param.M
+    elif param.probabilityDistribution == "maxwell-boltzmann":
+        px = np.exp(-param.shapingFactor * np.abs(constSymb) ** 2)
+        px = px / np.sum(px)
+    else:
+        raise ValueError("Invalid probability distribution.")
     param.pmf = px
+
+    # Symbol source parameters
+    paramSymb = parameters()
+    paramSymb.nSymbols = param.nBits // int(np.log2(param.M))
+    paramSymb.M = param.M
+    paramSymb.constType = param.constType
+    paramSymb.dist = param.probabilityDistribution
+    paramSymb.shapingFactor = param.shapingFactor
 
     # central frequencies of the WDM channels
     freqGrid = (
@@ -160,7 +173,6 @@ def simpleWDMTx(param):
     else:
         seed = None
 
-    seedCounter = 0
     for indCh in tqdm(range(param.nChannels), disable=not (param.prgsBar)):
         logg.info(
             "channel %d\t fc : %3.4f THz" % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
@@ -174,19 +186,11 @@ def simpleWDMTx(param):
             )
 
             # Generate sequence of constellation symbols
-            symbTx = symbolSource(
-                nSymbols,
-                param.M,
-                param.constType,
-                param.probabilityDistribution,
-                param.shapingFactor,
-                seed=seed,
-            )
+            paramSymb.seed = seed
+            symbTx = symbolSource(paramSymb)
 
             if param.seed is not None:
-                seed += 1
-
-            seedCounter += 1  # increment seed for next pol/channel
+                seed += 1  # increment seed for next pol/channel
 
             symbTxWDM[:, indMode, indCh] = symbTx
 
@@ -286,6 +290,14 @@ def pamTransmitter(param):
     param.power = getattr(param, "power", -3)
     param.returnParam = getattr(param, "returnParam", False)
 
+    # Symbol source parameters
+    paramSymb = parameters()
+    paramSymb.nSymbols = param.nBits // int(np.log2(param.M))
+    paramSymb.M = param.M
+    paramSymb.constType = "pam"
+    paramSymb.dist = param.probabilityDistribution
+    paramSymb.shapingFactor = param.shapingFactor
+
     # MZM parameters
     paramMZM = parameters()
     paramMZM.Vpi = param.mzmVpi
@@ -307,14 +319,8 @@ def pamTransmitter(param):
             seed = None
 
         # generate pseudo-random bit sequence
-        symbTx_ = symbolSource(
-            param.nBits // int(np.log2(param.M)),
-            param.M,
-            "pam",
-            param.probabilityDistribution,
-            param.shapingFactor,
-            seed=seed,
-        )
+        paramSymb.seed = seed
+        symbTx_ = symbolSource(paramSymb)
 
         # upsampling
         symbolsUp = upsample(symbTx_, param.SpS)
