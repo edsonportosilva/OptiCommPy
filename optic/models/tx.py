@@ -231,7 +231,7 @@ def simpleWDMTx(param):
 
 def pamTransmitter(param):
     """
-    Generate a PAM signal.
+    Generate a optical PAM signal.
 
     Parameters
     ----------
