@@ -19,7 +19,7 @@ from optic.comm.modulation import qamConst, pamConst, pskConst, apskConst
 
 def bitSource(nbits, mode="random", order=None, seed=None):
     """
-    Generate a sequence of bits of length `nbits` either as a random bit sequence 
+    Generate a sequence of bits of length `nbits` either as a random bit sequence
     or a pseudo-random binary sequence (PRBS).
 
     Parameters
@@ -30,7 +30,7 @@ def bitSource(nbits, mode="random", order=None, seed=None):
         The mode of the bit generation. If 'random', a sequence of random bits is generated.
         If 'prbs', a pseudo-random binary sequence (PRBS) is generated. Default is 'random'.
     order : int, optional
-        The order of the PRBS generator. Only used if `mode` is 'prbs'. If not specified, a 
+        The order of the PRBS generator. Only used if `mode` is 'prbs'. If not specified, a
         default order of 23 is used.
     seed : int, optional
         The seed for the random number generator. Only applicable when `mode` is 'random'.
@@ -45,7 +45,7 @@ def bitSource(nbits, mode="random", order=None, seed=None):
     [1] Wikipedia, "Pseudorandom binary sequence," https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence
 
     [2] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
-    
+
     """
     if seed is not None:
         np.random.seed(seed)
@@ -118,54 +118,56 @@ def prbsGenerator(order=23):
     return bits
 
 
-def symbolSource(
-    nSymbols,
-    M=4,
-    constType="qam",
-    dist="uniform",
-    shapingFactor=0.0,
-    px=None,
-    seed=None,
-):
+def symbolSource(param):
     """
-    Generate a random symbol sequence of length nSymbols based on the specified modulation scheme and order.
+    Generate a random symbol sequence based on the specified modulation scheme, order, and pmf.
 
     Parameters
     ----------
-    nSymbols : int
-        Number of symbols to generate.
-    M : int
-        Modulation order. This defines the size of the constellation. Default is 4.
-    constType : str, optional
-        The type of modulation scheme. Supported types are 'qam', 'pam', 'psk', and
-        'apsk'. Default is 'qam'.
-    dist : str, optional
-        The probability distribution to use for generating symbols. Can be 'uniform'
-        or 'Maxwell-Boltzmann'. Default is 'uniform'.
-    shapingFactor : float, optional
-        The shaping factor used when the distribution is 'Maxwell-Boltzmann'. This
-        controls the Gaussian shaping of the constellation points. Default is 0.0.
-    px : array-like, optional
-        Probability distribution of the constellation points. If `None`, the distribution
-        is determined by `dist`. Default is `None`.
-    seed : int, optional
-        Seed for the random number generator to ensure reproducibility. Default is `None`.
+    param : object
+        An object containing the following attributes:
+        - nSymbols : int, optional. The number of symbols to generate. [default: 1000]
+
+        - M : int, optional. The modulation order, defining the size of the constellation. [default: 4]
+
+        - constType : str, optional. The type of modulation scheme. Supported types are 'qam', 'pam', 'psk', and 'apsk'. [default: 'qam'].
+
+        - dist : str, optional. The probability distribution for generating symbols. Options are 'uniform' or 'maxwell-boltzmann' [default: 'uniform'].
+
+        - shapingFactor : float, optional. The shaping factor applied when `dist` is 'maxwell-boltzmann'. Controls the shaping of the constellation points. [default: 0.0].
+
+        - px : array-like, optional. Custom probability distribution for the constellation points. If `None`, the distribution is determined by `dist`. [default: None].
+
+        - seed : int, optional. Seed for the random number generator to ensure reproducibility [default: None].
 
     Returns
     -------
     symbols : np.array
-        A NumPy array of symbols randomly drawn from the specified constellation with the given probability distribution.
+        A NumPy array containing the generated symbols from the specified constellation, based on the given probability distribution.
 
     Notes
     -----
-    The function generates symbols from a specified modulation scheme and applies either a uniform or Maxwell-Boltzmann
-    distribution to the constellation points. The Maxwell-Boltzmann distribution has its shape parametrized shaped by the 
-    `shapingFactor`. Instead of using the default distributions, a custom probability distribution `px` can be provided.
+    The function generates symbols using a specified modulation scheme following a uniform or Maxwell-Boltzmann distribution to the constellation
+    points. The Maxwell-Boltzmann distribution is shaped by the `shapingFactor`. If a custom probability distribution `px` is provided, it will
+    override the default distribution.
+
+    If the `constType` is set to 'qam', 'pam', 'psk', or 'apsk', the corresponding constellation is used. Custom modulation schemes are not supported.
+
+    The `seed` parameter ensures the same sequence of symbols is generated across different runs when set.
 
     References
     ----------
-    [1] Junho Cho and Peter J. Winzer, "Probabilistic Constellation Shaping for Optical Fiber Communications," J. Lightwave Technol. 37, 1590-1607 (2019)
+    [1] Junho Cho and Peter J. Winzer, "Probabilistic Constellation Shaping for Optical Fiber Communications," J. Lightwave Technol. 37, 1590-1607 (2019).
     """
+    # Check and set default values for input parameters
+    nSymbols = getattr(param, "nSymbols", 1000)
+    M = getattr(param, "M", 4)
+    constType = getattr(param, "constType", "qam")
+    dist = getattr(param, "dist", "uniform")
+    shapingFactor = getattr(param, "shapingFactor", 0.0)
+    px = getattr(param, "px", None)
+    seed = getattr(param, "seed", None)
+
     if seed is not None:
         np.random.seed(seed)
 
