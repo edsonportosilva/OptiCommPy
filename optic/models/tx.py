@@ -60,6 +60,8 @@ def simpleWDMTx(param):
 
         - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
 
+        - param.mzmScale: MZM modulation scale factor Vrf/Vpi [default: 0.25].
+
         - param.powerPerChannel: launched power per WDM channel [dBm][default:-3 dBm].
 
         - param.nChannels: number of WDM channels [default: 5].
@@ -94,6 +96,7 @@ def simpleWDMTx(param):
     param.pulse = getattr(param, "pulse", "rrc")
     param.nPulseTaps = getattr(param, "nPulseTaps", 4096)
     param.pulseRollOff = getattr(param, "pulseRollOff", 0.01)
+    param.mzmScale = getattr(param, "mzmScale", 0.5)
     param.powerPerChannel = getattr(param, "powerPerChannel", -3)
     param.nChannels = getattr(param, "nChannels", 5)
     param.Fc = getattr(param, "Fc", 193.1e12)
@@ -199,6 +202,7 @@ def simpleWDMTx(param):
 
             # pulse shaping
             sigTx = firFilter(pulse, symbolsUp)
+            sigTx = sigTx / np.max(np.abs(sigTx)) # normalize signal to amplitude 1
 
             # optical modulation
             if indMode == 0:  # generate LO field with phase noise
@@ -207,7 +211,7 @@ def simpleWDMTx(param):
                 )
                 sigLO = np.exp(1j * ϕ_pn_lo)
 
-            sigTxCh = iqm(sigLO, 0.5 * sigTx)
+            sigTxCh = iqm(sigLO, param.mzmScale * sigTx)
             sigTxCh = np.sqrt(Pch[indCh] / param.nPolModes) * pnorm(sigTxCh)
 
             sigTxWDM[:, indMode] += sigTxCh * np.exp(
