@@ -40,7 +40,7 @@ def cpr(Ei, param=None, symbTx=None):
     param : core.param object, optional
         configuration parameters. The default is [].
 
-        - param.alg: CPR algorithm to be used ['bps', 'ddpll', or 'viterbi']
+        - param.alg: CPR algorithm to be used ['bps', 'bpsGPU', 'ddpll', or 'viterbi']
 
         BPS params:
 
@@ -126,8 +126,12 @@ def cpr(Ei, param=None, symbTx=None):
         logg.info(f"Running DDPLL carrier phase recovery...")
         θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
-        logg.info(f"Running {'GPU-based ' if availableGPU else ''}BPS carrier phase recovery...")
-        θ = bpsGPU(Ei, N // 2, constSymb, B) if availableGPU else bps(Ei, N // 2, constSymb, B)
+        logg.info(f"Running BPS carrier phase recovery...")
+        θ = bps(Ei, N // 2, constSymb, B)
+    elif alg == "bpsGPU":
+        logg.info(f"Running GPU-based BPS carrier phase recovery...")
+        θ = bpsGPU(Ei, N // 2, constSymb, B) if availableGPU else \
+            (logg.warning("GPU unavailable, switching to CPU processing...") or bps(Ei, N // 2, constSymb, B))
     elif alg == "viterbi":
         logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")
         θ = viterbi(Ei, N)
