@@ -1,11 +1,13 @@
 """
-GPU-based carrier recovery utilities.
+==========================================================================================
+Functions adapted to run with GPU (CuPy) processing (:mod:`optic.dsp.carrierRecoveryGPU`)
+==========================================================================================
 
 .. autosummary::
    :toctree: generated/
    :nosignatures:
 
-   bps -- Blind phase search (BPS) carrier phase recovery algorithm
+   bpsGPU -- Blind phase search (BPS) carrier phase recovery algorithm
 """
 import cupy as cp
 from cupyx.scipy.signal import oaconvolve
