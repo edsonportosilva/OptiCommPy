@@ -128,13 +128,13 @@ def cpr(Ei, param=None, symbTx=None):
     elif alg == "bps":
         logg.info(f"Running BPS carrier phase recovery...")
         θ = bps(Ei, N // 2, constSymb, B)
-elif alg == "bpsGPU":
-    logg.info("Running GPU-based BPS carrier phase recovery...")
-    if availableGPU:
-        θ = bpsGPU(Ei, N // 2, constSymb, B)
-    else:
-        logg.warning("GPU unavailable, switching to CPU processing...")
-        θ = bps(Ei, N // 2, constSymb, B)
+    elif alg == "bpsGPU":
+        logg.info("Running GPU-based BPS carrier phase recovery...")
+        if availableGPU:
+           θ = bpsGPU(Ei, N // 2, constSymb, B)
+        else:
+           logg.warning("GPU unavailable, switching to CPU processing...")
+           θ = bps(Ei, N // 2, constSymb, B)
     elif alg == "viterbi":
         logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")
         θ = viterbi(Ei, N)
