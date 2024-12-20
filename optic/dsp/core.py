@@ -615,6 +615,25 @@ def pnorm(x):
 
 
 @njit
+def anorm(x):
+    """
+    Normalize the amplitude of each componennt of x.
+
+    Parameters
+    ----------
+    x : np.array
+        Signal.
+
+    Returns
+    -------
+    np.array
+        Signal x with each component normalized in amplitude.
+
+    """
+    return x / np.max(np.abs(x))
+
+
+@njit
 def gaussianComplexNoise(shapeOut, σ2=1.0, seed=None):
     """
     Generate complex circular Gaussian noise.
@@ -694,7 +713,7 @@ def phaseNoise(lw, Nsamples, Ts, seed=None):
     """
     if seed is not None:
         np.random.seed(seed)
-        
+
     σ2 = 2 * np.pi * lw * Ts
     phi = np.zeros(Nsamples)
 
@@ -747,7 +766,7 @@ def movingAverage(x, N):
 def delaySignal(sig, delay, fs):
     """
     Apply a time delay to a signal sampled at fs samples per second using FFT/IFFT algorithms.
-    
+
     Parameters
     ----------
     sig : array_like
@@ -756,32 +775,32 @@ def delaySignal(sig, delay, fs):
         The time delay to apply to the signal (in seconds).
     fs : float
         Sampling frequency of the signal (in samples per second).
-    
+
     Returns
     -------
     array_like
         The delayed signal.
     """
     # Calculate the length of the signal
-    N = len(sig)    
+    N = len(sig)
 
     # Calculate the length of zero padding needed
     pad_length = int(np.ceil(delay * fs))
-    
+
     # Zero-pad the signal to avoid circular shift
-    sig_padded = np.pad(sig, (0, pad_length), mode='constant')
-       
+    sig_padded = np.pad(sig, (0, pad_length), mode="constant")
+
     # Compute the frequency vector
-    freq = fftshift(fftfreq(len(sig_padded), d=1/fs))
-    
+    freq = fftshift(fftfreq(len(sig_padded), d=1 / fs))
+
     # Compute the FFT of the signal
     sig_fft = fftshift(fft(sig_padded))
-    
+
     # Apply the phase shift corresponding to the time delay
     phase_shift = np.exp(-1j * 2 * np.pi * freq * delay)
     delayed_sig_fft = fftshift(sig_fft * phase_shift)
-    
+
     # Compute the IFFT of the delayed signal
     delayed_sig = ifft(delayed_sig_fft)[:N]
-    
+
     return delayed_sig
