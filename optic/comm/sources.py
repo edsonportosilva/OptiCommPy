@@ -199,3 +199,33 @@ def symbolSource(param):
     symbols = np.random.choice(constellation.flatten(), nSymbols, p=px)
 
     return symbols
+
+
+def cazacSequence(N, M=1):
+    """
+    Generate a CAZAC (Zadoff-Chu) sequence of length `N`.
+
+    Parameters
+    ----------
+    N : int
+        The length of the CAZAC sequence.
+    M : int, optional
+        The root of the CAZAC sequence. Default is 1.
+
+    Returns
+    -------
+    sequence : np.array
+        A NumPy array containing the generated CAZAC sequence.
+
+    References
+    ----------
+    [1] D. Chu, "Polyphase codes with good periodic correlation properties (Corresp.)," IEEE Transactions on Information Theory, 18 (4), pp. 531-532, 1972.
+    """
+    if np.gcd(M, N) != 1:
+        logg.error("The root (M) must be coprime with the sequence length (N).")
+
+    n = np.arange(N)
+
+    sequence = np.exp(-1j * np.pi * M * n * (n + 1) / N)
+
+    return sequence
