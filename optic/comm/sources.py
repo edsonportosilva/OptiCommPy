@@ -10,6 +10,7 @@ Sources of discrete sequences (:mod:`optic.comm.sources`)
    prbsGenerator      -- Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.
    symbolSource       -- Generate a random symbol sequence from a given modulation scheme.  
 """
+
 import logging as logg
 
 import numpy as np
@@ -17,29 +18,28 @@ from numba import njit
 from optic.comm.modulation import qamConst, pamConst, pskConst, apskConst
 
 
-def bitSource(nbits, mode="random", order=None, seed=None):
+def bitSource(param):
     """
     Generate a sequence of bits of length `nbits` either as a random bit sequence
     or a pseudo-random binary sequence (PRBS).
 
     Parameters
     ----------
-    nbits : int
-        The number of bits in the sequence.
-    mode : {'random', 'prbs'}, optional
-        The mode of the bit generation. If 'random', a sequence of random bits is generated.
-        If 'prbs', a pseudo-random binary sequence (PRBS) is generated. Default is 'random'.
-    order : int, optional
-        The order of the PRBS generator. Only used if `mode` is 'prbs'. If not specified, a
-        default order of 23 is used.
-    seed : int, optional
-        The seed for the random number generator. Only applicable when `mode` is 'random'.
-        If not provided, a random seed will be used.
+    param : parameter object
+        Parameter object containing the following attributes:
+        - nbits : int, optional. The number of bits in the sequence. [default: 1000]
+
+        - mode : str, optional. The mode of the bit generation. If 'random', a sequence of random bits is generated. If 'prbs', a pseudo-random binary sequence (PRBS) is generated. [default: 'random']
+
+        - order : int, optional. The order of the PRBS generator. Only used if `mode` is 'prbs'. If not specified, a default order of 23 is used.
+
+        - seed : int, optional. The seed for the random number generator. Only applicable when `mode` is 'random'. If not provided, a random seed will be used.
 
     Returns
     -------
     bits : np.array
         An array of bits of length `nbits`, either randomly generated or from a PRBS.
+
     References
     ----------
     [1] Wikipedia, "Pseudorandom binary sequence," https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence
@@ -47,6 +47,12 @@ def bitSource(nbits, mode="random", order=None, seed=None):
     [2] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
     """
+    # Check and set default values for input parameters
+    nbits = getattr(param, "nbits", 1000)
+    mode = getattr(param, "mode", "random")
+    order = getattr(param, "order", None)
+    seed = getattr(param, "seed", None)
+
     if seed is not None:
         np.random.seed(seed)
     if mode == "random":
