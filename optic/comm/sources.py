@@ -6,7 +6,7 @@ Sources of discrete sequences (:mod:`optic.comm.sources`)
 .. autosummary::
    :toctree: generated/
 
-   bitSource          -- Generate a random bit sequence of length nbits.
+   bitSource          -- Generate a random bit sequence of length nBits.
    prbsGenerator      -- Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.
    symbolSource       -- Generate a random symbol sequence from a given modulation scheme.  
 """
@@ -20,14 +20,14 @@ from optic.comm.modulation import qamConst, pamConst, pskConst, apskConst
 
 def bitSource(param):
     """
-    Generate a sequence of bits of length `nbits` either as a random bit sequence
+    Generate a sequence of bits of length `nBits` either as a random bit sequence
     or a pseudo-random binary sequence (PRBS).
 
     Parameters
     ----------
     param : parameter object
         Parameter object containing the following attributes:
-        - nbits : int, optional. The number of bits in the sequence. [default: 1000]
+        - nBits : int, optional. The number of bits in the sequence. [default: 1000]
 
         - mode : str, optional. The mode of the bit generation. If 'random', a sequence of random bits is generated. If 'prbs', a pseudo-random binary sequence (PRBS) is generated. [default: 'random']
 
@@ -38,7 +38,7 @@ def bitSource(param):
     Returns
     -------
     bits : np.array
-        An array of bits of length `nbits`, either randomly generated or from a PRBS.
+        An array of bits of length `nBits`, either randomly generated or from a PRBS.
 
     References
     ----------
@@ -48,7 +48,7 @@ def bitSource(param):
 
     """
     # Check and set default values for input parameters
-    nbits = getattr(param, "nbits", 1000)
+    nBits = getattr(param, "nBits", 1000)
     mode = getattr(param, "mode", "random")
     order = getattr(param, "order", None)
     seed = getattr(param, "seed", None)
@@ -58,7 +58,7 @@ def bitSource(param):
     if mode == "random":
         if seed is not None:
             np.random.seed(seed)  # Seed the random number generator
-        bits = np.random.randint(0, 2, nbits)
+        bits = np.random.randint(0, 2, nBits)
     elif mode == "prbs":
         if order is None:
             logg.warn("PRBS order not specified. Using the default order 23.")
@@ -66,10 +66,10 @@ def bitSource(param):
         else:
             prbs = prbsGenerator(order)
 
-        if len(prbs) < nbits:
-            prbs = np.tile(prbs, nbits // len(prbs) + 1)
+        if len(prbs) < nBits:
+            prbs = np.tile(prbs, nBits // len(prbs) + 1)
 
-        bits = prbs[:nbits]
+        bits = prbs[:nBits]
 
     return bits
 
