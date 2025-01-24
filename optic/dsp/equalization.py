@@ -21,6 +21,11 @@ from tqdm.notebook import tqdm
 from optic.dsp.core import pnorm, blockwiseFFTConv
 from optic.comm.modulation import grayMapping
 
+# try:
+#     from optic.dsp.coreGPU import blockwiseFFTConv
+# except ImportError:
+#     from optic.dsp.core import blockwiseFFTConv
+
 
 def edc(Ei, param):
     """
