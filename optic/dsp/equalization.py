@@ -19,7 +19,7 @@ import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-from optic.dsp.core import pnorm, blockwiseFFTConvolution
+from optic.dsp.core import pnorm, blockwiseFFTConv
 from optic.models.channels import linearFiberChannel
 from optic.comm.modulation import grayMapping
 
@@ -80,23 +80,27 @@ def edc(Ei, param):
     λ = c_kms / Fc    
     β2 = -(D * λ**2) / (2 * np.pi * c_kms)
 
+    # If number of filter coefficients is not provided, calculate it
+    # based on the dispersion parameter, the fiber length and the symbol rate
     if NfilterCoeffs is None:
         NfilterCoeffs = int(2*np.ceil(6.67*np.abs(β2)*L*Rs**2*(Fs/Rs)))
 
+    # If FFT size is not provided, calculate it based on the number of filter coefficients
     if Nfft is None:
        Nfft = 2**int(np.ceil(np.log2(NfilterCoeffs)))
-        
-    ω = 2 * np.pi * Fs * fftfreq(NfilterCoeffs)
+    
+    ω = 2 * np.pi * Fs * fftfreq(NfilterCoeffs) # angular frequency vector
       
-    H =  np.exp(-1j * (β2 / 2) * (ω**2) * L)
+    H =  np.exp(-1j * (β2 / 2) * (ω**2) * L) # frequency response of the CD filter
    
     logg.info(f"Running CD compensation...")
     logg.info(f"CD filter length: {NfilterCoeffs} taps, FFT size: {Nfft}")
 
     Eo = np.zeros(Ei.shape, dtype=Ei.dtype)
 
+    # Apply CD compensation to each mode
     for indMode in range(nModes):
-        Eo[:,indMode] = blockwiseFFTConvolution(Ei[:,indMode], H, NFFT=Nfft, freqDomainFilter=True)
+        Eo[:,indMode] = blockwiseFFTConv(Ei[:,indMode], H, NFFT=Nfft, freqDomainFilter=True)
    
     return Eo
 
