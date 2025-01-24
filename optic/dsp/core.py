@@ -25,6 +25,8 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    gaussianNoise          -- Generate Gaussian noise
    phaseNoise             -- Generate realization of a random-walk phase-noise process
    movingAverage          -- Calculate the sliding window moving average
+   delaySignal            -- Apply a time delay to a signal
+   blockwiseFFTConv       -- Implements convolution using the overlap-and-save FFT method
 """
 
 """Digital signal processing utilities."""
@@ -772,7 +774,7 @@ def delaySignal(sig, delay, fs):
     return delayedSig
 
 
-def blockwiseFFTConvolution(x, h, NFFT=None, freqDomainFilter=False):
+def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
     """
     Implements convolution using the overlap-and-save FFT method.
 
