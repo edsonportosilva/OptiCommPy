@@ -10,7 +10,6 @@ DSP algorithms for equalization (:mod:`optic.dsp.equalization`)
    mimoAdaptEqualizer  -- General N-by-N MIMO adaptive equalizer with several adaptive filtering algorithms available.
 """
 
-
 """Functions for adaptive and static equalization."""
 import logging as logg
 
@@ -19,9 +18,13 @@ import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-from optic.dsp.core import pnorm
-from optic.models.channels import linearFiberChannel
+from optic.dsp.core import pnorm, blockwiseFFTConv
 from optic.comm.modulation import grayMapping
+
+# try:
+#     from optic.dsp.coreGPU import blockwiseFFTConv
+# except ImportError:
+#     from optic.dsp.core import blockwiseFFTConv
 
 
 def edc(Ei, param):
@@ -43,6 +46,12 @@ def edc(Ei, param):
 
         - param.Fs: sampling frequency [Hz] [default: []]
 
+        - param.Rs: symbol rate [baud] [default: 32e9]
+
+        - param.NfilterCoeffs: number of filter coefficients [default: []]
+
+        - param.Nfft: FFT size [default: []]
+
     Returns
     -------
     np.array
@@ -61,22 +70,56 @@ def edc(Ei, param):
     except AttributeError:
         logg.error("Simulation sampling frequency (Fs) not provided.")
 
+    try:
+        nModes = Ei.shape[1]
+    except IndexError:
+        nModes = 1
+        Ei = Ei.reshape(Ei.size, nModes)
+
     # check input parameters
-    param.L = getattr(param, "L", 50)
-    param.D = getattr(param, "D", 16)
-    param.Fc = getattr(param, "Fc", 193.1e12)
+    L = getattr(param, "L", 50)
+    D = getattr(param, "D", 16)
+    Fc = getattr(param, "Fc", 193.1e12)
+    Rs = getattr(param, "Rs", 32e9)
+    NfilterCoeffs = getattr(param, "NfilterCoeffs", None)
+    Nfft = getattr(param, "Nfft", None)
 
-    param.alpha = 0
-    param.D = -param.D
+    # c  = 299792458   # speed of light [m/s](vacuum)
+    c_kms = const.c / 1e3
+    λ = c_kms / Fc
+    β2 = -(D * λ**2) / (2 * np.pi * c_kms)
+
+    # If number of filter coefficients is not provided, calculate it
+    # based on the dispersion parameter, the fiber length and the symbol rate
+    if NfilterCoeffs is None:
+        NfilterCoeffs = int(2 * np.ceil(6.67 * np.abs(β2) * L * Rs**2 * (Fs / Rs)))
+
+    # If FFT size is not provided, calculate it based on the number of filter coefficients
+    if Nfft is None:
+        Nfft = 2 ** int(np.ceil(np.log2(NfilterCoeffs)))
+
+    ω = 2 * np.pi * Fs * fftfreq(NfilterCoeffs)  # angular frequency vector
+
+    H = np.exp(-1j * (β2 / 2) * (ω**2) * L)  # frequency response of the CD filter
+
     logg.info(f"Running CD compensation...")
+    logg.info(f"CD filter length: {NfilterCoeffs} taps, FFT size: {Nfft}")
 
-    return linearFiberChannel(Ei, param)
+    Eo = np.zeros(Ei.shape, dtype=Ei.dtype)
+
+    # Apply CD compensation to each mode
+    for indMode in range(nModes):
+        Eo[:, indMode] = blockwiseFFTConv(
+            Ei[:, indMode], H, NFFT=Nfft, freqDomainFilter=True
+        )
+
+    return Eo
 
 
 def mimoAdaptEqualizer(x, param=None, dx=None):
     """
     N-by-N MIMO adaptive equalizer.
-    
+
     Parameters
     ----------
     x : np.array
@@ -204,12 +247,11 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
         H = np.zeros((nModes**2, nTaps), dtype="complex")
 
         for initH in range(nModes):  # initialize filters' taps
-            H[
-                initH + initH * nModes, int(np.floor(H.shape[1] / 2))
-            ] = 1  # Central spike initialization
-    if not H_:  # if H_ is not defined      
+            H[initH + initH * nModes, int(np.floor(H.shape[1] / 2))] = (
+                1  # Central spike initialization
+            )
+    if not H_:  # if H_ is not defined
         H_ = np.zeros((nModes**2, nTaps), dtype="complex")
-
 
     logg.info(f"Running adaptive equalizer...")
     # Equalizer training:
@@ -228,20 +270,22 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
                     logg.info(
                         f"{runAlg} pre-convergence training iteration #%d", indIter
                     )
-                    yEq[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
-                        x[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
-                        dx[nStart:nEnd, :],
-                        SpS,
-                        H,
-                        H_,
-                        L[indstage],
-                        mu[indstage],
-                        lambdaRLS,
-                        nTaps,
-                        storeCoeff,
-                        runWL,
-                        runAlg,
-                        constSymb,
+                    yEq[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = (
+                        coreAdaptEq(
+                            x[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
+                            dx[nStart:nEnd, :],
+                            SpS,
+                            H,
+                            H_,
+                            L[indstage],
+                            mu[indstage],
+                            lambdaRLS,
+                            nTaps,
+                            storeCoeff,
+                            runWL,
+                            runAlg,
+                            constSymb,
+                        )
                     )
                     logg.info(
                         f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd])
@@ -275,14 +319,16 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     if returnResults:
         if runWL:
             return yEq, H, H_, errSq, Hiter
-        else: 
+        else:
             return yEq, H, errSq, Hiter
     else:
         return yEq
 
 
 @njit
-def coreAdaptEq(x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, alg, constSymb):
+def coreAdaptEq(
+    x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, alg, constSymb
+):
     """
     Adaptive equalizer core processing function
 
@@ -374,8 +420,8 @@ def coreAdaptEq(x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, a
                 H[indMode + N * nModes, :] @ inEq
             )  # add contribution from the Nth mode to the equalizer's output
             if runWL:
-                outEq += (
-                    H_[indMode + N * nModes, :] @ np.conj(inEq)
+                outEq += H_[indMode + N * nModes, :] @ np.conj(
+                    inEq
                 )  # add augmented contribution from the Nth mode to the equalizer's output
 
         yEq[ind, :] = outEq.T
@@ -383,15 +429,25 @@ def coreAdaptEq(x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, a
         # update equalizer taps acording to the specified
         # algorithm and save squared error:
         if alg == "nlms":
-            H, H_, errSq[:, ind] = nlmsUp(x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL)
+            H, H_, errSq[:, ind] = nlmsUp(
+                x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL
+            )
         elif alg == "cma":
-            H, H_, errSq[:, ind] = cmaUp(x[indIn, :], Rcma, outEq, mu, H, H_, nModes, runWL)
+            H, H_, errSq[:, ind] = cmaUp(
+                x[indIn, :], Rcma, outEq, mu, H, H_, nModes, runWL
+            )
         elif alg == "dd-lms":
-            H, H_, errSq[:, ind] = ddlmsUp(x[indIn, :], constSymb, outEq, mu, H, H_, nModes, runWL)
+            H, H_, errSq[:, ind] = ddlmsUp(
+                x[indIn, :], constSymb, outEq, mu, H, H_, nModes, runWL
+            )
         elif alg == "rde":
-            H, H_, errSq[:, ind] = rdeUp(x[indIn, :], Rrde, outEq, mu, H, H_, nModes, runWL)
+            H, H_, errSq[:, ind] = rdeUp(
+                x[indIn, :], Rrde, outEq, mu, H, H_, nModes, runWL
+            )
         elif alg == "da-rde":
-            H, H_, errSq[:, ind] = dardeUp(x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL)
+            H, H_, errSq[:, ind] = dardeUp(
+                x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL
+            )
         elif alg == "rls":
             H, Sd, errSq[:, ind] = rlsUp(
                 x[indIn, :], dx[ind, :], outEq, lambdaRLS, H, Sd, nModes
@@ -464,10 +520,9 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
             mu * errDiag @ np.conj(inAdaptPar)
         )  # gradient descent update
         if runWL:
-            H_[indUpdTaps, :] += (
-                mu * errDiag @ inAdaptPar
-            )  # gradient descent update
+            H_[indUpdTaps, :] += mu * errDiag @ inAdaptPar  # gradient descent update
     return H, H_, np.abs(err) ** 2
+
 
 @njit
 def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
@@ -587,11 +642,9 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
             mu * errDiag @ np.conj(inAdaptPar)
-        )  # gradient descent update        
+        )  # gradient descent update
         if runWL:
-            H_[indUpdTaps, :] += (
-                mu * errDiag @ inAdaptPar
-            )  # gradient descent update   
+            H_[indUpdTaps, :] += mu * errDiag @ inAdaptPar  # gradient descent update
     return H, H_, np.abs(err) ** 2
 
 
@@ -716,9 +769,7 @@ def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
             mu * prodErrOut @ np.conj(inAdaptPar)
         )  # gradient descent update
         if runWL:
-            H_[indUpdTaps, :] += (
-            mu * prodErrOut @ inAdaptPar
-            )  # gradient descent update
+            H_[indUpdTaps, :] += mu * prodErrOut @ inAdaptPar  # gradient descent update
     return H, H_, np.abs(err) ** 2
 
 
@@ -781,9 +832,7 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
             mu * prodErrOut @ np.conj(inAdaptPar)
         )  # gradient descent update
         if runWL:
-            H_[indUpdTaps, :] += (
-            mu * prodErrOut @ inAdaptPar
-            )  # gradient descent update
+            H_[indUpdTaps, :] += mu * prodErrOut @ inAdaptPar  # gradient descent update
 
     return H, H_, np.abs(err) ** 2
 
@@ -846,9 +895,7 @@ def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
             mu * prodErrOut @ np.conj(inAdaptPar)
         )  # gradient descent update
         if runWL:
-            H_[indUpdTaps, :] += (
-            mu * prodErrOut @ inAdaptPar
-            )  # gradient descent update
+            H_[indUpdTaps, :] += mu * prodErrOut @ inAdaptPar  # gradient descent update
     return H, H_, np.abs(err) ** 2
 
 

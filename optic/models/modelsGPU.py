@@ -19,7 +19,7 @@ import numpy as np
 import scipy.constants as const
 from cupy.linalg import norm
 from cupy.random import normal
-from cupyx.scipy.fft import fft, fftfreq, ifft
+from cupy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
 from optic.utils import parameters
@@ -160,7 +160,7 @@ def ssfm(Ei, param):
 
     References
     ----------
-    [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013. 
+    [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013.
 
     [2] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
 
@@ -637,7 +637,7 @@ def manakovDBP(Ei, param):
         Optical signal after nonlinear backward propagation.
     param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
-    
+
     References
     ----------
     [1] E. Ip e J. M. Kahn, “Compensation of dispersion and nonlinear impairments using digital backpropagation”, Journal of Lightwave Technology, vol. 26, nº 20, p. 3416–3425, 2008, doi: 10.1109/JLT.2008.927791.

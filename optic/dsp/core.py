@@ -25,9 +25,12 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    gaussianNoise          -- Generate Gaussian noise
    phaseNoise             -- Generate realization of a random-walk phase-noise process
    movingAverage          -- Calculate the sliding window moving average
+   delaySignal            -- Apply a time delay to a signal
+   blockwiseFFTConv       -- Implements convolution using the overlap-and-save FFT method
 """
 
 """Digital signal processing utilities."""
+import logging as logg
 import numpy as np
 from numba import njit, prange
 from scipy import signal
@@ -785,22 +788,100 @@ def delaySignal(sig, delay, fs):
     N = len(sig)
 
     # Calculate the length of zero padding needed
-    pad_length = int(np.ceil(delay * fs))
+    padLen = int(np.ceil(delay * fs))
 
     # Zero-pad the signal to avoid circular shift
-    sig_padded = np.pad(sig, (0, pad_length), mode="constant")
+    sigPad = np.pad(sig, (0, padLen), mode="constant")
 
     # Compute the frequency vector
-    freq = fftshift(fftfreq(len(sig_padded), d=1 / fs))
+    freq = fftshift(fftfreq(len(sigPad), d=1 / fs))
 
     # Compute the FFT of the signal
-    sig_fft = fftshift(fft(sig_padded))
+    sigFFT = fftshift(fft(sigPad))
 
     # Apply the phase shift corresponding to the time delay
-    phase_shift = np.exp(-1j * 2 * np.pi * freq * delay)
-    delayed_sig_fft = fftshift(sig_fft * phase_shift)
+    H = np.exp(-1j * 2 * np.pi * freq * delay)
+    delayedSigFFT = fftshift(sigFFT * H)
 
     # Compute the IFFT of the delayed signal
-    delayed_sig = ifft(delayed_sig_fft)[:N]
+    delayedSig = ifft(delayedSigFFT)[:N]
 
-    return delayed_sig
+    return delayedSig
+
+
+def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
+    """
+    Implements convolution using the overlap-and-save FFT method.
+
+    Parameters
+    ----------
+    x : ndarray
+        Input signal.
+    h : ndarray
+        Filter impulse response.
+    NFFT : int, optional
+        FFT size to be used. Must be greater than the length of the filter.
+        If None, it will be set to the next power of 2 greater than or equal
+        to the length of the filter. Default is None.
+    freqDomainFilter : bool, optional
+        If True, `h` is assumed to be the frequency response of the filter.
+        If False, the FFT of `h` will be computed. Default is False.
+
+    Returns
+    -------
+    y : ndarray
+        The filtered output signal.
+
+    Raises
+    ------
+    ValueError
+        If NFFT is not greater than the length of the filter `h`.
+
+    """
+    sigLen = len(x)  # length of the input signal
+    M = len(h)  # length of the filter impulse response
+    D = (M - 1) // 2  # filter delay
+
+    if NFFT is None:
+        NFFT = 2 ** int(np.ceil(np.log2(M)))
+
+    if NFFT >= M:
+        L = NFFT - M + 1  # block length required
+    else:
+        logg.error("FFT size is smaller than filter length")
+
+    if freqDomainFilter:
+        h = np.pad(
+            fftshift(ifft(h)), (0, L - 1), mode="constant", constant_values=0 + 0j
+        )
+    else:
+        h = np.pad(h, (0, L - 1), mode="constant", constant_values=0 + 0j)
+
+    H = fft(h)  # frequency response
+
+    discard = M - 1  # number of samples to be discarded after IFFT (overlap samples)
+    numBlocks = int(np.ceil(sigLen / L))  # total number of FFT blocks to be processed
+    padLen = (
+        numBlocks * L - sigLen
+    )  # pad length necessary to complete an integer number of blocks
+
+    # pad signal with padLen zeros + D zeros (to compensate for filter delay)
+    x = np.pad(x, (0, padLen + D), mode="constant", constant_values=0 + 0j)
+
+    # pre-allocate output
+    y = np.zeros(len(x), dtype="complex")
+
+    # overlap-and-save blockwise processing
+    x = np.pad(x, (M - 1, 0), mode="constant", constant_values=0 + 0j)
+
+    start_idx = 0
+    end_idx = NFFT
+
+    for blk in range(numBlocks):
+        X = fft(x[start_idx:end_idx])
+        y_blk = ifft(X * H)
+        y[blk * L : (blk + 1) * L] = y_blk[discard:]
+        start_idx += L
+        end_idx = start_idx + NFFT
+
+    return y[D:-padLen]
