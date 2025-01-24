@@ -30,6 +30,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
 """
 
 """Digital signal processing utilities."""
+import logging as logg
 import numpy as np
 from numba import njit, prange
 from scipy import signal
@@ -813,7 +814,7 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
     if NFFT >= M:
         L = NFFT - M + 1 # block length required       
     else:
-        raise ValueError('FFT size is smaller than filter length')
+        logg.error('FFT size is smaller than filter length')
 
     if freqDomainFilter:         
         h = np.pad(fftshift(ifft(h)), (0, L-1), mode='constant', constant_values=0+0j)               
