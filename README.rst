@@ -16,7 +16,7 @@ components of fiber optic communication systems, for educational and research pu
      :width: 600px  
      :align: center
 
-|PyPI| |PyPI - Downloads| |Documentation Status| |DOI|
+|PyPI| |PyPI - Downloads| |Documentation Status| |DOI| |JOSS|
 
 Available features
 ------------------
@@ -104,8 +104,7 @@ You can find the latest documentation in
 Citing this repository
 ----------------------
 
-Edson Porto da Silva, & Adolfo Herbster. (2024). OptiCommPy: Open-source Simulation of Fiber Optic Communications with Python (v0.9.0-alpha). 
-Zenodo. https://doi.org/10.5281/zenodo.11450597
+Edson Porto da Silva, Adolfo Fernandes Herbster. "OptiCommPy: Open-source Simulation of Fiber Optic Communications with Python", *Journal of Open Source Software*, 9(98), 6600, (2024) https://doi.org/10.21105/joss.06600
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package
 .. |PyPI - Downloads| image:: https://img.shields.io/pypi/dm/OptiCommPy
@@ -113,6 +112,8 @@ Zenodo. https://doi.org/10.5281/zenodo.11450597
    :target: https://opticommpy.readthedocs.io/en/latest/?badge=latest
 .. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.11450597.svg
    :target: https://doi.org/10.5281/zenodo.11450597
+.. |JOSS| image:: https://joss.theoj.org/papers/10.21105/joss.06600/status.svg 
+   :target: https://doi.org/10.21105/joss.06600
 
    
 
