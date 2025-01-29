@@ -20,7 +20,6 @@ Models for optoelectronic devices (:mod:`optic.models.devices`)
    adc                   -- Analog-to-digital converter (ADC) model
 """
 
-
 """Basic physical models for optical/electronic devices."""
 import logging as logg
 
@@ -105,7 +104,7 @@ def mzm(Ai, u, param=None):
     References
     ----------
     [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
-    
+
     [2] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
@@ -364,7 +363,7 @@ def balancedPD(E1, E2, param=None):
     References
     ----------
     [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
-    
+
     [2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.
     """
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
@@ -501,10 +500,10 @@ def edfa(Ei, param=None):
     param : parameter object (struct), optional
         Parameters of the edfa.
 
-        - param.G : amplifier gain in dB. The default is 20.
-        - param.NF : EDFA noise figure in dB. The default is 4.5.
-        - param.Fc : central optical frequency. The default is 193.1e12.
-        - param.Fs : sampling frequency in samples/second.
+        - param.G : amplifier gain [dB][default: 20 dB]
+        - param.NF : EDFA noise figure [dB][default: 4.5 dB]
+        - param.Fc : central optical frequency [Hz][default: 193.1 THz]
+        - param.Fs : sampling frequency in [samples/s]
 
     Returns
     -------
@@ -555,7 +554,7 @@ def basicLaserModel(param=None):
     param : parameter object (struct), optional
         Parameters of the laser.
 
-        - param.P: laser power [W] [default: 10 dBm]
+        - param.P: laser power [dBm] [default: 10 dBm]
         - param.lw: laser linewidth [Hz] [default: 1 kHz]
         - param.RIN_var: variance of the RIN noise [default: 1e-20]
         - param.Fs: sampling rate [samples/s]
@@ -590,7 +589,7 @@ def basicLaserModel(param=None):
     deltaP = gaussianComplexNoise(pn.shape, RIN_var)
 
     # Return optical signal
-    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * pn) 
+    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * pn)
 
 
 def adc(Ei, param):
@@ -603,12 +602,12 @@ def adc(Ei, param):
         Input signal.
     param : core.parameter
         Resampling parameters:
-            - param.Fs_in  : sampling frequency of the input signal [default: 1 sample/s]
-            - param.Fs_out : sampling frequency of the output signal [default: 1 sample/s]
-            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [default: 0 s]
+            - param.Fs_in  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
+            - param.Fs_out : sampling frequency of the output signal [samples/s][default: 1 sample/s]
+            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [s][default: 0 s]
             - param.nBits : number of bits used for quantization [default: 8 bits]
-            - param.Vmax : maximum value for the ADC's full-scale range [default: 1V]
-            - param.Vmin : minimum value for the ADC's full-scale range [default: -1V]
+            - param.Vmax : maximum value for the ADC's full-scale range [V][default: 1V]
+            - param.Vmin : minimum value for the ADC's full-scale range [V][default: -1V]
             - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
             - param.N : number of taps of the anti-aliasing filters [default: 201]
 
