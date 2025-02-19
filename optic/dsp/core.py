@@ -26,7 +26,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    phaseNoise             -- Generate realization of a random-walk phase-noise process
    movingAverage          -- Calculate the sliding window moving average
    delaySignal            -- Apply a time delay to a signal
-   blockwiseFFTConv       -- Implements convolution using the overlap-and-save FFT method
+   blockwiseFFTConv       -- Frequency domain convolution using the overlap-and-save FFT method
 """
 
 """Digital signal processing utilities."""
