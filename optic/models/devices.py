@@ -35,7 +35,11 @@ from optic.dsp.core import (
 )
 
 try:
-    from optic.dsp.coreGPU import firFilter
+    from optic.dsp.coreGPU import checkGPU
+    if checkGPU():
+        from optic.dsp.coreGPU import firFilter
+    else:
+        from optic.dsp.core import firFilter
 except ImportError:
     from optic.dsp.core import firFilter
 
