@@ -6,9 +6,10 @@ Functions adapted to run with GPU (CuPy) processing (:mod:`optic.models.modelsGP
 .. autosummary::
    :toctree: generated/
 
-   ssfm                 -- Nonlinear fiber optic channel model based on the NLSE equation [GPU].
-   manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation [GPU].  
-   edfa                 -- Simple EDFA model (gain + AWGN noise)[GPU].
+   ssfm           -- Nonlinear fiber optic channel model based on the NLSE equation [GPU].
+   manakovSSF     -- Nonlinear fiber optic channel model based on the Manakov equation [GPU].  
+   manakovDBP     -- Manakov SSF digital backpropagation [GPU]. 
+   edfa           -- Simple EDFA model (gain + AWGN noise)[GPU].
 """
 
 """Functions from models.py adapted to run with GPU (CuPy) processing."""
