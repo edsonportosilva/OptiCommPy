@@ -777,7 +777,7 @@ def delaySignal(sig, delay, fs):
 
 def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
     """
-    Implements convolution using the overlap-and-save FFT method.
+    Implements a frequency domain convolution using the overlap-and-save FFT method.
 
     Parameters
     ----------
