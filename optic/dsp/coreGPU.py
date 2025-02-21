@@ -5,6 +5,7 @@ import cupy as cp
 from cupy.fft import fft, ifft, fftshift
 import numpy as np
 
+
 def checkGPU():
     """
     Check if a GPU is available.
@@ -19,6 +20,7 @@ def checkGPU():
         return True
     except cp.cuda.runtime.CUDARuntimeError:
         return False
+
 
 def firFilter(h, x, prec=None):
     """
@@ -72,7 +74,7 @@ def firFilter(h, x, prec=None):
 
 def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False, prec=None):
     """
-    Implements convolution using the overlap-and-save FFT method.
+    Blockwise convolution in the frequency domain using the overlap-and-save FFT method.
 
     Parameters
     ----------
