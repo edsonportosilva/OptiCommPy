@@ -848,4 +848,7 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
         start_idx += L
         end_idx = start_idx + NFFT
 
-    return y[D:-padLen].astype(x.dtype)
+    if isinstance(x, complex):
+        return y[D:-padLen]
+    else:
+        return y[D:-padLen].real
