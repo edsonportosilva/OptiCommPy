@@ -817,11 +817,9 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
         logg.error("FFT size is smaller than filter length")
 
     if freqDomainFilter:
-        h = np.pad(
-            fftshift(ifft(h)), (0, L - 1), mode="constant", constant_values=0 + 0j
-        )
+        h = np.pad(fftshift(ifft(h)), (0, L - 1), mode="constant")
     else:
-        h = np.pad(h, (0, L - 1), mode="constant", constant_values=0 + 0j)
+        h = np.pad(h, (0, L - 1), mode="constant")
 
     H = fft(h)  # frequency response
 
@@ -832,13 +830,13 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
     )  # pad length necessary to complete an integer number of blocks
 
     # pad signal with padLen zeros + D zeros (to compensate for filter delay)
-    x = np.pad(x, (0, padLen + D), mode="constant", constant_values=0 + 0j)
+    x = np.pad(x, (0, padLen + D), mode="constant")
 
     # pre-allocate output
     y = np.zeros(len(x), dtype="complex")
 
     # overlap-and-save blockwise processing
-    x = np.pad(x, (M - 1, 0), mode="constant", constant_values=0 + 0j)
+    x = np.pad(x, (M - 1, 0), mode="constant")
 
     start_idx = 0
     end_idx = NFFT
@@ -850,4 +848,4 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
         start_idx += L
         end_idx = start_idx + NFFT
 
-    return y[D:-padLen]
+    return y[D:-padLen].astype(x.dtype)
