@@ -732,7 +732,7 @@ def movingAverage(x, N):
     return y
 
 
-def delaySignal(sig, delay, fs):
+def delaySignal(sig, delay, Fs=1, NFFT=None):
     """
     Apply a time delay to a signal sampled at fs samples per second using FFT/IFFT algorithms.
 
@@ -754,25 +754,26 @@ def delaySignal(sig, delay, fs):
     N = len(sig)
 
     # Calculate the length of zero padding needed
-    padLen = int(np.ceil(delay * fs))
+    padLen = int(np.ceil(np.abs(delay * Fs)))
 
     # Zero-pad the signal to avoid circular shift
+    # if delay >= 0:
     sigPad = np.pad(sig, (0, padLen), mode="constant")
+    # else:
+    #   sigPad = np.pad(sig, (padLen, 0), mode="constant")
+
+    if NFFT is None:
+        NFFT = 2 ** int(np.ceil(np.log2(N + padLen)))
 
     # Compute the frequency vector
-    freq = fftshift(fftfreq(len(sigPad), d=1 / fs))
-
-    # Compute the FFT of the signal
-    sigFFT = fftshift(fft(sigPad))
+    freq = fftfreq(NFFT // 2, d=1 / Fs)
 
     # Apply the phase shift corresponding to the time delay
     H = np.exp(-1j * 2 * np.pi * freq * delay)
-    delayedSigFFT = fftshift(sigFFT * H)
+    delayedSig = blockwiseFFTConv(sigPad, H, NFFT=NFFT, freqDomainFilter=True)
+    delayedSig = np.roll(delayedSig, -1)
 
-    # Compute the IFFT of the delayed signal
-    delayedSig = ifft(delayedSigFFT)[:N]
-
-    return delayedSig
+    return delayedSig[:N]
 
 
 def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
@@ -848,7 +849,7 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
         start_idx += L
         end_idx = start_idx + NFFT
 
-    if isinstance(x, complex):
+    if np.any(np.iscomplex(x)):
         return y[D:-padLen]
     else:
         return y[D:-padLen].real
