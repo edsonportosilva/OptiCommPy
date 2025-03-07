@@ -250,7 +250,7 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
 
 
 @njit(parallel=True)
-def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
+def clockSamplingInterp(x, Fs_in, Fs_out, jitter_rms=0):
     """
     Interpolate signal to a given sampling rate.
 
@@ -258,13 +258,15 @@ def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
     ----------
     x : np.array
         Input signal.
-    param : core.parameter
-        Resampling parameters:
-            - param.Fs_in  : sampling frequency of the input signal.
 
-            - param.Fs_out : sampling frequency of the output signal.
+    Fs_in : float
+        Sampling frequency of the input signal.
 
-            - param.jitter_rms: standard deviation of the time jitter.
+    Fs_out : float
+        Sampling frequency of the output signal.
+
+    jitter_rms : float
+        Standard deviation of the time jitter. Default is 0.
 
     Returns
     -------
