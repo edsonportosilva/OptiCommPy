@@ -26,7 +26,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    phaseNoise             -- Generate realization of a random-walk phase-noise process
    movingAverage          -- Calculate the sliding window moving average
    delaySignal            -- Apply a time delay to a signal
-   blockwiseFFTConv       -- Implements convolution using the overlap-and-save FFT method
+   blockwiseFFTConv       -- Calculates convolutions in the frequency domain
 """
 
 """Digital signal processing utilities."""
@@ -250,7 +250,7 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
 
 
 @njit(parallel=True)
-def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
+def clockSamplingInterp(x, Fs_in, Fs_out, jitter_rms=0):
     """
     Interpolate signal to a given sampling rate.
 
@@ -258,13 +258,15 @@ def clockSamplingInterp(x, Fs_in=1, Fs_out=1, jitter_rms=1e-9):
     ----------
     x : np.array
         Input signal.
-    param : core.parameter
-        Resampling parameters:
-            - param.Fs_in  : sampling frequency of the input signal.
 
-            - param.Fs_out : sampling frequency of the output signal.
+    Fs_in : float
+        Sampling frequency of the input signal.
 
-            - param.jitter_rms: standard deviation of the time jitter.
+    Fs_out : float
+        Sampling frequency of the output signal.
+
+    jitter_rms : float
+        Standard deviation of the time jitter. Default is 0.
 
     Returns
     -------
@@ -766,7 +768,7 @@ def movingAverage(x, N):
     return y
 
 
-def delaySignal(sig, delay, fs):
+def delaySignal(sig, delay, Fs=1, NFFT=None):
     """
     Apply a time delay to a signal sampled at fs samples per second using FFT/IFFT algorithms.
 
@@ -776,8 +778,12 @@ def delaySignal(sig, delay, fs):
         The input signal.
     delay : float
         The time delay to apply to the signal (in seconds).
-    fs : float
-        Sampling frequency of the signal (in samples per second).
+    Fs : float
+        Sampling frequency of the signal (in samples per second). Default is 1.
+    NFFT : int, optional
+        FFT size to be used. Must be greater than the length of the filter.
+        If None, it will be set to the next power of 2 greater than or equal
+        to the length of the filter. Default is None.
 
     Returns
     -------
@@ -788,30 +794,28 @@ def delaySignal(sig, delay, fs):
     N = len(sig)
 
     # Calculate the length of zero padding needed
-    padLen = int(np.ceil(delay * fs))
+    padLen = int(np.ceil(np.abs(delay * Fs)))
 
     # Zero-pad the signal to avoid circular shift
     sigPad = np.pad(sig, (0, padLen), mode="constant")
 
-    # Compute the frequency vector
-    freq = fftshift(fftfreq(len(sigPad), d=1 / fs))
+    if NFFT is None:
+        NFFT = 2 ** int(np.ceil(np.log2(N + padLen)))
 
-    # Compute the FFT of the signal
-    sigFFT = fftshift(fft(sigPad))
+    # Compute the frequency vector
+    freq = fftfreq(NFFT // 2, d=1 / Fs)
 
     # Apply the phase shift corresponding to the time delay
     H = np.exp(-1j * 2 * np.pi * freq * delay)
-    delayedSigFFT = fftshift(sigFFT * H)
+    delayedSig = blockwiseFFTConv(sigPad, H, NFFT=NFFT, freqDomainFilter=True)
+    delayedSig = np.roll(delayedSig, -1)
 
-    # Compute the IFFT of the delayed signal
-    delayedSig = ifft(delayedSigFFT)[:N]
-
-    return delayedSig
+    return delayedSig[:N]
 
 
 def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
     """
-    Implements convolution using the overlap-and-save FFT method.
+    Blockwise convolution in the frequency domain using the overlap-and-save FFT method.
 
     Parameters
     ----------
@@ -851,11 +855,9 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
         logg.error("FFT size is smaller than filter length")
 
     if freqDomainFilter:
-        h = np.pad(
-            fftshift(ifft(h)), (0, L - 1), mode="constant", constant_values=0 + 0j
-        )
+        h = np.pad(fftshift(ifft(h)), (0, L - 1), mode="constant")
     else:
-        h = np.pad(h, (0, L - 1), mode="constant", constant_values=0 + 0j)
+        h = np.pad(h, (0, L - 1), mode="constant")
 
     H = fft(h)  # frequency response
 
@@ -866,13 +868,13 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
     )  # pad length necessary to complete an integer number of blocks
 
     # pad signal with padLen zeros + D zeros (to compensate for filter delay)
-    x = np.pad(x, (0, padLen + D), mode="constant", constant_values=0 + 0j)
+    x = np.pad(x, (0, padLen + D), mode="constant")
 
     # pre-allocate output
     y = np.zeros(len(x), dtype="complex")
 
     # overlap-and-save blockwise processing
-    x = np.pad(x, (M - 1, 0), mode="constant", constant_values=0 + 0j)
+    x = np.pad(x, (M - 1, 0), mode="constant")
 
     start_idx = 0
     end_idx = NFFT
@@ -884,4 +886,7 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
         start_idx += L
         end_idx = start_idx + NFFT
 
-    return y[D:-padLen]
+    if np.any(np.iscomplex(x)):
+        return y[D:-padLen]
+    else:
+        return y[D:-padLen].real

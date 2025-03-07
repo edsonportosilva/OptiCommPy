@@ -20,7 +20,6 @@ Models for optoelectronic devices (:mod:`optic.models.devices`)
    adc                   -- Analog-to-digital converter (ADC) model
 """
 
-
 """Basic physical models for optical/electronic devices."""
 import logging as logg
 
@@ -36,7 +35,12 @@ from optic.dsp.core import (
 )
 
 try:
-    from optic.dsp.coreGPU import firFilter
+    from optic.dsp.coreGPU import checkGPU
+
+    if checkGPU():
+        from optic.dsp.coreGPU import firFilter
+    else:
+        from optic.dsp.core import firFilter
 except ImportError:
     from optic.dsp.core import firFilter
 
@@ -105,7 +109,7 @@ def mzm(Ai, u, param=None):
     References
     ----------
     [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
-    
+
     [2] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
@@ -298,14 +302,14 @@ def photodiode(E, param=None):
     N = getattr(param, "N", 8000)
     fType = getattr(param, "fType", "rect")
     ideal = getattr(param, "ideal", True)
-    seed = getattr(param,"seed", None)
+    seed = getattr(param, "seed", None)
 
     assert R > 0, "PD responsivity should be a positive scalar"
 
     ipd = R * E * np.conj(E)  # ideal photocurrent
 
     if seed is not None:
-        np.random.seed(seed) # set seed for reproducibility
+        np.random.seed(seed)  # set seed for reproducibility
 
     if not (ideal):
         try:
@@ -370,7 +374,7 @@ def balancedPD(E1, E2, param=None):
     References
     ----------
     [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
-    
+
     [2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.
     """
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
@@ -507,10 +511,10 @@ def edfa(Ei, param=None):
     param : parameter object (struct), optional
         Parameters of the edfa.
 
-        - param.G : amplifier gain in dB. [default: 20 dB].
-        - param.NF : EDFA noise figure in dB. [default: 4.5 dB].
-        - param.Fc : central optical frequency in Hz. [default: 193.1e12 Hz].
-        - param.Fs : sampling frequency in samples/second.
+        - param.G : amplifier gain [dB][default: 20 dB]
+        - param.NF : EDFA noise figure [dB][default: 4.5 dB]
+        - param.Fc : central optical frequency [Hz][default: 193.1 THz]
+        - param.Fs : sampling frequency in [samples/s]
 
     Returns
     -------
@@ -562,12 +566,11 @@ def basicLaserModel(param=None):
     param : parameter object (struct), optional
         Parameters of the laser.
 
-        - param.P: laser power [W] [default: 10 dBm].
-        - param.lw: laser linewidth [Hz] [default: 1 kHz].
-        - param.RIN_var: variance of the RIN noise [default: 1e-20].
-        - param.Fs: sampling rate [samples/s].
-        - param.Ns: number of signal samples [default: 1e3].
-        - param.seed: seed for the random number generator [default: None].
+        - param.P: laser power [dBm] [default: 10 dBm]
+        - param.lw: laser linewidth [Hz] [default: 1 kHz]
+        - param.RIN_var: variance of the RIN noise [default: 1e-20]
+        - param.Fs: sampling rate [samples/s]
+        - param.Ns: number of signal samples [default: 1e3]
 
     Returns
     -------
@@ -599,7 +602,7 @@ def basicLaserModel(param=None):
     deltaP = gaussianComplexNoise(pn.shape, RIN_var, seed)
 
     # Return optical signal
-    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * pn) 
+    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * pn)
 
 
 def adc(Ei, param):
@@ -612,14 +615,14 @@ def adc(Ei, param):
         Input signal.
     param : core.parameter
         Resampling parameters:
-            - param.Fs_in  : sampling frequency of the input signal [default: 1 sample/s].
-            - param.Fs_out : sampling frequency of the output signal [default: 1 sample/s].
-            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [default: 0 s].
-            - param.nBits : number of bits used for quantization [default: 8 bits].
-            - param.Vmax : maximum value for the ADC's full-scale range [default: 1V].
-            - param.Vmin : minimum value for the ADC's full-scale range [default: -1V].
-            - param.AAF : flag indicating whether to use anti-aliasing filters [default: True].
-            - param.N : number of taps of the anti-aliasing filters [default: 201].
+            - param.Fs_in  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
+            - param.Fs_out : sampling frequency of the output signal [samples/s][default: 1 sample/s]
+            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [s][default: 0 s]
+            - param.nBits : number of bits used for quantization [default: 8 bits]
+            - param.Vmax : maximum value for the ADC's full-scale range [V][default: 1V]
+            - param.Vmin : minimum value for the ADC's full-scale range [V][default: -1V]
+            - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
+            - param.N : number of taps of the anti-aliasing filters [default: 201]
 
     Returns
     -------

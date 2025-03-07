@@ -24,6 +24,7 @@ from tqdm.notebook import tqdm
 from optic.utils import parameters
 from optic.dsp.core import sigPow, gaussianComplexNoise, gaussianNoise
 from optic.models.devices import edfa
+from numba import njit
 
 
 def linearFiberChannel(Ei, param):
@@ -502,7 +503,7 @@ def manakovSSF(Ei, param):
     else:
         return Ech
 
-
+@njit
 def nlinPhaseRot(Ex, Ey, Pch, γ):
     """
     Calculate nonlinear phase-shift per step for the Manakov SSFM.

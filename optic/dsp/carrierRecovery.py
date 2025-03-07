@@ -24,10 +24,14 @@ from optic.dsp.core import pnorm, movingAverage
 from optic.comm.modulation import grayMapping
 
 try:
-    from optic.dsp.carrierRecoveryGPU import bpsGPU
-    availableGPU = True
+    from optic.dsp.coreGPU import checkGPU
+    if checkGPU():
+        from optic.dsp.carrierRecoveryGPU import bpsGPU 
+    else:
+        pass        
 except ImportError:
-    availableGPU = False
+    pass
+
 
 def cpr(Ei, param=None, symbTx=None):
     """
@@ -133,13 +137,13 @@ def cpr(Ei, param=None, symbTx=None):
     elif alg == "bps":
         logg.info(f"Running BPS carrier phase recovery...")
         θ = bps(Ei, N // 2, constSymb, B)
-    elif alg == "bpsGPU":
-        logg.info("Running GPU-based BPS carrier phase recovery...")
-        if availableGPU:
-           θ = bpsGPU(Ei, N // 2, constSymb, B)
-        else:
-           logg.warning("GPU unavailable, switching to CPU processing...")
-           θ = bps(Ei, N // 2, constSymb, B)
+    elif alg == "bpsGPU": 
+        try:
+            logg.info("Running GPU-based BPS carrier phase recovery...")
+            θ = bpsGPU(Ei, N // 2, constSymb, B)
+        except NameError:
+            logg.warning("GPU unavailable, switching to CPU processing...")
+            θ = bps(Ei, N // 2, constSymb, B)
     elif alg == "viterbi":
         logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")
         θ = viterbi(Ei, N)
