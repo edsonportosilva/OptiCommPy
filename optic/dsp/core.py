@@ -742,8 +742,12 @@ def delaySignal(sig, delay, Fs=1, NFFT=None):
         The input signal.
     delay : float
         The time delay to apply to the signal (in seconds).
-    fs : float
-        Sampling frequency of the signal (in samples per second).
+    Fs : float
+        Sampling frequency of the signal (in samples per second). Default is 1.
+    NFFT : int, optional
+        FFT size to be used. Must be greater than the length of the filter.
+        If None, it will be set to the next power of 2 greater than or equal
+        to the length of the filter. Default is None.
 
     Returns
     -------
@@ -757,10 +761,7 @@ def delaySignal(sig, delay, Fs=1, NFFT=None):
     padLen = int(np.ceil(np.abs(delay * Fs)))
 
     # Zero-pad the signal to avoid circular shift
-    # if delay >= 0:
     sigPad = np.pad(sig, (0, padLen), mode="constant")
-    # else:
-    #   sigPad = np.pad(sig, (padLen, 0), mode="constant")
 
     if NFFT is None:
         NFFT = 2 ** int(np.ceil(np.log2(N + padLen)))
