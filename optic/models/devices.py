@@ -135,6 +135,279 @@ def mzm(Ai, u, param=None):
     π = np.pi
     return Ai * np.cos(0.5 / Vpi * (u + Vb) * π)
 
+class RingModulator:
+    """
+    A class representing an optical ring resonator with bus coupling. It correctly calculates both the time domain (transient)
+    and frequency domain (steady state) response of the resonator to both input optical fields and voltage.
+
+
+    References
+    ----------
+    [1] W. Sacher and J. Poon, Dynamics of microring resonator modulators. Optics Express, 2008.
+
+    [2] W. Bogaerts et al, Silicon microring resonators. Laser & Photonics Reviews, 2012.
+    """
+    
+    def __init__(
+            self, 
+            radius=10e-6, 
+            resonant_wavelength=1550e-9,
+            n_eff=2.4, 
+            ng = 4.2,
+            dn_dV = 2E-4,
+            a=4000,  
+            kappa=0.1, 
+            buffer_size=1000000,
+            # Add RC filter parameters
+            rc_filter_enabled=False,
+            rc_time_constant=1e-9  # Default 10 ps time constant
+        ):
+        """
+        Initialize the ring resonator.
+        
+        Parameters:
+        -----------
+        radius : float
+            Radius of the ring resonator in meters (default: 10e-6)
+        resonant_wavelength : float
+            Wavelength the ring will resonant at in meters (default: 1550 nm)
+        n_eff : float
+            Effective index measured at the rseonant wavelength of interest (default: 2.4)
+        n_g : float
+            Group index (default: 4.2)
+        dn_dV : float
+            Change in effective index per volt (default: 2E-4)
+        a : float
+            Round-trip propagation loss in dB per meter (default:4000 dB/m)
+        kappa : float
+            Fraction of power coupled from bus waveguide into ring: (default: 0.1)
+        buffer_size : int
+            Size of buffer for storing past field values (default: 1000000)
+        rc_filter_enabled : bool
+            Enable RC filter for voltage input (default: False)
+        rc_time_constant : float
+            Time constant for RC filter in seconds (default: 10 ps)
+        """
+        self.radius = radius
+        self.resonant_wavelength = resonant_wavelength
+        self.n_eff = n_eff
+        self.ng = ng
+        self.dn_dV = dn_dV
+
+        #Calculate dn/dlambda from the neff and group index for use below
+        self.dn_dlambda = (self.n_eff - self.ng)/self.resonant_wavelength
+        
+        # Calculate kappa from sigma if not provided (assuming lossless coupler)
+        self.kappa = np.sqrt(kappa)
+        self.sigma = np.sqrt(1 - kappa**2)
+            
+        # Calculate round-trip time
+        self.Lrt = 2 * np.pi * radius  # Round-trip length
+        self.junction_loss_dB_m = a  # Round-trip loss in dB/m
+        self.a = np.sqrt(np.exp(-self.junction_loss_dB_m*self.Lrt/(10*np.log10(np.e))))
+        self.tau = n_eff * self.Lrt / const.c  # Round-trip time
+
+        #Calculate a phase offset that moves the resonance to the desired wavelength
+        self.phase_offset = 0
+        self.phase_offset = self.calculate_phase(self.resonant_wavelength)
+        
+        # Initialize buffer for delayed field values
+        self.buffer_size = buffer_size
+        self.buffer = np.zeros(buffer_size, dtype=complex)
+        self.buffer_idx = 0
+        self.buffer_initialized = False
+
+        # Initialize RC filter parameters
+        self.rc_filter_enabled = rc_filter_enabled
+        self.rc_time_constant = rc_time_constant
+        self.previous_filtered_voltage = 0.0  # Store last filtered voltage value
+        
+        print(f"Ring Resonator initialized with round-trip time: {self.tau:.3e} seconds")
+        if self.rc_filter_enabled:
+            print(f"RC filter enabled with time constant: {self.rc_time_constant:.3e} seconds")
+        
+    def reset(self):
+        """Reset the resonator state."""
+        self.buffer = np.zeros(self.buffer_size, dtype=complex)
+        self.buffer_idx = 0
+        self.buffer_initialized = False
+        
+    @property 
+    def FSR(self):
+        """
+        Calculate the Free Spectral Range (FSR) of the resonator.
+        
+        Inputs:
+        -------
+        resonant_wavelength: float
+            The resonance wavelength you want the FSR calculated at
+
+        Returns:
+        --------
+        FSR : float
+            Free Spectral Range in Hz
+        """
+        return self.resonant_wavelength**2/(self.ng * self.Lrt)
+    
+    @property
+    def finesse(self):
+        """
+        Calculate the finesse of the resonator.
+        
+        Returns:
+        --------
+        finesse : float
+            Resonator finesse
+        """
+        r = self.a * self.sigma
+        finesse = np.pi * np.sqrt(r) / (1 - r)
+        return finesse
+
+    @property
+    def FWHM(self):
+        """
+        The full width at half maximum of the loaded ring resonator
+        """
+        num = (1-self.sigma * self.a) * self.resonant_wavelength**2
+        denom = np.pi * self.ng * self.Lrt * np.sqrt(self.sigma * self.a)
+        return num/denom
+
+    @property
+    def quality_factor(self):
+        """
+        Loaded quality factor of the ring resonator
+        """
+        return self.resonant_wavelength/self.FWHM
+
+    @property
+    def photon_lifetime(self):
+        """
+        Photon lifetime in the ring resonator
+        """
+        return self.quality_factor/(2*np.pi * const.c/self.resonant_wavelength)
+    
+    def setup_sampling(self, dt):
+        """
+        Set up the sampling parameters based on time step.
+        
+        Parameters:
+        -----------
+        dt : float
+            Time step in seconds
+        
+        Returns:
+        --------
+        buffer_samples : int
+            Number of samples needed in buffer for delay
+        """
+        buffer_samples = int(np.ceil(self.tau / dt)) #This represents a buffer for the light currently propagating inside of the ring
+
+        if buffer_samples > self.buffer_size:
+            self.buffer = np.zeros(buffer_samples * 2, dtype=complex)
+            self.buffer_size = buffer_samples * 2
+            print(f"Warning: Buffer size increased to {self.buffer_size} to accommodate delay")
+        return buffer_samples
+
+    
+    def process_waveform(self, input_waveform, dt, wavelength_offset=0.0, voltage_waveform=None):
+        """
+        Process an entire input waveform through the resonator with optimized performance.
+        
+        Parameters:
+        -----------
+        input_waveform : numpy.ndarray
+            Array of complex input field samples
+        dt : float
+            Time step in seconds
+        wavelength_offset : float
+            Wavelength offset from resonance in meters for modulation
+        voltage_waveform : numpy.ndarray or None
+            The voltage waveform
+            
+        Returns:
+        --------
+        output_waveform : numpy.ndarray
+            Array of complex output field samples
+        """
+        # Reset the resonator state
+        self.reset()
+        
+        # Create output array
+        n_samples = len(input_waveform)
+        output_waveform = np.zeros(n_samples, dtype=complex)
+        
+        # Setup sampling parameters
+        buffer_samples = self.setup_sampling(dt)
+        
+        # Pre-compute constant phase component (wavelength offset)
+        base_phi = 0
+        if wavelength_offset != 0.0:
+            base_phi = 2*np.pi/(self.resonant_wavelength + wavelength_offset) * self.n_eff * self.Lrt - 2*np.pi/(self.resonant_wavelength) * self.n_eff * self.Lrt
+        
+        # Pre-compute voltage scaling factor
+        voltage_factor = 2*np.pi/self.resonant_wavelength * self.dn_dV * self.Lrt
+        
+        # Pre-process voltage waveform if RC filter is enabled
+        if voltage_waveform is not None and self.rc_filter_enabled:
+            alpha = dt / (self.rc_time_constant + dt)
+            filtered_voltage = np.zeros_like(voltage_waveform)
+            
+            # Vectorized first-order IIR filter implementation
+            filtered_voltage[0] = alpha * voltage_waveform[0]  # Initial value
+            for i in range(1, len(voltage_waveform)):
+                filtered_voltage[i] = alpha * voltage_waveform[i] + (1 - alpha) * filtered_voltage[i-1]
+        else:
+            filtered_voltage = voltage_waveform
+        
+        # Allocate buffer for T values
+        T_buffer = np.zeros(max(buffer_samples + n_samples, self.buffer_size), dtype=complex)
+        
+        # Initialize first buffer_samples values with sigma (initial condition)
+        T_buffer[:buffer_samples] = self.sigma
+        
+        # Process each sample
+        for i in range(n_samples):
+            # Calculate phase for this sample
+            phi = base_phi
+            if voltage_waveform is not None:
+                phi += voltage_factor * filtered_voltage[i]
+            
+            # Get delayed output from buffer
+            T_delayed = T_buffer[i]
+            
+            # Calculate new transmission
+            T_current = self.sigma + self.a * np.exp(-1j * phi) * (self.sigma * T_delayed - 1)
+            
+            # Store in buffer for later use
+            T_buffer[i + buffer_samples] = T_current
+            
+            # Calculate output
+            output_waveform[i] = input_waveform[i] * T_current
+        
+        return output_waveform
+
+    def calculate_phase(self,wavelength, voltage=0):
+        return 2*np.pi/(wavelength)*(self.n_eff + self.dn_dlambda * (wavelength - self.resonant_wavelength) + self.dn_dV * voltage) * self.Lrt - self.phase_offset
+        
+    def plot_frequency_response(self, lambda_start=1500e-9, lambda_end=1600e-9, points=1000, voltage = 0):
+        """
+        Plot the frequency response of the resonator.
+        
+        Parameters:
+        -----------
+        lambda_start : float
+            Start wavelength in meters (default: 1500 nm)
+        lambda_end : float
+            End wavelength in meters (default: 1600 nm)
+        points : int
+            Number of frequency points (default: 1000)
+        """
+        wavelengths = np.linspace(lambda_start, lambda_end, points)
+        phase_sweep = self.calculate_phase(wavelengths,voltage=voltage)
+        num = self.sigma**2 + self.a**2 - 2*self.a*self.sigma*np.cos(phase_sweep)
+        denom = 1+self.a**2 * self.sigma**2 - 2*self.a*self.sigma*np.cos(phase_sweep)
+        power_transmission = np.real(num/denom * np.conj(num/denom))
+        return wavelengths, power_transmission
 
 def iqm(Ai, u, param=None):
     """
