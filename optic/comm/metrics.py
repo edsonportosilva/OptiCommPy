@@ -21,6 +21,7 @@ Metrics for signal and performance characterization (:mod:`optic.comm.metrics`)
 
 """Metrics for signal and performance characterization."""
 import logging as logg
+from collections import defaultdict
 
 import numpy as np
 from numba import njit, prange
@@ -668,7 +669,7 @@ def minR(R, x):
     return np.argmin(np.abs(R - np.abs(x)))
 
 
-def theoryMI(M, constType, SNR, pX=None, symetry=True, lim=np.inf, tol=1e-3):
+def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
     """
     Calculate mutual information for discrete input continuous output the memoryless AWGN channel (DCMC).
 
@@ -682,7 +683,7 @@ def theoryMI(M, constType, SNR, pX=None, symetry=True, lim=np.inf, tol=1e-3):
         Signal-to-noise ratio in dB.
     pX : array_like, optional
         Probability of each transmitted symbol (default is None).
-    symetry : bool, optional
+    symmetry : bool, optional
         Flag to exploit rotational symmetry of the constellation (default is True).
     lim : int, optional
         Limit for numerical integration (default is np.inf).
@@ -709,30 +710,27 @@ def theoryMI(M, constType, SNR, pX=None, symetry=True, lim=np.inf, tol=1e-3):
 
     MI = -np.sum(pX * np.log2(pX))
 
-    if symetry:
+    if symmetry:
         # Exploit rotational symmetry of the constellation to speed up calculations
-        constR = np.abs(constSymb)
-        R = np.unique(constR)
-        MI_R = np.zeros(R.shape)
-        symbCount = np.zeros(R.shape)
-
-        for ind in range(len(R)):
-            symbCount[ind] = np.sum(constR == R[ind])
-
-        for ind in range(len(constSymb)):
-            indR = minR(R, constSymb[ind])
-
-            if MI_R[indR] == 0:
-                MI_R[indR] = dblquad(
+        groups = defaultdict(list)
+        for i, x in enumerate(constSymb):
+            key = round(abs(x) / 1e-14) * 1e-14
+            groups[key].append(i)
+       
+        for key, indices in groups.items():
+            # Choose a representative index for the group
+            rep_index = indices[0]
+            # Number of elements sharing the same |constSymb|  
+            count = len(indices)     
+            MI -= dblquad(
                     condEntropy,
                     -lim,
                     lim,
                     -lim,
                     lim,
-                    args=(constSymb, pX, ind, σ),
+                    args=(constSymb, pX, rep_index, σ),
                     epsabs=tol,
-                )[0]
-        MI -= np.sum(MI_R * symbCount)
+                )[0] * count
 
     else:
         for ind in range(len(constSymb)):
