@@ -11,6 +11,7 @@ Models for optoelectronic devices (:mod:`optic.models.devices`)
    iqm                   -- Optical In-Phase/Quadrature Modulator (IQM)
    pbs                   -- Polarization beam splitter (PBS)
    hybrid_2x4_90deg      -- Optical 2 x 4 90° hybrid
+   voa                   -- Variable optical attenuator (VOA)
    photodiode            -- Pin photodiode
    balancedPD            -- Balanced photodiode pair
    coherentReceiver      -- Optical coherent receiver (single polarization)
@@ -242,6 +243,30 @@ def pbs(E, θ=0):
 
     return Ex, Ey
 
+def voa(E, A=0):
+    """
+    Variable optical attenuator (VOA).
+
+    Parameters
+    ----------
+    E : np.array
+        Input optical field.
+    A : float
+        attenuation [dB][default: 0 dB]    
+
+    Returns
+    -------
+    Eo : np.array
+          Output optical field.
+
+    References
+    ----------
+    [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
+
+    """   
+    assert A >= 0, "Attenuation should be a positive scalar"
+
+    return E * 10 ** (-A / 20)
 
 def photodiode(E, param=None):
     """
@@ -270,9 +295,17 @@ def photodiode(E, param=None):
 
         - param.fType: frequency response type [default: 'rect']
 
-        - param.N: number of the frequency resp. filter taps. [default: 8001]
+        - param.N: number of the frequency resp. filter taps. [default: 256]
 
-        - param.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
+        - param.ideal: consider ideal photodiode (i.e. $i_{pd} = R|E|^2$) [default: False]
+
+        - param.shotNoise: add shot noise to photocurrent. [default: True]
+
+        - param.thermalNoise: add thermal noise to photocurrent. [default: True]
+
+        - param.currentSaturation: consider photocurrent saturation. [default: False]
+
+        - param.bandwidthLimitation: consider bandwidth limitation. [default: True]
 
     Returns
     -------
@@ -296,9 +329,13 @@ def photodiode(E, param=None):
     RL = getattr(param, "RL", 50)
     B = getattr(param, "B", 30e9)
     Ipd_sat = getattr(param, "Ipd_sat", 5e-3)
-    N = getattr(param, "N", 8000)
+    N = getattr(param, "N", 256)
     fType = getattr(param, "fType", "rect")
-    ideal = getattr(param, "ideal", True)
+    ideal = getattr(param, "ideal", False)
+    shotNoise = getattr(param, "shotNoise", True)
+    thermalNoise = getattr(param, "thermalNoise", True)
+    currentSaturation = getattr(param, "currentSaturation", False)
+    bandwidthLimitation = getattr(param, "bandwidthLimitation", True)
 
     assert R > 0, "PD responsivity should be a positive scalar"
 
@@ -312,26 +349,26 @@ def photodiode(E, param=None):
 
         assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
 
-        ipd[ipd > Ipd_sat] = Ipd_sat  # saturation of the photocurrent
-
-        ipd_mean = ipd.mean().real
-
-        # shot noise
-        σ2_s = 2 * q * (ipd_mean + Id) * B  # shot noise variance
-
-        # thermal noise
-        T = Tc + 273.15  # temperature in Kelvin
-        σ2_T = 4 * kB * T * B / RL  # thermal noise variance
-
-        # add noise sources to the p-i-n receiver
-        Is = np.random.normal(0, np.sqrt(Fs * (σ2_s / (2 * B))), ipd.size)
-        It = np.random.normal(0, np.sqrt(Fs * (σ2_T / (2 * B))), ipd.size)
-
-        ipd += Is + It
-
-        # lowpass filtering
-        h = lowPassFIR(B, Fs, N, typeF=fType)
-        ipd = firFilter(h, ipd)
+        if currentSaturation:
+            ipd[ipd > Ipd_sat] = Ipd_sat  # saturation of the photocurrent
+        
+        if shotNoise:
+            # shot noise
+            σ2_s = 2 * q * (ipd + Id) * B  # shot noise variance
+            Is = np.sqrt(Fs * (σ2_s / (2 * B))) * np.random.normal(0, 1, ipd.size)
+            # add shot noise to photocurrent
+            ipd += Is
+        if thermalNoise:
+            # thermal noise
+            T = Tc + 273.15  # temperature in Kelvin
+            σ2_T = 4 * kB * T * B / RL  # thermal noise variance
+            It = np.sqrt(Fs * (σ2_T / (2 * B))) * np.random.normal(0, 1, ipd.size)
+            # add thermal noise to photocurrent
+            ipd += It
+        if bandwidthLimitation:
+            # lowpass filtering
+            h = lowPassFIR(B, Fs, N, typeF=fType)
+            ipd = firFilter(h, ipd)
 
     return ipd.real
 
