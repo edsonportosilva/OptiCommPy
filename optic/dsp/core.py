@@ -245,15 +245,13 @@ def pulseShape(param):
     elif pulseType == "rrc":
         t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
         pulse = rrcFilterTaps(t, rollOff, 1)
-
     elif pulseType == "rc":
         t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
         pulse = rcFilterTaps(t, rollOff, 1)
-
-    elif pulseType == "doubinary":
-        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
+    elif pulseType == "duobinary":
+        t = np.linspace(-nFilterTaps // 2 - SpS//2, nFilterTaps // 2 + SpS//2, nFilterTaps) * (1 / SpS)
         pulse = np.sinc(t)     
-        pulse += np.roll(pulse, 1)
+        pulse += np.roll(pulse, SpS)        
 
     pulse = pulse / np.sum(pulse)
 
