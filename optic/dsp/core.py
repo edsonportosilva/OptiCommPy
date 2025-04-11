@@ -213,14 +213,11 @@ def pulseShape(param):
         - param.SpS : int, optional
             Number of samples per symbol of input signal. The default is 2.
 
-        - param.N : int, optional
+        - param.nFilterTaps : int, optional
             Number of filter coefficients. The default is 1024.
 
-        - param.alpha : float, optional
+        - param.rollOff : float, optional
             Rolloff of RRC filter. The default is 0.1.
-
-        - param.Ts : float, optional
-            Symbol period in seconds. The default is 1.
 
     Returns
     -------
@@ -231,10 +228,7 @@ def pulseShape(param):
     pulseType = getattr(param, 'pulseType', 'rrc')
     SpS = getattr(param, 'SpS', 2)
     nFilterTaps = getattr(param, 'nFilterTaps', 256)
-    rollOff = getattr(param, 'rollOff', 0.1)
-    Ts = getattr(param, 'Ts', 1)
-    
-    Fs = (1 / Ts) * SpS
+    rollOff = getattr(param, 'rollOff', 0.1)         
 
     if pulseType == "rect":
         filterCoeffs = np.concatenate(
@@ -249,16 +243,17 @@ def pulseShape(param):
             mode="full",
         )
     elif pulseType == "rrc":
-        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / Fs)
-        filterCoeffs = rrcFilterTaps(t, rollOff, Ts)
+        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
+        filterCoeffs = rrcFilterTaps(t, rollOff, 1)
 
     elif pulseType == "rc":
-        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / Fs)
-        filterCoeffs = rcFilterTaps(t, rollOff, Ts)
+        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
+        filterCoeffs = rcFilterTaps(t, rollOff, 1)
 
     elif pulseType == "doubinary":
-        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / Fs)
-        filterCoeffs = np.sinc(t / Ts) + np.sinc((t - Ts) / Ts)      
+        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
+        filterCoeffs = np.sinc(t)     
+        filteCoeffs += np.roll(filterCoeffs, 1)
 
     filterCoeffs = filterCoeffs / np.sum(filterCoeffs)
 
