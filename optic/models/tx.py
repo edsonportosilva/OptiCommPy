@@ -14,7 +14,7 @@ from tqdm.notebook import tqdm
 
 from optic.dsp.core import pnorm, pulseShape, signal_power, upsample, phaseNoise
 from optic.models.devices import iqm, mzm
-from optic.comm.modulation import grayMapping, modulateGray
+from optic.comm.modulation import grayMapping
 from optic.comm.sources import symbolSource
 from optic.utils import parameters, dBm2W
 
@@ -133,6 +133,16 @@ def simpleWDMTx(param):
     paramSymb.dist = param.probabilityDistribution
     paramSymb.shapingFactor = param.shapingFactor
 
+    # Pulse shaping filter parameters
+    paramPulse = parameters()   
+    paramPulse.pulse = param.pulse
+    paramPulse.nPulseTaps = param.nPulseTaps
+    paramPulse.rollOff = param.pulseRollOff
+    paramPulse.SpS = param.SpS
+
+    # pulse shaping filter   
+    pulse = pulseShape(paramPulse)
+    
     # central frequencies of the WDM channels
     freqGrid = (
         np.arange(-np.floor(param.nChannels / 2), np.floor(param.nChannels / 2) + 1, 1)
@@ -164,17 +174,7 @@ def simpleWDMTx(param):
     )
 
     Psig = 0
-
-    # pulse shaping filter
-    if param.pulse == "nrz":
-        pulse = pulseShape("nrz", param.SpS)
-    elif param.pulse == "rrc":
-        pulse = pulseShape(
-            "rrc", param.SpS, N=param.nPulseTaps, alpha=param.pulseRollOff, Ts=Ts
-        )
-
-    pulse = pulse / np.max(np.abs(pulse))
-
+    
     if param.seed is not None:
         seed = param.seed
     else:
@@ -288,8 +288,8 @@ def pamTransmitter(param):
     param.shapingFactor = getattr(param, "shapingFactor", 0)
     param.seed = getattr(param, "seed", None)
     param.nBits = getattr(param, "nBits", 40000)
-    param.pulse = getattr(param, "pulse", "rrc")
-    param.nPulseTaps = getattr(param, "nPulseTaps", 4096)
+    param.pulse = getattr(param, "pulse", "nrz")
+    param.nPulseTaps = getattr(param, "nPulseTaps", 256)
     param.pulseRollOff = getattr(param, "pulseRollOff", 0.01)
     param.mzmVpi = getattr(param, "mzmVpi", 3)
     param.mzmVb = getattr(param, "mzmVb", -1.5)
@@ -305,6 +305,13 @@ def pamTransmitter(param):
     paramSymb.constType = "pam"
     paramSymb.dist = param.probabilityDistribution
     paramSymb.shapingFactor = param.shapingFactor
+
+    # Pulse shaping filter parameters
+    paramPulse = parameters()
+    paramPulse.pulse = param.pulse
+    paramPulse.nPulseTaps = param.nPulseTaps
+    paramPulse.rollOff = param.pulseRollOff
+    paramPulse.SpS = param.SpS
 
     # MZM parameters
     paramMZM = parameters()
@@ -334,7 +341,7 @@ def pamTransmitter(param):
         symbolsUp = upsample(symbTx_, param.SpS)
 
         # pulse shaping filter
-        pulse = pulseShape(param.pulse, param.SpS)
+        pulse = pulseShape(paramPulse)
 
         # pulse shaping
         sigTx = firFilter(pulse, symbolsUp)
