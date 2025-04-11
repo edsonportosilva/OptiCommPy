@@ -231,33 +231,33 @@ def pulseShape(param):
     rollOff = getattr(param, 'rollOff', 0.1)         
 
     if pulseType == "rect":
-        filterCoeffs = np.concatenate(
+        pulse = np.concatenate(
             (np.zeros(int(SpS / 2)), np.ones(SpS), np.zeros(int(SpS / 2)))
         )
     elif pulseType == "nrz":
         t = np.linspace(-2, 2, SpS)
         Te = 1
-        filterCoeffs = np.convolve(
+        pulse = np.convolve(
             np.ones(SpS),
             2 / (np.sqrt(np.pi) * Te) * np.exp(-(t**2) / Te),
             mode="full",
         )
     elif pulseType == "rrc":
         t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
-        filterCoeffs = rrcFilterTaps(t, rollOff, 1)
+        pulse = rrcFilterTaps(t, rollOff, 1)
 
     elif pulseType == "rc":
         t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
-        filterCoeffs = rcFilterTaps(t, rollOff, 1)
+        pulse = rcFilterTaps(t, rollOff, 1)
 
     elif pulseType == "doubinary":
         t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
-        filterCoeffs = np.sinc(t)     
-        filteCoeffs += np.roll(filterCoeffs, 1)
+        pulse = np.sinc(t)     
+        pulse += np.roll(pulse, 1)
 
-    filterCoeffs = filterCoeffs / np.sum(filterCoeffs)
+    pulse = pulse / np.sum(pulse)
 
-    return filterCoeffs
+    return pulse
 
 
 @njit(parallel=True)
