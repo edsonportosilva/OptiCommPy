@@ -9,6 +9,7 @@ Sources of discrete sequences (:mod:`optic.comm.sources`)
    bitSource          -- Generate a random bit sequence of length nBits.
    prbsGenerator      -- Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.
    symbolSource       -- Generate a random symbol sequence from a given modulation scheme.  
+   cazacSequence      -- Generate a CAZAC (Zadoff-Chu) sequence of length N.
 """
 
 import logging as logg
