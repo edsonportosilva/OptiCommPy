@@ -199,22 +199,28 @@ def rcFilterTaps(t, alpha, Ts):
     return coeffs
 
 
-def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
+def pulseShape(param):
     """
     Generate a pulse shaping filter.
 
     Parameters
     ----------
-    pulseType : string ('rect','nrz','rrc')
-        type of pulse shaping filter.
-    SpS : int, optional
-        Number of samples per symbol of input signal. The default is 2.
-    N : int, optional
-        Number of filter coefficients. The default is 1024.
-    alpha : float, optional
-        Rolloff of RRC filter. The default is 0.1.
-    Ts : float, optional
-        Symbol period in seconds. The default is 1.
+    param : core.parameter
+        Pulse shaping parameters:
+        - param.pulseType : string ('rect','nrz','rrc','rc', 'doubinary')
+            Type of pulse shaping filter. The default is 'rrc'. 
+
+        - param.SpS : int, optional
+            Number of samples per symbol of input signal. The default is 2.
+
+        - param.N : int, optional
+            Number of filter coefficients. The default is 1024.
+
+        - param.alpha : float, optional
+            Rolloff of RRC filter. The default is 0.1.
+
+        - param.Ts : float, optional
+            Symbol period in seconds. The default is 1.
 
     Returns
     -------
@@ -222,7 +228,13 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
         Array of filter coefficients (normalized).
 
     """
-    fa = (1 / Ts) * SpS
+    pulseType = getattr(param, 'pulseType', 'rrc')
+    SpS = getattr(param, 'SpS', 2)
+    nFilterTaps = getattr(param, 'nFilterTaps', 256)
+    rollOff = getattr(param, 'rollOff', 0.1)
+    Ts = getattr(param, 'Ts', 1)
+    
+    Fs = (1 / Ts) * SpS
 
     if pulseType == "rect":
         filterCoeffs = np.concatenate(
@@ -237,14 +249,18 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
             mode="full",
         )
     elif pulseType == "rrc":
-        t = np.linspace(-N // 2, N // 2, N) * (1 / fa)
-        filterCoeffs = rrcFilterTaps(t, alpha, Ts)
+        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / Fs)
+        filterCoeffs = rrcFilterTaps(t, rollOff, Ts)
 
     elif pulseType == "rc":
-        t = np.linspace(-N // 2, N // 2, N) * (1 / fa)
-        filterCoeffs = rcFilterTaps(t, alpha, Ts)
+        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / Fs)
+        filterCoeffs = rcFilterTaps(t, rollOff, Ts)
 
-    filterCoeffs = filterCoeffs / np.sqrt(np.sum(filterCoeffs**2))
+    elif pulseType == "doubinary":
+        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / Fs)
+        filterCoeffs = np.sinc(t / Ts) + np.sinc((t - Ts) / Ts)      
+
+    filterCoeffs = filterCoeffs / np.sum(filterCoeffs)
 
     return filterCoeffs
 
