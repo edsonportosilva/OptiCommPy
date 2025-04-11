@@ -6,7 +6,8 @@ Advanced models for optical transmitters (:mod:`optic.models.tx`)
 .. autosummary::
    :toctree: generated/
 
-   simpleWDMTx          -- Implement a simple WDM transmitter.
+   simpleWDMTx          -- Implements a simple optical WDM transmitter.
+   pamTransmitter       -- Implements an optical PAM signal transmitter.
 """
 
 import numpy as np
