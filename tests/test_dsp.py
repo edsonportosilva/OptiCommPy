@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Test functions in dsp.py
+Test functions in optic.dsp.core module.
 
 """
 

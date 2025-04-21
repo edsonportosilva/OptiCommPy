@@ -46,7 +46,7 @@ If you want to contribute to this project, implement the feature you want and se
 -  numpy>=1.24.4
 -  scipy>=1.13.0
 -  matplotlib>=3.7.0
--  numba>=0.54.1,<=0.57.0
+-  numba>=0.54.1
 -  tqdm>=4.64.1
 -  simple-pid>=1.0.1
 -  mpl-scatter-density>=0.7.0
