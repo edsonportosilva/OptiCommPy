@@ -136,279 +136,159 @@ def mzm(Ai, u, param=None):
     π = np.pi
     return Ai * np.cos(0.5 / Vpi * (u + Vb) * π)
 
-class RingModulator:
+def ring_modulator(
+    input_waveform: np.ndarray,
+    dt: float,
+    radius: float = 10e-6,
+    resonant_wavelength: float = 1550e-9,
+    n_eff: float = 2.4,
+    ng: float = 4.2,
+    dn_dV: float = 2E-4,
+    loss_dB_m: float = 4000,
+    kappa_power: float = 0.1,
+    buffer_size_hint: int = 1000000,
+    rc_filter_enabled: bool = False,
+    rc_time_constant: float = 1e-9,
+    wavelength_offset: float = 0.0,
+    voltage_waveform = None
+) -> np.ndarray:
     """
-    A class representing an optical ring resonator with bus coupling. It correctly calculates both the time domain (transient)
-    and frequency domain (steady state) response of the resonator to both input optical fields and voltage.
+    Simulates the time-domain response of a photonic ring modulator to an input optical waveform and voltage.
 
+    This function encapsulates the core simulation logic previously found in the RingModulator class.
 
-    References
-    ----------
+    Parameters:
+    -----------
+    input_waveform : numpy.ndarray
+        Array of complex input optical field samples.
+    dt : float
+        Time step in seconds between samples in input_waveform.
+    radius : float
+        Radius of the ring resonator in meters (default: 10e-6).
+    resonant_wavelength : float
+        Wavelength the ring is designed to resonate at, in meters (default: 1550e-9).
+    n_eff : float
+        Effective refractive index at the resonant wavelength (default: 2.4).
+    ng : float
+        Group index (default: 4.2).
+    dn_dV : float
+        Change in effective index per volt (default: 2E-4).
+    loss_dB_m : float
+        Round-trip propagation loss in dB per meter (default: 4000 dB/m).
+    kappa_power : float
+        Fraction of power coupled from bus waveguide into ring (default: 0.1).
+    buffer_size_hint : int
+        Suggested initial size for the internal buffer (default: 1000000). May be increased if needed.
+    rc_filter_enabled : bool
+        Enable RC filter for voltage input (default: False).
+    rc_time_constant : float
+        Time constant for RC filter in seconds (default: 1e-9, i.e., 1 ns).
+    wavelength_offset : float
+        Wavelength offset from resonance in meters for the input light (default: 0.0).
+    voltage_waveform : numpy.ndarray or None
+        The voltage waveform applied to the modulator. Must have the same length as input_waveform if provided.
+
+    Returns:
+    --------
+    output_waveform : numpy.ndarray
+        Array of complex output optical field samples.
+
+    References:
+    -----------
     [1] W. Sacher and J. Poon, Dynamics of microring resonator modulators. Optics Express, 2008.
-
-    [2] W. Bogaerts et al, Silicon microring resonators. Laser & Photonics Reviews, 2012.
     """
-    
-    def __init__(
-            self, 
-            radius=10e-6, 
-            resonant_wavelength=1550e-9,
-            n_eff=2.4, 
-            ng = 4.2,
-            dn_dV = 2E-4,
-            a=4000,  
-            kappa=0.1, 
-            buffer_size=1000000,
-            # Add RC filter parameters
-            rc_filter_enabled=False,
-            rc_time_constant=1e-9  # Default 10 ps time constant
-        ):
-        """
-        Initialize the ring resonator.
-        
-        Parameters:
-        -----------
-        radius : float
-            Radius of the ring resonator in meters (default: 10e-6)
-        resonant_wavelength : float
-            Wavelength the ring will resonant at in meters (default: 1550 nm)
-        n_eff : float
-            Effective index measured at the rseonant wavelength of interest (default: 2.4)
-        n_g : float
-            Group index (default: 4.2)
-        dn_dV : float
-            Change in effective index per volt (default: 2E-4)
-        a : float
-            Round-trip propagation loss in dB per meter (default:4000 dB/m)
-        kappa : float
-            Fraction of power coupled from bus waveguide into ring: (default: 0.1)
-        buffer_size : int
-            Size of buffer for storing past field values (default: 1000000)
-        rc_filter_enabled : bool
-            Enable RC filter for voltage input (default: False)
-        rc_time_constant : float
-            Time constant for RC filter in seconds (default: 10 ps)
-        """
-        self.radius = radius
-        self.resonant_wavelength = resonant_wavelength
-        self.n_eff = n_eff
-        self.ng = ng
-        self.dn_dV = dn_dV
 
-        #Calculate dn/dlambda from the neff and group index for use below
-        self.dn_dlambda = (self.n_eff - self.ng)/self.resonant_wavelength
-        
-        # Calculate kappa from sigma if not provided (assuming lossless coupler)
-        self.kappa = np.sqrt(kappa)
-        self.sigma = np.sqrt(1 - kappa**2)
-            
-        # Calculate round-trip time
-        self.Lrt = 2 * np.pi * radius  # Round-trip length
-        self.junction_loss_dB_m = a  # Round-trip loss in dB/m
-        self.a = np.sqrt(np.exp(-self.junction_loss_dB_m*self.Lrt/(10*np.log10(np.e))))
-        self.tau = n_eff * self.Lrt / const.c  # Round-trip time
+    # --- Parameter Calculation ---
+    kappa = np.sqrt(kappa_power)  # Field coupling coefficient
+    sigma = np.sqrt(1 - kappa**2) # Field transmission coefficient (through-port)
 
-        #Calculate a phase offset that moves the resonance to the desired wavelength
-        self.phase_offset = 0
-        self.phase_offset = self.calculate_phase(self.resonant_wavelength)
-        
-        # Initialize buffer for delayed field values
-        self.buffer_size = buffer_size
-        self.buffer = np.zeros(buffer_size, dtype=complex)
-        self.buffer_idx = 0
-        self.buffer_initialized = False
+    Lrt = 2 * np.pi * radius      # Round-trip length
+    # Calculate amplitude loss factor 'a' from loss in dB/m
+    a_loss = np.exp(-loss_dB_m * Lrt / (20 * np.log10(np.e))) # Round-trip field amplitude loss factor
 
-        # Initialize RC filter parameters
-        self.rc_filter_enabled = rc_filter_enabled
-        self.rc_time_constant = rc_time_constant
-        self.previous_filtered_voltage = 0.0  # Store last filtered voltage value
-        
-        print(f"Ring Resonator initialized with round-trip time: {self.tau:.3e} seconds")
-        if self.rc_filter_enabled:
-            print(f"RC filter enabled with time constant: {self.rc_time_constant:.3e} seconds")
-        
-    def reset(self):
-        """Reset the resonator state."""
-        self.buffer = np.zeros(self.buffer_size, dtype=complex)
-        self.buffer_idx = 0
-        self.buffer_initialized = False
-        
-    @property 
-    def FSR(self):
-        """
-        Calculate the Free Spectral Range (FSR) of the resonator.
-        
-        Inputs:
-        -------
-        resonant_wavelength: float
-            The resonance wavelength you want the FSR calculated at
+    tau = ng * Lrt / const.c      # Round-trip time using group index for delay
 
-        Returns:
-        --------
-        FSR : float
-            Free Spectral Range in Hz
-        """
-        return self.resonant_wavelength**2/(self.ng * self.Lrt)
-    
-    @property
-    def finesse(self):
-        """
-        Calculate the finesse of the resonator.
-        
-        Returns:
-        --------
-        finesse : float
-            Resonator finesse
-        """
-        r = self.a * self.sigma
-        finesse = np.pi * np.sqrt(r) / (1 - r)
-        return finesse
+    # --- Buffer Setup ---
+    buffer_samples = int(np.ceil(tau / dt)) # Samples needed for round-trip delay
+    actual_buffer_size = max(buffer_size_hint, buffer_samples + 1) # Ensure buffer is large enough
 
-    @property
-    def FWHM(self):
-        """
-        The full width at half maximum of the loaded ring resonator
-        """
-        num = (1-self.sigma * self.a) * self.resonant_wavelength**2
-        denom = np.pi * self.ng * self.Lrt * np.sqrt(self.sigma * self.a)
-        return num/denom
+    if buffer_samples > buffer_size_hint:
+        print(f"Note: Ring delay ({tau:.2e} s) requires {buffer_samples} samples. "
+              f"Using buffer size {actual_buffer_size}.")
 
-    @property
-    def quality_factor(self):
-        """
-        Loaded quality factor of the ring resonator
-        """
-        return self.resonant_wavelength/self.FWHM
+    # Initialize buffer for the internal field state (a_n(t)) - See Eq. (2) in Ref [1]
+    # The buffer stores the field *inside* the ring just before the coupler.
+    ring_field_buffer = np.zeros(actual_buffer_size, dtype=complex)
+    buffer_idx = 0
 
-    @property
-    def photon_lifetime(self):
-        """
-        Photon lifetime in the ring resonator
-        """
-        return self.quality_factor/(2*np.pi * const.c/self.resonant_wavelength)
-    
-    def setup_sampling(self, dt):
-        """
-        Set up the sampling parameters based on time step.
-        
-        Parameters:
-        -----------
-        dt : float
-            Time step in seconds
-        
-        Returns:
-        --------
-        buffer_samples : int
-            Number of samples needed in buffer for delay
-        """
-        buffer_samples = int(np.ceil(self.tau / dt)) #This represents a buffer for the light currently propagating inside of the ring
+    # --- Waveform Processing Setup ---
+    n_samples = len(input_waveform)
+    output_waveform = np.zeros(n_samples, dtype=complex)
 
-        if buffer_samples > self.buffer_size:
-            self.buffer = np.zeros(buffer_samples * 2, dtype=complex)
-            self.buffer_size = buffer_samples * 2
-            print(f"Warning: Buffer size increased to {self.buffer_size} to accommodate delay")
-        return buffer_samples
+    # Calculate the operating wavelength
+    operating_wavelength = resonant_wavelength + wavelength_offset
+    if operating_wavelength <= 0:
+        raise ValueError("Operating wavelength must be positive.")
 
-    
-    def process_waveform(self, input_waveform, dt, wavelength_offset=0.0, voltage_waveform=None):
-        """
-        Process an entire input waveform through the resonator with optimized performance.
-        
-        Parameters:
-        -----------
-        input_waveform : numpy.ndarray
-            Array of complex input field samples
-        dt : float
-            Time step in seconds
-        wavelength_offset : float
-            Wavelength offset from resonance in meters for modulation
-        voltage_waveform : numpy.ndarray or None
-            The voltage waveform
-            
-        Returns:
-        --------
-        output_waveform : numpy.ndarray
-            Array of complex output field samples
-        """
-        # Reset the resonator state
-        self.reset()
-        
-        # Create output array
-        n_samples = len(input_waveform)
-        output_waveform = np.zeros(n_samples, dtype=complex)
-        
-        # Setup sampling parameters
-        buffer_samples = self.setup_sampling(dt)
-        
-        # Pre-compute constant phase component (wavelength offset)
-        base_phi = 0
-        if wavelength_offset != 0.0:
-            base_phi = 2*np.pi/(self.resonant_wavelength + wavelength_offset) * self.n_eff * self.Lrt - 2*np.pi/(self.resonant_wavelength) * self.n_eff * self.Lrt
-        
-        # Pre-compute voltage scaling factor
-        voltage_factor = 2*np.pi/self.resonant_wavelength * self.dn_dV * self.Lrt
-        
-        # Pre-process voltage waveform if RC filter is enabled
-        if voltage_waveform is not None and self.rc_filter_enabled:
-            alpha = dt / (self.rc_time_constant + dt)
-            filtered_voltage = np.zeros_like(voltage_waveform)
-            
-            # Vectorized first-order IIR filter implementation
-            filtered_voltage[0] = alpha * voltage_waveform[0]  # Initial value
-            for i in range(1, len(voltage_waveform)):
-                filtered_voltage[i] = alpha * voltage_waveform[i] + (1 - alpha) * filtered_voltage[i-1]
-        else:
-            filtered_voltage = voltage_waveform
-        
-        # Allocate buffer for T values
-        T_buffer = np.zeros(max(buffer_samples + n_samples, self.buffer_size), dtype=complex)
-        
-        # Initialize first buffer_samples values with sigma (initial condition)
-        T_buffer[:buffer_samples] = self.sigma
-        
-        # Process each sample
+    # Pre-compute constant phase component (due to wavelength offset and static n_eff)
+    base_phi = (2 * np.pi * n_eff / operating_wavelength) * Lrt - (2 * np.pi * n_eff / resonant_wavelength) * Lrt
+
+    # Pre-compute voltage-dependent phase scaling factor
+    # Delta_phi = (2 * pi * Delta_n_eff / lambda) * L = (2 * pi * dn_dV * V / lambda) * L
+    voltage_phase_factor = (2 * np.pi * dn_dV / resonant_wavelength) * Lrt
+
+    # --- RC Filter (if enabled) ---
+    if voltage_waveform is not None and rc_filter_enabled:
+        if len(voltage_waveform) != n_samples:
+            raise ValueError("Voltage waveform must have the same length as the input waveform.")
+        if rc_time_constant <= 0:
+             raise ValueError("RC time constant must be positive.")
+
+        alpha = dt / (rc_time_constant + dt) # Filter coefficient for IIR filter
+        filtered_voltage = np.zeros_like(voltage_waveform)
+        last_filtered_v = 0.0 # Initial condition for the filter
+
+        # Apply first-order IIR filter: y[n] = alpha*x[n] + (1-alpha)*y[n-1]
         for i in range(n_samples):
-            # Calculate phase for this sample
-            phi = base_phi
-            if voltage_waveform is not None:
-                phi += voltage_factor * filtered_voltage[i]
-            
-            # Get delayed output from buffer
-            T_delayed = T_buffer[i]
-            
-            # Calculate new transmission
-            T_current = self.sigma + self.a * np.exp(-1j * phi) * (self.sigma * T_delayed - 1)
-            
-            # Store in buffer for later use
-            T_buffer[i + buffer_samples] = T_current
-            
-            # Calculate output
-            output_waveform[i] = input_waveform[i] * T_current
-        
-        return output_waveform
+            filtered_voltage[i] = alpha * voltage_waveform[i] + (1 - alpha) * last_filtered_v
+            last_filtered_v = filtered_voltage[i]
+    elif voltage_waveform is not None:
+        filtered_voltage = voltage_waveform # Use voltage directly if filter is off
+        if len(voltage_waveform) != n_samples:
+            raise ValueError("Voltage waveform must have the same length as the input waveform.")
+    else:
+        filtered_voltage = np.zeros(n_samples) # No voltage applied
 
-    def calculate_phase(self,wavelength, voltage=0):
-        return 2*np.pi/(wavelength)*(self.n_eff + self.dn_dlambda * (wavelength - self.resonant_wavelength) + self.dn_dV * voltage) * self.Lrt - self.phase_offset
-        
-    def plot_frequency_response(self, lambda_start=1500e-9, lambda_end=1600e-9, points=1000, voltage = 0):
-        """
-        Plot the frequency response of the resonator.
-        
-        Parameters:
-        -----------
-        lambda_start : float
-            Start wavelength in meters (default: 1500 nm)
-        lambda_end : float
-            End wavelength in meters (default: 1600 nm)
-        points : int
-            Number of frequency points (default: 1000)
-        """
-        wavelengths = np.linspace(lambda_start, lambda_end, points)
-        phase_sweep = self.calculate_phase(wavelengths,voltage=voltage)
-        num = self.sigma**2 + self.a**2 - 2*self.a*self.sigma*np.cos(phase_sweep)
-        denom = 1+self.a**2 * self.sigma**2 - 2*self.a*self.sigma*np.cos(phase_sweep)
-        power_transmission = np.real(num/denom * np.conj(num/denom))
-        return wavelengths, power_transmission
+    # --- Simulation Loop ---
+    for i in range(n_samples):
+        # Get delayed ring field from buffer
+        delayed_idx = (buffer_idx - buffer_samples + actual_buffer_size) % actual_buffer_size
+        a_n_delayed = ring_field_buffer[delayed_idx]
+
+        # Calculate total phase for this time step
+        phi = base_phi + voltage_phase_factor * filtered_voltage[i]
+        phase_term = a_loss * np.exp(-1j * phi) # Combined loss and phase shift
+
+        # Calculate field inside the ring (a_n(t)) and store it
+        # a_n(t) = kappa * s_in(t) + sigma * a_n(t - tau) * phase_term
+        current_ring_field = kappa * input_waveform[i] + sigma * a_n_delayed * phase_term
+        ring_field_buffer[buffer_idx] = current_ring_field
+
+        # Calculate output field (s_out(t))
+        # We need to store past values of a_n(t). Let's rename ring_field_buffer to a_n_buffer.
+        a_n_delayed = ring_field_buffer[delayed_idx] # This is a_n(t-tau)
+
+        # Calculate output field s_out(t)
+        output_waveform[i] = sigma * input_waveform[i] + 1j * kappa * a_n_delayed * a_loss * np.exp(-1j * phi)
+
+        # Calculate next internal field a_n(t) and store it
+        a_n_current = sigma * a_n_delayed * a_loss * np.exp(-1j * phi) + 1j * kappa * input_waveform[i]
+        ring_field_buffer[buffer_idx] = a_n_current
+
+        # Update buffer index
+        buffer_idx = (buffer_idx + 1) % actual_buffer_size
+
+    return output_waveform
 
 def iqm(Ai, u, param=None):
     """
