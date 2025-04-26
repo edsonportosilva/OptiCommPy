@@ -137,56 +137,33 @@ def mzm(Ai, u, param=None):
     return Ai * np.cos(0.5 / Vpi * (u + Vb) * π)
 
 def ring_modulator(
-    input_waveform: np.ndarray,
-    dt: float,
-    radius: float = 10e-6,
-    resonant_wavelength: float = 1550e-9,
-    n_eff: float = 2.4,
-    ng: float = 4.2,
-    dn_dV: float = 2E-4,
-    loss_dB_m: float = 4000,
-    kappa_power: float = 0.1,
-    buffer_size_hint: int = 1000000,
-    rc_filter_enabled: bool = False,
-    rc_time_constant: float = 1e-9,
-    wavelength_offset: float = 0.0,
-    voltage_waveform = None
+    Ai: np.ndarray,  # optical field at the input of the ring
+    u: np.ndarray,   # electrical driving signal
+    param           # structure containing all other parameters
 ) -> np.ndarray:
     """
     Simulates the time-domain response of a photonic ring modulator to an input optical waveform and voltage.
 
-    This function encapsulates the core simulation logic previously found in the RingModulator class.
-
     Parameters:
     -----------
-    input_waveform : numpy.ndarray
+    Ai : numpy.ndarray
         Array of complex input optical field samples.
-    dt : float
-        Time step in seconds between samples in input_waveform.
-    radius : float
-        Radius of the ring resonator in meters (default: 10e-6).
-    resonant_wavelength : float
-        Wavelength the ring is designed to resonate at, in meters (default: 1550e-9).
-    n_eff : float
-        Effective refractive index at the resonant wavelength (default: 2.4).
-    ng : float
-        Group index (default: 4.2).
-    dn_dV : float
-        Change in effective index per volt (default: 2E-4).
-    loss_dB_m : float
-        Round-trip propagation loss in dB per meter (default: 4000 dB/m).
-    kappa_power : float
-        Fraction of power coupled from bus waveguide into ring (default: 0.1).
-    buffer_size_hint : int
-        Suggested initial size for the internal buffer (default: 1000000). May be increased if needed.
-    rc_filter_enabled : bool
-        Enable RC filter for voltage input (default: False).
-    rc_time_constant : float
-        Time constant for RC filter in seconds (default: 1e-9, i.e., 1 ns).
-    wavelength_offset : float
-        Wavelength offset from resonance in meters for the input light (default: 0.0).
-    voltage_waveform : numpy.ndarray or None
-        The voltage waveform applied to the modulator. Must have the same length as input_waveform if provided.
+    u : numpy.ndarray
+        The voltage waveform applied to the modulator. Must have the same length as Ai.
+    param : object
+        Structure containing all other parameters:
+        - dt: Time step in seconds between samples in input_waveform.
+        - radius: Radius of the ring resonator in meters.
+        - resonant_wavelength: Wavelength the ring is designed to resonate at, in meters.
+        - n_eff: Effective refractive index at the resonant wavelength.
+        - ng: Group index.
+        - dn_dV: Change in effective index per volt.
+        - loss_dB_m: Round-trip propagation loss in dB per meter.
+        - kappa_power: Fraction of power coupled from bus waveguide into ring.
+        - buffer_size_hint: Suggested initial size for the internal buffer.
+        - rc_filter_enabled: Enable RC filter for voltage input.
+        - rc_time_constant: Time constant for RC filter in seconds.
+        - wavelength_offset: Wavelength offset from resonance in meters for the input light.
 
     Returns:
     --------
@@ -197,6 +174,19 @@ def ring_modulator(
     -----------
     [1] W. Sacher and J. Poon, Dynamics of microring resonator modulators. Optics Express, 2008.
     """
+
+    dt = param.dt
+    radius = getattr(param, "radius", 10e-6)  # Default radius of the ring resonator
+    resonant_wavelength = getattr(param, "resonant_wavelength", 1550e-9)  # Default resonant wavelength
+    n_eff = getattr(param, "n_eff", 2.4)  # Default effective refractive index
+    ng = getattr(param, "ng", 4.2)  # Default group index
+    dn_dV = getattr(param, "dn_dV", 2E-4)  # Default change in effective index per volt
+    loss_dB_m = getattr(param, "loss_dB_m", 4000)  # Default round-trip propagation loss in dB/m
+    kappa_power = getattr(param, "kappa_power", 0.1)  # Default fraction of power coupled from bus waveguide into ring
+    buffer_size_hint = getattr(param, "buffer_size_hint", 1000000)  # Default suggested initial size for the internal buffer
+    rc_filter_enabled = getattr(param, "rc_filter_enabled", False)  # Default RC filter enabled
+    rc_time_constant = getattr(param, "rc_time_constant", 5e-12)  # Default time constant for RC filter in seconds
+    wavelength_offset = getattr(param, "wavelength_offset", -75e-12)  # Default wavelength offset from resonance in meters
 
     # --- Parameter Calculation ---
     kappa = np.sqrt(kappa_power)  # Field coupling coefficient
@@ -222,7 +212,7 @@ def ring_modulator(
     buffer_idx = 0
 
     # --- Waveform Processing Setup ---
-    n_samples = len(input_waveform)
+    n_samples = len(Ai)
     output_waveform = np.zeros(n_samples, dtype=complex)
 
     # Calculate the operating wavelength
@@ -238,23 +228,23 @@ def ring_modulator(
     voltage_phase_factor = (2 * np.pi * dn_dV / resonant_wavelength) * Lrt
 
     # --- RC Filter (if enabled) ---
-    if voltage_waveform is not None and rc_filter_enabled:
-        if len(voltage_waveform) != n_samples:
+    if u is not None and rc_filter_enabled:
+        if len(u) != n_samples:
             raise ValueError("Voltage waveform must have the same length as the input waveform.")
         if rc_time_constant <= 0:
              raise ValueError("RC time constant must be positive.")
 
         alpha = dt / (rc_time_constant + dt) # Filter coefficient for IIR filter
-        filtered_voltage = np.zeros_like(voltage_waveform)
+        filtered_voltage = np.zeros_like(u)
         last_filtered_v = 0.0 # Initial condition for the filter
 
         # Apply first-order IIR filter: y[n] = alpha*x[n] + (1-alpha)*y[n-1]
         for i in range(n_samples):
-            filtered_voltage[i] = alpha * voltage_waveform[i] + (1 - alpha) * last_filtered_v
+            filtered_voltage[i] = alpha * u[i] + (1 - alpha) * last_filtered_v
             last_filtered_v = filtered_voltage[i]
-    elif voltage_waveform is not None:
-        filtered_voltage = voltage_waveform # Use voltage directly if filter is off
-        if len(voltage_waveform) != n_samples:
+    elif u is not None:
+        filtered_voltage = u # Use voltage directly if filter is off
+        if len(u) != n_samples:
             raise ValueError("Voltage waveform must have the same length as the input waveform.")
     else:
         filtered_voltage = np.zeros(n_samples) # No voltage applied
@@ -271,7 +261,7 @@ def ring_modulator(
 
         # Calculate field inside the ring (a_n(t)) and store it
         # a_n(t) = kappa * s_in(t) + sigma * a_n(t - tau) * phase_term
-        current_ring_field = kappa * input_waveform[i] + sigma * a_n_delayed * phase_term
+        current_ring_field = kappa * Ai[i] + sigma * a_n_delayed * phase_term
         ring_field_buffer[buffer_idx] = current_ring_field
 
         # Calculate output field (s_out(t))
@@ -279,10 +269,10 @@ def ring_modulator(
         a_n_delayed = ring_field_buffer[delayed_idx] # This is a_n(t-tau)
 
         # Calculate output field s_out(t)
-        output_waveform[i] = sigma * input_waveform[i] + 1j * kappa * a_n_delayed * a_loss * np.exp(-1j * phi)
+        output_waveform[i] = sigma * Ai[i] + 1j * kappa * a_n_delayed * a_loss * np.exp(-1j * phi)
 
         # Calculate next internal field a_n(t) and store it
-        a_n_current = sigma * a_n_delayed * a_loss * np.exp(-1j * phi) + 1j * kappa * input_waveform[i]
+        a_n_current = sigma * a_n_delayed * a_loss * np.exp(-1j * phi) + 1j * kappa * Ai[i]
         ring_field_buffer[buffer_idx] = a_n_current
 
         # Update buffer index
