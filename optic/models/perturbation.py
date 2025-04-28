@@ -500,10 +500,54 @@ def perturbationNLIN(Ein, param):
     """
     Calculates the perturbation-based additive and multiplicative NLIN for dual-polarization signals.
 
-    This function models nonlinear impairments in optical communication systems
-    considering intrachannel four-wave mixing (IFWM), intrachannel cross-phase modulation (IXPM),
-    and self-phase modulation (SPM) effects, using a memory-based convolution approach.
-    Optimized
+    Parameters
+    ----------
+    Ein : ndarray of shape (N, 2)
+        Input signal for dual-polarization (complex-valued).
+        The first column represents the X polarization, and the second column represents the Y polarization.
+
+    param : optic.utils.parameters object
+        An object containing the following attributes:
+        - D : float, optional
+            Dispersion parameter (ps/nm/km). Default is 17.
+
+        - alpha : float, optional
+            Attenuation (dB/km). Default is None.
+
+        - lspan : float, optional
+            Span length (km). Default is None.
+
+        - length : float, optional
+            Total length (km). Default is None.
+
+        - pulseWidth : float, optional
+            Pulse width (fraction of symbol period). Default is 0.5.
+
+        - gamma : float, optional
+            Nonlinear coefficient (1/W/km). Default is None.
+
+        - Fc : float, optional
+            Carrier frequency (THz). Default is None.
+
+        - powerWeighted : bool, optional
+            Power-weighted calculation. Default is False.
+
+        - Rs : float, optional
+            Symbol rate (baud). Default is None.
+
+        - powerWeightN : int, optional
+            Power-weighted order. Default is 10.
+
+        - matrixOrder : int, optional
+            Matrix order. Default is 25.
+
+        - mode : str, optional
+
+    Returns
+    -------
+    nlin : ndarray of shape (N, 2)
+        Nonlinear perturbation for dual-polarization signals.
+        The first column represents the X polarization, and the second column represents the Y polarization.
     """
     param.D = getattr(param, 'D', 17) # Dispersion parameter (ps/nm/km) 
     param.alpha = getattr(param, 'alpha', 0.2) # Attenuation (dB/km)
