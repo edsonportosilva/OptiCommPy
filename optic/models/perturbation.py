@@ -6,7 +6,9 @@ Models perturbation (:mod:`optic.models.perturbation`)
 .. autosummary::
    :toctree: generated/
 
-   pm                    -- Optical phase modulator 
+   calcPertCoeffMatrix                          -- Calculates the perturbation coefficients for nonlinear impairments in optical communication systems.
+
+   
 """
 
 """Perturbation models for NLIN calculation."""
@@ -16,7 +18,40 @@ from scipy.integrate import quad
 from scipy.constants import c as c_light
 from scipy.special import exp1
 from numba import njit, prange
+from optic.dsp.core import pnorm
 import logging
+
+@njit
+def dot_numba(a, b):
+    """
+    Computes the dot product of two 1D arrays in a Numba-compatible way.
+
+    This function is equivalent to `np.dot` for 1D arrays but can be
+    JIT-compiled with Numba for accelerated execution.
+
+    Parameters
+    ----------
+    a : ndarray of shape (N,)
+        First input array (complex-valued).
+
+    b : ndarray of shape (N,)
+        Second input array (complex-valued).
+
+    Returns
+    -------
+    result : complex
+        The dot product of `a` and `b`, computed as the sum of element-wise products.
+
+    Notes
+    -----
+    - Both input arrays must have the same length.
+    - This function initializes the result as a complex number to support
+      complex-valued operations.
+    """
+    result = 0.0 + 0.0j  # complex number initialization
+    for i in range(len(a)):
+        result += a[i] * b[i]
+    return result
 
 def calcPertCoeffMatrix(param):
     """
@@ -157,7 +192,7 @@ def calcPertCoeffMatrix(param):
 
 
 @njit(parallel=True)
-def additive_multiplicative_model_nlin_waveform(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128):
+def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128):
     """
     Calculates the perturbation-based additive and multiplicative NLIN for dual-polarization signals.
 
@@ -228,27 +263,26 @@ def additive_multiplicative_model_nlin_waveform(C_ifwm, C_ixpm, C_ispm, x, y, pr
     y = y / np.sqrt(np.mean(np.abs(y)**2))
 
     # Outputs
-    N = len(x)
-    dx = np.zeros(N, dtype=prec)
-    dy = np.zeros(N, dtype=prec)
-    phi_ixpm_x = np.zeros(N)
-    phi_ixpm_y = np.zeros(N)
+    Nsymb = len(x)
+    dx = np.zeros(Nsymb, dtype=prec)
+    dy = np.zeros(Nsymb, dtype=prec)
+    phi_ixpm_x = np.zeros(Nsymb)
+    phi_ixpm_y = np.zeros(Nsymb)
 
     # Prepad input
-    symbX = np.concatenate((np.zeros(D, dtype=prec), x, np.zeros(D, dtype=prec)))
-    symbY = np.concatenate((np.zeros(D, dtype=prec), y, np.zeros(D, dtype=prec)))
+    symbX = np.zeros(Nsymb + 2*D, dtype=prec)
+    symbY = np.zeros(Nsymb + 2*D, dtype=prec)
+    symbX[D:-D] = x
+    symbY[D:-D] = y
 
     # Precompute indexes
     indL = 2*L + 1    
     M = np.zeros((indL, indL), dtype=np.int64)
     for i in range(indL):
-        M[i, :] = np.arange(indL)
-        
+        M[i, :] = np.arange(indL)        
     NplusM = -(M.T - L + M - L) + 2*L  
     NplusM = NplusM = NplusM[:, ::-1] # rotate and flip on axis 0
-
-    n_idx = np.arange(-L, L + 1)
-
+    
     for t in prange(D, len(symbX) - D):
         windowX = symbX[t - D:t + D + 1]
         windowY = symbY[t - D:t + D + 1]
@@ -300,40 +334,8 @@ def additive_multiplicative_model_nlin_waveform(C_ifwm, C_ixpm, C_ispm, x, y, pr
 
     return dx, dy, phi_ixpm_x, phi_ixpm_y
 
-@njit
-def dot_numba(a, b):
-    """
-    Computes the dot product of two 1D arrays in a Numba-compatible way.
-
-    This function is equivalent to `np.dot` for 1D arrays but can be
-    JIT-compiled with Numba for accelerated execution.
-
-    Parameters
-    ----------
-    a : ndarray of shape (N,)
-        First input array (complex-valued).
-
-    b : ndarray of shape (N,)
-        Second input array (complex-valued).
-
-    Returns
-    -------
-    result : complex
-        The dot product of `a` and `b`, computed as the sum of element-wise products.
-
-    Notes
-    -----
-    - Both input arrays must have the same length.
-    - This function initializes the result as a complex number to support
-      complex-valued operations.
-    """
-    result = 0.0 + 0.0j  # complex number initialization
-    for i in range(len(a)):
-        result += a[i] * b[i]
-    return result
-
 @njit(parallel=True)
-def additive_multiplicative_model_nlin_waveform_red_complexity(C_ifwm, C_ixpm, C_ispm, x, y, coeff_tol=-20, prec=np.complex128):
+def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, coeffTol=-20, prec=np.complex128):
     """
     Calculates the perturbation-based additive and multiplicative NLIN with reduced 
     number of coefficients.
@@ -359,7 +361,7 @@ def additive_multiplicative_model_nlin_waveform_red_complexity(C_ifwm, C_ixpm, C
     y : ndarray of shape (N,)
         Input signal for the Y component (complex-valued).
 
-    coeff_tol : float
+    coeffTol : float
         Coefficient magnitude tolerance in dB. Coefficients with a magnitude 
         below this threshold (in dB) are excluded from the calculation to reduce 
         computational complexity. Default is -20 dB.
@@ -422,7 +424,7 @@ def additive_multiplicative_model_nlin_waveform_red_complexity(C_ifwm, C_ixpm, C
     M = np.zeros((indL, indL), dtype=np.int64)
     for i in range(indL):
         M[i, :] = np.arange(indL)
-    NplusM = -(M.T - L + M - L) + (2*L)    
+    NplusM = -(M.T - L + M - L) + 2*L   
     NplusM = NplusM = NplusM[:, ::-1] # rotate and flip on axis 0
     
     # Flatten
@@ -434,7 +436,7 @@ def additive_multiplicative_model_nlin_waveform_red_complexity(C_ifwm, C_ixpm, C
     # Coefficient reduction
     absC = np.abs(C)
     maxC = np.max(absC)
-    n_reduced_coeff = np.sum(20 * np.log10(absC / maxC) > coeff_tol)
+    n_reduced_coeff = np.sum(20 * np.log10(absC / maxC) > coeffTol)
     ind_sort = np.argsort(-absC)[:n_reduced_coeff]
 
     C_ixpm_mask1 = C_ixpm_mask1[ind_sort]
@@ -529,3 +531,56 @@ def additive_multiplicative_model_nlin_waveform_red_complexity(C_ifwm, C_ixpm, C
         dy[t - D] = dot_numba(DY, C_ifwm) + dot_numba(M1 * Ym_flat, C_ixpm_mask2)
 
     return dx, dy, phi_ixpm_x, phi_ixpm_y
+
+def perturbationNLIN(Ein, param):
+    """
+    Calculates the perturbation-based additive and multiplicative NLIN for dual-polarization signals.
+
+    This function models nonlinear impairments in optical communication systems
+    considering intrachannel four-wave mixing (IFWM), intrachannel cross-phase modulation (IXPM),
+    and self-phase modulation (SPM) effects, using a memory-based convolution approach.
+    Optimized
+    """
+    param.D = getattr(param, 'D', 17) # Dispersion parameter (ps/nm/km) 
+    param.alpha = getattr(param, 'alpha', 0.2) # Attenuation (dB/km)
+    param.lspan = getattr(param, 'lspan', 50) # Span length (km)
+    param.length = getattr(param, 'length', 800) # Total length (km)
+    param.pulseWidth = getattr(param, 'pulseWidth', 0.5) # Pulse width (fraction of symbol period)
+    param.gamma = getattr(param, 'gamma', 1.3) # Nonlinear coefficient (1/W/km)
+    param.Fc = getattr(param, 'Fc', 193.2e12) # Carrier frequency (Hz)
+    param.powerWeighted = getattr(param, 'powerWeighted', False) # Power-weighted calculation (bool)
+    param.Rs = getattr(param, 'Rs', 32e9) # Symbol rate (baud)
+    param.powerWeightN = getattr(param, 'powerWeightN', 10) # Power-weighted order (int)
+    param.matrixOrder = getattr(param, 'matrixOrder', 25) # Matrix order (int)
+    mode = getattr(param, 'mode', 'AM') # Dispersion parameter (ps/nm/km)
+    prec = getattr(param, 'prec', np.complex128) # Precision of the computation (complex64 or complex128)
+
+    coeffTol = getattr(param, 'coeffTol', -20)
+    Pin = getattr(param, 'Pin', 0) # Power (dBm)
+
+    Plaunch = 10**(Pin / 10) * 1e-3  # Launch power (W)	
+    PeakPower = 0.5 * Plaunch        # Peak power (W)
+    Ein = pnorm(Ein)
+
+    # Calculate the perturbation coefficients matrix
+    C, C_ifwm, C_ixpm, C_ispm = calcPertCoeffMatrix(param)
+    
+    nlin = np.zeros((len(Ein), 2), dtype=Ein.dtype)
+    if mode == 'AM':
+        # Calculate the perturbation-based additive and multiplicative NLIN
+        dx, dy, phi_ixpm_x, phi_ixpm_y = additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, Ein[:,0], Ein[:,1], prec)
+    elif mode == 'AMR':
+        # Calculate the perturbation-based additive and multiplicative NLIN with reduced complexity        
+        dx, dy, phi_ixpm_x, phi_ixpm_y = additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, Ein[:,0], Ein[:,1], coeffTol, prec)
+
+    # Scale the perturbation results according to the peak power
+    deltaX = PeakPower**(3/2) * dx
+    deltaY = PeakPower**(3/2) * dy
+    phiX = PeakPower * phi_ixpm_x
+    phiY = PeakPower * phi_ixpm_y
+    
+    # Calculate the nonlinear perturbation for each polarization
+    nlin[:,0] = np.sqrt(PeakPower)*Ein[:,0] * (np.exp(1j * phiX) - 1) + deltaX * np.exp(1j * phiX)
+    nlin[:,1] = np.sqrt(PeakPower)*Ein[:,1] * (np.exp(1j * phiY) - 1) + deltaY * np.exp(1j * phiY)
+
+    return nlin
