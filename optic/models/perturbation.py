@@ -6,8 +6,10 @@ Models perturbation (:mod:`optic.models.perturbation`)
 .. autosummary::
    :toctree: generated/
 
-   calcPertCoeffMatrix                          -- Calculates the perturbation coefficients for nonlinear impairments in optical communication systems.
-
+   calcPertCoeffMatrix                             -- Calculates the perturbation coefficients for intra-channel fiber nonlinear interference.
+   additiveMultiplicativeNLIN                      -- Calculates the perturbation-based AM NLIN model for dual-polarization signals.
+   additiveMultiplicativeNLINreducedComplexity     -- Calculates the perturbation-based AM NLIN model with reduced number of coefficients.
+   perturbationNLIN                                -- Calculates the perturbation-based NLIN for dual-polarization signals.
    
 """
 
