@@ -48,10 +48,7 @@ def dot_numba(a, b):
     - This function initializes the result as a complex number to support
       complex-valued operations.
     """
-    result = 0.0 + 0.0j  # complex number initialization
-    for i in range(len(a)):
-        result += a[i] * b[i]
-    return result
+    return np.sum(a * b)
 
 def calcPertCoeffMatrix(param):
     """
@@ -254,9 +251,9 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
     mask_nonzero_T = np.isinf(C_m_non_equal_zero.T)
     mask_nonzero = np.isinf(C_m_non_equal_zero)
 
-    C_ixpm_mask1 = (C_ixpm * mask_nonzero_T).ravel()
-    C_ixpm_mask2 = (C_ixpm * mask_nonzero).ravel()
-    C_ifwm_vec = C_ifwm.ravel()
+    C_ixpm_mask1 = (C_ixpm * mask_nonzero_T).flatten()
+    C_ixpm_mask2 = (C_ixpm * mask_nonzero).flatten()
+    C_ifwm = C_ifwm.flatten()
 
     # Normalize power
     x = x / np.sqrt(np.mean(np.abs(x)**2))
@@ -281,17 +278,17 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
     for i in range(indL):
         M[i, :] = np.arange(indL)        
     NplusM = -(M.T - L + M - L) + 2*L  
-    NplusM = NplusM = NplusM[:, ::-1] # rotate and flip on axis 0
-    
-    # Pre-allocate 2D arrays
-    Xm = np.empty((2*L+1, 2*L+1), dtype=prec)
-    Ym = np.empty((2*L+1, 2*L+1), dtype=prec)
-    Xn = np.empty((2*L+1, 2*L+1), dtype=prec)
-    Yn = np.empty((2*L+1, 2*L+1), dtype=prec)
-    X_NplusM = np.empty((2*L+1, 2*L+1), dtype=prec)
-    Y_NplusM = np.empty((2*L+1, 2*L+1), dtype=prec)
-    
-    for t in prange(D, len(symbX) - D):
+    NplusM = NplusM[:, ::-1] # rotate and flip on axis 0
+        
+    for t in prange(D, len(symbX) - D):  
+        # Pre-allocate 2D arrays
+        Xm = np.empty((2*L+1, 2*L+1), dtype=prec)
+        Ym = np.empty((2*L+1, 2*L+1), dtype=prec)
+        Xn = np.empty((2*L+1, 2*L+1), dtype=prec)
+        Yn = np.empty((2*L+1, 2*L+1), dtype=prec)
+        X_NplusM = np.empty((2*L+1, 2*L+1), dtype=prec)
+        Y_NplusM = np.empty((2*L+1, 2*L+1), dtype=prec)     
+
         windowX = symbX[t - D:t + D + 1]
         windowY = symbY[t - D:t + D + 1]
 
@@ -310,29 +307,29 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
                 X_NplusM[i, j] = windowX[NplusM[i, j]]
                 Y_NplusM[i, j] = windowY[NplusM[i, j]]
 
-        Xm_conj_X_NplusM = Xm * np.conj(X_NplusM)
-        Ym_conj_Y_NplusM = Ym * np.conj(Y_NplusM)
+        Xm_flat = Xm.flatten()
+        Ym_flat = Ym.flatten()
+        Xn_flat = Xn.flatten()
+        Yn_flat = Yn.flatten()
+        X_NplusM_flat = X_NplusM.flatten()
+        Y_NplusM_flat = Y_NplusM.flatten()
 
-        DX = Xn * Xm_conj_X_NplusM + Yn * Ym_conj_Y_NplusM
-        DY = Yn * Ym_conj_Y_NplusM + Xn * Xm_conj_X_NplusM
+        A1 = np.abs(Xm_flat)**2
+        A2 = np.abs(Ym_flat)**2
+        M1 = Xn_flat * np.conj(X_NplusM_flat)
+        M2 = Yn_flat * np.conj(Y_NplusM_flat)
 
-        Xm2 = np.abs(Xm)**2
-        Ym2 = np.abs(Ym)**2
+        DX = (M1 + M2) * Xm_flat
+        DY = (M2 + M1) * Ym_flat
 
-        Xm2_Ym2 = (2 * Xm2 + Ym2).ravel()
-        Ym2_Xm2 = (2 * Ym2 + Xm2).ravel()
+        phi_ixpm_x[t - D] = np.imag(dot_numba(2*A1 + A2, C_ixpm_mask1) + (np.abs(Xm_flat[0])**2 + np.abs(Ym_flat[0])**2) * C_ispm)
+        phi_ixpm_y[t - D] = np.imag(dot_numba(2*A2 + A1, C_ixpm_mask1) + (np.abs(Ym_flat[0])**2 + np.abs(Xm_flat[0])**2) * C_ispm)
 
-        phi_ixpm_x[t - D] = np.imag(
-            dot_numba(Xm2_Ym2, C_ixpm_mask1) + (np.abs(Xm[L, L])**2 + np.abs(Ym[L, L])**2) * C_ispm
-        )
-        phi_ixpm_y[t - D] = np.imag(
-            dot_numba(Ym2_Xm2, C_ixpm_mask1) + (np.abs(Ym[L, L])**2 + np.abs(Xm[L, L])**2) * C_ispm
-        )
-
-        dx[t - D] = dot_numba(DX.ravel(), C_ifwm_vec) + dot_numba((Yn * np.conj(Y_NplusM) * Xm).ravel(), C_ixpm_mask2)
-        dy[t - D] = dot_numba(DY.ravel(), C_ifwm_vec) + dot_numba((Xn * np.conj(X_NplusM) * Ym).ravel(), C_ixpm_mask2)
+        dx[t - D] = dot_numba(DX, C_ifwm) + dot_numba(M2 * Xm_flat, C_ixpm_mask2)
+        dy[t - D] = dot_numba(DY, C_ifwm) + dot_numba(M1 * Ym_flat, C_ixpm_mask2)
 
     return dx, dy, phi_ixpm_x, phi_ixpm_y
+
 
 @njit(parallel=True)
 def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, coeffTol=-20, prec=np.complex128):
@@ -425,7 +422,7 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
     for i in range(indL):
         M[i, :] = np.arange(indL)
     NplusM = -(M.T - L + M - L) + 2*L   
-    NplusM = NplusM = NplusM[:, ::-1] # rotate and flip on axis 0
+    NplusM = NplusM[:, ::-1] # rotate and flip on axis 0
     
     # Flatten
     C_ixpm_mask1 = C_ixpm_mask1.flatten()
@@ -447,67 +444,34 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
     print('Reduction of ', np.round(100 * (1 - n_reduced_coeff / len(C)), 2),'%')
     print('Sum of squares of original matrix:', np.round(np.sum(np.abs(C)**2), 2))
     print('Sum of squares of simplified matrix:',np.round(np.sum(np.abs(C[ind_sort])**2),2))
-    
-    # Pre-allocate 2D arrays
-    Xm = np.zeros((indL, indL), dtype=prec)
-    Ym = np.zeros((indL, indL), dtype=prec)
-    Xn = np.zeros((indL, indL), dtype=prec)
-    Yn = np.zeros((indL, indL), dtype=prec)
-    X_NplusM = np.empty((indL, indL), dtype=prec)
-    Y_NplusM = np.empty((indL, indL), dtype=prec)
+        
+    for t in prange(D, len(symbX) - D):  
+        # Pre-allocate 2D arrays
+        Xm = np.zeros((indL, indL), dtype=prec)
+        Ym = np.zeros((indL, indL), dtype=prec)
+        Xn = np.zeros((indL, indL), dtype=prec)
+        Yn = np.zeros((indL, indL), dtype=prec)
+        X_NplusM = np.empty((indL, indL), dtype=prec)
+        Y_NplusM = np.empty((indL, indL), dtype=prec)
+       
+        windowX = symbX[t - D:t + D + 1]
+        windowY = symbY[t - D:t + D + 1]
 
-    x_2d = np.zeros(2*D + 1, dtype=prec)
-    y_2d = np.zeros(2*D + 1, dtype=prec)
+        X_center = windowX[L:L+2*L+1]
+        Y_center = windowY[L:L+2*L+1]
 
-    max_iter = len(symbX)
+        for i in range(2*L+1):
+            for j in range(2*L+1):
+                Xm[i, j] = X_center[j]
+                Ym[i, j] = Y_center[j]
+                Xn[i, j] = X_center[2*L - i]  # flipud
+                Yn[i, j] = Y_center[2*L - i]  # flipud      
 
-    for t in prange(D, max_iter - D):
-        if t == D:
-            for k in range(2*D+1):
-                x_2d[k] = symbX[t - D + k]
-                y_2d[k] = symbY[t - D + k]
-            
-            for i in range(indL):
-                for j in range(indL):
-                    X_NplusM[i, j] = x_2d[NplusM[i, j]]
-                    Y_NplusM[i, j] = y_2d[NplusM[i, j]]
-
-            center = (len(x_2d) - 1) // 2
-            vec_x = x_2d[center - L:center + L + 1]
-            vec_y = y_2d[center - L:center + L + 1]
-
-            for i in range(indL):
-                for j in range(indL):
-                    Xm[i, j] = vec_x[i]
-                    Ym[i, j] = vec_y[i]
-                    Xn[i, j] = vec_x[j]
-                    Yn[i, j] = vec_y[j]
-        else:
-            for k in range(2*D):
-                x_2d[k] = x_2d[k+1]
-                y_2d[k] = y_2d[k+1]
-            x_2d[-1] = symbX[t + D]
-            y_2d[-1] = symbY[t + D]
-
-           # X_NplusM = np.empty((indL, indL), dtype=prec)
-           # Y_NplusM = np.empty((indL, indL), dtype=prec)
-            for i in range(indL):
-                for j in range(indL):
-                    X_NplusM[i, j] = x_2d[NplusM[i, j]]
-                    Y_NplusM[i, j] = y_2d[NplusM[i, j]]
-
-            Xm[:, :-1] = Xm[:, 1:]
-            Ym[:, :-1] = Ym[:, 1:]
-            for i in range(indL):
-                Xm[i, -1] = x_2d[D+i-L]
-                Ym[i, -1] = y_2d[D+i-L]
-
-            Xn[:-1, :] = Xn[1:, :]
-            Yn[:-1, :] = Yn[1:, :]
-            for j in range(indL):
-                Xn[-1, j] = x_2d[D+j-L]
-                Yn[-1, j] = y_2d[D+j-L]
-
+        for i in range(2*L+1):
+            for j in range(2*L+1):
+                X_NplusM[i, j] = windowX[NplusM[i, j]]
+                Y_NplusM[i, j] = windowY[NplusM[i, j]]
+  
         # Flatten and select only significant terms
         Xm_flat = Xm.flatten()[ind_sort]
         Ym_flat = Ym.flatten()[ind_sort]
