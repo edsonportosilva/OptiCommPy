@@ -283,6 +283,14 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
     NplusM = -(M.T - L + M - L) + 2*L  
     NplusM = NplusM = NplusM[:, ::-1] # rotate and flip on axis 0
     
+    # Pre-allocate 2D arrays
+    Xm = np.empty((2*L+1, 2*L+1), dtype=prec)
+    Ym = np.empty((2*L+1, 2*L+1), dtype=prec)
+    Xn = np.empty((2*L+1, 2*L+1), dtype=prec)
+    Yn = np.empty((2*L+1, 2*L+1), dtype=prec)
+    X_NplusM = np.empty((2*L+1, 2*L+1), dtype=prec)
+    Y_NplusM = np.empty((2*L+1, 2*L+1), dtype=prec)
+    
     for t in prange(D, len(symbX) - D):
         windowX = symbX[t - D:t + D + 1]
         windowY = symbY[t - D:t + D + 1]
@@ -290,20 +298,12 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
         X_center = windowX[L:L+2*L+1]
         Y_center = windowY[L:L+2*L+1]
 
-        Xm = np.empty((2*L+1, 2*L+1), dtype=prec)
-        Ym = np.empty((2*L+1, 2*L+1), dtype=prec)
-        Xn = np.empty((2*L+1, 2*L+1), dtype=prec)
-        Yn = np.empty((2*L+1, 2*L+1), dtype=prec)
-
         for i in range(2*L+1):
             for j in range(2*L+1):
                 Xm[i, j] = X_center[j]
                 Ym[i, j] = Y_center[j]
                 Xn[i, j] = X_center[2*L - i]  # flipud
-                Yn[i, j] = Y_center[2*L - i]  # flipud
-
-        X_NplusM = np.empty((2*L+1, 2*L+1), dtype=prec)
-        Y_NplusM = np.empty((2*L+1, 2*L+1), dtype=prec)
+                Yn[i, j] = Y_center[2*L - i]  # flipud      
 
         for i in range(2*L+1):
             for j in range(2*L+1):
@@ -453,6 +453,8 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
     Ym = np.zeros((indL, indL), dtype=prec)
     Xn = np.zeros((indL, indL), dtype=prec)
     Yn = np.zeros((indL, indL), dtype=prec)
+    X_NplusM = np.empty((indL, indL), dtype=prec)
+    Y_NplusM = np.empty((indL, indL), dtype=prec)
 
     x_2d = np.zeros(2*D + 1, dtype=prec)
     y_2d = np.zeros(2*D + 1, dtype=prec)
@@ -464,9 +466,7 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
             for k in range(2*D+1):
                 x_2d[k] = symbX[t - D + k]
                 y_2d[k] = symbY[t - D + k]
-
-            X_NplusM = np.empty((indL, indL), dtype=prec)
-            Y_NplusM = np.empty((indL, indL), dtype=prec)
+            
             for i in range(indL):
                 for j in range(indL):
                     X_NplusM[i, j] = x_2d[NplusM[i, j]]
@@ -489,8 +489,8 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
             x_2d[-1] = symbX[t + D]
             y_2d[-1] = symbY[t + D]
 
-            X_NplusM = np.empty((indL, indL), dtype=prec)
-            Y_NplusM = np.empty((indL, indL), dtype=prec)
+           # X_NplusM = np.empty((indL, indL), dtype=prec)
+           # Y_NplusM = np.empty((indL, indL), dtype=prec)
             for i in range(indL):
                 for j in range(indL):
                     X_NplusM[i, j] = x_2d[NplusM[i, j]]
