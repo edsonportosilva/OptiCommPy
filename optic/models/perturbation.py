@@ -512,28 +512,28 @@ def perturbationNLIN(Ein, param):
             Dispersion parameter (ps/nm/km). Default is 17.
 
         - alpha : float, optional
-            Attenuation (dB/km). Default is None.
+            Attenuation (dB/km). Default is 0.2.
 
         - lspan : float, optional
-            Span length (km). Default is None.
+            Span length (km). Default is 50.
 
         - length : float, optional
-            Total length (km). Default is None.
+            Total length (km). Default is 800.
 
         - pulseWidth : float, optional
             Pulse width (fraction of symbol period). Default is 0.5.
 
         - gamma : float, optional
-            Nonlinear coefficient (1/W/km). Default is None.
+            Nonlinear coefficient (1/W/km). Default is 1.3.
 
         - Fc : float, optional
-            Carrier frequency (THz). Default is None.
+            Carrier frequency (Hz). Default is 193.1e12.
 
         - powerWeighted : bool, optional
             Power-weighted calculation. Default is False.
 
         - Rs : float, optional
-            Symbol rate (baud). Default is None.
+            Symbol rate (baud). Default is 32e9.
 
         - powerWeightN : int, optional
             Power-weighted order. Default is 10.
@@ -555,7 +555,7 @@ def perturbationNLIN(Ein, param):
     param.length = getattr(param, 'length', 800) # Total length (km)
     param.pulseWidth = getattr(param, 'pulseWidth', 0.5) # Pulse width (fraction of symbol period)
     param.gamma = getattr(param, 'gamma', 1.3) # Nonlinear coefficient (1/W/km)
-    param.Fc = getattr(param, 'Fc', 193.2e12) # Carrier frequency (Hz)
+    param.Fc = getattr(param, 'Fc', 193.1e12) # Carrier frequency (Hz)
     param.powerWeighted = getattr(param, 'powerWeighted', False) # Power-weighted calculation (bool)
     param.Rs = getattr(param, 'Rs', 32e9) # Symbol rate (baud)
     param.powerWeightN = getattr(param, 'powerWeightN', 10) # Power-weighted order (int)
