@@ -1,6 +1,9 @@
-# OptiCommPy: Fiber Optic Communications with Python
+<p align="center">
+<img src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/logo_OptiCommPy.jpg" width="500">
+</p>
 
-Simulate optical communications systems with Python. This repository is a Python-based framework to simulate systems, subsystems and components of fiber optic communication systems, for educational and research purposes.
+This repository is a Python-based framework to simulate systems, subsystems, and components of fiber optic communication systems, for educational and research purposes.
+
 <p align="center">
 <img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/eyeDisp.gif" width="400">  <img class="center" src="https://github.com/edsonportosilva/OptiCommPy/blob/main/figures/40GOOK_spectrum.jpg" width="400">
 
@@ -8,7 +11,8 @@ Simulate optical communications systems with Python. This repository is a Python
 
 </p>
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edsonportosilva/OptiCommPy/HEAD?urlpath=lab)
+![PyPI](https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package) ![PyPI - Downloads](https://img.shields.io/pypi/dm/OptiCommPy) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11450597.svg)](https://doi.org/10.5281/zenodo.11450597) [![DOI](https://joss.theoj.org/papers/10.21105/joss.06600/status.svg)](https://doi.org/10.21105/joss.06600)
+
 
 ## Available features
 
@@ -18,6 +22,7 @@ Simulate optical communications systems with Python. This repository is a Python
 * Standard digital signal processing (DSP) blocks employed in coherent optical receivers, such as:
   - *Signal resampling.* 
   - *Matched filtering.*
+  - *Clock recovery.*
   - *Electronic chromatic dispersion compensation (EDC)*.
   - *Several NxN MIMO adaptive equalization algorithms*.
   - *Carrier phase recovery algorithms.* 
@@ -29,23 +34,26 @@ Simulate optical communications systems with Python. This repository is a Python
   - *Mutual information* (MI).
   - *Generalized mutual information* (GMI).  
   - *Normalized generalized mutual information* (NGMI). 
-* Vizualization of the spectrum of electrical/optical signals, signal constellations and eyediagrams.
+* Visualization of the spectrum of electrical/optical signals, signal constellations, and eyediagrams.
 
 ## How can I contribute?
 
-If you want to contribute to this project, just implement the feature you want and send me a pull request. If you want to suggest new features or discuss anything related to OptiCommPy, please get in touch with me (edsonporto88@gmail.com).
+If you want to contribute to this project, implement the feature you want and send me a pull request. If you want to suggest new features or discuss anything related to OptiCommPy, please get in touch with me (edsonporto88@gmail.com).
 
 ## Requirements/Dependencies
 
-- python>=3.2
-- numpy>=1.9.2
-- scipy>=0.15.0
-- matplotlib>=1.4.3
-- scikit-commpy>=0.7.0
-- numba>=0.54.1
-- tqdm>=4.64.1
-- simple-pid>=1.0.1
-- mpl-scatter-density>=0.7.0
+-  python>=3.2
+-  numpy>=1.24.4
+-  scipy>=1.13.0
+-  matplotlib>=3.7.0
+-  numba>=0.54.1
+-  tqdm>=4.64.1
+-  simple-pid>=1.0.1
+-  mpl-scatter-density>=0.7.0
+-  sphinx-rtd-theme>=1.2.2
+-  nbsphinx>=0.9.3
+-  nbsphinx-link>=1.3.0
+-  cupy-cuda12x >= 13.1.0 (optional, in case GPU processing is desired)
 
 ## Installation
 
@@ -55,23 +63,16 @@ Using pip:
 pip install OptiCommPy
 ```
 
-Cloning the repository from github:
-
-```
-$ git clone https://github.com/edsonportosilva/OptiCommPy.git
-$ cd OptiCommPy
-$ python setup.py install
-```
-or 
+Cloning the repository from GitHub:
 
 ```
 $ git clone https://github.com/edsonportosilva/OptiCommPy.git
 $ cd OptiCommPy
 $ pip install .
 ```
+## Documentation
+We are continuously making efforts to improve the code documentation. You can find the latest documentation in [opticommpy.readthedocs.io](https://opticommpy.readthedocs.io/en/latest/index.html).
 
 ## Citing this repository
 
-Edson Porto da Silva, Adolfo Herbster, & Joaquin Matres. (2022). edsonportosilva/OptiCommPy: v0.2.0-alpha (v0.2.0-alpha). https://doi.org/10.5281/zenodo.7425071
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7425071.svg)](https://doi.org/10.5281/zenodo.7425071)
+Edson Porto da Silva, Adolfo Fernandes Herbster. "OptiCommPy: Open-source Simulation of Fiber Optic Communications with Python", *Journal of Open Source Software*, 9(98), 6600, (2024) https://doi.org/10.21105/joss.06600
