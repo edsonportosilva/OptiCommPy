@@ -22,12 +22,9 @@ def ldpcEncode(b, LDPCparams):
     else:
         N = LDPCparams["n_vnodes"]
 
-<<<<<<< Updated upstream
     # generate random interleaver
     interlv = np.random.permutation(N)
-=======
     N = n if fecFamily == 'AR4JA' else LDPCparams["n_vnodes"]
->>>>>>> Stashed changes
 
     # encode bits
     codedBits = enc(b, LDPCparams, pad=False)
@@ -36,7 +33,7 @@ def ldpcEncode(b, LDPCparams):
     return  codedBits
 
 
-def ldpcDecode(llr, deinterlv, LDPCparams, nIter, alg="SPA"):
+def ldpcDecode(llr, interlv, LDPCparams, nIter, alg="SPA"):
     """
     Decode binary LDPC encoded data bits
     b = np.random.randint(2, size=(K, Nwords))
@@ -46,20 +43,12 @@ def ldpcDecode(llr, deinterlv, LDPCparams, nIter, alg="SPA"):
     fecID = LDPCparams['filename'][12:]
     
     num = [float(s) for s in re.findall(r'-?\d+\.?\d*', fecID)]    
-<<<<<<< Updated upstream
     
     N = LDPCparams["n_vnodes"]
-    n = int(num[0])
-    
-=======
-
-    N = LDPCparams["n_vnodes"]   
-    n = int(num[0])        
->>>>>>> Stashed changes
+    n = int(num[0])     
     dep = int(N-n)
     
     # generate deinterleaver
-<<<<<<< Updated upstream
     deinterlv = interlv.argsort()
 
     # deinterleave received LLRs
@@ -70,7 +59,6 @@ def ldpcDecode(llr, deinterlv, LDPCparams, nIter, alg="SPA"):
     if dep > 0:
         llr = np.concatenate((llr, np.zeros((llr.shape[0], dep))), axis=1)
                 
-=======
     # deinterlv = interlv.argsort()
     
     # reshape received LLRs
@@ -86,7 +74,6 @@ def ldpcDecode(llr, deinterlv, LDPCparams, nIter, alg="SPA"):
     print(llr.shape)
     
     llr = llr[:, deinterlv]
->>>>>>> Stashed changes
     llr = llr.ravel()
         
     # decode received code words
