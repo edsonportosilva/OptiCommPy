@@ -6,7 +6,7 @@
 # import re
 
 import numpy as np
-from scipy.sparse import csr_matrix, csc_matrix
+from scipy.sparse import csr_matrix, csc_matrix, coo_matrix
 from numba import njit
 
 def par2gen(H):
@@ -95,8 +95,12 @@ def gaussElim(H):
         matrix = csr_matrix.todense(H).astype(np.uint8) 
     elif type(H) == csc_matrix:
         matrix = csc_matrix.todense(H).astype(np.uint8) 
+    elif type(H) == coo_matrix:
+        matrix = coo_matrix.todense(H).astype(np.uint8)
     else:
         matrix = H
+
+    #print("matrix type", type(matrix))
     # Reduce matrix to row echelon form
     matrix = np.array(matrix, dtype=np.uint8)
           
