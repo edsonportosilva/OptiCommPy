@@ -1,9 +1,22 @@
-# -*- coding: utf-8 -*-
+"""
+===============================================================
+Forward Error Correction (FEC) utilities (:mod:`optic.comm.fec)
+===============================================================
 
-# import numpy as np
-# from commpy.channelcoding.ldpc import triang_ldpc_systematic_encode as enc
-# from commpy.channelcoding.ldpc import ldpc_bp_decode as dec
-# import re
+.. autosummary::
+   :toctree: generated/
+
+   par2gen                 -- Parity-check matrix to generator matrix conversion
+   gaussElim               -- Gaussian elimination over GF(2)
+   encoder                 -- Performs linear block encoding 
+   encodeLDPC              -- Encode binary messages using a LDPC parity-check matrix
+   sumProductAlgorithm     -- Belief propagation decoding using the sum-product algorithm
+   decodeLDPC              -- Decode multiple LDPC codewords using belief propagation  
+    
+"""
+
+
+"""Forward Error Correction (FEC) utilities."""
 
 import numpy as np
 from scipy.sparse import csr_matrix, csc_matrix, coo_matrix
