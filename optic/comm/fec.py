@@ -172,7 +172,7 @@ def encodeLDPC(H, bits):
     G = G.astype(np.int32)
     return encoder(G, bits), colSwaps
 
-@njit
+@njit(parallel=True)
 def encoder(G, bits):
     """
     Encode binary messages using a generator matrix over GF(2).
@@ -209,7 +209,7 @@ def encoder(G, bits):
     n, k = G.shape
     _, N = bits.shape
     codewords = np.zeros((n, N), dtype=np.uint8)
-    for col in range(N):  # for each input word
+    for col in prange(N):  # for each input word
         for i in range(n):  # for each codeword bit
             acc = 0
             for j in range(k):
@@ -310,7 +310,103 @@ def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
 
     return finalLLR.flatten(), indIter, success
 
-def decodeLDPC(llrs, H, maxIter=50, prgsBar=False, prec=np.float64):
+@njit
+def minSumAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
+    """
+    Performs LDPC decoding using the Min-Sum Algorithm for a single codeword.
+
+    This function implements the belief propagation decoding using the Min-Sum 
+    approximation of the Sum-Product Algorithm (SPA). It replaces the computationally
+    expensive tanh and arctanh operations with simple min and sign operations at
+    check nodes, making it more suitable for hardware or parallel implementations.
+
+    Parameters
+    ----------
+    llr : ndarray of shape (n,)
+        Log-likelihood ratios (LLRs) of the received codeword bits.
+
+    H : ndarray of shape (m, n)
+        Binary parity-check matrix representing the LDPC code.
+
+    checkNodes : list of ndarray
+        List of length `m`, where each entry contains the indices of variable nodes 
+        connected to the corresponding check node.
+
+    varNodes : list of ndarray
+        List of length `n`, where each entry contains the indices of check nodes 
+        connected to the corresponding variable node.
+
+    maxIter : int
+        Maximum number of iterations for belief propagation.
+
+    prec : data-type, optional
+        Numerical precision to use in computations (default is np.float64).
+
+    Returns
+    -------
+    finalLLR : ndarray of shape (n,)
+        Updated LLR values for the decoded codeword after the final iteration.
+
+    numIter : int
+        Number of iterations performed before successful decoding or reaching `maxIter`.
+
+    success : int
+        1 if decoding succeeded (i.e., all parity-check equations are satisfied), 
+        0 otherwise.
+    """
+    m, n = H.shape
+    msg_v_to_c = np.zeros((m, n), dtype=prec)
+    msg_c_to_v = np.zeros((m, n), dtype=prec)
+    success = 0
+
+    # Initialize variable-to-check messages with input LLRs
+    for var in range(n):
+        for check in varNodes[var]:
+            msg_v_to_c[check, var] = llr[var]
+
+    llr = llr.astype(prec)
+    H = H.astype(prec)
+
+    for indIter in range(maxIter):
+        # Check-to-variable update (Min-Sum)
+        for check in range(m):
+            for var in checkNodes[check]:
+                sign_product = 1
+                min_abs = np.inf
+                for neighbor in checkNodes[check]:
+                    if neighbor != var:
+                        val = msg_v_to_c[check, neighbor]
+                        sign_product *= np.sign(val)
+                        min_abs = min(min_abs, abs(val))
+                msg_c_to_v[check, var] = sign_product * min_abs
+
+        # Variable-to-check update
+        for var in range(n):
+            for check in varNodes[var]:
+                sum_msg = llr[var]
+                for neighbor in varNodes[var]:
+                    if neighbor != check:
+                        sum_msg += msg_c_to_v[neighbor, var]
+                msg_v_to_c[check, var] = sum_msg
+
+        # Final LLR and decision
+        finalLLR = np.zeros((n, 1), dtype=prec)
+        decoded_bits = np.zeros((n, 1), dtype=prec)
+
+        for var in range(n):
+            finalLLR[var] = llr[var]
+            for check in varNodes[var]:
+                finalLLR[var] += msg_c_to_v[check, var]
+            decoded_bits[var] = (-np.sign(finalLLR[var]) + 1) // 2
+
+        if np.all(np.mod(H @ decoded_bits, 2) == 0):
+            success = 1
+            break
+
+    return finalLLR.flatten(), indIter, success
+
+
+def decodeLDPC(llrs, H, maxIter=50, alg = 'SPA', prgsBar=False, prec=np.float64):
     """
     Decodes multiple LDPC codewords using the belief propagation (sum-product) algorithm.
 
@@ -353,10 +449,12 @@ def decodeLDPC(llrs, H, maxIter=50, prgsBar=False, prec=np.float64):
     # Convert H to binary array
     H = np.array(H, dtype=np.int8)
     logg.info( f'LDPC decoding: {numCodewords} codewords')
-    for indCw in tqdm(range(numCodewords), disable=not (prgsBar)):        
-        outputLLRs[indCw, :], indIter, success = sumProductAlgorithm(llrs[indCw, :], H, checkNodes, varNodes, maxIter)
-        #outputLLRs[indCw, :] = finalLLR
-     
+    for indCw in tqdm(range(numCodewords), disable=not (prgsBar)):  
+        if alg == 'SPA':      
+            outputLLRs[indCw, :], indIter, success = sumProductAlgorithm(llrs[indCw, :], H, checkNodes, varNodes, maxIter)
+        elif alg == 'MSA':
+            outputLLRs[indCw, :], indIter, success = minSumAlgorithm(llrs[indCw, :], H, checkNodes, varNodes, maxIter)
+             
         if success:
             logg.info(f'Frame {indCw} - Successful decoding at iteration {indIter}.')
             continue
