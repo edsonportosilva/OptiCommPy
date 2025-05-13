@@ -10,6 +10,7 @@ Forward Error Correction (FEC) utilities (:mod:`optic.comm.fec)
    gaussElim               -- Gaussian elimination over GF(2)
    encoder                 -- Performs linear block encoding
    sumProductAlgorithm     -- Belief propagation decoding using the sum-product algorithm 
+   minSumAlgorithm         -- Belief propagation decoding using the min-sum algorithm
    encodeLDPC              -- Encode binary messages using a LDPC parity-check matrix   
    decodeLDPC              -- Decode multiple LDPC codewords using belief propagation    
 """
