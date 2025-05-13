@@ -7,7 +7,11 @@
 
 import numpy as np
 from scipy.sparse import csr_matrix, csc_matrix, coo_matrix
-from numba import njit
+from numba import njit, prange
+from numba.typed import List
+from tqdm import tqdm
+
+import logging as logg
 
 def par2gen(H):
     """
@@ -45,13 +49,21 @@ def par2gen(H):
     """
     n = H.shape[1]
     k = n - H.shape[0]
-    
+
+    if type(H) == csr_matrix:
+        H = csr_matrix.todense(H).astype(np.uint8) 
+    elif type(H) == csc_matrix:
+        H = csc_matrix.todense(H).astype(np.uint8) 
+    elif type(H) == coo_matrix:
+        H = coo_matrix.todense(H).astype(np.uint8)    
+
     Hs = gaussElim(H) # Reduce matrix to row echelon form
+    Hs = np.array(Hs, dtype=np.int8)
     
     # do the necessary column swaps
-    cols = np.arange(Hs.shape[1])    
-    indP = cols[np.sum(Hs[:, 0:],axis=0) > 1]  # indexes of cols belonging to matrix P
-    indI = cols[np.sum(Hs[:, 0:],axis=0) == 1] # indexes of cols belonging to the indentity
+    cols = np.arange(Hs.shape[1])      
+    indP = cols[(np.sum(Hs[:, 0:],axis=0) > 1)]  # indexes of cols belonging to matrix P
+    indI = cols[(np.sum(Hs[:, 0:],axis=0) == 1)] # indexes of cols belonging to the indentity
     
     Hnew = np.hstack((Hs[:,cols[indP]], 
                      Hs[:,cols[indI]]))
@@ -63,53 +75,28 @@ def par2gen(H):
     
     return G, colSwaps, Hnew
 
-def gaussElim(H):
+@njit
+def gaussElim(matrix):
     """
     Perform Gaussian elimination over GF(2) to reduce a binary matrix to row echelon form.
 
     Parameters
     ----------
-    H : ndarray or scipy.sparse.csr_matrix or scipy.sparse.csc_matrix
-        Input binary matrix to be reduced. The matrix can be dense or sparse, but must contain only 0s and 1s.
-        Typically used with LDPC parity-check matrices.
+    matrix : ndarray of uint8
+        Input binary matrix (dense, 2D). All operations are over GF(2).
 
     Returns
     -------
     matrix : ndarray of uint8
-        The row echelon form of the input matrix over GF(2). The returned matrix has the same shape
-        as `H`, and all arithmetic is done modulo 2 (i.e., using XOR logic).
-
-    Notes
-    -----
-    This function performs Gaussian elimination in binary arithmetic (mod 2), where:
-    - Addition is done via XOR,
-    - Multiplication is done via AND.
-
-    The algorithm includes row swaps to bring pivots (1s) to the diagonal positions, and eliminates
-    all 1s below and above the pivot in each column.
-
-    The function automatically handles SciPy CSR and CSC sparse matrices by converting them to dense format.
-    
+        Matrix in row echelon form (mod 2).
     """
-    if type(H) == csr_matrix:
-        matrix = csr_matrix.todense(H).astype(np.uint8) 
-    elif type(H) == csc_matrix:
-        matrix = csc_matrix.todense(H).astype(np.uint8) 
-    elif type(H) == coo_matrix:
-        matrix = coo_matrix.todense(H).astype(np.uint8)
-    else:
-        matrix = H
-
-    #print("matrix type", type(matrix))
-    # Reduce matrix to row echelon form
-    matrix = np.array(matrix, dtype=np.uint8)
-          
     rowCount, columnCount = matrix.shape
     lead = 0
 
     for r in range(rowCount):
         if lead >= columnCount:
             break
+
         i = r
         while matrix[i, lead] == 0:
             i += 1
@@ -120,15 +107,19 @@ def gaussElim(H):
                     break
         if lead == columnCount:
             break
-        
-        # Troca as linhas
-        matrix[[r, i]] = matrix[[i, r]]
-        
-        # Elimina os 1s nas outras linhas
+
+        # Swap rows r and i manually
+        for k in range(columnCount):
+            temp = matrix[r, k]
+            matrix[r, k] = matrix[i, k]
+            matrix[i, k] = temp
+
+        # Eliminate other rows
         for j in range(rowCount):
             if j != r and matrix[j, lead] == 1:
-                matrix[j] = np.mod(matrix[j] + matrix[r], 2)
-        
+                for k in range(columnCount):
+                    matrix[j, k] ^= matrix[r, k]  # XOR for GF(2)
+
         lead += 1
 
     return matrix
@@ -170,7 +161,7 @@ def encodeLDPC(H, bits):
     G = G.astype(np.int32)
     return encoder(G, bits), colSwaps
 
-@njit
+@njit(parallel=True)
 def encoder(G, bits):
     """
     Encode binary messages using a generator matrix over GF(2).
@@ -207,7 +198,7 @@ def encoder(G, bits):
     n, k = G.shape
     _, N = bits.shape
     codewords = np.zeros((n, N), dtype=np.uint8)
-    for col in range(N):  # for each input word
+    for col in prange(N):  # for each input word
         for i in range(n):  # for each codeword bit
             acc = 0
             for j in range(k):
@@ -215,52 +206,144 @@ def encoder(G, bits):
             codewords[i, col] = acc
     return codewords
 
+@njit
+def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter):
+    """
+    Performs belief propagation decoding using the sum-product algorithm
+    for a single LDPC codeword.
 
-# def ldpcDecode(llr, interlv, LDPCparams, nIter, alg="SPA"):
-#     """
-#     Decode binary LDPC encoded data bits
-#     b = np.random.randint(2, size=(K, Nwords))
+    Parameters
+    ----------
+    llr : ndarray of shape (n,)
+        Array of log-likelihood ratios (LLRs) for each bit of the received codeword.
 
-#     """
-    
-#     fecID = LDPCparams['filename'][12:]
-    
-#     num = [float(s) for s in re.findall(r'-?\d+\.?\d*', fecID)]    
-    
-#     N = LDPCparams["n_vnodes"]
-#     n = int(num[0])     
-#     dep = int(N-n)
-    
-#     # generate deinterleaver
-#     deinterlv = interlv.argsort()
+    H : ndarray of shape (m, n)
+        Binary parity-check matrix of the LDPC code. It is used to enforce parity constraints.
 
-#     # deinterleave received LLRs
-#     llr = llr.reshape(-1, n)
-#     llr = llr[:, deinterlv]
+    checkNodes : list of ndarray
+        List of length `m`, where each element is a 1D array containing the indices
+        of variable nodes (bits) involved in the corresponding check node (parity-check equation).
+
+    varNodes : list of ndarray
+        List of length `n`, where each element is a 1D array containing the indices
+        of check nodes that the corresponding variable node participates in.
+
+    maxIter : int
+        Maximum number of belief propagation iterations.
+
+    Returns
+    -------
+    finalLLR : ndarray of shape (n,)
+        Updated log-likelihood ratios after message passing.
+
+    numIter : int
+        Number of iterations executed until decoding converged or reached `maxIter`.
+
+    success : int
+        Indicates whether decoding was successful (1) or not (0),
+        based on the parity-check condition.
+    """
+    m, n = H.shape
+    msg_v_to_c = np.zeros((m, n), dtype=np.float64)
+    msg_c_to_v = np.zeros((m, n), dtype=np.float64)
+    success = 0    
+
+    # Initialize variable-to-check messages with input LLRs
+    for var in range(n):
+        for check in varNodes[var]:
+            msg_v_to_c[check, var] = llr[var]
     
-#     # depuncturing
-#     if dep > 0:
-#         llr = np.concatenate((llr, np.zeros((llr.shape[0], dep))), axis=1)
-                
-#     # deinterlv = interlv.argsort()
+    H = H.astype(np.float64)
     
-#     # reshape received LLRs
-#     llr = llr.reshape(-1, n)    
+    for indIter in range(maxIter):
+        # Check-to-variable update
+        for check in range(m):
+            for var_idx in range(len(checkNodes[check])):
+                var = checkNodes[check][var_idx]
+                product = 1.0
+                for neighbor_idx in range(len(checkNodes[check])):
+                    neighbor = checkNodes[check][neighbor_idx]
+                    if neighbor != var:
+                        product *= np.tanh(msg_v_to_c[check, neighbor] / 2)
+                product = min(0.999999, max(-0.999999, product))  # clip
+                msg_c_to_v[check, var] = 2 * np.arctanh(product)
         
-#     # depuncturing
-#     if dep > 0:
-#         llr = np.concatenate((llr, np.zeros((llr.shape[0], dep))), axis=1)
-    
-#     decodedBits_hd = (-np.sign(llr)+1)//2 
-#     decodedBits_hd = decodedBits_hd.reshape(-1, N).T
-    
-#     print(llr.shape)
-    
-#     llr = llr[:, deinterlv]
-#     llr = llr.ravel()
+        # Variable-to-check update
+        for var in range(n):
+            for check_idx in range(len(varNodes[var])):
+                check = varNodes[var][check_idx]
+                sum_msg = llr[var]
+                for neighbor_idx in range(len(varNodes[var])):
+                    neighbor = varNodes[var][neighbor_idx]
+                    if neighbor != check:
+                        sum_msg += msg_c_to_v[neighbor, var]
+                msg_v_to_c[check, var] = sum_msg
+
+        # Final LLR computation
+        finalLLR = np.zeros((n, 1), dtype=np.float64)
+        decoded_bits = np.zeros((n, 1), dtype=np.float64)
         
-#     # decode received code words
-#     decodedBits, llr_out = dec(llr, LDPCparams, alg, nIter)
-        
-#     return decodedBits, decodedBits_hd, llr_out
+        for var in range(n):
+            finalLLR[var] = llr[var]
+            for check in varNodes[var]:
+                finalLLR[var] += msg_c_to_v[check, var]
+                decoded_bits[var] = (-np.sign(finalLLR[var]) + 1) // 2                
+
+        if np.all(np.mod(H @ decoded_bits, 2) == 0):
+            success = 1
+            break            
+
+    return finalLLR.flatten(), indIter, success
+
+def decodeLDPC(llrs, H, maxIter=50):
+    """
+    Decodes multiple LDPC codewords using the belief propagation (sum-product) algorithm.
+
+    Parameters
+    ----------
+    llrs : ndarray of shape (numCodewords, n)
+        2D array containing the log-likelihood ratios (LLRs) of each received bit 
+        for multiple codewords. Each row corresponds to a different codeword.
+
+    H : scipy.sparse matrix or ndarray of shape (m, n)
+        Parity-check matrix of the LDPC code. It defines the structure of the 
+        factor graph used in message passing.
+
+    maxIter : int, optional
+        Maximum number of belief propagation iterations per codeword (default is 50).
+
+    Returns
+    -------
+    outputLLRs : ndarray of shape (numCodewords, n)
+        Array containing the final decoded LLRs for all codewords after belief 
+        propagation. Each row corresponds to a decoded codeword.
+    """
+    H = csr_matrix.todense(H).astype(np.int8)
+    m, n = H.shape
+    numCodewords = llrs.shape[0]
+
+    llrs = np.clip(llrs, -200, 200)
+    outputLLRs = np.zeros_like(llrs)
+
+    # Build adjacency lists using fixed-size lists for Numba       
+    checkNodes = List([np.where(H[i, :] == 1)[1].astype(np.int32) for i in range(m)])
+    varNodes = List([np.where(H[:, j] == 1)[0].astype(np.int32) for j in range(n)])
+
+    # Convert H to binary array
+    H_bin = np.array(H, dtype=np.int8)
+    logg.info( f'LDPC decoding: {numCodewords} codewords')
+    for indCw in tqdm(range(numCodewords)):
+        llr = llrs[indCw, :].copy()
+        finalLLR, indIter, success = sumProductAlgorithm(llr, H_bin, checkNodes, varNodes, maxIter)
+        outputLLRs[indCw, :] = finalLLR
+     
+        if success:
+            logg.info(f'Frame {indCw} - Successful decoding at iteration {indIter}.')
+            continue
+
+    decodedBits = ((-np.sign(outputLLRs)+1)//2).astype(np.int8)
+    
+    return decodedBits, outputLLRs
+
+
 
