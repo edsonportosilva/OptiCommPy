@@ -17,7 +17,6 @@ Forward Error Correction (FEC) utilities (:mod:`optic.comm.fec)
 
 
 """Forward Error Correction (FEC) utilities."""
-
 import numpy as np
 from scipy.sparse import csr_matrix, csc_matrix, coo_matrix
 from numba import njit, prange
