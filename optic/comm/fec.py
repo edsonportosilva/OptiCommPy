@@ -161,7 +161,7 @@ def encodeLDPC(H, bits):
     G = G.astype(np.int32)
     return encoder(G, bits), colSwaps
 
-@njit(parallel=True)
+@njit
 def encoder(G, bits):
     """
     Encode binary messages using a generator matrix over GF(2).
@@ -198,7 +198,7 @@ def encoder(G, bits):
     n, k = G.shape
     _, N = bits.shape
     codewords = np.zeros((n, N), dtype=np.uint8)
-    for col in prange(N):  # for each input word
+    for col in range(N):  # for each input word
         for i in range(n):  # for each codeword bit
             acc = 0
             for j in range(k):
@@ -295,7 +295,7 @@ def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter):
 
     return finalLLR.flatten(), indIter, success
 
-def decodeLDPC(llrs, H, maxIter=50):
+def decodeLDPC(llrs, H, maxIter=50, prgsBar=False):
     """
     Decodes multiple LDPC codewords using the belief propagation (sum-product) algorithm.
 
@@ -311,6 +311,9 @@ def decodeLDPC(llrs, H, maxIter=50):
 
     maxIter : int, optional
         Maximum number of belief propagation iterations per codeword (default is 50).
+
+    prgsBar : bool, optional
+        If True, displays a progress bar during decoding (default is False).
 
     Returns
     -------
@@ -332,7 +335,7 @@ def decodeLDPC(llrs, H, maxIter=50):
     # Convert H to binary array
     H_bin = np.array(H, dtype=np.int8)
     logg.info( f'LDPC decoding: {numCodewords} codewords')
-    for indCw in tqdm(range(numCodewords)):
+    for indCw in tqdm(range(numCodewords), disable=not (prgsBar)):
         llr = llrs[indCw, :].copy()
         finalLLR, indIter, success = sumProductAlgorithm(llr, H_bin, checkNodes, varNodes, maxIter)
         outputLLRs[indCw, :] = finalLLR
