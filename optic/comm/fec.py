@@ -346,11 +346,11 @@ def decodeLDPC(llrs, H, maxIter=50, prgsBar=False):
     varNodes = List([np.where(H[:, j] == 1)[0].astype(np.int32) for j in range(n)])
 
     # Convert H to binary array
-    H_bin = np.array(H, dtype=np.int8)
+    H = np.array(H, dtype=np.int8)
     logg.info( f'LDPC decoding: {numCodewords} codewords')
     for indCw in tqdm(range(numCodewords), disable=not (prgsBar)):
         llr = llrs[indCw, :].copy()
-        finalLLR, indIter, success = sumProductAlgorithm(llr, H_bin, checkNodes, varNodes, maxIter)
+        finalLLR, indIter, success = sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter)
         outputLLRs[indCw, :] = finalLLR
      
         if success:
