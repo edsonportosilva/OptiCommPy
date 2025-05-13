@@ -445,7 +445,15 @@ def decodeLDPC(llrs, H, maxIter=50, alg = 'SPA', prgsBar=False, prec=np.float64)
         Array containing the final decoded LLRs for all codewords after belief 
         propagation. Each row corresponds to a decoded codeword.
     """
-    H = csr_matrix.todense(H).astype(np.int8)
+    if type(H) == csr_matrix:
+        H = csr_matrix.todense(H).astype(np.uint8) 
+    elif type(H) == csc_matrix:
+        H = csc_matrix.todense(H).astype(np.uint8) 
+    elif type(H) == coo_matrix:
+        H = coo_matrix.todense(H).astype(np.uint8)
+    else:
+        H = H.astype(np.uint8)
+
     m, n = H.shape
     numCodewords = llrs.shape[0]
 
@@ -474,4 +482,88 @@ def decodeLDPC(llrs, H, maxIter=50, alg = 'SPA', prgsBar=False, prec=np.float64)
     return decodedBits, outputLLRs
 
 
+def writeAlist(H, filename):
+    """
+    Save a binary parity-check matrix H (numpy array) to ALIST format.
 
+    Parameters
+    ----------
+    H : ndarray of shape (m, n)
+        Binary parity-check matrix.
+
+    filename : str
+        Name of the ALIST file to be written.
+    """    
+    if type(H) == csr_matrix:
+        H = csr_matrix.todense(H).astype(np.uint8) 
+    elif type(H) == csc_matrix:
+        H = csc_matrix.todense(H).astype(np.uint8) 
+    elif type(H) == coo_matrix:
+        H = coo_matrix.todense(H).astype(np.uint8)
+    else:        
+        H = H.astype(np.int8)
+        
+    m, n = H.shape
+
+    # Variable and check node degrees
+    var_degrees = [int(np.sum(H[:, j])) for j in range(n)]
+    check_degrees = [int(np.sum(H[i, :])) for i in range(m)]
+    max_col_deg = max(var_degrees)
+    max_row_deg = max(check_degrees)
+
+    with open(filename, 'w') as f:
+        f.write(f"{n} {m}\n")
+        f.write(f"{max_col_deg} {max_row_deg}\n")
+
+        f.write(' '.join(str(d) for d in var_degrees) + '\n')
+        f.write(' '.join(str(d) for d in check_degrees) + '\n')
+
+        # Variable node connections (1-based indexing)
+        for j in range(n):
+            connections = np.where(H[:, j]==1)[0] + 1
+            padded = list(connections) + [0] * (max_col_deg - len(connections))
+            f.write(' '.join(str(i) for i in padded) + '\n')
+
+        # Check node connections (1-based indexing)
+        for i in range(m):
+            connections = np.where(H[i, :]==1)[1] + 1
+            padded = list(connections) + [0] * (max_row_deg - len(connections))
+            f.write(' '.join(str(j) for j in padded) + '\n')
+    
+    f.close()
+
+            
+def readAlist(filename):
+    """
+    Read an ALIST file and reconstruct the binary parity-check matrix H.
+
+    Parameters
+    ----------
+    filename : str
+        Path to the ALIST file.
+
+    Returns
+    -------
+    H : ndarray of shape (m, n)
+        Reconstructed binary parity-check matrix.
+    """
+    with open(filename, 'r') as f:
+        lines = [line.strip() for line in f if line.strip()]
+
+    n, m = map(int, lines[0].split())
+    max_col_deg, max_row_deg = map(int, lines[1].split())
+
+    var_degrees = list(map(int, lines[2].split()))
+    check_degrees = list(map(int, lines[3].split()))
+
+    var_conn_lines = lines[4:4 + n]
+    check_conn_lines = lines[4 + n: 4 + n + m]
+
+    H = np.zeros((m, n), dtype=np.uint8)
+
+    for j, line in enumerate(var_conn_lines):
+        for entry in map(int, line.split()):
+            if entry > 0:
+                H[entry - 1, j] = 1
+
+    return csr_matrix(H)
