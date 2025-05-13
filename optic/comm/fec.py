@@ -8,11 +8,10 @@ Forward Error Correction (FEC) utilities (:mod:`optic.comm.fec)
 
    par2gen                 -- Parity-check matrix to generator matrix conversion
    gaussElim               -- Gaussian elimination over GF(2)
-   encoder                 -- Performs linear block encoding 
-   encodeLDPC              -- Encode binary messages using a LDPC parity-check matrix
-   sumProductAlgorithm     -- Belief propagation decoding using the sum-product algorithm
-   decodeLDPC              -- Decode multiple LDPC codewords using belief propagation  
-    
+   encoder                 -- Performs linear block encoding
+   sumProductAlgorithm     -- Belief propagation decoding using the sum-product algorithm 
+   encodeLDPC              -- Encode binary messages using a LDPC parity-check matrix   
+   decodeLDPC              -- Decode multiple LDPC codewords using belief propagation    
 """
 
 
