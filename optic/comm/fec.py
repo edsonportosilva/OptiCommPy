@@ -69,7 +69,7 @@ def par2gen(H):
         H = coo_matrix.todense(H).astype(np.uint8)    
 
     Hs = gaussElim(H) # Reduce matrix to row echelon form
-    Hs = np.array(Hs, dtype=np.int8)
+    Hs = np.array(Hs, dtype=np.uint8)
     
     # do the necessary column swaps
     cols = np.arange(Hs.shape[1])      
@@ -82,7 +82,7 @@ def par2gen(H):
     colSwaps = np.hstack((indP, indI))
         
     # systematic generator matrix G
-    G = np.hstack((np.eye(k), Hnew[:,0:k].T))
+    G = np.hstack((np.eye(k,dtype=np.uint8), Hnew[:,0:k].T))
     
     return G, colSwaps, Hnew
 
@@ -135,7 +135,7 @@ def gaussElim(matrix):
 
     return matrix
 
-def encodeLDPC(H, bits):
+def encodeLDPC(H, bits, G=None):
     """
     Encode binary messages using a parity-check matrix of a linear block code (e.g., LDPC).
 
@@ -148,6 +148,9 @@ def encodeLDPC(H, bits):
     bits : ndarray of shape (k, N)
         Binary input messages to be encoded. Each column represents a message of length `k`,
         and there are `N` such messages.
+
+    G : ndarray of shape (k, n), optional
+        Systematic generator matrix. If not provided, it will be computed from `H` using `par2gen()`.
 
     Returns
     -------
@@ -168,9 +171,14 @@ def encodeLDPC(H, bits):
     `H @ codeword = 0 mod 2` for each column.
 
     """
-    G, colSwaps, _ = par2gen(H) # get systematic generator matrix G    
-    G = G.astype(np.int32)
-    return encoder(G, bits), colSwaps
+    if G is None:
+        G, colSwaps, _ = par2gen(H) # get systematic generator matrix G 
+        G = G.astype(np.uint8)
+        return encoder(G, bits), colSwaps
+    else:   
+        G = G.astype(np.uint8)
+        return encoder(G, bits)
+    
 
 @njit(parallel=True)
 def encoder(G, bits):
@@ -216,6 +224,7 @@ def encoder(G, bits):
                 acc ^= G[i, j] & bits[j, col]  # binary dot product
             codewords[i, col] = acc
     return codewords
+
 
 @njit
 def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
