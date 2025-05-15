@@ -136,7 +136,7 @@ def gaussElim(matrix):
 
     return matrix
 
-def encodeLDPC(H, bits, G=None):
+def encodeLDPC(H, bits, G=None, systematic=True):
     """
     Encode binary messages using a parity-check matrix of a linear block code (e.g., LDPC).
 
@@ -152,6 +152,10 @@ def encodeLDPC(H, bits, G=None):
 
     G : ndarray of shape (k, n), optional
         Systematic generator matrix. If not provided, it will be computed from `H` using `par2gen()`.
+
+    systematic : bool, optional
+        If True, the generator matrix is assumed to be in systematic form. If False, the
+        generator matrix is treated as a general linear transformation (default is True).
 
     Returns
     -------
@@ -175,14 +179,14 @@ def encodeLDPC(H, bits, G=None):
     if G is None:
         G, colSwaps, _ = par2gen(H) # get systematic generator matrix G 
         G = G.astype(np.uint8)
-        return encoder(G, bits), colSwaps
+        return encoder(G, bits, systematic), colSwaps
     else:   
         G = G.astype(np.uint8)
-        return encoder(G, bits)
+        return encoder(G, bits, systematic)
     
 
 @njit(parallel=True)
-def encoder(G, bits):
+def encoder(G, bits, systematic=True):
     """
     Encode binary messages using a generator matrix over GF(2).
 
@@ -195,6 +199,10 @@ def encoder(G, bits):
     bits : ndarray of shape (k, N)
         Binary input messages to encode. Each column is a message of length `k`, and there are `N` messages
         in total.
+
+    systematic : bool, optional
+        If True, the generator matrix is assumed to be in systematic form. If False, the
+        generator matrix is treated as a general linear transformation (default is True).
 
     Returns
     -------
@@ -218,16 +226,27 @@ def encoder(G, bits):
     n, k = G.shape
     _, N = bits.shape
     codewords = np.zeros((n, N), dtype=np.uint8)
-    for col in prange(N):  # for each input word
-        for i in range(n):  # for each codeword bit
-            acc = 0
-            for j in range(k):
-                acc ^= G[i, j] & bits[j, col]  # binary dot product
-            codewords[i, col] = acc
+
+    if systematic:
+        codewords[:k, :] = bits
+        for col in prange(N):  # for each input word
+            for i in range(k, n):  # for each codeword bit
+                acc = 0
+                for j in range(k):
+                    acc ^= G[i, j] & bits[j, col]  # binary dot product
+                codewords[i, col] = acc
+    else:
+        for col in prange(N):
+            for i in range(n):
+                acc = 0
+                for j in range(k):
+                    acc ^= G[i, j] & bits[j, col]
+                codewords[i, col] = acc
+
     return codewords
 
 
-@njit
+@njit(parallel=True)
 def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
     """
     Performs belief propagation decoding using the sum-product algorithm
@@ -273,7 +292,7 @@ def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
     success = 0    
 
     # Initialize variable-to-check messages with input LLRs
-    for var in range(n):
+    for var in prange(n):
         for check in varNodes[var]:
             msg_v_to_c[check, var] = llr[var]
     
@@ -282,7 +301,7 @@ def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
     
     for indIter in range(maxIter):
         # Check-to-variable update
-        for check in range(m):
+        for check in prange(m):
             for var_idx in range(len(checkNodes[check])):
                 var = checkNodes[check][var_idx]
                 product = 1.0
@@ -294,7 +313,7 @@ def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
                 msg_c_to_v[check, var] = 2 * np.arctanh(product)
         
         # Variable-to-check update
-        for var in range(n):
+        for var in prange(n):
             for check_idx in range(len(varNodes[var])):
                 check = varNodes[var][check_idx]
                 sum_msg = llr[var]
@@ -308,7 +327,7 @@ def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
         finalLLR = np.zeros((n, 1), dtype=prec)
         decoded_bits = np.zeros((n, 1), dtype=prec)
         
-        for var in range(n):
+        for var in prange(n):
             finalLLR[var] = llr[var]
             for check in varNodes[var]:
                 finalLLR[var] += msg_c_to_v[check, var]
@@ -320,7 +339,7 @@ def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
 
     return finalLLR.flatten(), indIter, success
 
-@njit
+@njit(parallel=True)
 def minSumAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
     """
     Performs LDPC decoding using the Min-Sum Algorithm for a single codeword.
@@ -370,7 +389,7 @@ def minSumAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
     success = 0
 
     # Initialize variable-to-check messages with input LLRs
-    for var in range(n):
+    for var in prange(n):
         for check in varNodes[var]:
             msg_v_to_c[check, var] = llr[var]
 
@@ -379,7 +398,7 @@ def minSumAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
 
     for indIter in range(maxIter):
         # Check-to-variable update (Min-Sum)
-        for check in range(m):
+        for check in prange(m):
             for var in checkNodes[check]:
                 sign_product = 1
                 min_abs = np.inf
@@ -391,7 +410,7 @@ def minSumAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
                 msg_c_to_v[check, var] = sign_product * min_abs
 
         # Variable-to-check update
-        for var in range(n):
+        for var in prange(n):
             for check in varNodes[var]:
                 sum_msg = llr[var]
                 for neighbor in varNodes[var]:
@@ -403,7 +422,7 @@ def minSumAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
         finalLLR = np.zeros((n, 1), dtype=prec)
         decoded_bits = np.zeros((n, 1), dtype=prec)
 
-        for var in range(n):
+        for var in prange(n):
             finalLLR[var] = llr[var]
             for check in varNodes[var]:
                 finalLLR[var] += msg_c_to_v[check, var]
@@ -416,35 +435,54 @@ def minSumAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
     return finalLLR.flatten(), indIter, success
 
 
-def decodeLDPC(llrs, H, maxIter=50, alg = 'SPA', prgsBar=False, prec=np.float64):
+def decodeLDPC(llrs, param):
     """
     Decodes multiple LDPC codewords using the belief propagation (sum-product) algorithm.
 
     Parameters
     ----------
     llrs : ndarray of shape (numCodewords, n)
-        2D array containing the log-likelihood ratios (LLRs) of each received bit 
-        for multiple codewords. Each row corresponds to a different codeword.
+        Array of log-likelihood ratios (LLRs) for each bit of the received codewords.
+        Each row corresponds to a codeword, and each column corresponds to a bit.
+        
+    param : object
+        Object containing the following attributes:
 
-    H : scipy.sparse matrix or ndarray of shape (m, n)
-        Parity-check matrix of the LDPC code. It defines the structure of the 
-        factor graph used in message passing.
+        - H : ndarray of shape (m, n)
+            Binary parity-check matrix of the LDPC code.
 
-    maxIter : int, optional
-        Maximum number of belief propagation iterations per codeword (default is 50).
+        - maxIter : int
+            Maximum number of iterations for belief propagation.
 
-    prgsBar : bool, optional
-        If True, displays a progress bar during decoding (default is False).
+        - alg : str
+            Decoding algorithm to use ('SPA' or 'MSA').
 
-    prec : data-type, optional
-        Data type for the computations (default is np.float64).
+        - prgsBar : bool
+            If True, displays a progress bar during decoding.
+
+        - prec : data-type
+            Numerical precision to use in computations (default is np.float64). 
 
     Returns
     -------
+    decodedBits : ndarray of shape (numCodewords, n)
+        Array of decoded bits for each codeword. Each row corresponds to a codeword,
+        and each column corresponds to a bit.
+
     outputLLRs : ndarray of shape (numCodewords, n)
-        Array containing the final decoded LLRs for all codewords after belief 
-        propagation. Each row corresponds to a decoded codeword.
+        Array of updated log-likelihood ratios (LLRs) after decoding. Each row corresponds
+        to a codeword, and each column corresponds to a bit.
     """
+    # check input parameters
+    H = getattr(param, 'H', None)
+    maxIter = getattr(param, 'maxIter', 50)
+    alg = getattr(param, 'alg', 'SPA')
+    prgsBar = getattr(param, 'prgsBar', False)
+    prec = getattr(param, 'prec', np.float64)
+
+    if H is None:
+        logg.error('H is None. Please provide a valid parity-check matrix.')
+
     if type(H) == csr_matrix:
         H = csr_matrix.todense(H).astype(np.uint8) 
     elif type(H) == csc_matrix:
@@ -550,15 +588,9 @@ def readAlist(filename):
     with open(filename, 'r') as f:
         lines = [line.strip() for line in f if line.strip()]
 
-    n, m = map(int, lines[0].split())
-    max_col_deg, max_row_deg = map(int, lines[1].split())
-
-    var_degrees = list(map(int, lines[2].split()))
-    check_degrees = list(map(int, lines[3].split()))
-
+    n, m = map(int, lines[0].split())  
     var_conn_lines = lines[4:4 + n]
-    check_conn_lines = lines[4 + n: 4 + n + m]
-
+    
     H = np.zeros((m, n), dtype=np.uint8)
 
     for j, line in enumerate(var_conn_lines):
