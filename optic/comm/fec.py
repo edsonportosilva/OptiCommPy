@@ -287,9 +287,9 @@ def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
         based on the parity-check condition.
     """
     m, n = H.shape
-    msg_v_to_c = np.zeros((m, n), dtype=prec)
+    msg_v_to_c = np.zeros((m, n), dtype=prec) 
     msg_c_to_v = np.zeros((m, n), dtype=prec)
-    success = 0    
+    success = False    
 
     # Initialize variable-to-check messages with input LLRs
     for var in prange(n):
@@ -334,7 +334,7 @@ def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
                 decoded_bits[var] = (-np.sign(finalLLR[var]) + 1) // 2                
 
         if np.all(np.mod(H @ decoded_bits, 2) == 0):
-            success = 1
+            success = True
             break            
 
     return finalLLR.flatten(), indIter, success
