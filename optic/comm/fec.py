@@ -88,13 +88,13 @@ def par2gen(H):
     return G, colSwaps, Hnew
 
 @njit
-def gaussElim(matrix):
+def gaussElim(M):
     """
     Perform Gaussian elimination over GF(2) to reduce a binary matrix to row echelon form.
 
     Parameters
     ----------
-    matrix : ndarray of uint8
+    M : ndarray of uint8
         Input binary matrix (dense, 2D). All operations are over GF(2).
 
     Returns
@@ -102,9 +102,10 @@ def gaussElim(matrix):
     matrix : ndarray of uint8
         Matrix in row echelon form (mod 2).
     """
-    rowCount, columnCount = matrix.shape
+    rowCount, columnCount = M.shape
     lead = 0
 
+    matrix = M.copy()
     for r in range(rowCount):
         if lead >= columnCount:
             break
@@ -136,26 +137,38 @@ def gaussElim(matrix):
 
     return matrix
 
-def encodeLDPC(H, bits, G=None, systematic=True):
+def encodeLDPC(bits, param):
     """
     Encode binary messages using a parity-check matrix of a linear block code (e.g., LDPC).
 
     Parameters
     ----------
-    H : ndarray of shape (n - k, n)
-        Binary parity-check matrix with entries in {0, 1}. It defines the linear constraints
-        of the code and is used to derive a corresponding systematic generator matrix.
-
     bits : ndarray of shape (k, N)
-        Binary input messages to be encoded. Each column represents a message of length `k`,
+        Binary input messages to be encoded. Each column is a message of length `k`,
         and there are `N` such messages.
+    param : object
+        Object containing the following attributes:
 
-    G : ndarray of shape (k, n), optional
-        Systematic generator matrix. If not provided, it will be computed from `H` using `par2gen()`.
+        - mode : str
+            Mode of operation ('DVBS2', 'IEEE_802.11nD2', or 'general').
 
-    systematic : bool, optional
-        If True, the generator matrix is assumed to be in systematic form. If False, the
-        generator matrix is treated as a general linear transformation (default is True).
+        - H : ndarray of shape (n - k, n)
+            Binary parity-check matrix with entries in {0, 1}. It defines the linear constraints
+            of the code and is used to derive a corresponding systematic generator matrix.
+
+        - G : ndarray of shape (k, n), optional
+            Generator matrix with entries in {0, 1}. If provided, it will be used for encoding
+            instead of deriving it from H.
+
+        - systematic : bool, optional
+            If True, the generator matrix is assumed to be in systematic form. If False,
+            the generator matrix is treated as a general linear transformation (default is True).
+
+        - P1 : ndarray of shape (m, k), optional
+            Matrix used for encoding in triangular mode.
+
+        - P2 : ndarray of shape (m, k), optional
+            Matrix used for encoding in triangular mode.
 
     Returns
     -------
@@ -176,14 +189,102 @@ def encodeLDPC(H, bits, G=None, systematic=True):
     `H @ codeword = 0 mod 2` for each column.
 
     """
-    if G is None:
-        G, colSwaps, _ = par2gen(H) # get systematic generator matrix G 
-        G = G.astype(np.uint8)
-        return encoder(G, bits, systematic), colSwaps
-    else:   
-        G = G.astype(np.uint8)
-        return encoder(G, bits, systematic)
+    # check input parameters
+    mode = getattr(param, 'mode', 'DVBS2')
+    n = getattr(param, 'n', 64800)
+    R = getattr(param, 'R', '4/5')
+    H = getattr(param, 'H', None)
+    G = getattr(param, 'G', None)
+    systematic = getattr(param, 'systematic', True)
+    P1 = getattr(param, 'P1', None)
+    P2 = getattr(param, 'P2', None)
+    path = getattr(param, 'path', None)
     
+    if H is None:
+        try:            
+            filename  = f'\LDPC_{mode}_{n}b_R{R[0]}{R[2]}.txt'
+            H = readAlist(path+filename)
+            H = csr_matrix.todense(H).astype(np.int8)
+            param.H = H
+        except FileNotFoundError:
+            logg.error(f'File {filename} not found. Please provide a valid parity-check matrix H.')
+
+    if mode == 'DVBS2':
+        if H  is None:
+            raise ValueError('H is None. Please provide a valid DVBS2 parity-check matrix.')
+        return encodeDVBS2(bits, H)
+    elif mode == 'IEEE_802.11nD2':
+        if P1 is None or P2 is None:
+            P1, P2, H = triangP1P2(H)
+            param.P1 = P1
+            param.P2 = P2
+            param.H = H
+        return encodeTriang(bits, P1, P2)
+    elif mode == 'AR4JA':
+        if G is None:
+            G, _, Hnew = par2gen(H) # get systematic generator matrix G 
+            G = G.astype(np.uint8)        
+            #G = G[:,0:n]        
+            param.G = G
+            param.H = Hnew#[:,0:n]      
+            return encoder(G, bits, systematic)
+        else:
+            G = G.astype(np.uint8)
+            return encoder(G, bits, systematic)
+    else:       
+        logg.error(f'Unsupported mode: {mode}. Supported modes are: DVBS2, IEEE_802.11nD2, AR4JA.')
+
+    
+@njit(parallel=True)
+def encodeDVBS2(bits, H):
+    """
+    Encode multiple binary messages using a DVB-S2 LDPC parity-check matrix.
+
+    Parameters
+    ----------
+    bits : ndarray of shape (k, N)
+        Binary input messages to be encoded. Each column represents a message of length `k`,
+        and there are `N` such messages.
+
+    H : ndarray of shape (n - k, n)
+        Binary parity-check matrix with entries in {0, 1}. It defines the linear constraints
+        of the code and is used to derive a corresponding systematic generator matrix.
+
+    Returns
+    -------
+    codewords : ndarray of shape (n, N)
+        Binary encoded codewords. Each column is a codeword of length `n` corresponding
+        to the respective input message in `bits`. The codewords satisfy H @ c = 0 mod 2.
+    """
+    H = H.astype(np.uint8)
+    bits = bits.astype(np.uint8)
+
+    m, n = H.shape
+    k = n - m
+    N = bits.shape[1]
+    A = H[:, :k]  # shape (m, k)
+
+    codewords = np.zeros((n, N), dtype=np.uint8)
+
+    for col in prange(N):
+        # Copy message bits
+        for i in range(k):
+            codewords[i, col] = bits[i, col]
+
+        # Compute parity bits
+        parity = np.zeros(m, dtype=np.uint8)
+        for i in range(m):
+            acc = 0
+            for j in range(k):
+                acc ^= A[i, j] & bits[j, col]
+            parity[i] = acc
+
+        # Recursive parity encoding
+        codewords[k, col] = parity[0]
+        for i in range(1, m):
+            codewords[k + i, col] = parity[i] ^ codewords[k + i - 1, col]
+
+    return codewords
 
 @njit(parallel=True)
 def encoder(G, bits, systematic=True):
@@ -599,3 +700,227 @@ def readAlist(filename):
                 H[entry - 1, j] = 1
 
     return csr_matrix(H)
+
+
+@njit
+def inverseMatrixGF2(A):
+    """
+    Invert a square binary matrix over GF(2) using Gauss-Jordan elimination.
+
+    Parameters
+    ----------
+    A : ndarray of shape (n, n), dtype=np.uint8
+        Binary matrix with entries in {0, 1}.
+
+    Returns
+    -------
+    A_inv : ndarray of shape (n, n), dtype=np.uint8
+        Inverse of A over GF(2), if invertible. If not invertible, returns the identity matrix.
+
+    success : bool
+        True if A is invertible, False otherwise.
+    """
+    n = A.shape[0]
+    A = A.copy()
+    A_inv = np.zeros((n, n), dtype=np.uint8)
+    for i in range(n):
+        A_inv[i, i] = 1  # identity matrix
+
+    for i in range(n):
+        # Find pivot
+        if A[i, i] == 0:
+            found = False
+            for j in range(i + 1, n):
+                if A[j, i] == 1:
+                    # Manually swap rows i and j in A and A_inv
+                    for k in range(n):
+                        tmp = A[i, k]
+                        A[i, k] = A[j, k]
+                        A[j, k] = tmp
+                        tmp = A_inv[i, k]
+                        A_inv[i, k] = A_inv[j, k]
+                        A_inv[j, k] = tmp
+                    found = True
+                    break
+            if not found:
+                return A_inv, False  # Matrix is not invertible
+
+        # Eliminate all other entries in column i
+        for j in range(n):
+            if j != i and A[j, i] == 1:
+                for k in range(n):
+                    A[j, k] ^= A[i, k]
+                    A_inv[j, k] ^= A_inv[i, k]
+
+    return A_inv, True
+
+@njit
+def triangularize(H):
+    """
+    Convert binary matrix H into lower-triangular form using only row and column permutations.
+    Numba-compatible version.
+
+    Parameters
+    ----------
+    H : ndarray of shape (m, n), dtype=np.uint8
+        Binary parity-check matrix with entries in {0, 1}.
+
+    Returns
+    -------
+    H_tri : ndarray of shape (m, n), dtype=np.uint8
+        Triangularized matrix.
+
+    row_perm : ndarray of shape (m,), dtype=np.int32
+        Row permutation indices.
+
+    col_perm : ndarray of shape (n,), dtype=np.int32
+        Column permutation indices.
+    """
+    m, n = H.shape
+    H_tri = H.copy()
+    row_perm = np.arange(m, dtype=np.int32)
+    col_perm = np.arange(n, dtype=np.int32)
+
+    for i in range(m):
+        pivot_found = False
+
+        for r in range(i, m):
+            for c in range(i, n):
+                if H_tri[r, c] == 1:
+                    # Swap rows
+                    if r != i:
+                        for j in range(n):
+                            H_tri[i, j], H_tri[r, j] = H_tri[r, j], H_tri[i, j]
+                        row_perm[i], row_perm[r] = row_perm[r], row_perm[i]
+                    # Swap columns
+                    if c != i:
+                        for j in range(m):
+                            H_tri[j, i], H_tri[j, c] = H_tri[j, c], H_tri[j, i]
+                        col_perm[i], col_perm[c] = col_perm[c], col_perm[i]
+                    pivot_found = True
+                    break
+            if pivot_found:
+                break
+
+        if not pivot_found:
+            # Leave zeros if no pivot found in this column
+            continue
+
+        # Eliminate below
+        for r in range(i + 1, m):
+            if H_tri[r, i] == 1:
+                for j in range(n):
+                    H_tri[r, j] ^= H_tri[i, j]
+
+    return H_tri, row_perm, col_perm
+
+def triangP1P2(H):
+    """
+    Convert a binary parity-check matrix H into a lower-triangular form and extract matrices P1 and P2.
+
+    Parameters
+    ----------
+    H : ndarray of shape (m, n)
+        Binary parity-check matrix with entries in {0, 1}.
+        It is used to derive the matrices P1 and P2.
+    Returns
+    -------
+    P1 : ndarray of shape (m1, k)
+        First parity matrix.
+    P2 : ndarray of shape (m2, k)
+        Second parity matrix.
+    H_tri : ndarray of shape (m, n)
+        Triangularized H matrix.
+    """
+    H = H.astype(np.uint8)
+
+    # convert to lower-triangular form
+    H_tri, _, _ = triangularize(H)
+
+    # calculate the gap g
+    idx = np.where(H_tri[:,-1]==1)
+    g = H_tri.shape[0] - np.min(idx[0])-1
+    m = H_tri.shape[0]
+    n = H_tri.shape[1]
+    k = n - m
+
+    # extract matrices
+    E = H_tri[m-g:, n-(m-g):]
+    T = H_tri[0:m-g, n-(m-g):]
+    A = H_tri[0:m-g, 0:k]
+    B = H_tri[0:m-g, k:k+g]
+    C = H_tri[m-g:, 0:k]
+    D = H_tri[m-g:, k:k+g]
+
+    # invert matrix T
+    T_inv, found = inverseMatrixGF2(T)
+    if not found:
+        logg.error('Matrix T is not invertible.')
+
+    X = np.mod(E@T_inv, 2)           
+    C_tilde = np.mod( X @ A + C, 2)
+    D_tilde = np.mod( X @ B + D, 2)
+
+    # invert matrix D tilde
+    D_tilde_inv, found = inverseMatrixGF2(D_tilde)
+    if not found:
+        logg.error('Matrix D_tilde is not invertible.')       
+
+    P1 = np.mod(D_tilde_inv@C_tilde, 2) 
+    P2 = np.mod(T_inv @ np.mod(A + np.mod(B @ P1, 2), 2), 2)
+
+    return P1, P2, H_tri
+        
+
+@njit(parallel=True)
+def encodeTriang(bits, P1, P2):
+    """
+    Encode binary messages using two parity matrices for LDPC encoding.
+
+    Parameters
+    ----------
+    bits : ndarray of shape (k, N)
+        Binary input messages. Each column is a message to be encoded.
+
+    P1 : ndarray of shape (m1, k)
+        First parity matrix.
+
+    P2 : ndarray of shape (m2, k)
+        Second parity matrix.
+
+    Returns
+    -------
+    codewords : ndarray of shape (k + m1 + m2, N)
+        Encoded codewords, one per column.
+    """
+    bits = bits.astype(np.uint8)
+    m1 = P1.shape[0]
+    m2 = P2.shape[0]
+    k = bits.shape[0]
+    N = bits.shape[1]
+    n = k + m1 + m2
+
+    codewords = np.zeros((n, N), dtype=np.uint8)
+
+    # Copy message bits
+    for col in prange(N):
+        for i in range(k):
+            codewords[i, col] = bits[i, col]
+
+    # Compute first parity section
+    for col in prange(N):
+        for i in range(m1):
+            acc = 0
+            for j in range(k):
+                acc ^= P1[i, j] & bits[j, col]
+            codewords[k + i, col] = acc
+
+    # Compute second parity section
+    for col in prange(N):
+        for i in range(m2):
+            acc = 0
+            for j in range(k):
+                acc ^= P2[i, j] & bits[j, col]
+            codewords[k + m1 + i, col] = acc
+
+    return codewords
