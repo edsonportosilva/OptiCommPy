@@ -576,7 +576,7 @@ def decodeLDPC(llrs, param):
     """
     # check input parameters
     H = getattr(param, 'H', None)
-    maxIter = getattr(param, 'maxIter', 50)
+    maxIter = getattr(param, 'maxIter', 25)
     alg = getattr(param, 'alg', 'SPA')
     prgsBar = getattr(param, 'prgsBar', False)
     prec = getattr(param, 'prec', np.float64)
