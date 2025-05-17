@@ -204,7 +204,7 @@ def encodeLDPC(bits, param):
         try:            
             filename  = f'\LDPC_{mode}_{n}b_R{R[0]}{R[2]}.txt'
             H = readAlist(path+filename)
-            H = csr_matrix.todense(H).astype(np.int8)
+            H = csr_matrix.todense(H).astype(np.uint8)
             param.H = H
         except FileNotFoundError:
             logg.error(f'File {filename} not found. Please provide a valid parity-check matrix H.')
@@ -218,7 +218,7 @@ def encodeLDPC(bits, param):
             P1, P2, H = triangP1P2(H)
             param.P1 = P1
             param.P2 = P2
-            param.H = H
+            param.H = csr_matrix(H)
         return encodeTriang(bits, P1, P2)
     elif mode == 'AR4JA':
         if G is None:
@@ -226,7 +226,7 @@ def encodeLDPC(bits, param):
             G = G.astype(np.uint8)        
             #G = G[:,0:n]        
             param.G = G
-            param.H = Hnew#[:,0:n]      
+            param.H = csr_matrix(Hnew)#[:,0:n]      
             return encoder(G, bits, systematic)
         else:
             G = G.astype(np.uint8)
