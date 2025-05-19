@@ -342,7 +342,7 @@ def photodiode(E, param=None):
     # handle single-dimensional inputs
     try:
         ipd = R * np.sum(E * np.conj(E), axis=1)  # ideal photocurrent
-    except np.exceptions.AxisError:
+    except np.AxisError:
         ipd = R * E * np.conj(E) # ideal photocurrent
   
     if not (ideal):
