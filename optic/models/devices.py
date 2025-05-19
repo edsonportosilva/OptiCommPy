@@ -339,7 +339,7 @@ def photodiode(E, param=None):
 
     assert R > 0, "PD responsivity should be a positive scalar"
 
-    ipd = R * E * np.conj(E)  # ideal photocurrent
+    ipd = R * np.sum(E * np.conj(E), axis=1)  # ideal photocurrent
 
     if not (ideal):
         try:
