@@ -400,7 +400,7 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
 
     numCodewords = llrs.shape[0]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)    
-    success = np.zeros((numCodewords,), dtype=np.int8)
+    frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
     lastIter = np.zeros((numCodewords,), dtype=np.int8)
 
     for indCw in range(numCodewords): 
@@ -446,14 +446,14 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
                     decoded_bits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2                
 
             if np.all(np.mod(H @ decoded_bits, 2) == 0):
-                success[indCw] = 1
+                frameDecodingFail[indCw] = 0
                 lastIter[indCw] = indIter
                 break     
 
             if indIter == maxIter - 1:
                 lastIter[indCw] = indIter       
 
-    return finalLLR.flatten(), indIter, success
+    return finalLLR.flatten(), indIter, frameDecodingFail
 
 @njit(parallel=True)
 def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
@@ -501,14 +501,13 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
     """
     m, n = H.shape
     msg_v_to_c = np.zeros((m, n), dtype=prec)
-    msg_c_to_v = np.zeros((m, n), dtype=prec)
-    success = 0
+    msg_c_to_v = np.zeros((m, n), dtype=prec)    
     llrs = llrs.astype(prec)
     H = H.astype(prec)
 
     numCodewords = llrs.shape[0]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)    
-    success = np.zeros((numCodewords,), dtype=np.int8)
+    frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
     lastIter = np.zeros((numCodewords,), dtype=np.int8)
 
     for indCw in range(numCodewords):
@@ -549,14 +548,14 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
                 decoded_bits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
 
             if np.all(np.mod(H @ decoded_bits, 2) == 0):
-                success[indCw] = 1
+                frameDecodingFail[indCw] = 0
                 lastIter[indCw] = indIter
                 break
             
             if indIter == maxIter - 1:
                 lastIter[indCw] = indIter
 
-    return finalLLR.flatten(), lastIter, success
+    return finalLLR.flatten(), lastIter, frameDecodingFail
 
 
 def decodeLDPC(llrs, param):
@@ -628,10 +627,10 @@ def decodeLDPC(llrs, param):
 
     # Convert H to binary array
     H = np.array(H, dtype=np.int8)
-    
+
     logg.info( f'Decoding {numCodewords} LDPC codewords with {alg}')    
     if alg == 'SPA':      
-        outputLLRs, lastIter, frameErrors= sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter)
+        outputLLRs, lastIter, frameErrors = sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter)
     elif alg == 'MSA':
         outputLLRs, lastIter, frameErrors = minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter)
     else:
