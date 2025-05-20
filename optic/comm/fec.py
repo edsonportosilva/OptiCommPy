@@ -584,7 +584,7 @@ def decodeLDPC(llrs, param):
             If True, displays a progress bar during decoding.
 
         - prec : data-type
-            Numerical precision to use in computations (default is np.float64). 
+            Numerical precision to use in computations (default is np.float32). 
 
     Returns
     -------
@@ -601,7 +601,7 @@ def decodeLDPC(llrs, param):
     maxIter = getattr(param, 'maxIter', 25)
     alg = getattr(param, 'alg', 'SPA')
     prgsBar = getattr(param, 'prgsBar', False)
-    prec = getattr(param, 'prec', np.float64)
+    prec = getattr(param, 'prec', np.float32)
 
     if H is None:
         logg.error('H is None. Please provide a valid parity-check matrix.')
@@ -618,12 +618,12 @@ def decodeLDPC(llrs, param):
     m, n = H.shape
     numCodewords = llrs.shape[0]
 
-    llrs = np.clip(llrs, -200, 200)
+    llrs = np.clip(llrs, -200, 200).astype(prec)
     outputLLRs = np.zeros_like(llrs, dtype=prec)
 
     # Build adjacency lists using fixed-size lists for Numba       
-    checkNodes = List([np.where(H[i, :] == 1)[1].astype(np.int32) for i in range(m)])
-    varNodes = List([np.where(H[:, j] == 1)[0].astype(np.int32) for j in range(n)])
+    checkNodes = List([np.where(H[i, :] == 1)[1].astype(np.uint32) for i in range(m)])
+    varNodes = List([np.where(H[:, j] == 1)[0].astype(np.uint32) for j in range(n)])
 
     # Convert H to binary array
     H = np.array(H, dtype=np.int8)
