@@ -223,10 +223,9 @@ def encodeLDPC(bits, param):
     elif mode == 'AR4JA':
         if G is None:
             G, _, Hnew = par2gen(H) # get systematic generator matrix G 
-            G = G.astype(np.uint8)        
-            #G = G[:,0:n]        
+            G = G.astype(np.uint8)                    
             param.G = G
-            param.H = csr_matrix(Hnew)#[:,0:n]      
+            param.H = csr_matrix(Hnew)     
             return encoder(G, bits, systematic)
         else:
             G = G.astype(np.uint8)
