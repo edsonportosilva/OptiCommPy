@@ -353,14 +353,14 @@ def encoder(G, bits, systematic=True):
 
 
 @njit(parallel=True)
-def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
+def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
     """
     Performs belief propagation decoding using the sum-product algorithm
     for a single LDPC codeword.
 
     Parameters
     ----------
-    llr : ndarray of shape (n,)
+    llrs : ndarray of shape (n, numCodewords)
         Array of log-likelihood ratios (LLRs) for each bit of the received codeword.
 
     H : ndarray of shape (m, n)
@@ -395,58 +395,68 @@ def sumProductAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
     m, n = H.shape
     msg_v_to_c = np.zeros((m, n), dtype=prec) 
     msg_c_to_v = np.zeros((m, n), dtype=prec)
-    success = False    
-
-    # Initialize variable-to-check messages with input LLRs
-    for var in prange(n):
-        for check in varNodes[var]:
-            msg_v_to_c[check, var] = llr[var]
-    
-    llr = llr.astype(prec)
+    llrs = llrs.astype(prec)
     H = H.astype(prec)
-    
-    for indIter in range(maxIter):
-        # Check-to-variable update
-        for check in prange(m):
-            for var_idx in range(len(checkNodes[check])):
-                var = checkNodes[check][var_idx]
-                product = 1.0
-                for neighbor_idx in range(len(checkNodes[check])):
-                    neighbor = checkNodes[check][neighbor_idx]
-                    if neighbor != var:
-                        product *= np.tanh(msg_v_to_c[check, neighbor] / 2)
-                product = min(0.999999, max(-0.999999, product))  # clip
-                msg_c_to_v[check, var] = 2 * np.arctanh(product)
-        
-        # Variable-to-check update
-        for var in prange(n):
-            for check_idx in range(len(varNodes[var])):
-                check = varNodes[var][check_idx]
-                sum_msg = llr[var]
-                for neighbor_idx in range(len(varNodes[var])):
-                    neighbor = varNodes[var][neighbor_idx]
-                    if neighbor != check:
-                        sum_msg += msg_c_to_v[neighbor, var]
-                msg_v_to_c[check, var] = sum_msg
 
-        # Final LLR computation
-        finalLLR = np.zeros((n, 1), dtype=prec)
+    numCodewords = llrs.shape[0]
+    finalLLR = np.zeros((n, numCodewords), dtype=prec)    
+    success = np.zeros((numCodewords,), dtype=np.int8)
+    lastIter = np.zeros((numCodewords,), dtype=np.int8)
+
+    for indCw in range(numCodewords): 
         decoded_bits = np.zeros((n, 1), dtype=prec)
-        
+        llr = llrs[indCw, :]
+        # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
-            finalLLR[var] = llr[var]
             for check in varNodes[var]:
-                finalLLR[var] += msg_c_to_v[check, var]
-                decoded_bits[var] = (-np.sign(finalLLR[var]) + 1) // 2                
+                msg_v_to_c[check, var] = llr[var]
+        
+        llr = llr.astype(prec)
+        H = H.astype(prec)
+        
+        for indIter in range(maxIter):
+            # Check-to-variable update
+            for check in prange(m):
+                for var_idx in range(len(checkNodes[check])):
+                    var = checkNodes[check][var_idx]
+                    product = 1.0
+                    for neighbor_idx in range(len(checkNodes[check])):
+                        neighbor = checkNodes[check][neighbor_idx]
+                        if neighbor != var:
+                            product *= np.tanh(msg_v_to_c[check, neighbor] / 2)
+                    product = min(0.999999, max(-0.999999, product))  # clip
+                    msg_c_to_v[check, var] = 2 * np.arctanh(product)
+            
+            # Variable-to-check update
+            for var in prange(n):
+                for check_idx in range(len(varNodes[var])):
+                    check = varNodes[var][check_idx]
+                    sum_msg = llr[var]
+                    for neighbor_idx in range(len(varNodes[var])):
+                        neighbor = varNodes[var][neighbor_idx]
+                        if neighbor != check:
+                            sum_msg += msg_c_to_v[neighbor, var]
+                    msg_v_to_c[check, var] = sum_msg
 
-        if np.all(np.mod(H @ decoded_bits, 2) == 0):
-            success = True
-            break            
+            # Final LLR computation           
+            for var in prange(n):
+                finalLLR[var,indCw] = llr[var]
+                for check in varNodes[var]:
+                    finalLLR[var, indCw] += msg_c_to_v[check, var]
+                    decoded_bits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2                
+
+            if np.all(np.mod(H @ decoded_bits, 2) == 0):
+                success[indCw] = 1
+                lastIter[indCw] = indIter
+                break     
+
+            if indIter == maxIter - 1:
+                lastIter[indCw] = indIter       
 
     return finalLLR.flatten(), indIter, success
 
 @njit(parallel=True)
-def minSumAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
+def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
     """
     Performs LDPC decoding using the Min-Sum Algorithm for a single codeword.
 
@@ -457,7 +467,7 @@ def minSumAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
 
     Parameters
     ----------
-    llr : ndarray of shape (n,)
+    llrs : ndarray of shape (n, numCodewords)
         Log-likelihood ratios (LLRs) of the received codeword bits.
 
     H : ndarray of shape (m, n)
@@ -493,52 +503,60 @@ def minSumAlgorithm(llr, H, checkNodes, varNodes, maxIter, prec=np.float64):
     msg_v_to_c = np.zeros((m, n), dtype=prec)
     msg_c_to_v = np.zeros((m, n), dtype=prec)
     success = 0
-
-    # Initialize variable-to-check messages with input LLRs
-    for var in prange(n):
-        for check in varNodes[var]:
-            msg_v_to_c[check, var] = llr[var]
-
-    llr = llr.astype(prec)
+    llrs = llrs.astype(prec)
     H = H.astype(prec)
 
-    for indIter in range(maxIter):
-        # Check-to-variable update (Min-Sum)
-        for check in prange(m):
-            for var in checkNodes[check]:
-                sign_product = 1
-                min_abs = np.inf
-                for neighbor in checkNodes[check]:
-                    if neighbor != var:
-                        val = msg_v_to_c[check, neighbor]
-                        sign_product *= np.sign(val)
-                        min_abs = min(min_abs, abs(val))
-                msg_c_to_v[check, var] = sign_product * min_abs
+    numCodewords = llrs.shape[0]
+    finalLLR = np.zeros((n, numCodewords), dtype=prec)    
+    success = np.zeros((numCodewords,), dtype=np.int8)
+    lastIter = np.zeros((numCodewords,), dtype=np.int8)
 
-        # Variable-to-check update
-        for var in prange(n):
-            for check in varNodes[var]:
-                sum_msg = llr[var]
-                for neighbor in varNodes[var]:
-                    if neighbor != check:
-                        sum_msg += msg_c_to_v[neighbor, var]
-                msg_v_to_c[check, var] = sum_msg
-
-        # Final LLR and decision
-        finalLLR = np.zeros((n, 1), dtype=prec)
+    for indCw in range(numCodewords):
         decoded_bits = np.zeros((n, 1), dtype=prec)
-
+        llr = llrs[indCw, :]
+        # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
-            finalLLR[var] = llr[var]
             for check in varNodes[var]:
-                finalLLR[var] += msg_c_to_v[check, var]
-            decoded_bits[var] = (-np.sign(finalLLR[var]) + 1) // 2
+                msg_v_to_c[check, var] = llr[var]     
 
-        if np.all(np.mod(H @ decoded_bits, 2) == 0):
-            success = 1
-            break
+        for indIter in range(maxIter):
+            # Check-to-variable update (Min-Sum)
+            for check in prange(m):
+                for var in checkNodes[check]:
+                    sign_product = 1
+                    min_abs = np.inf
+                    for neighbor in checkNodes[check]:
+                        if neighbor != var:
+                            val = msg_v_to_c[check, neighbor]
+                            sign_product *= np.sign(val)
+                            min_abs = min(min_abs, abs(val))
+                    msg_c_to_v[check, var] = sign_product * min_abs
 
-    return finalLLR.flatten(), indIter, success
+            # Variable-to-check update
+            for var in prange(n):
+                for check in varNodes[var]:
+                    sum_msg = llr[var]
+                    for neighbor in varNodes[var]:
+                        if neighbor != check:
+                            sum_msg += msg_c_to_v[neighbor, var]
+                    msg_v_to_c[check, var] = sum_msg
+
+            # Final LLR and decision
+            for var in prange(n):
+                finalLLR[var, indCw] = llr[var]
+                for check in varNodes[var]:
+                    finalLLR[var, indCw] += msg_c_to_v[check, var]
+                decoded_bits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
+
+            if np.all(np.mod(H @ decoded_bits, 2) == 0):
+                success[indCw] = 1
+                lastIter[indCw] = indIter
+                break
+            
+            if indIter == maxIter - 1:
+                lastIter[indCw] = indIter
+
+    return finalLLR.flatten(), lastIter, success
 
 
 def decodeLDPC(llrs, param):
@@ -610,23 +628,23 @@ def decodeLDPC(llrs, param):
 
     # Convert H to binary array
     H = np.array(H, dtype=np.int8)
-    logg.info( f'Decoding {numCodewords} LDPC codewords with {alg}')
-    for indCw in tqdm(range(numCodewords), disable=not (prgsBar)):  
-        if alg == 'SPA':      
-            outputLLRs[indCw, :], indIter, success = sumProductAlgorithm(llrs[indCw, :], H, checkNodes, varNodes, maxIter)
-        elif alg == 'MSA':
-            outputLLRs[indCw, :], indIter, success = minSumAlgorithm(llrs[indCw, :], H, checkNodes, varNodes, maxIter)
-        else:
-            logg.error(f'Unsupported algorithm: {alg}. Supported algorithms are: SPA, MSA.')
-            return None, None
-             
-        if success:
-            logg.info(f'Frame {indCw} - Successful decoding at iteration {indIter}.')
-            continue
+    
+    logg.info( f'Decoding {numCodewords} LDPC codewords with {alg}')    
+    if alg == 'SPA':      
+        outputLLRs, lastIter, frameErrors= sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter)
+    elif alg == 'MSA':
+        outputLLRs, lastIter, frameErrors = minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter)
+    else:
+        logg.error(f'Unsupported algorithm: {alg}. Supported algorithms are: SPA, MSA.')
+        return None, None
 
+    for indCw, frameError in enumerate(frameErrors):         
+        if frameError == 0:
+            logg.info(f'Frame {indCw} - Successful decoding at iteration {lastIter[indCw]}.')                 
+           
     decodedBits = ((-np.sign(outputLLRs)+1)//2).astype(np.int8)
     
-    return decodedBits, outputLLRs
+    return decodedBits, outputLLRs, frameErrors
 
 
 def writeAlist(H, filename):
