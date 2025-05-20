@@ -1,7 +1,7 @@
 """
-===============================================================
-Forward Error Correction (FEC) utilities (:mod:`optic.comm.fec)
-===============================================================
+================================================================
+Forward Error Correction (FEC) utilities (:mod:`optic.comm.fec`)
+================================================================
 
 .. autosummary::
    :toctree: generated/
@@ -11,16 +11,16 @@ Forward Error Correction (FEC) utilities (:mod:`optic.comm.fec)
    encoder                -- Performs linear block encoding
    encodeDVBS2            -- Encode binary messages using a DVB-S2 LDPC parity-check matrix
    encodeTriang           -- Encode binary messages using lower-triangular parity-check matrices
-   sumProductAlgorithm    -- Belief propagation decoding using the sum-product algorithm 
+   sumProductAlgorithm    -- Belief propagation decoding using the sum-product algorithm
    minSumAlgorithm        -- Belief propagation decoding using the min-sum algorithm
-   encodeLDPC             -- Encode binary messages using a LDPC parity-check matrix   
+   encodeLDPC             -- Encode binary messages using a LDPC parity-check matrix
    decodeLDPC             -- Decode multiple LDPC codewords using belief propagation
-   writeAlist             -- Save a binary parity-check matrix to ALIST format   
+   writeAlist             -- Save a binary parity-check matrix to ALIST format
    readAlist              -- Read an ALIST file and reconstruct the binary parity-check matrix
    triangularize          -- Convert binary matrix to lower-triangular form
    triangP1P2             -- Extract matrices that compute parities from lower-triangular form H
+   inverseMatrixGF2       -- Invert a square binary matrix over GF(2)
 """
-
 
 """Forward Error Correction (FEC) utilities."""
 import numpy as np
@@ -28,8 +28,8 @@ from scipy.sparse import csr_matrix, csc_matrix, coo_matrix
 from numba import njit, prange
 from numba.typed import List
 
-
 import logging as logg
+
 
 def par2gen(H):
     """
@@ -69,29 +69,33 @@ def par2gen(H):
     k = n - H.shape[0]
 
     if type(H) == csr_matrix:
-        H = csr_matrix.todense(H).astype(np.uint8) 
+        H = csr_matrix.todense(H).astype(np.uint8)
     elif type(H) == csc_matrix:
-        H = csc_matrix.todense(H).astype(np.uint8) 
+        H = csc_matrix.todense(H).astype(np.uint8)
     elif type(H) == coo_matrix:
-        H = coo_matrix.todense(H).astype(np.uint8)    
+        H = coo_matrix.todense(H).astype(np.uint8)
 
-    Hs = gaussElim(H) # Reduce matrix to row echelon form
+    Hs = gaussElim(H)  # Reduce matrix to row echelon form
     Hs = np.array(Hs, dtype=np.uint8)
-    
+
     # do the necessary column swaps
-    cols = np.arange(Hs.shape[1])      
-    indP = cols[(np.sum(Hs[:, 0:],axis=0) > 1)]  # indexes of cols belonging to matrix P
-    indI = cols[(np.sum(Hs[:, 0:],axis=0) == 1)] # indexes of cols belonging to the indentity
-    
-    Hnew = np.hstack((Hs[:,cols[indP]], 
-                     Hs[:,cols[indI]]))
-    
+    cols = np.arange(Hs.shape[1])
+    indP = cols[
+        (np.sum(Hs[:, 0:], axis=0) > 1)
+    ]  # indexes of cols belonging to matrix P
+    indI = cols[
+        (np.sum(Hs[:, 0:], axis=0) == 1)
+    ]  # indexes of cols belonging to the indentity
+
+    Hnew = np.hstack((Hs[:, cols[indP]], Hs[:, cols[indI]]))
+
     colSwaps = np.hstack((indP, indI))
-        
+
     # systematic generator matrix G
-    G = np.hstack((np.eye(k,dtype=np.uint8), Hnew[:,0:k].T))
-    
+    G = np.hstack((np.eye(k, dtype=np.uint8), Hnew[:, 0:k].T))
+
     return G, colSwaps, Hnew
+
 
 @njit
 def gaussElim(M):
@@ -143,6 +147,7 @@ def gaussElim(M):
 
     return matrix
 
+
 def encodeLDPC(bits, param):
     """
     Encode binary messages using a parity-check matrix of a linear block code (e.g., LDPC).
@@ -181,58 +186,64 @@ def encodeLDPC(bits, param):
     codewords : ndarray of shape (n, N)
         Binary encoded codewords. Each column is a codeword of length `n` corresponding
         to the respective input message in `bits`. The codewords satisfy `H @ c = 0 (mod 2)`.
-    
+
     References
     ----------
-    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," 
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes,"
         in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
 
     """
     # check input parameters
-    mode = getattr(param, 'mode', 'DVBS2')
-    n = getattr(param, 'n', 64800)
-    R = getattr(param, 'R', '4/5')
-    H = getattr(param, 'H', None)
-    G = getattr(param, 'G', None)
-    systematic = getattr(param, 'systematic', True)
-    P1 = getattr(param, 'P1', None)
-    P2 = getattr(param, 'P2', None)
-    path = getattr(param, 'path', None)
-    
+    mode = getattr(param, "mode", "DVBS2")
+    n = getattr(param, "n", 64800)
+    R = getattr(param, "R", "4/5")
+    H = getattr(param, "H", None)
+    G = getattr(param, "G", None)
+    systematic = getattr(param, "systematic", True)
+    P1 = getattr(param, "P1", None)
+    P2 = getattr(param, "P2", None)
+    path = getattr(param, "path", None)
+
     if H is None:
-        try:            
-            filename  = f'\LDPC_{mode}_{n}b_R{R[0]}{R[2]}.txt'
-            H = readAlist(path+filename)
+        try:
+            filename = f"\LDPC_{mode}_{n}b_R{R[0]}{R[2]}.txt"
+            H = readAlist(path + filename)
             H = csr_matrix.todense(H).astype(np.uint8)
             param.H = H
         except FileNotFoundError:
-            logg.error(f'File {filename} not found. Please provide a valid parity-check matrix H.')
+            logg.error(
+                f"File {filename} not found. Please provide a valid parity-check matrix H."
+            )
 
-    if mode == 'DVBS2':
-        if H  is None:
-            raise ValueError('H is None. Please provide a valid DVBS2 parity-check matrix.')
+    if mode == "DVBS2":
+        if H is None:
+            raise ValueError(
+                "H is None. Please provide a valid DVBS2 parity-check matrix."
+            )
         return encodeDVBS2(bits, H)
-    elif mode == 'IEEE_802.11nD2':
+    elif mode == "IEEE_802.11nD2":
         if P1 is None or P2 is None:
             P1, P2, H = triangP1P2(H)
             param.P1 = P1
             param.P2 = P2
             param.H = csr_matrix(H)
         return encodeTriang(bits, P1, P2)
-    elif mode == 'AR4JA':
+    elif mode == "AR4JA":
         if G is None:
-            G, _, Hnew = par2gen(H) # get systematic generator matrix G 
-            G = G.astype(np.uint8)                    
+            G, _, Hnew = par2gen(H)  # get systematic generator matrix G
+            G = G.astype(np.uint8)
             param.G = G
-            param.H = csr_matrix(Hnew)     
+            param.H = csr_matrix(Hnew)
             return encoder(G, bits, systematic)
         else:
             G = G.astype(np.uint8)
             return encoder(G, bits, systematic)
-    else:       
-        logg.error(f'Unsupported mode: {mode}. Supported modes are: DVBS2, IEEE_802.11nD2, AR4JA.')
+    else:
+        logg.error(
+            f"Unsupported mode: {mode}. Supported modes are: DVBS2, IEEE_802.11nD2, AR4JA."
+        )
 
-    
+
 @njit(parallel=True)
 def encodeDVBS2(bits, H):
     """
@@ -283,6 +294,7 @@ def encodeDVBS2(bits, H):
             codewords[k + i, col] = parity[i] ^ codewords[k + i - 1, col]
 
     return codewords
+
 
 @njit(parallel=True)
 def encoder(G, bits, systematic=True):
@@ -387,33 +399,33 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
 
     References
     ----------
-    [1] F. R. Kschischang, B. J. Frey and H. . -A. Loeliger, "Factor graphs and the sum-product algorithm," 
+    [1] F. R. Kschischang, B. J. Frey and H. . -A. Loeliger, "Factor graphs and the sum-product algorithm,"
         in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 498-519, Feb 2001.
-    [2] T. J. Richardson and R. L. Urbanke, "The capacity of low-density parity-check codes under message-passing decoding," 
+    [2] T. J. Richardson and R. L. Urbanke, "The capacity of low-density parity-check codes under message-passing decoding,"
         in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 599-618, Feb 2001.
     """
     m, n = H.shape
-    msg_v_to_c = np.zeros((m, n), dtype=prec) 
+    msg_v_to_c = np.zeros((m, n), dtype=prec)
     msg_c_to_v = np.zeros((m, n), dtype=prec)
     llrs = llrs.astype(prec)
     H = H.astype(prec)
 
     numCodewords = llrs.shape[0]
-    finalLLR = np.zeros((n, numCodewords), dtype=prec)    
+    finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
     lastIter = np.zeros((numCodewords,), dtype=np.int8)
 
-    for indCw in range(numCodewords): 
+    for indCw in range(numCodewords):
         decoded_bits = np.zeros((n, 1), dtype=prec)
         llr = llrs[indCw, :]
         # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
             for check in varNodes[var]:
                 msg_v_to_c[check, var] = llr[var]
-        
+
         llr = llr.astype(prec)
         H = H.astype(prec)
-        
+
         for indIter in range(maxIter):
             # Check-to-variable update
             for check in prange(m):
@@ -426,7 +438,7 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
                             product *= np.tanh(msg_v_to_c[check, neighbor] / 2)
                     product = min(0.999999, max(-0.999999, product))  # clip
                     msg_c_to_v[check, var] = 2 * np.arctanh(product)
-            
+
             # Variable-to-check update
             for var in prange(n):
                 for check_idx in range(len(varNodes[var])):
@@ -438,29 +450,30 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
                             sum_msg += msg_c_to_v[neighbor, var]
                     msg_v_to_c[check, var] = sum_msg
 
-            # Final LLR computation           
+            # Final LLR computation
             for var in prange(n):
-                finalLLR[var,indCw] = llr[var]
+                finalLLR[var, indCw] = llr[var]
                 for check in varNodes[var]:
                     finalLLR[var, indCw] += msg_c_to_v[check, var]
-                    decoded_bits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2                
+                    decoded_bits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
 
             if np.all(np.mod(H @ decoded_bits, 2) == 0):
                 frameDecodingFail[indCw] = 0
                 lastIter[indCw] = indIter
-                break     
+                break
 
             if indIter == maxIter - 1:
-                lastIter[indCw] = indIter       
+                lastIter[indCw] = indIter
 
     return finalLLR.flatten(), indIter, frameDecodingFail
+
 
 @njit(parallel=True, fastmath=True)
 def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
     """
     Performs LDPC decoding using the Min-Sum Algorithm for a single codeword.
 
-    This function implements the belief propagation decoding using the Min-Sum 
+    This function implements the belief propagation decoding using the Min-Sum
     approximation of the Sum-Product Algorithm (SPA). It replaces the computationally
     expensive tanh and arctanh operations with simple min and sign operations at
     check nodes, making it more suitable for hardware or parallel implementations.
@@ -474,11 +487,11 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
         Binary parity-check matrix representing the LDPC code.
 
     checkNodes : list of ndarray
-        List of length `m`, where each entry contains the indices of variable nodes 
+        List of length `m`, where each entry contains the indices of variable nodes
         connected to the corresponding check node.
 
     varNodes : list of ndarray
-        List of length `n`, where each entry contains the indices of check nodes 
+        List of length `n`, where each entry contains the indices of check nodes
         connected to the corresponding variable node.
 
     maxIter : int
@@ -496,22 +509,22 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
         Number of iterations performed before successful decoding or reaching `maxIter`.
 
     success : int
-        1 if decoding succeeded (i.e., all parity-check equations are satisfied), 
+        1 if decoding succeeded (i.e., all parity-check equations are satisfied),
         0 otherwise.
 
     References
     ----------
-    [1] M. P. C. Fossorier, M. Mihaljevic and H. Imai, "Reduced complexity iterative decoding of low-density parity check codes based on belief propagation," 
+    [1] M. P. C. Fossorier, M. Mihaljevic and H. Imai, "Reduced complexity iterative decoding of low-density parity check codes based on belief propagation,"
         in IEEE Transactions on Communications, vol. 47, no. 5, pp. 673-680, May 1999
     """
     m, n = H.shape
     msg_v_to_c = np.zeros((m, n), dtype=prec)
-    msg_c_to_v = np.zeros((m, n), dtype=prec)    
+    msg_c_to_v = np.zeros((m, n), dtype=prec)
     llrs = llrs.astype(prec)
     H = H.astype(prec)
 
     numCodewords = llrs.shape[0]
-    finalLLR = np.zeros((n, numCodewords), dtype=prec)    
+    finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
     lastIter = np.zeros((numCodewords,), dtype=np.int8)
 
@@ -521,7 +534,7 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
         # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
             for check in varNodes[var]:
-                msg_v_to_c[check, var] = llr[var]     
+                msg_v_to_c[check, var] = llr[var]
 
         for indIter in range(maxIter):
             # Check-to-variable update (Min-Sum)
@@ -556,7 +569,7 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
                 frameDecodingFail[indCw] = 0
                 lastIter[indCw] = indIter
                 break
-            
+
             if indIter == maxIter - 1:
                 lastIter[indCw] = indIter
 
@@ -572,7 +585,7 @@ def decodeLDPC(llrs, param):
     llrs : ndarray of shape (numCodewords, n)
         Array of log-likelihood ratios (LLRs) for each bit of the received codewords.
         Each row corresponds to a codeword, and each column corresponds to a bit.
-        
+
     param : object
         Object containing the following attributes:
 
@@ -589,7 +602,7 @@ def decodeLDPC(llrs, param):
             If True, displays a progress bar during decoding.
 
         - prec : data-type
-            Numerical precision to use in computations (default is np.float32). 
+            Numerical precision to use in computations (default is np.float32).
 
     Returns
     -------
@@ -602,19 +615,19 @@ def decodeLDPC(llrs, param):
         to a codeword, and each column corresponds to a bit.
     """
     # check input parameters
-    H = getattr(param, 'H', None)
-    maxIter = getattr(param, 'maxIter', 25)
-    alg = getattr(param, 'alg', 'SPA')
-    prgsBar = getattr(param, 'prgsBar', False)
-    prec = getattr(param, 'prec', np.float32)
+    H = getattr(param, "H", None)
+    maxIter = getattr(param, "maxIter", 25)
+    alg = getattr(param, "alg", "SPA")
+    prgsBar = getattr(param, "prgsBar", False)
+    prec = getattr(param, "prec", np.float32)
 
     if H is None:
-        logg.error('H is None. Please provide a valid parity-check matrix.')
+        logg.error("H is None. Please provide a valid parity-check matrix.")
 
     if type(H) == csr_matrix:
-        H = csr_matrix.todense(H).astype(np.uint8) 
+        H = csr_matrix.todense(H).astype(np.uint8)
     elif type(H) == csc_matrix:
-        H = csc_matrix.todense(H).astype(np.uint8) 
+        H = csc_matrix.todense(H).astype(np.uint8)
     elif type(H) == coo_matrix:
         H = coo_matrix.todense(H).astype(np.uint8)
     else:
@@ -626,28 +639,34 @@ def decodeLDPC(llrs, param):
     llrs = np.clip(llrs, -200, 200)
     outputLLRs = np.zeros_like(llrs, dtype=prec)
 
-    # Build adjacency lists using fixed-size lists for Numba       
+    # Build adjacency lists using fixed-size lists for Numba
     checkNodes = List([np.where(H[i, :] == 1)[1].astype(np.uint32) for i in range(m)])
     varNodes = List([np.where(H[:, j] == 1)[0].astype(np.uint32) for j in range(n)])
 
     # Convert H to binary array
     H = np.array(H, dtype=np.int8)
 
-    logg.info( f'Decoding {numCodewords} LDPC codewords with {alg}')    
-    if alg == 'SPA':      
-        outputLLRs, lastIter, frameErrors = sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter)
-    elif alg == 'MSA':
-        outputLLRs, lastIter, frameErrors = minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter)
+    logg.info(f"Decoding {numCodewords} LDPC codewords with {alg}")
+    if alg == "SPA":
+        outputLLRs, lastIter, frameErrors = sumProductAlgorithm(
+            llrs, H, checkNodes, varNodes, maxIter
+        )
+    elif alg == "MSA":
+        outputLLRs, lastIter, frameErrors = minSumAlgorithm(
+            llrs, H, checkNodes, varNodes, maxIter
+        )
     else:
-        logg.error(f'Unsupported algorithm: {alg}. Supported algorithms are: SPA, MSA.')
+        logg.error(f"Unsupported algorithm: {alg}. Supported algorithms are: SPA, MSA.")
         return None, None
 
-    for indCw, frameError in enumerate(frameErrors):         
+    for indCw, frameError in enumerate(frameErrors):
         if frameError == 0:
-            logg.info(f'Frame {indCw} - Successful decoding at iteration {lastIter[indCw]}.')                 
-           
-    decodedBits = ((-np.sign(outputLLRs)+1)//2).astype(np.int8)
-    
+            logg.info(
+                f"Frame {indCw} - Successful decoding at iteration {lastIter[indCw]}."
+            )
+
+    decodedBits = ((-np.sign(outputLLRs) + 1) // 2).astype(np.int8)
+
     return decodedBits, outputLLRs, frameErrors
 
 
@@ -662,16 +681,16 @@ def writeAlist(H, filename):
 
     filename : str
         Name of the ALIST file to be written.
-    """    
+    """
     if type(H) == csr_matrix:
-        H = csr_matrix.todense(H).astype(np.uint8) 
+        H = csr_matrix.todense(H).astype(np.uint8)
     elif type(H) == csc_matrix:
-        H = csc_matrix.todense(H).astype(np.uint8) 
+        H = csc_matrix.todense(H).astype(np.uint8)
     elif type(H) == coo_matrix:
         H = coo_matrix.todense(H).astype(np.uint8)
-    else:        
+    else:
         H = H.astype(np.int8)
-        
+
     m, n = H.shape
 
     # Variable and check node degrees
@@ -680,28 +699,28 @@ def writeAlist(H, filename):
     max_col_deg = max(var_degrees)
     max_row_deg = max(check_degrees)
 
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         f.write(f"{n} {m}\n")
         f.write(f"{max_col_deg} {max_row_deg}\n")
 
-        f.write(' '.join(str(d) for d in var_degrees) + '\n')
-        f.write(' '.join(str(d) for d in check_degrees) + '\n')
+        f.write(" ".join(str(d) for d in var_degrees) + "\n")
+        f.write(" ".join(str(d) for d in check_degrees) + "\n")
 
         # Variable node connections (1-based indexing)
         for j in range(n):
-            connections = np.where(H[:, j]==1)[0] + 1
+            connections = np.where(H[:, j] == 1)[0] + 1
             padded = list(connections) + [0] * (max_col_deg - len(connections))
-            f.write(' '.join(str(i) for i in padded) + '\n')
+            f.write(" ".join(str(i) for i in padded) + "\n")
 
         # Check node connections (1-based indexing)
         for i in range(m):
-            connections = np.where(H[i, :]==1)[1] + 1
+            connections = np.where(H[i, :] == 1)[1] + 1
             padded = list(connections) + [0] * (max_row_deg - len(connections))
-            f.write(' '.join(str(j) for j in padded) + '\n')
-    
+            f.write(" ".join(str(j) for j in padded) + "\n")
+
     f.close()
 
-            
+
 def readAlist(filename):
     """
     Read an ALIST file and reconstruct the binary parity-check matrix H.
@@ -716,12 +735,12 @@ def readAlist(filename):
     H : ndarray of shape (m, n)
         Reconstructed binary parity-check matrix.
     """
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         lines = [line.strip() for line in f if line.strip()]
 
-    n, m = map(int, lines[0].split())  
-    var_conn_lines = lines[4:4 + n]
-    
+    n, m = map(int, lines[0].split())
+    var_conn_lines = lines[4 : 4 + n]
+
     H = np.zeros((m, n), dtype=np.uint8)
 
     for j, line in enumerate(var_conn_lines):
@@ -784,6 +803,7 @@ def inverseMatrixGF2(A):
 
     return A_inv, True
 
+
 @njit
 def triangularize(H):
     """
@@ -808,7 +828,7 @@ def triangularize(H):
 
     References
     ----------
-    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," 
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes,"
         in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
     """
     m, n = H.shape
@@ -849,6 +869,7 @@ def triangularize(H):
 
     return H_tri, row_perm, col_perm
 
+
 def triangP1P2(H):
     """
     Convert a binary parity-check matrix H into a lower-triangular form and extract matrices P1 and P2.
@@ -869,7 +890,7 @@ def triangP1P2(H):
 
     References
     ----------
-    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," 
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes,"
         in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
     """
     H = H.astype(np.uint8)
@@ -878,39 +899,39 @@ def triangP1P2(H):
     H_tri, _, _ = triangularize(H)
 
     # calculate the gap g
-    idx = np.where(H_tri[:,-1]==1)
-    g = H_tri.shape[0] - np.min(idx[0])-1
+    idx = np.where(H_tri[:, -1] == 1)
+    g = H_tri.shape[0] - np.min(idx[0]) - 1
     m = H_tri.shape[0]
     n = H_tri.shape[1]
     k = n - m
 
     # extract matrices
-    E = H_tri[m-g:, n-(m-g):]
-    T = H_tri[0:m-g, n-(m-g):]
-    A = H_tri[0:m-g, 0:k]
-    B = H_tri[0:m-g, k:k+g]
-    C = H_tri[m-g:, 0:k]
-    D = H_tri[m-g:, k:k+g]
+    E = H_tri[m - g :, n - (m - g) :]
+    T = H_tri[0 : m - g, n - (m - g) :]
+    A = H_tri[0 : m - g, 0:k]
+    B = H_tri[0 : m - g, k : k + g]
+    C = H_tri[m - g :, 0:k]
+    D = H_tri[m - g :, k : k + g]
 
     # invert matrix T
     T_inv, found = inverseMatrixGF2(T)
     if not found:
-        logg.error('Matrix T is not invertible.')
+        logg.error("Matrix T is not invertible.")
 
-    X = np.mod(E@T_inv, 2)           
-    C_tilde = np.mod( X @ A + C, 2)
-    D_tilde = np.mod( X @ B + D, 2)
+    X = np.mod(E @ T_inv, 2)
+    C_tilde = np.mod(X @ A + C, 2)
+    D_tilde = np.mod(X @ B + D, 2)
 
     # invert matrix D tilde
     D_tilde_inv, found = inverseMatrixGF2(D_tilde)
     if not found:
-        logg.error('Matrix D_tilde is not invertible.')       
+        logg.error("Matrix D_tilde is not invertible.")
 
-    P1 = np.mod(D_tilde_inv@C_tilde, 2) 
+    P1 = np.mod(D_tilde_inv @ C_tilde, 2)
     P2 = np.mod(T_inv @ np.mod(A + np.mod(B @ P1, 2), 2), 2)
 
     return P1, P2, H_tri
-        
+
 
 @njit(parallel=True)
 def encodeTriang(bits, P1, P2):
@@ -935,7 +956,7 @@ def encodeTriang(bits, P1, P2):
 
     References
     ----------
-    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," 
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes,"
         in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
     """
     bits = bits.astype(np.uint8)
