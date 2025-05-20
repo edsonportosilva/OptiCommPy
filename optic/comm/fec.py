@@ -27,7 +27,7 @@ import numpy as np
 from scipy.sparse import csr_matrix, csc_matrix, coo_matrix
 from numba import njit, prange
 from numba.typed import List
-from tqdm import tqdm
+
 
 import logging as logg
 
@@ -498,6 +498,11 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
     success : int
         1 if decoding succeeded (i.e., all parity-check equations are satisfied), 
         0 otherwise.
+
+    References
+    ----------
+    [1] M. P. C. Fossorier, M. Mihaljevic and H. Imai, "Reduced complexity iterative decoding of low-density parity check codes based on belief propagation," 
+        in IEEE Transactions on Communications, vol. 47, no. 5, pp. 673-680, May 1999
     """
     m, n = H.shape
     msg_v_to_c = np.zeros((m, n), dtype=prec)
