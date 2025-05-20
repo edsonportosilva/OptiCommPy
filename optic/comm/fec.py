@@ -181,18 +181,11 @@ def encodeLDPC(bits, param):
     codewords : ndarray of shape (n, N)
         Binary encoded codewords. Each column is a codeword of length `n` corresponding
         to the respective input message in `bits`. The codewords satisfy `H @ c = 0 (mod 2)`.
-
-    Notes
-    -----
-    This function performs the following steps:
-
-    1. Uses `par2gen(H)` to compute the corresponding systematic generator matrix `G`
-       of the form `[I_k | P]`, and stores the column permutation used to achieve it.
-    2. Encodes the input messages using `encoder(G, bits)` to get systematic codewords.
-    3. Applies the inverse column permutation to return the codewords in the original bit ordering.
-
-    The arithmetic is performed over GF(2). The result satisfies the parity-check condition
-    `H @ codeword = 0 mod 2` for each column.
+    
+    References
+    ----------
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," 
+        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
 
     """
     # check input parameters
@@ -352,7 +345,7 @@ def encoder(G, bits, systematic=True):
     return codewords
 
 
-@njit(parallel=True)
+@njit(parallel=True, fastmath=True)
 def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
     """
     Performs belief propagation decoding using the sum-product algorithm
@@ -388,9 +381,16 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
     numIter : int
         Number of iterations executed until decoding converged or reached `maxIter`.
 
-    success : int
-        Indicates whether decoding was successful (1) or not (0),
-        based on the parity-check condition.
+    frameDecodingFail : ndarray of shape (numCodewords,)
+        Array indicating whether decoding was successful (0) or failed (1) for each codeword.
+        A value of 0 indicates successful decoding, while 1 indicates failure.
+
+    References
+    ----------
+    [1] F. R. Kschischang, B. J. Frey and H. . -A. Loeliger, "Factor graphs and the sum-product algorithm," 
+        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 498-519, Feb 2001.
+    [2] T. J. Richardson and R. L. Urbanke, "The capacity of low-density parity-check codes under message-passing decoding," 
+        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 599-618, Feb 2001.
     """
     m, n = H.shape
     msg_v_to_c = np.zeros((m, n), dtype=prec) 
@@ -455,7 +455,7 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
 
     return finalLLR.flatten(), indIter, frameDecodingFail
 
-@njit(parallel=True)
+@njit(parallel=True, fastmath=True)
 def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
     """
     Performs LDPC decoding using the Min-Sum Algorithm for a single codeword.
@@ -618,7 +618,7 @@ def decodeLDPC(llrs, param):
     m, n = H.shape
     numCodewords = llrs.shape[0]
 
-    llrs = np.clip(llrs, -200, 200).astype(prec)
+    llrs = np.clip(llrs, -200, 200)
     outputLLRs = np.zeros_like(llrs, dtype=prec)
 
     # Build adjacency lists using fixed-size lists for Numba       
@@ -800,6 +800,11 @@ def triangularize(H):
 
     col_perm : ndarray of shape (n,), dtype=np.int32
         Column permutation indices.
+
+    References
+    ----------
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," 
+        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
     """
     m, n = H.shape
     H_tri = H.copy()
@@ -856,6 +861,11 @@ def triangP1P2(H):
         Second parity matrix.
     H_tri : ndarray of shape (m, n)
         Triangularized H matrix.
+
+    References
+    ----------
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," 
+        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
     """
     H = H.astype(np.uint8)
 
@@ -917,6 +927,11 @@ def encodeTriang(bits, P1, P2):
     -------
     codewords : ndarray of shape (k + m1 + m2, N)
         Encoded codewords, one per column.
+
+    References
+    ----------
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," 
+        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
     """
     bits = bits.astype(np.uint8)
     m1 = P1.shape[0]
