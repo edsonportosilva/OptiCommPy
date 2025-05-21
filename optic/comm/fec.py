@@ -95,7 +95,7 @@ def par2gen(H):
     # systematic generator matrix G
     G = np.hstack((np.eye(k, dtype=np.uint8), Hnew[:, 0:k].T))
 
-    return G, colSwaps, Hnew
+    return G, colSwaps, H[:, colSwaps]
 
 
 @njit
@@ -224,10 +224,10 @@ def encodeLDPC(bits, param):
         return encodeDVBS2(bits, H)
     elif mode == "IEEE_802.11nD2":
         if P1 is None or P2 is None:
-            P1, P2, H = triangP1P2(H)
+            P1, P2, Hnew = triangP1P2(H)
             param.P1 = P1
             param.P2 = P2
-            param.H = csr_matrix(H)
+            param.H = csr_matrix(Hnew)
         return encodeTriang(bits, P1, P2)
     elif mode == "AR4JA":
         if G is None:
@@ -897,7 +897,7 @@ def triangP1P2(H):
     H = H.astype(np.uint8)
 
     # convert to lower-triangular form
-    H_tri, _, _ = triangularize(H)
+    H_tri, _, colSwaps = triangularize(H)
 
     # calculate the gap g
     idx = np.where(H_tri[:, -1] == 1)
@@ -931,7 +931,7 @@ def triangP1P2(H):
     P1 = np.mod(D_tilde_inv @ C_tilde, 2)
     P2 = np.mod(T_inv @ np.mod(A + np.mod(B @ P1, 2), 2), 2)
 
-    return P1, P2, H_tri
+    return P1, P2, H[:, colSwaps]
 
 
 @njit(parallel=True)
