@@ -26,7 +26,8 @@ This repository is a Python-based framework to simulate systems, subsystems, and
   - *Electronic chromatic dispersion compensation (EDC)*.
   - *Several NxN MIMO adaptive equalization algorithms*.
   - *Carrier phase recovery algorithms.* 
-* For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the core DSP functions.  
+* Functions to implement forward error correction (FEC) encoders and decoders.
+* For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the DSP and the FEC functions.  
 * Evaluate transmission performance with metrics such as:
   - *Bit-error-rate* (BER).
   - *Symbol-error-rate* (SER).

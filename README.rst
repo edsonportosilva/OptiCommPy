@@ -39,8 +39,9 @@ Available features
    -  *Several NxN MIMO adaptive equalization algorithms*.
    -  *Carrier phase recovery algorithms.*
 
+-  Functions to implement forward error correction (FEC) encoders and decoders.
 -  For most of the cases, `Numba <https://numba.pydata.org/>`__ is used
-   to speed up the core DSP functions.
+   to speed up the DSP and the FEC functions.
 -  Evaluate transmission performance with metrics such as:
 
    -  *Bit-error-rate* (BER).
