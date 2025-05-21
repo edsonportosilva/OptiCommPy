@@ -157,7 +157,7 @@ def encodeLDPC(bits, param):
         Object containing the following attributes:
 
         - mode : str
-            Mode of operation ('DVBS2', 'IEEE_802.11nD2', or 'general').
+            Mode of operation ('DVBS2', 'IEEE_802.11nD2', or 'AR4JA').
 
         - H : ndarray of shape (n - k, n)
             Binary parity-check matrix with entries in {0, 1}. It defines the linear constraints
@@ -399,8 +399,8 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
     [2] T. J. Richardson and R. L. Urbanke, "The capacity of low-density parity-check codes under message-passing decoding," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 599-618, Feb 2001.
     """
     m, n = H.shape
-    msg_v_to_c = np.zeros((m, n), dtype=prec)
-    msg_c_to_v = np.zeros((m, n), dtype=prec)
+    msgVtoC = np.zeros((m, n), dtype=prec)
+    msgCtoV = np.zeros((m, n), dtype=prec)
     llrs = llrs.astype(prec)
     H = H.astype(prec)
 
@@ -410,12 +410,12 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
     lastIter = np.zeros((numCodewords,), dtype=np.int8)
 
     for indCw in range(numCodewords):
-        decoded_bits = np.zeros((n, 1), dtype=prec)
+        decodedBits = np.zeros((n, 1), dtype=prec)
         llr = llrs[indCw, :]
         # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
             for check in varNodes[var]:
-                msg_v_to_c[check, var] = llr[var]
+                msgVtoC[check, var] = llr[var]
 
         llr = llr.astype(prec)
         H = H.astype(prec)
@@ -429,29 +429,29 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
                     for neighbor_idx in range(len(checkNodes[check])):
                         neighbor = checkNodes[check][neighbor_idx]
                         if neighbor != var:
-                            product *= np.tanh(msg_v_to_c[check, neighbor] / 2)
+                            product *= np.tanh(msgVtoC[check, neighbor] / 2)
                     product = min(0.999999, max(-0.999999, product))  # clip
-                    msg_c_to_v[check, var] = 2 * np.arctanh(product)
+                    msgCtoV[check, var] = 2 * np.arctanh(product)
 
             # Variable-to-check update
             for var in prange(n):
                 for check_idx in range(len(varNodes[var])):
                     check = varNodes[var][check_idx]
-                    sum_msg = llr[var]
+                    sumMsg = llr[var]
                     for neighbor_idx in range(len(varNodes[var])):
                         neighbor = varNodes[var][neighbor_idx]
                         if neighbor != check:
-                            sum_msg += msg_c_to_v[neighbor, var]
-                    msg_v_to_c[check, var] = sum_msg
+                            sumMsg += msgCtoV[neighbor, var]
+                    msgVtoC[check, var] = sumMsg
 
             # Final LLR computation
             for var in prange(n):
                 finalLLR[var, indCw] = llr[var]
                 for check in varNodes[var]:
-                    finalLLR[var, indCw] += msg_c_to_v[check, var]
-                    decoded_bits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
+                    finalLLR[var, indCw] += msgCtoV[check, var]
+                    decodedBits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
 
-            if np.all(np.mod(H @ decoded_bits, 2) == 0):
+            if np.all(np.mod(H @ decodedBits, 2) == 0):
                 frameDecodingFail[indCw] = 0
                 lastIter[indCw] = indIter
                 break
@@ -511,8 +511,8 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
     [1] M. P. C. Fossorier, M. Mihaljevic and H. Imai, "Reduced complexity iterative decoding of low-density parity check codes based on belief propagation," IEEE Transactions on Communications, vol. 47, no. 5, pp. 673-680, May 1999
     """
     m, n = H.shape
-    msg_v_to_c = np.zeros((m, n), dtype=prec)
-    msg_c_to_v = np.zeros((m, n), dtype=prec)
+    msgVtoC = np.zeros((m, n), dtype=prec)
+    msgCtoV = np.zeros((m, n), dtype=prec)
     llrs = llrs.astype(prec)
     H = H.astype(prec)
 
@@ -522,43 +522,43 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
     lastIter = np.zeros((numCodewords,), dtype=np.int8)
 
     for indCw in range(numCodewords):
-        decoded_bits = np.zeros((n, 1), dtype=prec)
+        decodedBits = np.zeros((n, 1), dtype=prec)
         llr = llrs[indCw, :]
         # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
             for check in varNodes[var]:
-                msg_v_to_c[check, var] = llr[var]
+                msgVtoC[check, var] = llr[var]
 
         for indIter in range(maxIter):
             # Check-to-variable update (Min-Sum)
             for check in prange(m):
                 for var in checkNodes[check]:
-                    sign_product = 1
+                    signProduct = 1
                     min_abs = np.inf
                     for neighbor in checkNodes[check]:
                         if neighbor != var:
-                            val = msg_v_to_c[check, neighbor]
-                            sign_product *= np.sign(val)
+                            val = msgVtoC[check, neighbor]
+                            signProduct *= np.sign(val)
                             min_abs = min(min_abs, abs(val))
-                    msg_c_to_v[check, var] = sign_product * min_abs
+                    msgCtoV[check, var] = signProduct * min_abs
 
             # Variable-to-check update
             for var in prange(n):
                 for check in varNodes[var]:
-                    sum_msg = llr[var]
+                    sumMsg = llr[var]
                     for neighbor in varNodes[var]:
                         if neighbor != check:
-                            sum_msg += msg_c_to_v[neighbor, var]
-                    msg_v_to_c[check, var] = sum_msg
+                            sumMsg += msgCtoV[neighbor, var]
+                    msgVtoC[check, var] = sumMsg
 
             # Final LLR and decision
             for var in prange(n):
                 finalLLR[var, indCw] = llr[var]
                 for check in varNodes[var]:
-                    finalLLR[var, indCw] += msg_c_to_v[check, var]
-                decoded_bits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
+                    finalLLR[var, indCw] += msgCtoV[check, var]
+                decodedBits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
 
-            if np.all(np.mod(H @ decoded_bits, 2) == 0):
+            if np.all(np.mod(H @ decodedBits, 2) == 0):
                 frameDecodingFail[indCw] = 0
                 lastIter[indCw] = indIter
                 break
@@ -683,28 +683,28 @@ def writeAlist(H, filename):
     m, n = H.shape
 
     # Variable and check node degrees
-    var_degrees = [int(np.sum(H[:, j])) for j in range(n)]
-    check_degrees = [int(np.sum(H[i, :])) for i in range(m)]
-    max_col_deg = max(var_degrees)
-    max_row_deg = max(check_degrees)
+    varDegrees = [int(np.sum(H[:, j])) for j in range(n)]
+    checkDegrees = [int(np.sum(H[i, :])) for i in range(m)]
+    maxColDeg = max(varDegrees)
+    maxRowDeg = max(checkDegrees)
 
     with open(filename, "w") as f:
         f.write(f"{n} {m}\n")
-        f.write(f"{max_col_deg} {max_row_deg}\n")
+        f.write(f"{maxColDeg} {maxRowDeg}\n")
 
-        f.write(" ".join(str(d) for d in var_degrees) + "\n")
-        f.write(" ".join(str(d) for d in check_degrees) + "\n")
+        f.write(" ".join(str(d) for d in varDegrees) + "\n")
+        f.write(" ".join(str(d) for d in checkDegrees) + "\n")
 
         # Variable node connections (1-based indexing)
         for j in range(n):
             connections = np.where(H[:, j] == 1)[0] + 1
-            padded = list(connections) + [0] * (max_col_deg - len(connections))
+            padded = list(connections) + [0] * (maxColDeg - len(connections))
             f.write(" ".join(str(i) for i in padded) + "\n")
 
         # Check node connections (1-based indexing)
         for i in range(m):
             connections = np.where(H[i, :] == 1)[1] + 1
-            padded = list(connections) + [0] * (max_row_deg - len(connections))
+            padded = list(connections) + [0] * (maxRowDeg - len(connections))
             f.write(" ".join(str(j) for j in padded) + "\n")
 
     f.close()
@@ -752,7 +752,7 @@ def inverseMatrixGF2(A):
 
     Returns
     -------
-    A_inv : ndarray of shape (n, n), dtype=np.uint8
+    Ainv : ndarray of shape (n, n), dtype=np.uint8
         Inverse of A over GF(2), if invertible. If not invertible, returns the identity matrix.
 
     success : bool
@@ -760,9 +760,9 @@ def inverseMatrixGF2(A):
     """
     n = A.shape[0]
     A = A.copy()
-    A_inv = np.zeros((n, n), dtype=np.uint8)
+    Ainv = np.zeros((n, n), dtype=np.uint8)  # Initialize inverse matrix
     for i in range(n):
-        A_inv[i, i] = 1  # identity matrix
+        Ainv[i, i] = 1  # identity matrix
 
     for i in range(n):
         # Find pivot
@@ -770,27 +770,27 @@ def inverseMatrixGF2(A):
             found = False
             for j in range(i + 1, n):
                 if A[j, i] == 1:
-                    # Manually swap rows i and j in A and A_inv
+                    # Manually swap rows i and j in A and Ainv
                     for k in range(n):
                         tmp = A[i, k]
                         A[i, k] = A[j, k]
                         A[j, k] = tmp
-                        tmp = A_inv[i, k]
-                        A_inv[i, k] = A_inv[j, k]
-                        A_inv[j, k] = tmp
+                        tmp = Ainv[i, k]
+                        Ainv[i, k] = Ainv[j, k]
+                        Ainv[j, k] = tmp
                     found = True
                     break
             if not found:
-                return A_inv, False  # Matrix is not invertible
+                return Ainv, False  # Matrix is not invertible
 
         # Eliminate all other entries in column i
         for j in range(n):
             if j != i and A[j, i] == 1:
                 for k in range(n):
                     A[j, k] ^= A[i, k]
-                    A_inv[j, k] ^= A_inv[i, k]
+                    Ainv[j, k] ^= Ainv[i, k]
 
-    return A_inv, True
+    return Ainv, True
 
 
 @njit
@@ -806,13 +806,13 @@ def triangularize(H):
 
     Returns
     -------
-    H_tri : ndarray of shape (m, n), dtype=np.uint8
+    triangH : ndarray of shape (m, n), dtype=np.uint8
         Triangularized matrix.
 
-    row_perm : ndarray of shape (m,), dtype=np.int32
+    rowPerm : ndarray of shape (m,), dtype=np.int32
         Row permutation indices.
 
-    col_perm : ndarray of shape (n,), dtype=np.int32
+    colPerm : ndarray of shape (n,), dtype=np.int32
         Column permutation indices.
 
     References
@@ -820,42 +820,42 @@ def triangularize(H):
     [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
     """
     m, n = H.shape
-    H_tri = H.copy()
-    row_perm = np.arange(m, dtype=np.int32)
-    col_perm = np.arange(n, dtype=np.int32)
+    triangH = H.copy()
+    rowPerm = np.arange(m, dtype=np.int32)
+    colPerm = np.arange(n, dtype=np.int32)
 
     for i in range(m):
-        pivot_found = False
+        pivotFound = False
 
         for r in range(i, m):
             for c in range(i, n):
-                if H_tri[r, c] == 1:
+                if triangH[r, c] == 1:
                     # Swap rows
                     if r != i:
                         for j in range(n):
-                            H_tri[i, j], H_tri[r, j] = H_tri[r, j], H_tri[i, j]
-                        row_perm[i], row_perm[r] = row_perm[r], row_perm[i]
+                            triangH[i, j], triangH[r, j] = triangH[r, j], triangH[i, j]
+                        rowPerm[i], rowPerm[r] = rowPerm[r], rowPerm[i]
                     # Swap columns
                     if c != i:
                         for j in range(m):
-                            H_tri[j, i], H_tri[j, c] = H_tri[j, c], H_tri[j, i]
-                        col_perm[i], col_perm[c] = col_perm[c], col_perm[i]
-                    pivot_found = True
+                            triangH[j, i], triangH[j, c] = triangH[j, c], triangH[j, i]
+                        colPerm[i], colPerm[c] = colPerm[c], colPerm[i]
+                    pivotFound = True
                     break
-            if pivot_found:
+            if pivotFound:
                 break
 
-        if not pivot_found:
+        if not pivotFound:
             # Leave zeros if no pivot found in this column
             continue
 
         # Eliminate below
         for r in range(i + 1, m):
-            if H_tri[r, i] == 1:
+            if triangH[r, i] == 1:
                 for j in range(n):
-                    H_tri[r, j] ^= H_tri[i, j]
+                    triangH[r, j] ^= triangH[i, j]
 
-    return H_tri, row_perm, col_perm
+    return triangH, rowPerm, colPerm
 
 
 def triangP1P2(H):
@@ -873,7 +873,7 @@ def triangP1P2(H):
         First parity matrix.
     P2 : ndarray of shape (m2, k)
         Second parity matrix.
-    H_tri : ndarray of shape (m, n)
+    triangH : ndarray of shape (m, n)
         Triangularized H matrix.
 
     References
@@ -883,22 +883,22 @@ def triangP1P2(H):
     H = H.astype(np.uint8)
 
     # convert to lower-triangular form
-    H_tri, _, colSwaps = triangularize(H)
+    triangH, _, colSwaps = triangularize(H)
 
     # calculate the gap g
-    idx = np.where(H_tri[:, -1] == 1)
-    g = H_tri.shape[0] - np.min(idx[0]) - 1
-    m = H_tri.shape[0]
-    n = H_tri.shape[1]
+    idx = np.where(triangH[:, -1] == 1)
+    g = triangH.shape[0] - np.min(idx[0]) - 1
+    m = triangH.shape[0]
+    n = triangH.shape[1]
     k = n - m
 
     # extract matrices
-    E = H_tri[m - g :, n - (m - g) :]
-    T = H_tri[0 : m - g, n - (m - g) :]
-    A = H_tri[0 : m - g, 0:k]
-    B = H_tri[0 : m - g, k : k + g]
-    C = H_tri[m - g :, 0:k]
-    D = H_tri[m - g :, k : k + g]
+    E = triangH[m - g :, n - (m - g) :]
+    T = triangH[0 : m - g, n - (m - g) :]
+    A = triangH[0 : m - g, 0:k]
+    B = triangH[0 : m - g, k : k + g]
+    C = triangH[m - g :, 0:k]
+    D = triangH[m - g :, k : k + g]
 
     # invert matrix T
     T_inv, found = inverseMatrixGF2(T)
