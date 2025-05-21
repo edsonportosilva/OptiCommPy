@@ -207,7 +207,7 @@ def encodeLDPC(bits, param):
 
     if H is None:
         try:
-            filename = f"\LDPC_{mode}_{n}b_R{R[0]}{R[2]}.txt"
+            filename = f"LDPC_{mode}_{n}b_R{R[0]}{R[2]}.txt"
             H = readAlist(path + filename)
             H = csr_matrix.todense(H).astype(np.uint8)
             param.H = H
@@ -992,6 +992,7 @@ def encodeTriang(bits, P1, P2):
 
     return codewords
 
+
 def plotBinaryMatrix(H):
     """
     Plot the binary matrix H with dots at positions where H[i,j] = 1.
@@ -1002,15 +1003,15 @@ def plotBinaryMatrix(H):
         Binary matrix.
     """
     H = np.asarray(H)
-    rows, cols = np.where(H == 1)        
-    plt.scatter(cols, rows, s=0.05, color='blue')  # s controls dot size
+    rows, cols = np.where(H == 1)
+    plt.scatter(cols, rows, s=0.05, color="blue")  # s controls dot size
     plt.gca().invert_yaxis()
-    plt.xlabel('Column indexes')
-    plt.ylabel('Row indexes')
-    plt.title(f'Matrix: {H.shape[0]} $\\times$ {H.shape[1]}')
-    plt.axis('square')
+    plt.xlabel("Column indexes")
+    plt.ylabel("Row indexes")
+    plt.title(f"Matrix: {H.shape[0]} $\\times$ {H.shape[1]}")
+    plt.axis("square")
     plt.xlim(0, H.shape[1])
     plt.ylim(H.shape[0], 0)
     plt.grid(True)
-    plt.tight_layout()    
+    plt.tight_layout()
     plt.show()
