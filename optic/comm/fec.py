@@ -45,7 +45,7 @@ def par2gen(H):
     -------
     G : ndarray of shape (k, n)
         Systematic generator matrix corresponding to the input parity-check matrix H.
-        The form of G is `[I_k | P]`, where `I_k` is the identity matrix and `P` is a binary matrix.
+        The form of G is :math:`[I_k | P]`, where :math:`I_k` is the identity matrix and :math:`P` is a binary matrix.
 
     colSwaps : ndarray of shape (n,)
         Indices representing the column permutations applied to H to obtain Hnew.
@@ -54,7 +54,7 @@ def par2gen(H):
     Hnew : ndarray of shape (n - k, n)
         The modified parity-check matrix after Gaussian elimination and column reordering.
         This matrix has the identity portion on the right-hand side, corresponding to
-        a standard systematic form `[P^T | I_{n-k}]`.
+        a standard systematic form :math:`[P^T | I_{n-k}]`.
 
     Notes
     -----
@@ -180,8 +180,8 @@ def encodeLDPC(bits, param):
     Returns
     -------
     codewords : ndarray of shape (n, N)
-        Binary encoded codewords. Each column is a codeword of length `n` corresponding
-        to the respective input message in `bits`. The codewords satisfy `H @ c = 0 (mod 2)`.
+        Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding
+        to the respective input message in `bits`. The codewords satisfy :math:`Hc = 0` (mod 2).
 
     References
     ----------
@@ -258,7 +258,7 @@ def encodeDVBS2(bits, H):
     -------
     codewords : ndarray of shape (n, N)
         Binary encoded codewords. Each column is a codeword of length `n` corresponding
-        to the respective input message in `bits`. The codewords satisfy H @ c = 0 mod 2.
+        to the respective input message in bits. The codewords satisfy :math:`Hc = 0`(mod 2).
     """
     H = H.astype(np.uint8)
     bits = bits.astype(np.uint8)
@@ -323,7 +323,7 @@ def encoder(G, bits, systematic=True):
 
     The function transposes the generator matrix internally so that each codeword is computed as:
 
-        codeword = G.T @ bits[:, i] mod 2
+        :math:`codeword = G.T bits[:, i]`(mod 2)
 
     which is equivalent to bits[i] @ G mod 2 in standard linear coding.
 
@@ -502,9 +502,9 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
     numIter : int
         Number of iterations performed before successful decoding or reaching `maxIter`.
 
-    success : int
-        1 if decoding succeeded (i.e., all parity-check equations are satisfied),
-        0 otherwise.
+    frameDecodingFail : ndarray of shape (numCodewords,)
+        Array indicating whether decoding was successful (0) or failed (1) for each codeword.
+        A value of 0 indicates successful decoding, while 1 indicates failure.
 
     References
     ----------
@@ -589,10 +589,7 @@ def decodeLDPC(llrs, param):
             Maximum number of iterations for belief propagation.
 
         - alg : str
-            Decoding algorithm to use ('SPA' or 'MSA').
-
-        - prgsBar : bool
-            If True, displays a progress bar during decoding.
+            Decoding algorithm to use ('SPA' for sum-product or 'MSA' for min-sum).
 
         - prec : data-type
             Numerical precision to use in computations (default is np.float32).
@@ -611,7 +608,6 @@ def decodeLDPC(llrs, param):
     H = getattr(param, "H", None)
     maxIter = getattr(param, "maxIter", 25)
     alg = getattr(param, "alg", "SPA")
-    prgsBar = getattr(param, "prgsBar", False)
     prec = getattr(param, "prec", np.float32)
 
     if H is None:
