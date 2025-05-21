@@ -1,6 +1,6 @@
 """
 ================================================================
-Forward Error Correction (FEC) utilities (:mod:`optic.comm.fec`)
+Forward error correction (FEC) utilities (:mod:`optic.comm.fec`)
 ================================================================
 
 .. autosummary::
