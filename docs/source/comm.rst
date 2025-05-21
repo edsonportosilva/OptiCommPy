@@ -16,6 +16,5 @@ Digital Communications Utilities
     :noindex:
 
 .. automodule:: optic.comm.fec
-    :members:
-    :exclude-members: 
+    :members:    
     :noindex:
