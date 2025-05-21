@@ -452,7 +452,7 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32)
 @njit(parallel=True, fastmath=True)
 def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32):
     """
-    Performs LDPC decoding using the Min-Sum Algorithm (MSA) for multiple codewords.
+    Performs belief propagation decoding using the Min-Sum Algorithm (MSA) for multiple codewords.
 
     Parameters
     ----------
