@@ -20,6 +20,7 @@ Forward Error Correction (FEC) utilities (:mod:`optic.comm.fec`)
    triangularize          -- Convert binary matrix to lower-triangular form
    triangP1P2             -- Extract matrices that compute parities from lower-triangular form H
    inverseMatrixGF2       -- Invert a square binary matrix over GF(2)
+   plotBinaryMatrix       -- Plot a binary matrix using matplotlib
 """
 
 """Forward Error Correction (FEC) utilities."""
@@ -27,7 +28,7 @@ import numpy as np
 from scipy.sparse import csr_matrix, csc_matrix, coo_matrix
 from numba import njit, prange
 from numba.typed import List
-
+import matplotlib.pyplot as plt
 import logging as logg
 
 
@@ -990,3 +991,26 @@ def encodeTriang(bits, P1, P2):
             codewords[k + m1 + i, col] = acc
 
     return codewords
+
+def plotBinaryMatrix(H):
+    """
+    Plot the binary matrix H with dots at positions where H[i,j] = 1.
+
+    Parameters
+    ----------
+    H : ndarray of shape (m, n)
+        Binary matrix.
+    """
+    H = np.asarray(H)
+    rows, cols = np.where(H == 1)        
+    plt.scatter(cols, rows, s=0.05, color='blue')  # s controls dot size
+    plt.gca().invert_yaxis()
+    plt.xlabel('Column indexes')
+    plt.ylabel('Row indexes')
+    plt.title(f'Matrix: {H.shape[0]} $\\times$ {H.shape[1]}')
+    plt.axis('square')
+    plt.xlim(0, H.shape[1])
+    plt.ylim(H.shape[0], 0)
+    plt.grid(True)
+    plt.tight_layout()    
+    plt.show()
