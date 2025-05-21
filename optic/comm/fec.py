@@ -58,11 +58,6 @@ def par2gen(H):
 
     Notes
     -----
-    The function first applies Gaussian elimination over GF(2) to bring H to row echelon form.
-    Then, it identifies and reorders columns to isolate an identity submatrix (I) and its
-    complement (P). Using the transposed left portion of H, it constructs the corresponding
-    systematic generator matrix.
-
     This method assumes that the parity-check matrix H is full rank and that the identity
     portion can be isolated on the right via column permutations.
     """
@@ -190,8 +185,7 @@ def encodeLDPC(bits, param):
 
     References
     ----------
-    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes,"
-        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
 
     """
     # check input parameters
@@ -400,10 +394,9 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
 
     References
     ----------
-    [1] F. R. Kschischang, B. J. Frey and H. . -A. Loeliger, "Factor graphs and the sum-product algorithm,"
-        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 498-519, Feb 2001.
-    [2] T. J. Richardson and R. L. Urbanke, "The capacity of low-density parity-check codes under message-passing decoding,"
-        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 599-618, Feb 2001.
+    [1] F. R. Kschischang, B. J. Frey and H. . -A. Loeliger, "Factor graphs and the sum-product algorithm," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 498-519, Feb 2001.
+
+    [2] T. J. Richardson and R. L. Urbanke, "The capacity of low-density parity-check codes under message-passing decoding," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 599-618, Feb 2001.
     """
     m, n = H.shape
     msg_v_to_c = np.zeros((m, n), dtype=prec)
@@ -515,8 +508,7 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
 
     References
     ----------
-    [1] M. P. C. Fossorier, M. Mihaljevic and H. Imai, "Reduced complexity iterative decoding of low-density parity check codes based on belief propagation,"
-        in IEEE Transactions on Communications, vol. 47, no. 5, pp. 673-680, May 1999
+    [1] M. P. C. Fossorier, M. Mihaljevic and H. Imai, "Reduced complexity iterative decoding of low-density parity check codes based on belief propagation," IEEE Transactions on Communications, vol. 47, no. 5, pp. 673-680, May 1999
     """
     m, n = H.shape
     msg_v_to_c = np.zeros((m, n), dtype=prec)
@@ -829,8 +821,7 @@ def triangularize(H):
 
     References
     ----------
-    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes,"
-        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
     """
     m, n = H.shape
     H_tri = H.copy()
@@ -891,8 +882,7 @@ def triangP1P2(H):
 
     References
     ----------
-    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes,"
-        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
     """
     H = H.astype(np.uint8)
 
@@ -957,8 +947,7 @@ def encodeTriang(bits, P1, P2):
 
     References
     ----------
-    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes,"
-        in IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
+    [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
     """
     bits = bits.astype(np.uint8)
     m1 = P1.shape[0]
