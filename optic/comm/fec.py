@@ -23,7 +23,7 @@ Forward Error Correction (FEC) utilities (:mod:`optic.comm.fec`)
    plotBinaryMatrix       -- Plot a binary matrix using matplotlib
 """
 
-"""Forward Error Correction (FEC) utilities."""
+"""Forward error correction (FEC) utilities."""
 import numpy as np
 from scipy.sparse import csr_matrix, csc_matrix, coo_matrix
 from numba import njit, prange
