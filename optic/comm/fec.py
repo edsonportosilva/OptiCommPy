@@ -9,11 +9,11 @@ Forward error correction (FEC) utilities (:mod:`optic.comm.fec`)
    par2gen                -- Parity-check matrix to generator matrix conversion
    gaussElim              -- Gaussian elimination over GF(2)
    encoder                -- Performs linear block encoding
-   encodeDVBS2            -- Encode binary messages using a DVB-S2 LDPC parity-check matrix
-   encodeTriang           -- Encode binary messages using lower-triangular parity-check matrices
+   encodeDVBS2            -- Encode binary sequences using a DVB-S2 LDPC parity-check matrix
+   encodeTriang           -- Encode binary sequences using lower-triangular parity-check matrices
    sumProductAlgorithm    -- Belief propagation decoding using the sum-product algorithm
    minSumAlgorithm        -- Belief propagation decoding using the min-sum algorithm
-   encodeLDPC             -- Encode binary messages using a LDPC parity-check matrix
+   encodeLDPC             -- Encode binary sequences using a LDPC parity-check matrix
    decodeLDPC             -- Decode multiple LDPC codewords using belief propagation
    writeAlist             -- Save a binary parity-check matrix to ALIST format
    readAlist              -- Read an ALIST file and reconstruct the binary parity-check matrix
@@ -146,13 +146,13 @@ def gaussElim(M):
 
 def encodeLDPC(bits, param):
     """
-    Encode binary messages using a parity-check matrix of a linear block code (e.g., LDPC).
+    Encode binary sequences using a parity-check matrix of a linear block code (e.g., LDPC).
 
     Parameters
     ----------
     bits : ndarray of shape (k, N)
-        Binary input messages to be encoded. Each column is a message of length `k`,
-        and there are `N` such messages.
+        Binary input sequences to be encoded. Each column is a bit sequence of length :math:`k` bits,
+        and there are :math:`N` such sequences.
     param : object
         Object containing the following attributes:
 
@@ -181,7 +181,7 @@ def encodeLDPC(bits, param):
     -------
     codewords : ndarray of shape (n, N)
         Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding
-        to the respective input message in `bits`. The codewords satisfy :math:`Hc = 0` (mod 2).
+        to the respective input bit sequence in bits. The codewords satisfy :math:`Hc = 0` (mod 2).
 
     References
     ----------
@@ -242,13 +242,13 @@ def encodeLDPC(bits, param):
 @njit(parallel=True)
 def encodeDVBS2(bits, H):
     """
-    Encode multiple binary messages using a DVB-S2 LDPC parity-check matrix.
+    Encode multiple binary sequences using a DVB-S2 LDPC parity-check matrix.
 
     Parameters
     ----------
     bits : ndarray of shape (k, N)
-        Binary input messages to be encoded. Each column represents a message of length `k`,
-        and there are `N` such messages.
+        Binary input sequences to be encoded. Each column represents a bit sequence of length :math:`k`,
+        and there are :math:`N` such sequences.
 
     H : ndarray of shape (n - k, n)
         Binary parity-check matrix with entries in {0, 1}. It defines the linear constraints
@@ -257,8 +257,8 @@ def encodeDVBS2(bits, H):
     Returns
     -------
     codewords : ndarray of shape (n, N)
-        Binary encoded codewords. Each column is a codeword of length `n` corresponding
-        to the respective input message in bits. The codewords satisfy :math:`Hc = 0`(mod 2).
+        Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding
+        to the respective input bit sequence in bits. The codewords satisfy :math:`Hc = 0`(mod 2).
     """
     H = H.astype(np.uint8)
     bits = bits.astype(np.uint8)
@@ -271,7 +271,7 @@ def encodeDVBS2(bits, H):
     codewords = np.zeros((n, N), dtype=np.uint8)
 
     for col in prange(N):
-        # Copy message bits
+        # Copy bit sequence bits
         for i in range(k):
             codewords[i, col] = bits[i, col]
 
@@ -294,7 +294,7 @@ def encodeDVBS2(bits, H):
 @njit(parallel=True)
 def encoder(G, bits, systematic=True):
     """
-    Encode binary messages using a generator matrix over GF(2).
+    Encode binary sequences using a generator matrix over GF(2).
 
     Parameters
     ----------
@@ -303,7 +303,7 @@ def encoder(G, bits, systematic=True):
         of the code, and the matrix defines the linear transformation from input bits to codewords.
 
     bits : ndarray of shape (k, N)
-        Binary input messages to encode. Each column is a message of length `k`, and there are `N` messages
+        Binary input sequences to encode. Each column is a bit sequence of length :math:`k`, and there are :math:`N` sequences
         in total.
 
     systematic : bool, optional
@@ -313,20 +313,8 @@ def encoder(G, bits, systematic=True):
     Returns
     -------
     codewords : ndarray of shape (n, N)
-        Encoded binary codewords. Each column corresponds to a codeword of length `n` resulting
-        from applying the generator matrix to the respective input message.
-
-    Notes
-    -----
-    This function performs matrix multiplication over GF(2), i.e., using XOR for addition
-    and AND for multiplication.
-
-    The function transposes the generator matrix internally so that each codeword is computed as:
-
-        :math:`codeword = G.T bits[:, i]`(mod 2)
-
-    which is equivalent to bits[i] @ G mod 2 in standard linear coding.
-
+        Encoded binary codewords. Each column corresponds to a codeword of length :math:`n` resulting
+        from applying the generator matrix to the respective input bit sequence.
     """
     G = G.T
     n, k = G.shape
@@ -353,10 +341,9 @@ def encoder(G, bits, systematic=True):
 
 
 @njit(parallel=True, fastmath=True)
-def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
+def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32):
     """
-    Performs belief propagation decoding using the sum-product algorithm
-    for a single LDPC codeword.
+    Performs belief propagation decoding using the sum-product algorithm (SPA) for multiple codewords.
 
     Parameters
     ----------
@@ -378,7 +365,7 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
         Maximum number of belief propagation iterations.
 
     prec : data-type, optional
-        Data type for the computations (default is np.float64).
+        Data type for the computations (default is np.float32).
 
     Returns
     -------
@@ -463,14 +450,9 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64)
 
 
 @njit(parallel=True, fastmath=True)
-def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
+def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32):
     """
-    Performs LDPC decoding using the Min-Sum Algorithm for a single codeword.
-
-    This function implements the belief propagation decoding using the Min-Sum
-    approximation of the Sum-Product Algorithm (SPA). It replaces the computationally
-    expensive tanh and arctanh operations with simple min and sign operations at
-    check nodes, making it more suitable for hardware or parallel implementations.
+    Performs LDPC decoding using the Min-Sum Algorithm (MSA) for multiple codewords.
 
     Parameters
     ----------
@@ -492,7 +474,7 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float64):
         Maximum number of iterations for belief propagation.
 
     prec : data-type, optional
-        Numerical precision to use in computations (default is np.float64).
+        Numerical precision to use in computations (default is np.float32).
 
     Returns
     -------
@@ -923,12 +905,12 @@ def triangP1P2(H):
 @njit(parallel=True)
 def encodeTriang(bits, P1, P2):
     """
-    Encode binary messages using two parity matrices for LDPC encoding.
+    Encode binary sequences using two parity matrices for LDPC encoding.
 
     Parameters
     ----------
     bits : ndarray of shape (k, N)
-        Binary input messages. Each column is a message to be encoded.
+        Binary input sequences. Each column is a bit sequence to be encoded.
 
     P1 : ndarray of shape (m1, k)
         First parity matrix.
