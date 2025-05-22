@@ -777,8 +777,7 @@ def inverseMatrixGF2(A):
 def triangularize(H):
     """
     Convert binary matrix H into lower-triangular form using only row and column permutations.
-    Numba-compatible version.
-
+    
     Parameters
     ----------
     H : ndarray of shape (m, n), dtype=np.uint8
