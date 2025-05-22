@@ -393,14 +393,14 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32)
     llrs = llrs.astype(prec)
     H = H.astype(prec)
 
-    numCodewords = llrs.shape[0]
+    numCodewords = llrs.shape[1]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
     lastIter = np.zeros((numCodewords,), dtype=np.int8)
 
     for indCw in range(numCodewords):
         decodedBits = np.zeros((n, 1), dtype=prec)
-        llr = llrs[indCw, :]
+        llr = llrs[:, indCw]
         # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
             for check in varNodes[var]:
@@ -500,14 +500,14 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32):
     llrs = llrs.astype(prec)
     H = H.astype(prec)
 
-    numCodewords = llrs.shape[0]
+    numCodewords = llrs.shape[1]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
     lastIter = np.zeros((numCodewords,), dtype=np.int8)
 
     for indCw in range(numCodewords):
         decodedBits = np.zeros((n, 1), dtype=prec)
-        llr = llrs[indCw, :]
+        llr = llrs[:, indCw]
         # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
             for check in varNodes[var]:
@@ -559,7 +559,7 @@ def decodeLDPC(llrs, param):
 
     Parameters
     ----------
-    llrs : ndarray of shape (numCodewords, n)
+    llrs : ndarray of shape (n, numCodewords)
         Array of log-likelihood ratios (LLRs) for each bit of the received codewords.
         Each row corresponds to a codeword, and each column corresponds to a bit.
 
@@ -580,11 +580,11 @@ def decodeLDPC(llrs, param):
 
     Returns
     -------
-    decodedBits : ndarray of shape (numCodewords, n)
+    decodedBits : ndarray of shape (n, numCodewords)
         Array of decoded bits for each codeword. Each row corresponds to a codeword,
         and each column corresponds to a bit.
 
-    outputLLRs : ndarray of shape (numCodewords, n)
+    outputLLRs : ndarray of shape (n, numCodewords)
         Array of updated log-likelihood ratios (LLRs) after decoding. Each row corresponds
         to a codeword, and each column corresponds to a bit.
     """
@@ -607,15 +607,15 @@ def decodeLDPC(llrs, param):
         H = H.astype(np.uint8)
 
     m, n = H.shape
-    numCodewords = llrs.shape[0]
-    n_ = llrs.shape[1]
+    numCodewords = llrs.shape[1]
+    n_ = llrs.shape[0]
 
     llrs = np.clip(llrs, -200, 200)
     outputLLRs = np.zeros_like(llrs, dtype=prec)
 
     # depuncturing if necessary
     if n_ < n:
-        llrs = np.pad(llrs, ((0, 0), (0, n - n_)), mode="constant")
+        llrs = np.pad(llrs, ((0, n - n_), (0, 0)), mode="constant")
 
     # Build adjacency lists using fixed-size lists for Numba
     checkNodes = List([np.where(H[i, :] == 1)[1].astype(np.uint32) for i in range(m)])
@@ -627,11 +627,11 @@ def decodeLDPC(llrs, param):
     logg.info(f"Decoding {numCodewords} LDPC codewords with {alg}")
     if alg == "SPA":
         outputLLRs, lastIter, frameErrors = sumProductAlgorithm(
-            llrs, H, checkNodes, varNodes, maxIter
+            llrs, H, checkNodes, varNodes, maxIter, prec
         )
     elif alg == "MSA":
         outputLLRs, lastIter, frameErrors = minSumAlgorithm(
-            llrs, H, checkNodes, varNodes, maxIter
+            llrs, H, checkNodes, varNodes, maxIter, prec
         )
     else:
         logg.error(f"Unsupported algorithm: {alg}. Supported algorithms are: SPA, MSA.")
@@ -647,7 +647,6 @@ def decodeLDPC(llrs, param):
     if n_ < n:
         outputLLRs = outputLLRs[0:n_, :]
 
-    outputLLRs = outputLLRs.flatten()
     decodedBits = ((-np.sign(outputLLRs) + 1) // 2).astype(np.int8)
 
     return decodedBits, outputLLRs, frameErrors
