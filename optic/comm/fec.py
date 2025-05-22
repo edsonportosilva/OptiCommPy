@@ -443,7 +443,7 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
             if indIter == maxIter - 1:
                 lastIter[indCw] = indIter
 
-    return finalLLR, indIter, frameDecodingFail
+    return finalLLR, lastIter, frameDecodingFail
 
 
 @njit(parallel=True, fastmath=True)
