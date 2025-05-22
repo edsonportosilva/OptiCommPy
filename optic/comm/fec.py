@@ -39,7 +39,7 @@ def par2gen(H):
     Parameters
     ----------
     H : ndarray of shape (n - k, n)
-        Parity-check matrix with entries in {0, 1}. Typically used in linear block codes such as LDPC codes.
+        Parity-check matrix with entries in {0, 1}.
 
     Returns
     -------
@@ -151,8 +151,7 @@ def encodeLDPC(bits, param):
     Parameters
     ----------
     bits : ndarray of shape (k, N)
-        Binary input sequences to be encoded. Each column is a bit sequence of length :math:`k` bits,
-        and there are :math:`N` such sequences.
+        Binary input sequences to be encoded. Each column is a bit sequence of length :math:`k` bits.
     param : object
         Object containing the following attributes:
 
@@ -160,12 +159,11 @@ def encodeLDPC(bits, param):
             Mode of operation ('DVBS2', 'IEEE_802.11nD2', or 'AR4JA').
 
         - H : ndarray of shape (n - k, n)
-            Binary parity-check matrix with entries in {0, 1}. It defines the linear constraints
-            of the code and is used to derive a corresponding systematic generator matrix.
+            Binary parity-check matrix with entries in {0, 1}.
 
         - G : ndarray of shape (k, n), optional
             Generator matrix with entries in {0, 1}. If provided, it will be used for encoding
-            instead of deriving it from H.
+            instead of deriving it from H, if necessary.
 
         - systematic : bool, optional
             If True, the generator matrix is assumed to be in systematic form. If False,
@@ -181,7 +179,7 @@ def encodeLDPC(bits, param):
     -------
     codewords : ndarray of shape (n, N)
         Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding
-        to the respective input bit sequence in bits. The codewords satisfy :math:`Hc = 0` (mod 2).
+        to the respective input bit sequence.
 
     References
     ----------
@@ -202,8 +200,7 @@ def encodeLDPC(bits, param):
     if H is None:
         try:
             filename = f"LDPC_{mode}_{n}b_R{R[0]}{R[2]}.txt"
-            H = readAlist(path + filename)
-            H = csr_matrix.todense(H).astype(np.uint8)
+            H = readAlist(path + filename)            
             param.H = H
         except FileNotFoundError:
             logg.error(
@@ -211,11 +208,13 @@ def encodeLDPC(bits, param):
             )
 
     if mode == "DVBS2":
+        k = n - H.shape[0]
+        A = csr_matrix.todense(H[:, :k]).astype(np.uint8)
         if H is None:
             raise ValueError(
                 "H is None. Please provide a valid DVBS2 parity-check matrix."
             )
-        return encodeDVBS2(bits, H)
+        return encodeDVBS2(bits, A)
     elif mode == "IEEE_802.11nD2":
         if P1 is None or P2 is None:
             P1, P2, Hnew = triangP1P2(H)
@@ -242,34 +241,31 @@ def encodeLDPC(bits, param):
 
 
 @njit(parallel=True)
-def encodeDVBS2(bits, H):
+def encodeDVBS2(bits, A):
     """
     Encode multiple binary sequences using a DVB-S2 LDPC parity-check matrix.
 
     Parameters
     ----------
     bits : ndarray of shape (k, N)
-        Binary input sequences to be encoded. Each column represents a bit sequence of length :math:`k`,
-        and there are :math:`N` such sequences.
+        Binary input sequences to be encoded. Each column represents a bit sequence of length :math:`k`.
 
-    H : ndarray of shape (n - k, n)
-        Binary parity-check matrix with entries in {0, 1}. It defines the linear constraints
-        of the code and is used to derive a corresponding systematic generator matrix.
+    A : ndarray of shape (m, k)
+        Matrix corresponding to the first :math: k colmuns of the parity-check matrix H.
 
     Returns
     -------
     codewords : ndarray of shape (n, N)
         Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding
-        to the respective input bit sequence in bits. The codewords satisfy :math:`Hc = 0`(mod 2).
+        to the respective input bit sequence.
     """
-    H = H.astype(np.uint8)
+    A = A.astype(np.uint8)
     bits = bits.astype(np.uint8)
 
-    m, n = H.shape
-    k = n - m
+    m, k = A.shape
+    n = k + m
     N = bits.shape[1]
-    A = H[:, :k]  # shape (m, k)
-
+    
     codewords = np.zeros((n, N), dtype=np.uint8)
 
     for col in prange(N):
@@ -353,11 +349,11 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
         Array of log-likelihood ratios (LLRs) for each bit of the received codeword.
     
     checkNodes : list of ndarray
-        List of length `m`, where each element is a 1D array containing the indices
+        List of length :math:`m`, where each element is a 1D array containing the indices
         of variable nodes (bits) involved in the corresponding check node (parity-check equation).
 
     varNodes : list of ndarray
-        List of length `n`, where each element is a 1D array containing the indices
+        List of length :math:`n`, where each element is a 1D array containing the indices
         of check nodes that the corresponding variable node participates in.
 
     maxIter : int
@@ -461,11 +457,11 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
         Log-likelihood ratios (LLRs) of the received codeword bits.   
 
     checkNodes : list of ndarray
-        List of length `m`, where each entry contains the indices of variable nodes
+        List of length :math:`m`, where each entry contains the indices of variable nodes
         connected to the corresponding check node.
 
     varNodes : list of ndarray
-        List of length `n`, where each entry contains the indices of check nodes
+        List of length :math:`n`, where each entry contains the indices of check nodes
         connected to the corresponding variable node.
 
     maxIter : int
@@ -494,8 +490,7 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     msgVtoC = np.zeros((m, n), dtype=prec)
     msgCtoV = np.zeros((m, n), dtype=prec)
     llrs = llrs.astype(prec)
-    #H = H.astype(prec)
-
+    
     numCodewords = llrs.shape[1]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
@@ -504,6 +499,7 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     for indCw in range(numCodewords):
         decodedBits = np.zeros(n, dtype=np.uint8)
         llr = llrs[:, indCw]
+
         # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
             for check in varNodes[var]:
