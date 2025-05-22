@@ -343,7 +343,7 @@ def encoder(G, bits, systematic=True):
 
 
 @njit(parallel=True, fastmath=True)
-def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32):
+def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     """
     Performs belief propagation decoding using the sum-product algorithm (SPA) for multiple codewords.
 
@@ -351,10 +351,7 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32)
     ----------
     llrs : ndarray of shape (n, numCodewords)
         Array of log-likelihood ratios (LLRs) for each bit of the received codeword.
-
-    H : ndarray of shape (m, n)
-        Binary parity-check matrix of the LDPC code. It is used to enforce parity constraints.
-
+    
     checkNodes : list of ndarray
         List of length `m`, where each element is a 1D array containing the indices
         of variable nodes (bits) involved in the corresponding check node (parity-check equation).
@@ -387,19 +384,18 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32)
 
     [2] T. J. Richardson and R. L. Urbanke, "The capacity of low-density parity-check codes under message-passing decoding," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 599-618, Feb 2001.
     """
-    m, n = H.shape
+    m, n = len(checkNodes), len(varNodes)
     msgVtoC = np.zeros((m, n), dtype=prec)
     msgCtoV = np.zeros((m, n), dtype=prec)
     llrs = llrs.astype(prec)
-    H = H.astype(prec)
-
+   
     numCodewords = llrs.shape[1]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
     lastIter = np.zeros((numCodewords,), dtype=np.uint32)
 
     for indCw in range(numCodewords):
-        decodedBits = np.zeros((n, 1), dtype=prec)
+        decodedBits = np.zeros(n, dtype=np.uint8)
         llr = llrs[:, indCw]
         # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
@@ -435,11 +431,17 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32)
                 finalLLR[var, indCw] = llr[var]
                 for check in varNodes[var]:
                     finalLLR[var, indCw] += msgCtoV[check, var]
-                    decodedBits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
-
-            if np.all(np.mod(H @ decodedBits, 2) == 0):
+                    decodedBits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2           
+            
+            # Check parity conditions            
+            parity_checks = np.zeros(m, dtype=np.uint8)
+            for indParity in prange(m):
+                for check in checkNodes[indParity]:
+                    parity_checks[indParity] ^= decodedBits[check]  # accumulate XORs
+             
+            if np.sum(parity_checks) == 0:
                 frameDecodingFail[indCw] = 0
-                lastIter[indCw] = indIter
+                lastIter[indCw] = indIter                
                 break
 
             if indIter == maxIter - 1:
@@ -449,17 +451,14 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32)
 
 
 @njit(parallel=True, fastmath=True)
-def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32):
+def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     """
     Performs belief propagation decoding using the Min-Sum Algorithm (MSA) for multiple codewords.
 
     Parameters
     ----------
     llrs : ndarray of shape (n, numCodewords)
-        Log-likelihood ratios (LLRs) of the received codeword bits.
-
-    H : ndarray of shape (m, n)
-        Binary parity-check matrix representing the LDPC code.
+        Log-likelihood ratios (LLRs) of the received codeword bits.   
 
     checkNodes : list of ndarray
         List of length `m`, where each entry contains the indices of variable nodes
@@ -491,11 +490,11 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32):
     ----------
     [1] M. P. C. Fossorier, M. Mihaljevic and H. Imai, "Reduced complexity iterative decoding of low-density parity check codes based on belief propagation," IEEE Transactions on Communications, vol. 47, no. 5, pp. 673-680, May 1999
     """
-    m, n = H.shape
+    m, n = len(checkNodes), len(varNodes)
     msgVtoC = np.zeros((m, n), dtype=prec)
     msgCtoV = np.zeros((m, n), dtype=prec)
     llrs = llrs.astype(prec)
-    H = H.astype(prec)
+    #H = H.astype(prec)
 
     numCodewords = llrs.shape[1]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)
@@ -503,7 +502,7 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32):
     lastIter = np.zeros((numCodewords,), dtype=np.uint32)
 
     for indCw in range(numCodewords):
-        decodedBits = np.zeros((n, 1), dtype=prec)
+        decodedBits = np.zeros(n, dtype=np.uint8)
         llr = llrs[:, indCw]
         # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
@@ -538,10 +537,16 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32):
                 for check in varNodes[var]:
                     finalLLR[var, indCw] += msgCtoV[check, var]
                 decodedBits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
-
-            if np.all(np.mod(H @ decodedBits, 2) == 0):
+                        
+            # Check parity conditions            
+            parity_checks = np.zeros(m, dtype=np.uint8)
+            for indParity in prange(m):
+                for check in checkNodes[indParity]:
+                    parity_checks[indParity] ^= decodedBits[check]  # accumulate XORs
+             
+            if np.sum(parity_checks) == 0:
                 frameDecodingFail[indCw] = 0
-                lastIter[indCw] = indIter
+                lastIter[indCw] = indIter                
                 break
 
             if indIter == maxIter - 1:
@@ -564,7 +569,7 @@ def decodeLDPC(llrs, param):
         Object containing the following attributes:
 
         - H : ndarray of shape (m, n)
-            Binary parity-check matrix of the LDPC code.
+            Sparse Binary parity-check matrix of the LDPC code.
 
         - maxIter : int
             Maximum number of iterations for belief propagation.
@@ -593,42 +598,31 @@ def decodeLDPC(llrs, param):
 
     if H is None:
         logg.error("H is None. Please provide a valid parity-check matrix.")
-
-    if type(H) == csr_matrix:
-        H = csr_matrix.todense(H).astype(np.uint8)
-    elif type(H) == csc_matrix:
-        H = csc_matrix.todense(H).astype(np.uint8)
-    elif type(H) == coo_matrix:
-        H = coo_matrix.todense(H).astype(np.uint8)
-    else:
-        H = H.astype(np.uint8)
-
+ 
     m, n = H.shape
     numCodewords = llrs.shape[1]
     n_ = llrs.shape[0]
+    Hcsc = H.tocsc() # convert to CSC format for efficient column access
 
     llrs = np.clip(llrs, -200, 200)
     outputLLRs = np.zeros_like(llrs, dtype=prec)
 
-    # depuncturing if necessary
+    # depuncturing LLRs if necessary
     if n_ < n:
         llrs = np.pad(llrs, ((0, n - n_), (0, 0)), mode="constant")
 
     # Build adjacency lists using fixed-size lists for Numba
-    checkNodes = List([np.where(H[i, :] == 1)[1].astype(np.uint32) for i in range(m)])
-    varNodes = List([np.where(H[:, j] == 1)[0].astype(np.uint32) for j in range(n)])
-
-    # Convert H to binary array
-    H = np.array(H, dtype=np.int8)
-
+    checkNodes = List([H[i].indices.astype(np.uint32) for i in range(m)])     
+    varNodes = List([Hcsc[:, j].indices.astype(np.uint32) for j in range(n)])
+    
     logg.info(f"Decoding {numCodewords} LDPC codewords with {alg}")
     if alg == "SPA":
         outputLLRs, lastIter, frameErrors = sumProductAlgorithm(
-            llrs, H, checkNodes, varNodes, maxIter, prec
+            llrs, checkNodes, varNodes, maxIter, prec
         )
     elif alg == "MSA":
         outputLLRs, lastIter, frameErrors = minSumAlgorithm(
-            llrs, H, checkNodes, varNodes, maxIter, prec
+            llrs, checkNodes, varNodes, maxIter, prec
         )
     else:
         logg.error(f"Unsupported algorithm: {alg}. Supported algorithms are: SPA, MSA.")
