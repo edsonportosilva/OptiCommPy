@@ -557,7 +557,7 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
 
 def decodeLDPC(llrs, param):
     """
-    Decodes multiple LDPC codewords using the belief propagation (sum-product) algorithm.
+    Decode multiple LDPC codewords using the belief propagation (sum-product) algorithm.
 
     Parameters
     ----------
