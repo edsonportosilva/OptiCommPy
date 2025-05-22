@@ -229,10 +229,12 @@ def encodeLDPC(bits, param):
             G = G.astype(np.uint8)
             param.G = G
             param.H = csr_matrix(Hnew)
-            return encoder(G, bits, systematic)
+            codedBits = encoder(G, bits, systematic)
+            return codedBits[0 : param.n, :]
         else:
             G = G.astype(np.uint8)
-            return encoder(G, bits, systematic)
+            codedBits = encoder(G, bits, systematic)
+            return codedBits[0 : param.n, :]
     else:
         logg.error(
             f"Unsupported mode: {mode}. Supported modes are: DVBS2, IEEE_802.11nD2, AR4JA."
@@ -446,7 +448,7 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32)
             if indIter == maxIter - 1:
                 lastIter[indCw] = indIter
 
-    return finalLLR.flatten(), indIter, frameDecodingFail
+    return finalLLR, indIter, frameDecodingFail
 
 
 @njit(parallel=True, fastmath=True)
@@ -548,7 +550,7 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32):
             if indIter == maxIter - 1:
                 lastIter[indCw] = indIter
 
-    return finalLLR.flatten(), lastIter, frameDecodingFail
+    return finalLLR, lastIter, frameDecodingFail
 
 
 def decodeLDPC(llrs, param):
@@ -606,9 +608,14 @@ def decodeLDPC(llrs, param):
 
     m, n = H.shape
     numCodewords = llrs.shape[0]
+    n_ = llrs.shape[1]
 
     llrs = np.clip(llrs, -200, 200)
     outputLLRs = np.zeros_like(llrs, dtype=prec)
+
+    # depuncturing if necessary
+    if n_ < n:
+        llrs = np.pad(llrs, ((0, 0), (0, n - n_)), mode="constant")
 
     # Build adjacency lists using fixed-size lists for Numba
     checkNodes = List([np.where(H[i, :] == 1)[1].astype(np.uint32) for i in range(m)])
@@ -636,6 +643,11 @@ def decodeLDPC(llrs, param):
                 f"Frame {indCw} - Successful decoding at iteration {lastIter[indCw]}."
             )
 
+    # remove punctured bits if necessary
+    if n_ < n:
+        outputLLRs = outputLLRs[0:n_, :]
+
+    outputLLRs = outputLLRs.flatten()
     decodedBits = ((-np.sign(outputLLRs) + 1) // 2).astype(np.int8)
 
     return decodedBits, outputLLRs, frameErrors
