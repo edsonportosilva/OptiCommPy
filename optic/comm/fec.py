@@ -396,7 +396,7 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32)
     numCodewords = llrs.shape[1]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
-    lastIter = np.zeros((numCodewords,), dtype=np.int8)
+    lastIter = np.zeros((numCodewords,), dtype=np.uint32)
 
     for indCw in range(numCodewords):
         decodedBits = np.zeros((n, 1), dtype=prec)
@@ -503,7 +503,7 @@ def minSumAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32):
     numCodewords = llrs.shape[1]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
-    lastIter = np.zeros((numCodewords,), dtype=np.int8)
+    lastIter = np.zeros((numCodewords,), dtype=np.uint32)
 
     for indCw in range(numCodewords):
         decodedBits = np.zeros((n, 1), dtype=prec)
