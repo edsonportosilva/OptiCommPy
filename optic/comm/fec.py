@@ -406,9 +406,6 @@ def sumProductAlgorithm(llrs, H, checkNodes, varNodes, maxIter, prec=np.float32)
             for check in varNodes[var]:
                 msgVtoC[check, var] = llr[var]
 
-        llr = llr.astype(prec)
-        H = H.astype(prec)
-
         for indIter in range(maxIter):
             # Check-to-variable update
             for check in prange(m):
