@@ -146,12 +146,13 @@ def gaussElim(M):
 
 def encodeLDPC(bits, param):
     """
-    Encode binary sequences using a parity-check matrix of a linear block code (e.g., LDPC).
+    Encode binary sequences using a parity-check matrix of a LDPC code.
 
     Parameters
     ----------
     bits : ndarray of shape (k, N)
         Binary input sequences to be encoded. Each column is a bit sequence of length :math:`k` bits.
+
     param : object
         Object containing the following attributes:
 
@@ -159,11 +160,10 @@ def encodeLDPC(bits, param):
             Mode of operation ('DVBS2', 'IEEE_802.11nD2', or 'AR4JA').
 
         - H : ndarray of shape (n - k, n)
-            Binary parity-check matrix with entries in {0, 1}.
+            Binary parity-check matrix :math:`H`.
 
         - G : ndarray of shape (k, n), optional
-            Generator matrix with entries in {0, 1}. If provided, it will be used for encoding
-            instead of deriving it from H, if necessary.
+            Binary generator matrix :math:`G`. 
 
         - systematic : bool, optional
             If True, the generator matrix is assumed to be in systematic form. If False,
@@ -251,7 +251,7 @@ def encodeDVBS2(bits, A):
         Binary input sequences to be encoded. Each column represents a bit sequence of length :math:`k`.
 
     A : ndarray of shape (m, k)
-        Matrix corresponding to the first :math: k colmuns of the parity-check matrix H.
+        Matrix corresponding to the first :math:`k` colmuns of the parity-check matrix :math:`H`.
 
     Returns
     -------
@@ -297,12 +297,12 @@ def encoder(G, bits, systematic=True):
     Parameters
     ----------
     G : ndarray of shape (k, n)
-        Generator matrix with entries in {0, 1}. Each row corresponds to a basis vector
-        of the code, and the matrix defines the linear transformation from input bits to codewords.
+        Binary generator matrix. Each row corresponds to a basis vector of the code, 
+        and the matrix defines the linear transformation from input bits to codewords.
 
     bits : ndarray of shape (k, N)
-        Binary input sequences to encode. Each column is a bit sequence of length :math:`k`, and there are :math:`N` sequences
-        in total.
+        Binary input sequences to encode. Each column is a bit sequence of length :math:`k`, 
+        and there are :math:`N` sequences in total.
 
     systematic : bool, optional
         If True, the generator matrix is assumed to be in systematic form. If False, the
@@ -553,19 +553,19 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
 
 def decodeLDPC(llrs, param):
     """
-    Decode multiple LDPC codewords using the belief propagation (sum-product) algorithm.
+    Decode multiple LDPC codewords using the belief propagation algorithms.
 
     Parameters
     ----------
     llrs : ndarray of shape (n, numCodewords)
         Array of log-likelihood ratios (LLRs) for each bit of the received codewords.
-        Each row corresponds to a codeword, and each column corresponds to a bit.
+        Codewords are assumed to be disposed in columns.
 
     param : object
         Object containing the following attributes:
 
         - H : ndarray of shape (m, n)
-            Sparse Binary parity-check matrix of the LDPC code.
+            Sparse binary parity-check matrix of the LDPC code.
 
         - maxIter : int
             Maximum number of iterations for belief propagation.
@@ -579,12 +579,10 @@ def decodeLDPC(llrs, param):
     Returns
     -------
     decodedBits : ndarray of shape (n, numCodewords)
-        Array of decoded bits for each codeword. Each row corresponds to a codeword,
-        and each column corresponds to a bit.
+        Array of decoded bits for each codeword. 
 
     outputLLRs : ndarray of shape (n, numCodewords)
-        Array of updated log-likelihood ratios (LLRs) after decoding. Each row corresponds
-        to a codeword, and each column corresponds to a bit.
+        Array of updated log-likelihood ratios (LLRs) after decoding. 
     """
     # check input parameters
     H = getattr(param, "H", None)
@@ -728,7 +726,7 @@ def inverseMatrixGF2(A):
     Parameters
     ----------
     A : ndarray of shape (n, n), dtype=np.uint8
-        Binary matrix with entries in {0, 1}.
+        Binary square matrix.
 
     Returns
     -------
@@ -781,7 +779,7 @@ def triangularize(H):
     Parameters
     ----------
     H : ndarray of shape (m, n), dtype=np.uint8
-        Binary parity-check matrix with entries in {0, 1}.
+        Binary parity-check matrix :math:`H`.
 
     Returns
     -------
@@ -844,8 +842,8 @@ def triangP1P2(H):
     Parameters
     ----------
     H : ndarray of shape (m, n)
-        Binary parity-check matrix with entries in {0, 1}.
-        It is used to derive the matrices P1 and P2.
+        Binary parity-check matrix. It is used to derive the matrices P1 and P2.
+
     Returns
     -------
     P1 : ndarray of shape (m1, k)
