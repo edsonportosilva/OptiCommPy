@@ -251,7 +251,7 @@ def encodeDVBS2(bits, A):
         Binary input sequences to be encoded. Each column represents a bit sequence of length :math:`k`.
 
     A : ndarray of shape (m, k)
-        Matrix corresponding to the first :math:`k` colmuns of the parity-check matrix :math:`H`.
+        Matrix corresponding to the first :math:`k` columns of the parity-check matrix :math:`H`.
 
     Returns
     -------
