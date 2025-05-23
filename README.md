@@ -63,6 +63,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 -  sphinx-rtd-theme>=1.2.2
 -  nbsphinx>=0.9.3
 -  nbsphinx-link>=1.3.0
+-  prettytable>=3.16.0
 -  cupy-cuda12x >= 13.1.0 (optional, in case GPU processing is desired)
 
 ## Installation
