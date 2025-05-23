@@ -49,10 +49,10 @@ def par2gen(H):
         The form of G is :math:`[I_k | P]`, where :math:`I_k` is the identity matrix and :math:`P` is a binary matrix.
 
     colSwaps : ndarray of shape (n,)
-        Indices representing the column permutations applied to H to obtain Hnew.
+        Indices representing the column permutations applied to H to obtain Hm.
         These permutations are required to match the systematic form used in G.
 
-    Hnew : ndarray of shape (n - k, n)
+    Hm : ndarray of shape (n - k, n)
         The modified parity-check matrix after Gaussian elimination and column reordering.
         This matrix has the identity portion on the right-hand side, corresponding to
         a standard systematic form :math:`[P^T | I_{n-k}]`.
@@ -84,12 +84,12 @@ def par2gen(H):
         (np.sum(Hs[:, 0:], axis=0) == 1)
     ]  # indexes of cols belonging to the indentity
 
-    Hnew = np.hstack((Hs[:, cols[indP]], Hs[:, cols[indI]]))
+    Hm = np.hstack((Hs[:, cols[indP]], Hs[:, cols[indI]]))
 
     colSwaps = np.hstack((indP, indI))
 
     # systematic generator matrix G
-    G = np.hstack((np.eye(k, dtype=np.uint8), Hnew[:, 0:k].T))
+    G = np.hstack((np.eye(k, dtype=np.uint8), Hm[:, 0:k].T))
 
     return G, colSwaps, H[:, colSwaps]
 
@@ -218,17 +218,17 @@ def encodeLDPC(bits, param):
         return encodeDVBS2(bits, A)
     elif mode == "IEEE_802.11nD2":
         if P1 is None or P2 is None:
-            P1, P2, Hnew = triangP1P2(H)
+            P1, P2, Hm = triangP1P2(H)
             param.P1 = P1
             param.P2 = P2
-            param.H = csr_matrix(Hnew)
+            param.H = csr_matrix(Hm)
         return encodeTriang(bits, P1, P2)
     elif mode == "AR4JA":
         if G is None:
-            G, _, Hnew = par2gen(H)  # get systematic generator matrix G
+            G, _, Hm = par2gen(H)  # get systematic generator matrix G
             G = G.astype(np.uint8)
             param.G = G
-            param.H = csr_matrix(Hnew)
+            param.H = csr_matrix(Hm)
             codedBits = encoder(G, bits, systematic)
             return codedBits[0 : param.n, :]
         else:
