@@ -8,14 +8,18 @@ Digital modulation utilities (:mod:`optic.comm.modulation`)
 
    grayCode                 -- Gray code generator
    grayMapping              -- Gray Mapping for digital modulations
-   pamConst                 -- Generate a Pulse Amplitude Modulation (PAM) constellation.
-   qamConst                 -- Generate a Quadrature Amplitude Modulation (QAM) constellation.
-   pskConst                 -- Generate a Phase Shift Keying (PSK) constellation.
-   apskConst                -- Generate an Amplitude-Phase Shift Keying (APSK) constellation.
+   pamConst                 -- Generate a Pulse Amplitude Modulation (PAM) constellation
+   qamConst                 -- Generate a Quadrature Amplitude Modulation (QAM) constellation
+   pskConst                 -- Generate a Phase Shift Keying (PSK) constellation
+   apskConst                -- Generate an Amplitude-Phase Shift Keying (APSK) constellation
    minEuclid                -- Find minimum Euclidean distance
    demap                    -- Contellation symbol index to bit sequence demapping
    modulateGray             -- Modulate bit sequences to constellation symbol sequences (w/ Gray mapping)
    demodulateGray           -- Demodulate symbol sequences (minEuclid + hard decisions) to bit sequences (assuming Gray mapping)
+   softMapper               -- Map LLRs to soft estimates of constellation symbols with Gray mapping
+   softEstimator            -- Estimate the mean and variance of the received symbols based on LLRs and a given bit mapping
+   llr2bitProb              -- Convert LLRs to bit probabilities using a numerically stable sigmoid
+   detector                 -- Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule
 """
 
 
