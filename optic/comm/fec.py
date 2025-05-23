@@ -27,14 +27,14 @@ Forward error correction (FEC) utilities (:mod:`optic.comm.fec`)
 
 """Forward error correction (FEC) utilities."""
 import logging as logg
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit, prange
 from numba.typed import List
-from scipy.sparse import coo_matrix, csc_matrix, csr_matrix
-import os
 from prettytable import PrettyTable
+from scipy.sparse import coo_matrix, csc_matrix, csr_matrix
 
 
 def par2gen(H):

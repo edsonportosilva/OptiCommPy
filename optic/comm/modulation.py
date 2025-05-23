@@ -29,8 +29,9 @@ import logging as logg
 import numpy as np
 from numba import njit, prange
 
-from optic.utils import bitarray2dec, dec2bitarray
 from optic.dsp.core import pnorm
+from optic.utils import bitarray2dec, dec2bitarray
+
 
 def grayCode(n):
     """
