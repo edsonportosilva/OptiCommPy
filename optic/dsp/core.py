@@ -31,10 +31,11 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
 
 """Digital signal processing utilities."""
 import logging as logg
+
 import numpy as np
 from numba import njit, prange
+from numpy.fft import fft, fftfreq, fftshift, ifft
 from scipy import signal
-from numpy.fft import fft, ifft, fftfreq, fftshift
 
 
 @njit

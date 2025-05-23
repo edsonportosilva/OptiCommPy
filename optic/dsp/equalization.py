@@ -19,9 +19,10 @@ import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-from optic.dsp.core import pnorm, blockwiseFFTConv
+
 from optic.comm.modulation import grayMapping
-from optic.models.channels import nlinPhaseRot, convergenceCondition
+from optic.dsp.core import blockwiseFFTConv, pnorm
+from optic.models.channels import convergenceCondition, nlinPhaseRot
 
 # try:
 #     from optic.dsp.coreGPU import blockwiseFFTConv

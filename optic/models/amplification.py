@@ -18,32 +18,25 @@ Models for optical amplifiers (:mod:`optic.models.amplification`)
    edfaSM               --
 """
 
+import copy
+import logging as logg
 import os
 
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.matlib as npmat
-import matplotlib.pyplot as plt
-import matplotlib.mlab as mlab
-
-from scipy import interpolate
-from numpy.fft import fft, ifft, fftfreq
+from numpy.fft import fft, fftfreq, ifft
+from scipy import interpolate, signal
+from scipy.constants import Planck, c, lambda2nu
 from scipy.integrate import solve_ivp
-
 # import pandas as pd
 from scipy.signal import find_peaks
-from scipy.constants import lambda2nu
-from scipy import signal
-from scipy.constants import c, Planck
-
-from scipy.constants import c, Planck
 from scipy.special import jv, kv
-
 from simple_pid import PID
-import logging as logg
-import copy
 
-from optic.utils import parameters
 from optic.dsp.core import signal_power as power_meter
+from optic.utils import parameters
 
 # def power_meter(x):
 #     """

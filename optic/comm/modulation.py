@@ -23,8 +23,9 @@ Digital modulation utilities (:mod:`optic.comm.modulation`)
 import logging as logg
 
 import numpy as np
-from optic.utils import bitarray2dec, dec2bitarray
 from numba import njit, prange
+
+from optic.utils import bitarray2dec, dec2bitarray
 
 
 def grayCode(n):

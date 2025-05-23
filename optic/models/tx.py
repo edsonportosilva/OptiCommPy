@@ -12,9 +12,10 @@ Advanced models for optical transmitters (:mod:`optic.models.tx`)
 import numpy as np
 from tqdm.notebook import tqdm
 
-from optic.dsp.core import pnorm, pulseShape, signal_power, upsample, phaseNoise
-from optic.models.devices import iqm
 from optic.comm.modulation import grayMapping, modulateGray
+from optic.dsp.core import (phaseNoise, pnorm, pulseShape, signal_power,
+                            upsample)
+from optic.models.devices import iqm
 
 try:
     from optic.dsp.coreGPU import checkGPU
