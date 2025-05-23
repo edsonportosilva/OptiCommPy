@@ -17,7 +17,7 @@
 
 """General utilities."""
 import numpy as np
-
+from numba import njit
 
 class parameters:
     """
@@ -117,7 +117,7 @@ def dec2bitarray(x, bit_width):
         result[pox] = decimal2bitarray(number, bit_width)
     return result
 
-
+@njit
 def decimal2bitarray(x, bit_width):
     """
     Converts a positive integer to a NumPy array of the specified size containing bits (0 and 1). This version is slightly
@@ -147,7 +147,7 @@ def decimal2bitarray(x, bit_width):
         pox += 1
     return result
 
-
+@njit
 def bitarray2dec(x_bitarray):
     """
     Converts an input NumPy array of bits (0 and 1) to a decimal integer.
