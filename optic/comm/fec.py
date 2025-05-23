@@ -47,11 +47,9 @@ def par2gen(H):
     G : ndarray of shape (k, n)
         Systematic generator matrix corresponding to the input parity-check matrix H.
         The form of G is :math:`[I_k | P]`, where :math:`I_k` is the identity matrix and :math:`P` is a binary matrix.
-
     colSwaps : ndarray of shape (n,)
         Indices representing the column permutations applied to H to obtain Hm.
         These permutations are required to match the systematic form used in G.
-
     Hm : ndarray of shape (n - k, n)
         The modified parity-check matrix after Gaussian elimination and column reordering.
         This matrix has the identity portion on the right-hand side, corresponding to
@@ -153,7 +151,6 @@ def encodeLDPC(bits, param):
     ----------
     bits : ndarray of shape (k, N)
         Binary input sequences to be encoded. Each column is a bit sequence of length :math:`k` bits.
-
     param : object
         Object containing the following attributes:
 
@@ -250,7 +247,6 @@ def encodeDVBS2(bits, A):
     ----------
     bits : ndarray of shape (k, N)
         Binary input sequences to be encoded. Each column represents a bit sequence of length :math:`k`.
-
     A : ndarray of shape (m, k)
         Matrix corresponding to the first :math:`k` columns of the parity-check matrix :math:`H`.
 
@@ -298,13 +294,9 @@ def encoder(G, bits, systematic=True):
     Parameters
     ----------
     G : ndarray of shape (k, n)
-        Binary generator matrix. Each row corresponds to a basis vector of the code, 
-        and the matrix defines the linear transformation from input bits to codewords.
-
+        Binary generator matrix.
     bits : ndarray of shape (k, N)
-        Binary input sequences to encode. Each column is a bit sequence of length :math:`k`, 
-        and there are :math:`N` sequences in total.
-
+        Binary input sequences to encode. Each column is a bit sequence of length :math:`k`.
     systematic : bool, optional
         If True, the generator matrix is assumed to be in systematic form. If False, the
         generator matrix is treated as a general linear transformation (default is True).
@@ -347,19 +339,15 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     Parameters
     ----------
     llrs : ndarray of shape (n, numCodewords)
-        Array of log-likelihood ratios (LLRs) for each bit of the received codeword.
-    
+        Array of log-likelihood ratios (LLRs) for each bit of the received codeword.    
     checkNodes : list of ndarray
         List of length :math:`m`, where each element is a 1D array containing the indices
         of variable nodes (bits) involved in the corresponding check node (parity-check equation).
-
     varNodes : list of ndarray
         List of length :math:`n`, where each element is a 1D array containing the indices
         of check nodes that the corresponding variable node participates in.
-
     maxIter : int
         Maximum number of belief propagation iterations.
-
     prec : data-type, optional
         Data type for the computations (default is np.float32).
 
@@ -367,10 +355,8 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     -------
     finalLLR : ndarray of shape (n,)
         Updated log-likelihood ratios after message passing.
-
     numIter : int
         Number of iterations executed until decoding converged or reached `maxIter`.
-
     frameDecodingFail : ndarray of shape (numCodewords,)
         Array indicating whether decoding was successful (0) or failed (1) for each codeword.
         A value of 0 indicates successful decoding, while 1 indicates failure.
@@ -455,19 +441,15 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     Parameters
     ----------
     llrs : ndarray of shape (n, numCodewords)
-        Log-likelihood ratios (LLRs) of the received codeword bits.   
-
+        Log-likelihood ratios (LLRs) of the received codeword bits.
     checkNodes : list of ndarray
         List of length :math:`m`, where each entry contains the indices of variable nodes
         connected to the corresponding check node.
-
     varNodes : list of ndarray
         List of length :math:`n`, where each entry contains the indices of check nodes
         connected to the corresponding variable node.
-
     maxIter : int
         Maximum number of iterations for belief propagation.
-
     prec : data-type, optional
         Numerical precision to use in computations (default is np.float32).
 
@@ -475,10 +457,8 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     -------
     finalLLR : ndarray of shape (n,)
         Updated LLR values for the decoded codeword after the final iteration.
-
     numIter : int
         Number of iterations performed before successful decoding or reaching `maxIter`.
-
     frameDecodingFail : ndarray of shape (numCodewords,)
         Array indicating whether decoding was successful (0) or failed (1) for each codeword.
         A value of 0 indicates successful decoding, while 1 indicates failure.
@@ -561,7 +541,6 @@ def decodeLDPC(llrs, param):
     llrs : ndarray of shape (n, numCodewords)
         Array of log-likelihood ratios (LLRs) for each bit of the received codewords.
         Codewords are assumed to be disposed in columns.
-
     param : object
         Object containing the following attributes:
 
@@ -581,7 +560,6 @@ def decodeLDPC(llrs, param):
     -------
     decodedBits : ndarray of shape (n, numCodewords)
         Array of decoded bits for each codeword. 
-
     outputLLRs : ndarray of shape (n, numCodewords)
         Array of updated log-likelihood ratios (LLRs) after decoding. 
     """
@@ -646,7 +624,6 @@ def writeAlist(H, filename):
     ----------
     H : ndarray of shape (m, n)
         Binary parity-check matrix.
-
     filename : str
         Name of the ALIST file to be written.
     """
@@ -733,7 +710,6 @@ def inverseMatrixGF2(A):
     -------
     Ainv : ndarray of shape (n, n), dtype=np.uint8
         Inverse of A over GF(2), if invertible. If not invertible, returns the identity matrix.
-
     success : bool
         True if A is invertible, False otherwise.
     """
@@ -786,10 +762,8 @@ def triangularize(H):
     -------
     triangH : ndarray of shape (m, n), dtype=np.uint8
         Triangularized matrix.
-
     rowPerm : ndarray of shape (m,), dtype=np.int32
         Row permutation indices.
-
     colPerm : ndarray of shape (n,), dtype=np.int32
         Column permutation indices.
 
@@ -907,10 +881,8 @@ def encodeTriang(bits, P1, P2):
     ----------
     bits : ndarray of shape (k, N)
         Binary input sequences. Each column is a bit sequence to be encoded.
-
     P1 : ndarray of shape (m1, k)
         First parity matrix.
-
     P2 : ndarray of shape (m2, k)
         Second parity matrix.
 
