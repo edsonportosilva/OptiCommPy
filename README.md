@@ -27,7 +27,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
   - *Several NxN MIMO adaptive equalization algorithms*.
   - *Carrier phase recovery algorithms.* 
 * Functions to implement forward error correction (FEC) encoders and decoders.
-* For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the DSP and the FEC functions.  
+* For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the code.  
 * Evaluate transmission performance with metrics such as:
   - *Bit-error-rate* (BER).
   - *Symbol-error-rate* (SER).
@@ -39,7 +39,16 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 
 ## How can I contribute?
 
-If you want to contribute to this project, implement the feature you want and send me a pull request. If you want to suggest new features or discuss anything related to OptiCommPy, please get in touch with me (edsonporto88@gmail.com).
+* If you want to contribute to this project:
+  - Create a new issue in the GitHub repository to discuss the feature you want to implement.
+  - Fork the repository and create a new branch.
+  - Make sure you have the latest version of the code.
+  - Check the conventions adopted in the code writing (e.g. naming conventions, docstrings, etc.).
+  - Remember to write an example of usage for the new feature you are implementing.
+  - After the process is finished, send a pull request. 
+
+* If you want to suggest or discuss anything related to OptiCommPy, please get in touch via e-mail
+(edsonporto88@gmail.com).
 
 ## Requirements/Dependencies
 
