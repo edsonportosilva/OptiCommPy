@@ -500,12 +500,12 @@ def softMapper(llr, M, constType, prec=np.float32):
        
     llr = llr.reshape(-1, b)  # shape: (num_symbols, bits_per_symbol) 
                       
-    return softMapperCore(llr, bitMap, constSymb)
+    return softEstimator(llr, bitMap, constSymb)
 
 @njit(parallel=True)
-def softMapperCore(llr, bitMap, constSymb):
+def softEstimator(llr, bitMap, constSymb):
     """
-    Core computation for soft symbol mapping.
+    Estimates the mean and variance of the received symbols based on LLRs and the bit mapping.
     
     Parameters
     ----------
