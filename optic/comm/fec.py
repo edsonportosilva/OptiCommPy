@@ -996,7 +996,7 @@ def parseAlist(path):
     }
 
 
-def summarizeAlistFolder(path):
+def summarizeAlistFolder(folderPath):
     """
     Scan a folder for .alist files and print summary table.
 
@@ -1016,10 +1016,10 @@ def summarizeAlistFolder(path):
         "Max Check Deg",
     ]
 
-    for filename in os.listdir(path):
+    for filename in os.listdir(folderPath):
         if filename.endswith(".alist") or filename.endswith(".txt"):
             try:
-                path = os.path.join(path, filename)
+                path = os.path.join(folderPath, filename)
                 info = parseAlist(path)
                 table.add_row(
                     [
