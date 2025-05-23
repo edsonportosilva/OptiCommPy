@@ -26,7 +26,7 @@ import numpy as np
 from numba import njit, prange
 
 from optic.utils import bitarray2dec, dec2bitarray
-
+from optic.dsp.core import pnorm
 
 def grayCode(n):
     """
@@ -464,3 +464,129 @@ def demodulateGray(symb, M, constType):
     indrx = minEuclid(symb, const)
 
     return demap(indrx, bitMap)
+
+def softMapper(llr, M, constType, prec=np.float32):
+    """
+    Soft mapper for Gray-mapped modulation formats.
+
+    Parameters
+    ----------
+    llr : 1D numpy array
+        Log-likelihood ratios (LLRs) of bits.
+    M : int
+        Modulation order.
+    constType : str
+        Type of constellation ('qam', 'psk', 'pam', 'apsk', or 'ook').
+    prec : data type, optional
+        Precision of the output (default is np.float32).
+           
+    Returns
+    -------    
+    - softMean : 1D numpy array
+        Soft mean of the constellation symbols.
+
+    - softVar : 1D numpy array
+        Soft variance of the constellation symbols.    
+
+    """
+    b = int(np.log2(M))
+    constSymb = grayMapping(M, constType)
+    constSymb = pnorm(constSymb)
+    
+    # get bit to symbol mapping
+    indMap = minEuclid(constSymb, constSymb)
+    bitMap = dec2bitarray(indMap, b)        
+    bitMap = bitMap.reshape(-1, b).astype(prec)
+       
+    llr = llr.reshape(-1, b)  # shape: (num_symbols, bits_per_symbol) 
+                      
+    return softMapperCore(llr, bitMap, constSymb)
+
+@njit(parallel=True)
+def softMapperCore(llr, bitMap, constSymb):
+    """
+    Core computation for soft symbol mapping.
+    
+    Parameters
+    ----------
+    llr : ndarray of shape (numSymb, numBits)
+        Log-likelihood ratios for each bit in the symbol.
+    bitMap : ndarray of shape (M, numBits)
+        Bit mapping of constellation points (binary matrix).    
+    constSymb : ndarray of shape (M,)
+        Complex-valued constellation symbols.
+    
+    Returns
+    -------
+    softMean : ndarray of shape (numSymb,)
+    softVar : ndarray of shape (numSymb,)
+    """
+    numSymb, numBits = llr.shape
+    M = constSymb.shape[0]
+    
+    softMean = np.zeros(numSymb, dtype=np.complex64)
+    softVar = np.zeros(numSymb, dtype=np.float32)
+    absConst2 = np.abs(constSymb)**2
+
+    # Compute bit probabilities       
+    Pb1 = llr2bitProb(-llr)
+    Pb0 = 1.0 - Pb1
+    
+    for i in prange(numSymb):
+        # Clip LLRs
+        for k in range(numBits):
+            if llr[i, k] < -300:
+                llr[i, k] = -300
+            elif llr[i, k] > 300:
+                llr[i, k] = 300
+        
+        # Compute symbol probabilities
+        probSymbs = np.empty(M, dtype=np.float32)
+        for m in range(M):
+            prob = 1.0
+            for b in range(numBits):
+                prob *= Pb1[i,b] if bitMap[m, b] else Pb0[i,b]
+            probSymbs[m] = prob
+
+        # Compute soft mean and variance
+        acc_mean = 0.0 + 0.0j
+        acc_var = 0.0
+        for m in range(M):
+            acc_mean += constSymb[m] * probSymbs[m]
+            acc_var += absConst2[m] * probSymbs[m]
+        
+        softMean[i] = acc_mean
+        softVar[i] = acc_var - np.abs(acc_mean)**2
+
+    return softMean, softVar
+
+@njit
+def llr2bitProb(llr, prec=np.float32):
+    """
+    Convert LLRs to bit probabilities using a numerically stable sigmoid.
+    
+    Parameters
+    ----------
+    llrs : 1D numpy array
+        Log-likelihood ratios (LLRs) of bits.
+    
+    Returns
+    -------
+    probs : 1D numpy array
+        Bit probabilities P(bit = 1).
+    """
+    n = llr.shape[0]
+    k = llr.shape[1]
+    probs = np.empty((n, k), dtype=prec)
+    
+    for i in range(n):
+        for j in range(k):
+            x = llr[i, j]
+            # Numerically stable sigmoid
+            if x >= 0:
+                z = np.exp(-x)
+                probs[i,j] = 1.0 / (1.0 + z)
+            else:
+                z = np.exp(x)
+                probs[i,j] = z / (1.0 + z)    
+    return probs
