@@ -21,6 +21,8 @@ Forward error correction (FEC) utilities (:mod:`optic.comm.fec`)
    triangP1P2             -- Extract matrices that compute parities from lower-triangular form H
    inverseMatrixGF2       -- Invert a square binary matrix over GF(2)
    plotBinaryMatrix       -- Plot a binary matrix using matplotlib
+   parseAlist             -- Parse an ALIST file and extract the code parameters
+   summarizeAlistFolder   -- Summarize ALIST files in a folder in a table
 """
 
 """Forward error correction (FEC) utilities."""
@@ -31,6 +33,8 @@ import numpy as np
 from numba import njit, prange
 from numba.typed import List
 from scipy.sparse import coo_matrix, csc_matrix, csr_matrix
+import os
+from prettytable import PrettyTable
 
 
 def par2gen(H):
@@ -161,7 +165,7 @@ def encodeLDPC(bits, param):
             Binary parity-check matrix :math:`H`.
 
         - G : ndarray of shape (k, n), optional
-            Binary generator matrix :math:`G`. 
+            Binary generator matrix :math:`G`.
 
         - systematic : bool, optional
             If True, the generator matrix is assumed to be in systematic form. If False,
@@ -198,7 +202,7 @@ def encodeLDPC(bits, param):
     if H is None:
         try:
             filename = f"LDPC_{mode}_{n}b_R{R[0]}{R[2]}.txt"
-            H = readAlist(path + filename)            
+            H = readAlist(path + filename)
             param.H = H
         except FileNotFoundError:
             logg.error(
@@ -262,7 +266,7 @@ def encodeDVBS2(bits, A):
     m, k = A.shape
     n = k + m
     N = bits.shape[1]
-    
+
     codewords = np.zeros((n, N), dtype=np.uint8)
 
     for col in prange(N):
@@ -339,7 +343,7 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     Parameters
     ----------
     llrs : ndarray of shape (n, numCodewords)
-        Array of log-likelihood ratios (LLRs) for each bit of the received codeword.    
+        Array of log-likelihood ratios (LLRs) for each bit of the received codeword.
     checkNodes : list of ndarray
         List of length :math:`m`, where each element is a 1D array containing the indices
         of variable nodes (bits) involved in the corresponding check node (parity-check equation).
@@ -371,7 +375,7 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     msgVtoC = np.zeros((m, n), dtype=prec)
     msgCtoV = np.zeros((m, n), dtype=prec)
     llrs = llrs.astype(prec)
-   
+
     numCodewords = llrs.shape[1]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
@@ -414,17 +418,17 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
                 finalLLR[var, indCw] = llr[var]
                 for check in varNodes[var]:
                     finalLLR[var, indCw] += msgCtoV[check, var]
-                    decodedBits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2           
-            
-            # Check parity conditions            
+                    decodedBits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
+
+            # Check parity conditions
             parity_checks = np.zeros(m, dtype=np.uint8)
             for indParity in prange(m):
                 for check in checkNodes[indParity]:
                     parity_checks[indParity] ^= decodedBits[check]  # accumulate XORs
-             
+
             if np.sum(parity_checks) == 0:
                 frameDecodingFail[indCw] = 0
-                lastIter[indCw] = indIter                
+                lastIter[indCw] = indIter
                 break
 
             if indIter == maxIter - 1:
@@ -471,7 +475,7 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     msgVtoC = np.zeros((m, n), dtype=prec)
     msgCtoV = np.zeros((m, n), dtype=prec)
     llrs = llrs.astype(prec)
-    
+
     numCodewords = llrs.shape[1]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
@@ -514,16 +518,16 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
                 for check in varNodes[var]:
                     finalLLR[var, indCw] += msgCtoV[check, var]
                 decodedBits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
-                        
-            # Check parity conditions            
+
+            # Check parity conditions
             parity_checks = np.zeros(m, dtype=np.uint8)
             for indParity in prange(m):
                 for check in checkNodes[indParity]:
                     parity_checks[indParity] ^= decodedBits[check]  # accumulate XORs
-             
+
             if np.sum(parity_checks) == 0:
                 frameDecodingFail[indCw] = 0
-                lastIter[indCw] = indIter                
+                lastIter[indCw] = indIter
                 break
 
             if indIter == maxIter - 1:
@@ -559,9 +563,9 @@ def decodeLDPC(llrs, param):
     Returns
     -------
     decodedBits : ndarray of shape (n, numCodewords)
-        Array of decoded bits for each codeword. 
+        Array of decoded bits for each codeword.
     outputLLRs : ndarray of shape (n, numCodewords)
-        Array of updated log-likelihood ratios (LLRs) after decoding. 
+        Array of updated log-likelihood ratios (LLRs) after decoding.
     """
     # check input parameters
     H = getattr(param, "H", None)
@@ -571,11 +575,11 @@ def decodeLDPC(llrs, param):
 
     if H is None:
         logg.error("H is None. Please provide a valid parity-check matrix.")
- 
+
     m, n = H.shape
     numCodewords = llrs.shape[1]
     n_ = llrs.shape[0]
-    Hcsc = H.tocsc() # convert to CSC format for efficient column access
+    Hcsc = H.tocsc()  # convert to CSC format for efficient column access
 
     llrs = np.clip(llrs, -200, 200)
     outputLLRs = np.zeros_like(llrs, dtype=prec)
@@ -585,9 +589,9 @@ def decodeLDPC(llrs, param):
         llrs = np.pad(llrs, ((0, n - n_), (0, 0)), mode="constant")
 
     # Build adjacency lists using fixed-size lists for Numba
-    checkNodes = List([H[i].indices.astype(np.uint32) for i in range(m)])     
+    checkNodes = List([H[i].indices.astype(np.uint32) for i in range(m)])
     varNodes = List([Hcsc[:, j].indices.astype(np.uint32) for j in range(n)])
-    
+
     logg.info(f"Decoding {numCodewords} LDPC codewords with {alg}")
     if alg == "SPA":
         outputLLRs, lastIter, frameErrors = sumProductAlgorithm(
@@ -752,7 +756,7 @@ def inverseMatrixGF2(A):
 def triangularize(H):
     """
     Convert binary matrix H into lower-triangular form using only row and column permutations.
-    
+
     Parameters
     ----------
     H : ndarray of shape (m, n), dtype=np.uint8
@@ -950,3 +954,84 @@ def plotBinaryMatrix(H):
     plt.grid(True)
     plt.tight_layout()
     plt.show()
+
+
+def parseAlist(path):
+    """
+    Parse an LDPC ALIST file and return basic parameters.
+
+    Parameters
+    ----------
+    path : str
+        Path to the folder with the ALIST files.
+
+    """
+    with open(path, "r") as f:
+        lines = f.readlines()
+
+    # Read header: n, m
+    n, m = map(int, lines[0].split())
+
+    # Skip variable/check node degree lists (lines 2 to 1+n+m)
+    offset = 2 + n + m
+
+    # Variable node connections: shape (n, max_col_w)
+    var_nodes = [list(map(int, lines[i].split())) for i in range(2, 2 + n)]
+
+    # Check node connections: shape (m, max_row_w)
+    check_nodes = [list(map(int, lines[i].split())) for i in range(2 + n, offset)]
+
+    # Optional sanity check: number of connections per node
+    col_weights = np.array([len([v for v in row if v > 0]) for row in var_nodes])
+    row_weights = np.array([len([v for v in row if v > 0]) for row in check_nodes])
+
+    rate = (n - m) / n if n > 0 else 0
+
+    return {
+        "n": n,
+        "m": m,
+        "rate": rate,
+        "max_col_w": max(col_weights),
+        "max_row_w": max(row_weights),
+    }
+
+
+def summarizeAlistFolder(path):
+    """
+    Scan a folder for .alist files and print summary table.
+
+    Parameters
+    ----------
+    path : str
+        Path to the folder containing ALIST files.
+
+    """
+    table = PrettyTable()
+    table.field_names = [
+        "File",
+        "n (length)",
+        "m (checks)",
+        "Rate",
+        "Max Var Deg",
+        "Max Check Deg",
+    ]
+
+    for filename in os.listdir(path):
+        if filename.endswith(".alist") or filename.endswith(".txt"):
+            try:
+                path = os.path.join(path, filename)
+                info = parseAlist(path)
+                table.add_row(
+                    [
+                        filename,
+                        info["n"],
+                        info["m"],
+                        f"{info['rate']:.3f}",
+                        info["max_col_w"],
+                        info["max_row_w"],
+                    ]
+                )
+            except Exception as e:
+                print(f"Failed to parse {filename}: {e}")
+
+    print(table)
