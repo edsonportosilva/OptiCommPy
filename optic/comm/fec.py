@@ -219,11 +219,27 @@ def encodeLDPC(bits, param):
         return encodeDVBS2(bits, A)
     elif mode == "IEEE_802.11nD2":
         if P1 is None or P2 is None:
-            P1, P2, Hm = triangP1P2(H)
-            param.P1 = P1
-            param.P2 = P2
-            param.H = csr_matrix(Hm)
-        return encodeTriang(bits, P1, P2)
+            # attempt to triangularize H
+            P1, P2, Hm = triangP1P2(H) 
+            if P1 is None or P2 is None:
+                # if H cannot be triangularized, encode with G
+                if G is None:
+                    G, _, Hm = par2gen(H)  # get systematic generator matrix G
+                    G = G.astype(np.uint8)
+                    param.G = G
+                    param.H = csr_matrix(Hm)
+                    codedBits = encoder(G, bits, systematic)
+                    return codedBits[0 : param.n, :]
+                else:
+                    G = G.astype(np.uint8)
+                    codedBits = encoder(G, bits, systematic)
+                    return codedBits[0 : param.n, :]                     
+            else:           
+                # encode with triangularized H      
+                param.P1 = P1
+                param.P2 = P2
+                param.H = csr_matrix(Hm)
+                return encodeTriang(bits, P1, P2)
     elif mode == "AR4JA":
         if G is None:
             G, _, Hm = par2gen(H)  # get systematic generator matrix G
@@ -836,7 +852,7 @@ def triangP1P2(H):
     ----------
     [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
     """
-    H = H.astype(np.uint8)
+    H = csr_matrix.todense(H).astype(np.uint8)
 
     # convert to lower-triangular form
     triangH, _, colSwaps = triangularize(H)
@@ -859,7 +875,8 @@ def triangP1P2(H):
     # invert matrix T
     T_inv, found = inverseMatrixGF2(T)
     if not found:
-        logg.error("Matrix T is not invertible.")
+        logg.warning("Matrix T is not invertible.")
+        return None, None, None
 
     X = np.mod(E @ T_inv, 2)
     C_tilde = np.mod(X @ A + C, 2)
@@ -868,7 +885,8 @@ def triangP1P2(H):
     # invert matrix D tilde
     D_tilde_inv, found = inverseMatrixGF2(D_tilde)
     if not found:
-        logg.error("Matrix D_tilde is not invertible.")
+        logg.warning("Matrix D_tilde is not invertible.")
+        return None, None, None
 
     P1 = np.mod(D_tilde_inv @ C_tilde, 2)
     P2 = np.mod(T_inv @ np.mod(A + np.mod(B @ P1, 2), 2), 2)
