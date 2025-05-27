@@ -13,9 +13,8 @@ OFDM utilities (:mod:`optic.comm.ofdm`)
    demodulateOFDM           -- OFDM symbols demodulator   
 """
 import numpy as np
-from numpy.fft import fft, fftshift, ifft
+from numpy.fft  import fft, fftshift, ifft
 from scipy.interpolate import interp1d
-
 
 def hermit(V):
     """
@@ -113,6 +112,9 @@ def modulateOFDM(symb, param):
         - pilot : complex-valued scalar, optional. Pilot symbol. Default is 1 + 1j.
 
         - pilotCarriers : np.array, optional. Indexes of pilot subcarriers. Default is an empty array.
+
+        - nullCarriers : np.array, optional. Indexes of null subcarriers. Default is an empty array.
+        
         - SpS : int, optional. Oversampling factor. Default is 2.
 
     Returns
@@ -124,44 +126,51 @@ def modulateOFDM(symb, param):
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
+    
     # Check and set default values for input parameters
-    Nfft = getattr(param, "Nfft", 512)
-    G = getattr(param, "G", 4)
+    Nfft           = getattr(param, "Nfft", 512)
+    G              = getattr(param, "G", 4)
     hermitSymmetry = getattr(param, "hermitSymmetry", False)
-    pilot = getattr(param, "pilot", 1+1j)
-    pilotCarriers = getattr(param, "pilotCarriers", np.array([], dtype = int))
-    SpS = getattr(param, "SpS", 2)
-        
-    # Number of pilot subcarriers
-    Np = len(pilotCarriers)
-
-    # Number of subcarriers
+    pilot          = getattr(param, "pilot", 0.25 + 0.25j)
+    SpS            = getattr(param, "SpS", 2)
+    pilotCarriers  = getattr(param, "pilotCarriers", np.array([], dtype = np.int64))
+    nullCarriers   = getattr(param, "nullCarriers", np.array([], dtype = np.int64))
+    
     Ns = Nfft//2 - 1 if hermitSymmetry else Nfft
-    numSymb  = len(symb)
-    numOFDMframes = numSymb//(Ns - Np)
+    Np = len(pilotCarriers)
+    Nz = len(nullCarriers)
+    Ni = Ns - Np - Nz
+    
+    Carriers     = np.arange(0, Ns)
+    dataCarriers = np.setdiff1d(Carriers, np.union1d(pilotCarriers, nullCarriers))
+    
+    numSymb = len(symb)
 
-    Carriers = np.arange(0, Ns)
-    dataCarriers  = np.array(list(set(Carriers) - set(pilotCarriers)))
+    if numSymb % Ni != 0:
+        raise ValueError(f"Number of symbols ({numSymb}) is not divisible by number of data carriers per OFDM frame ({Ni}).")
 
+    numOFDMframes = numSymb // Ni
+    
     # Serial to parallel
-    symb_par = np.reshape(symb, (numOFDMframes, Ns - Np))   
+    symb_par    = np.reshape(symb, (numOFDMframes, Ni))   
     sigOFDM_par = np.zeros( (numOFDMframes, SpS*(Nfft + G)), dtype=np.complex64)
     
     for indFrame in range(numOFDMframes):
         # Start OFDM frame with zeros
         frameOFDM = np.zeros(Ns, dtype=np.complex64) 
-
-        # Insert data and pilot subcarriers                    
+    
+        # Insert data, pilot and null subcarriers                    
         frameOFDM[dataCarriers]  = symb_par[indFrame, :]
         frameOFDM[pilotCarriers] = pilot
+        frameOFDM[nullCarriers] = 0
 
         # Hermitian symmetry
         if hermitSymmetry:
             frameOFDM = hermit(frameOFDM)
-       
-        # IFFT operation       
-        sigOFDM_par[indFrame, SpS*G : SpS*(G + Nfft)] = ifft(fftshift(zeroPad(frameOFDM, (Nfft*(SpS-1))//2))) * np.sqrt(SpS*Nfft)
         
+        # IFFT operation  
+        sigOFDM_par[indFrame, SpS*G : SpS*(G + Nfft)] = ifft(fftshift(zeroPad(frameOFDM, (Nfft*(SpS-1))//2))) * np.sqrt(SpS*Nfft)
+
         # Cyclic prefix addition
         if G > 0:
             sigOFDM_par[indFrame, 0 : SpS*G] = sigOFDM_par[indFrame, Nfft*SpS : SpS*(Nfft + G)].copy()
@@ -182,8 +191,6 @@ def demodulateOFDM(sig, param):
 
         - Nfft : scalar, optional. Size of the FFT. Default is 512.
 
-        - N : scalar, optional. Number of transmitted subcarriers. Default is calculated based on `Nfft`.
-
         - G : scalar, optional. Cyclic prefix length. Default is 4.
 
         - hermitSymmetry : bool, optional.If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.
@@ -191,6 +198,8 @@ def demodulateOFDM(sig, param):
         - pilot : complex-valued scalar, optional. Pilot symbol. Default is 1 + 1j.
 
         - pilotCarriers : np.array, optional.Indexes of pilot subcarriers. Default is an empty array.
+
+        - nullCarriers : np.array, optional.Indexes of null subcarriers. Default is an empty array.
 
         - returnChannel : bool, optional. If True, return the estimated channel. Default is False.
 
@@ -209,40 +218,46 @@ def demodulateOFDM(sig, param):
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
-    # Check and set default values for input parameters
-    Nfft = getattr(param, "Nfft", 512)
-    G = getattr(param, "G", 4)
-    hermitSymmetry = getattr(param, "hermitSymmetry", False)
-    pilot = getattr(param, "pilot", 1+1j)
-    pilotCarriers = getattr(param, "pilotCarriers", np.array([], dtype = int))
-    returnChannel = getattr(param,'returnChannel', False)
     
-    # Number of pilot subcarriers
+    # Check and set default values for input parameters
+    Nfft           = getattr(param, "Nfft", 512)
+    G              = getattr(param, "G", 4)
+    hermitSymmetry = getattr(param, "hermitSymmetry", False)
+    pilot          = getattr(param, "pilot", 0.25 + 0.25j)
+    returnChannel  = getattr(param,'returnChannel', False)
+    pilotCarriers  = getattr(param, "pilotCarriers", np.array([], dtype = np.int64))
+    nullCarriers   = getattr(param, "nullCarriers", np.array([], dtype = np.int64))
+    
+    Ns = Nfft//2 - 1 if hermitSymmetry else Nfft
     Np = len(pilotCarriers)
+    Nz = len(nullCarriers)
+    Ni = Ns - Np - Nz
+    
+    Carriers     = np.arange(0, Ns)
+    dataCarriers = np.setdiff1d(Carriers, np.union1d(pilotCarriers, nullCarriers))
+    
+    numSymb = len(sig)
 
-    # Number of subcarriers
-    N = Nfft//2 - 1 if hermitSymmetry else Nfft
-    Carriers      = np.arange(0, N)
-    dataCarriers  = np.array(list(set(Carriers) - set(pilotCarriers)))
-
+    if numSymb % (Nfft + G) != 0:
+        raise ValueError(f"Number of received symbols ({numSymb}) is not divisible by Nfft + G ({Nfft + G}).")
+    
+    numOFDMframes = numSymb // (Nfft + G)
+    
     H_abs = 0
     H_pha = 0
-
-    numSymb       = len(sig)
-    numOFDMframes = numSymb//(Nfft + G)
-
+    
     sig_par = np.reshape(sig, (numOFDMframes, Nfft + G))
 
     # Cyclic prefix removal
     sig_par = sig_par[:, G : G + Nfft]
-
+    
     # FFT operation
     for indFrame in range(numOFDMframes):
         sig_par[indFrame, :] = fftshift(fft(sig_par[indFrame,:])) / np.sqrt(Nfft)
 
     if hermitSymmetry:
         # Removal of hermitian symmetry
-        sig_par = sig_par[:, 1 : 1 + N]
+        sig_par = sig_par[:, 1 : 1 + Ns]
 
     # Channel estimation and single tap equalization    
     if Np != 0:
@@ -260,9 +275,9 @@ def demodulateOFDM(sig, param):
         for indFrame in range(numOFDMframes):
             sig_par[indFrame, :] = sig_par[indFrame, :] / (H_abs*np.exp(1j*H_pha))
 
-        # Pilot extraction
-        sig_par = sig_par[:, dataCarriers]
-
+    # Data carriers
+    sig_par = sig_par[:, dataCarriers]
+    
     if returnChannel:
         return sig_par.ravel(), H_abs*np.exp(1j*H_pha)
     else:
