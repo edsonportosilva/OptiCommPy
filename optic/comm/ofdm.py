@@ -133,20 +133,24 @@ def modulateOFDM(symb, param):
     hermitSymmetry = getattr(param, "hermitSymmetry", False)
     pilot          = getattr(param, "pilot", 0.25 + 0.25j)
     SpS            = getattr(param, "SpS", 2)
-    pilotCarriers  = getattr(param, "pilotCarriers", np.array([]))
-    nullCarriers   = getattr(param, "nullCarriers", np.array([]))
+    pilotCarriers  = getattr(param, "pilotCarriers", np.array([], dtype = np.int64))
+    nullCarriers   = getattr(param, "nullCarriers", np.array([], dtype = np.int64))
     
     Ns = Nfft//2 - 1 if hermitSymmetry else Nfft
     Np = len(pilotCarriers)
     Nz = len(nullCarriers)
     Ni = Ns - Np - Nz
     
-    Carriers      = np.arange(0, Ns)
-    dataCarriers  = np.array(list(set(Carriers) - set(pilotCarriers) - set(nullCarriers)))
-
+    Carriers     = np.arange(0, Ns)
+    dataCarriers = np.setdiff1d(Carriers, np.union1d(pilotCarriers, nullCarriers))
+    
     numSymb = len(symb)
-    numOFDMframes = numSymb // Ni
 
+    if numSymb % Ni != 0:
+        raise ValueError(f"Number of symbols ({numSymb}) is not divisible by number of data carriers per OFDM frame ({Ni}).")
+
+    numOFDMframes = numSymb // Ni
+    
     # Serial to parallel
     symb_par    = np.reshape(symb, (numOFDMframes, Ni))   
     sigOFDM_par = np.zeros( (numOFDMframes, SpS*(Nfft + G)), dtype=np.complex64)
@@ -221,18 +225,22 @@ def demodulateOFDM(sig, param):
     hermitSymmetry = getattr(param, "hermitSymmetry", False)
     pilot          = getattr(param, "pilot", 0.25 + 0.25j)
     returnChannel  = getattr(param,'returnChannel', False)
-    pilotCarriers  = getattr(param, "pilotCarriers", np.array([]))
-    nullCarriers   = getattr(param, "nullCarriers", np.array([]))
+    pilotCarriers  = getattr(param, "pilotCarriers", np.array([], dtype = np.int64))
+    nullCarriers   = getattr(param, "nullCarriers", np.array([], dtype = np.int64))
     
     Ns = Nfft//2 - 1 if hermitSymmetry else Nfft
     Np = len(pilotCarriers)
     Nz = len(nullCarriers)
     Ni = Ns - Np - Nz
     
-    Carriers      = np.arange(0, Ns)
-    dataCarriers  = np.array(list(set(Carriers) - set(pilotCarriers) - set(nullCarriers)))
+    Carriers     = np.arange(0, Ns)
+    dataCarriers = np.setdiff1d(Carriers, np.union1d(pilotCarriers, nullCarriers))
     
     numSymb = len(sig)
+
+    if numSymb % (Nfft + G) != 0:
+        raise ValueError(f"Number of received symbols ({numSymb}) is not divisible by Nfft + G ({Nfft + G}).")
+    
     numOFDMframes = numSymb // (Nfft + G)
     
     H_abs = 0
