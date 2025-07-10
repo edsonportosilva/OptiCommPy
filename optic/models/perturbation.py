@@ -10,7 +10,7 @@ Models perturbation (:mod:`optic.models.perturbation`)
    additiveMultiplicativeNLIN                      -- Calculates the perturbation-based AM NLIN model for dual-polarization signals.
    additiveMultiplicativeNLINreducedComplexity     -- Calculates the perturbation-based AM NLIN model with reduced number of coefficients.
    perturbationNLIN                                -- Calculates the perturbation-based NLIN for dual-polarization signals.
-   
+
 """
 
 """Perturbation models for NLIN calculation."""
@@ -22,6 +22,7 @@ from scipy.special import exp1
 from numba import njit, prange
 from optic.dsp.core import pnorm
 import logging
+
 
 @njit
 def dot_numba(a, b):
@@ -52,61 +53,66 @@ def dot_numba(a, b):
     """
     return np.sum(a * b)
 
+
 def calcPertCoeffMatrix(param):
     """
-        Calculates the perturbation coefficients for nonlinear impairments in optical communication systems.
+    Calculates the perturbation coefficients for nonlinear impairments in optical communication systems.
 
-        Parameters
-        ----------
-        param : object
-            An object containing the following attributes:
-            - D : float, optional
-                Dispersion parameter (ps/nm/km). Default is 17.
-            - alpha : float, optional
-                Attenuation (dB/km). Default is None.
-            - lspan : float, optional
-                Span length (km). Default is None.
-            - length : float, optional
-                Total length (km). Default is None.
-            - pulseWidth : float, optional
-                Pulse width (fraction of symbol period). Default is 0.5.
-            - gamma : float, optional
-                Nonlinear coefficient (1/W/km). Default is None.
-            - Fc : float, optional
-                Carrier frequency (THz). Default is None.
-            - powerWeighted : bool, optional
-                Power-weighted calculation. Default is False.
-            - Rs : float, optional
-                Symbol rate (baud). Default is None.
-            - powerWeightN : int, optional
-                Power-weighted order. Default is 10.
-            - matrixOrder : int, optional
-                Matrix order. Default is 25.
+    Parameters
+    ----------
+    param : object
+        An object containing the following attributes:
+        - D : float, optional
+            Dispersion parameter (ps/nm/km). Default is 17.
+        - alpha : float, optional
+            Attenuation (dB/km). Default is None.
+        - lspan : float, optional
+            Span length (km). Default is None.
+        - length : float, optional
+            Total length (km). Default is None.
+        - pulseWidth : float, optional
+            Pulse width (fraction of symbol period). Default is 0.5.
+        - gamma : float, optional
+            Nonlinear coefficient (1/W/km). Default is None.
+        - Fc : float, optional
+            Carrier frequency (THz). Default is None.
+        - powerWeighted : bool, optional
+            Power-weighted calculation. Default is False.
+        - Rs : float, optional
+            Symbol rate (baud). Default is None.
+        - powerWeightN : int, optional
+            Power-weighted order. Default is 10.
+        - matrixOrder : int, optional
+            Matrix order. Default is 25.
 
 
     """
-    D = getattr(param, 'D', 17) # Dispersion parameter (ps/nm/km) 
-    alpha = getattr(param, 'alpha', 0.2) # Attenuation (dB/km)
-    lspan = getattr(param, 'lspan', 50) # Span length (km)
-    length = getattr(param, 'length', 800) # Total length (km)
-    pulseWidth = getattr(param, 'pulseWidth', 0.5) # Pulse width (fraction of symbol period)
-    gamma = getattr(param, 'gamma', 1.3) # Nonlinear coefficient (1/W/km)
-    Fc = getattr(param, 'Fc', 193.2e12) # Carrier frequency (Hz)
-    powerWeighted = getattr(param, 'powerWeighted', False) # Power-weighted calculation (bool)
-    Rs = getattr(param, 'Rs', 32e9) # Symbol rate (baud)
-    powerWeightN = getattr(param, 'powerWeightN', 10) # Power-weighted order (int)
-    matrixOrder = getattr(param, 'matrixOrder', 25) # Matrix order (int)
+    D = getattr(param, "D", 17)  # Dispersion parameter (ps/nm/km)
+    alpha = getattr(param, "alpha", 0.2)  # Attenuation (dB/km)
+    lspan = getattr(param, "lspan", 50)  # Span length (km)
+    length = getattr(param, "length", 800)  # Total length (km)
+    pulseWidth = getattr(
+        param, "pulseWidth", 0.5
+    )  # Pulse width (fraction of symbol period)
+    gamma = getattr(param, "gamma", 1.3)  # Nonlinear coefficient (1/W/km)
+    Fc = getattr(param, "Fc", 193.2e12)  # Carrier frequency (Hz)
+    powerWeighted = getattr(
+        param, "powerWeighted", False
+    )  # Power-weighted calculation (bool)
+    Rs = getattr(param, "Rs", 32e9)  # Symbol rate (baud)
+    powerWeightN = getattr(param, "powerWeightN", 10)  # Power-weighted order (int)
+    matrixOrder = getattr(param, "matrixOrder", 25)  # Matrix order (int)
 
     # Setup logging
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger()
     c_kms = c_light / 1e3
     # signal parameters
-    symbolPeriod = 1 / Rs # Symbol period (s)
-    pulseWidth = pulseWidth * symbolPeriod # Pulse width (s)
+    symbolPeriod = 1 / Rs  # Symbol period (s)
+    pulseWidth = pulseWidth * symbolPeriod  # Pulse width (s)
 
     # Link parameters
-    λ = c_kms/Fc
+    λ = c_kms / Fc
     alpha = alpha / (10 * np.log10(np.e))
     beta2 = -D * λ**2 / (2 * np.pi * c_kms)
     Leff = (1 - np.exp(-alpha * lspan)) / alpha
@@ -127,19 +133,28 @@ def calcPertCoeffMatrix(param):
         sum1 = np.zeros_like(M, dtype=complex)
         Norder = powerWeightN
 
-        log.info('Calculating matrix of perturbation coefficients (power-weighted)...')
+        log.info("Calculating matrix of perturbation coefficients (power-weighted)...")
         for indSpan in range(1, nSpans + 1):
             Bcoeff = -Norder / (alpha * Acoeff) + ((indSpan - 1) * lspan) / Acoeff
 
             sum2 = np.zeros_like(M, dtype=complex)
             for kk in range(1, Norder + 1):
                 if indSpan != 1:
-                    GammaPrevious = gammaincc(1 - kk, 1j * (1 / Bcoeff - Acoeff / ((indSpan - 1) * lspan)))
+                    GammaPrevious = gammaincc(
+                        1 - kk, 1j * (1 / Bcoeff - Acoeff / ((indSpan - 1) * lspan))
+                    )
                 else:
                     GammaPrevious = np.zeros_like(M, dtype=complex)
-                GammaNext = gammaincc(1 - kk, 1j * (1 / Bcoeff - Acoeff / (indSpan * lspan)))
+                GammaNext = gammaincc(
+                    1 - kk, 1j * (1 / Bcoeff - Acoeff / (indSpan * lspan))
+                )
 
-                term = (-1)**(kk + Norder) * comb(Norder - 1, kk - 1) * (1j / Bcoeff)**kk * (GammaPrevious - GammaNext)
+                term = (
+                    (-1) ** (kk + Norder)
+                    * comb(Norder - 1, kk - 1)
+                    * (1j / Bcoeff) ** kk
+                    * (GammaPrevious - GammaNext)
+                )
 
                 if kk == 1:
                     sum2 = term
@@ -147,18 +162,23 @@ def calcPertCoeffMatrix(param):
                     sum2 += term
 
             if indSpan == 1:
-                sum1 = (np.exp(1j / Bcoeff) / Bcoeff**(Norder - 1)) * sum2
+                sum1 = (np.exp(1j / Bcoeff) / Bcoeff ** (Norder - 1)) * sum2
             else:
-                sum1 += (np.exp(1j / Bcoeff) / Bcoeff**(Norder - 1)) * sum2
+                sum1 += (np.exp(1j / Bcoeff) / Bcoeff ** (Norder - 1)) * sum2
 
-        C_ifwm = (Norder / alpha)**Norder * (Acoeff**-Norder) * sum1
+        C_ifwm = (Norder / alpha) ** Norder * (Acoeff**-Norder) * sum1
     else:
-        log.info('Calculating matrix of perturbation coefficients (standard)...')
+        log.info("Calculating matrix of perturbation coefficients (standard)...")
         C_ifwm = exp1(-1j * M * N * symbolPeriod**2 / (beta2 * length))
 
     # Calculate C_ixpm
-    C_ixpm = 0.5 * exp1((N - M)**2 * symbolPeriod**2 * pulseWidth**2 / (3 * np.abs(beta2)**2 * length**2))
-        
+    C_ixpm = 0.5 * exp1(
+        (N - M) ** 2
+        * symbolPeriod**2
+        * pulseWidth**2
+        / (3 * np.abs(beta2) ** 2 * length**2)
+    )
+
     # Handle inf and nan values
     if powerWeighted:
         C_ifwm_mask = np.isnan(np.abs(C_ifwm)).astype(float)
@@ -171,9 +191,17 @@ def calcPertCoeffMatrix(param):
     C_ixpm = C_ifwm_mask * C_ixpm
 
     # Scale the matrices
-    scale_factor = 1j * (8/9) * gamma * pulseWidth**2 / (np.sqrt(3) * np.abs(beta2)) * Leff / lspan
+    scale_factor = (
+        1j
+        * (8 / 9)
+        * gamma
+        * pulseWidth**2
+        / (np.sqrt(3) * np.abs(beta2))
+        * Leff
+        / lspan
+    )
     if powerWeighted:
-        C_ifwm = -(8/9) * gamma * pulseWidth**2 / (np.sqrt(3) * beta2) * C_ifwm
+        C_ifwm = -(8 / 9) * gamma * pulseWidth**2 / (np.sqrt(3) * beta2) * C_ifwm
         C_ixpm = scale_factor * C_ixpm
         C_ispm = scale_factor * C_ispm
     else:
@@ -185,7 +213,11 @@ def calcPertCoeffMatrix(param):
     C = C_ifwm + C_ixpm
     C[matrixOrder, matrixOrder] = C_ispm
 
-    log.info('Matrix of perturbation coefficients calculated. Dimensions: %d x %d', 2 * matrixOrder + 1, 2 * matrixOrder + 1)
+    log.info(
+        "Matrix of perturbation coefficients calculated. Dimensions: %d x %d",
+        2 * matrixOrder + 1,
+        2 * matrixOrder + 1,
+    )
 
     return C, C_ifwm, C_ixpm, C_ispm
 
@@ -204,13 +236,13 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
     ----------
     C_ifwm : ndarray of shape (2L+1, 2L+1)
         Nonlinear coefficient matrix for intrachannel four-wave mixing (IFWM).
-    
+
     C_ixpm : ndarray of shape (2L+1, 2L+1)
         Nonlinear coefficient matrix for intrachannel cross-phase modulation (IXPM).
-    
+
     C_ispm : float
         Scalar nonlinear coefficient for intrachannel self-phase modulation (SPM).
-    
+
     x : ndarray of shape (N,)
         Input signal for polarization X (complex-valued).
 
@@ -224,7 +256,7 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
     -------
     dx : ndarray of shape (N,)
         Nonlinear perturbation waveform for polarization X.
-    
+
     dy : ndarray of shape (N,)
         Nonlinear perturbation waveform for polarization Y.
 
@@ -258,8 +290,8 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
     C_ifwm = C_ifwm.flatten()
 
     # Normalize power
-    x = x / np.sqrt(np.mean(np.abs(x)**2))
-    y = y / np.sqrt(np.mean(np.abs(y)**2))
+    x = x / np.sqrt(np.mean(np.abs(x) ** 2))
+    y = y / np.sqrt(np.mean(np.abs(y) ** 2))
 
     # Outputs
     Nsymb = len(x)
@@ -269,43 +301,43 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
     phi_ixpm_y = np.zeros(Nsymb)
 
     # Prepad input
-    symbX = np.zeros(Nsymb + 2*D, dtype=prec)
-    symbY = np.zeros(Nsymb + 2*D, dtype=prec)
+    symbX = np.zeros(Nsymb + 2 * D, dtype=prec)
+    symbY = np.zeros(Nsymb + 2 * D, dtype=prec)
     symbX[D:-D] = x
     symbY[D:-D] = y
 
     # Precompute indexes
-    indL = 2*L + 1    
+    indL = 2 * L + 1
     M = np.zeros((indL, indL), dtype=np.int64)
     for i in range(indL):
-        M[i, :] = np.arange(indL)        
-    NplusM = -(M.T - L + M - L) + 2*L  
-    NplusM = NplusM[:, ::-1] # rotate and flip on axis 0
-        
-    for t in prange(D, len(symbX) - D):  
+        M[i, :] = np.arange(indL)
+    NplusM = -(M.T - L + M - L) + 2 * L
+    NplusM = NplusM[:, ::-1]  # rotate and flip on axis 0
+
+    for t in prange(D, len(symbX) - D):
         # Pre-allocate 2D arrays
-        Xm = np.empty((2*L+1, 2*L+1), dtype=prec)
-        Ym = np.empty((2*L+1, 2*L+1), dtype=prec)
-        Xn = np.empty((2*L+1, 2*L+1), dtype=prec)
-        Yn = np.empty((2*L+1, 2*L+1), dtype=prec)
-        X_NplusM = np.empty((2*L+1, 2*L+1), dtype=prec)
-        Y_NplusM = np.empty((2*L+1, 2*L+1), dtype=prec)     
+        Xm = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
+        Ym = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
+        Xn = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
+        Yn = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
+        X_NplusM = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
+        Y_NplusM = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
 
-        windowX = symbX[t - D:t + D + 1]
-        windowY = symbY[t - D:t + D + 1]
+        windowX = symbX[t - D : t + D + 1]
+        windowY = symbY[t - D : t + D + 1]
 
-        X_center = windowX[L:L+2*L+1]
-        Y_center = windowY[L:L+2*L+1]
+        X_center = windowX[L : L + 2 * L + 1]
+        Y_center = windowY[L : L + 2 * L + 1]
 
-        for i in range(2*L+1):
-            for j in range(2*L+1):
+        for i in range(2 * L + 1):
+            for j in range(2 * L + 1):
                 Xm[i, j] = X_center[j]
                 Ym[i, j] = Y_center[j]
-                Xn[i, j] = X_center[2*L - i]  # flipud
-                Yn[i, j] = Y_center[2*L - i]  # flipud      
+                Xn[i, j] = X_center[2 * L - i]  # flipud
+                Yn[i, j] = Y_center[2 * L - i]  # flipud
 
-        for i in range(2*L+1):
-            for j in range(2*L+1):
+        for i in range(2 * L + 1):
+            for j in range(2 * L + 1):
                 X_NplusM[i, j] = windowX[NplusM[i, j]]
                 Y_NplusM[i, j] = windowY[NplusM[i, j]]
 
@@ -316,16 +348,22 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
         X_NplusM_flat = X_NplusM.flatten()
         Y_NplusM_flat = Y_NplusM.flatten()
 
-        A1 = np.abs(Xm_flat)**2
-        A2 = np.abs(Ym_flat)**2
+        A1 = np.abs(Xm_flat) ** 2
+        A2 = np.abs(Ym_flat) ** 2
         M1 = Xn_flat * np.conj(X_NplusM_flat)
         M2 = Yn_flat * np.conj(Y_NplusM_flat)
 
         DX = (M1 + M2) * Xm_flat
         DY = (M2 + M1) * Ym_flat
 
-        phi_ixpm_x[t - D] = np.imag(dot_numba(2*A1 + A2, C_ixpm_mask1) + (np.abs(Xm_flat[0])**2 + np.abs(Ym_flat[0])**2) * C_ispm)
-        phi_ixpm_y[t - D] = np.imag(dot_numba(2*A2 + A1, C_ixpm_mask1) + (np.abs(Ym_flat[0])**2 + np.abs(Xm_flat[0])**2) * C_ispm)
+        phi_ixpm_x[t - D] = np.imag(
+            dot_numba(2 * A1 + A2, C_ixpm_mask1)
+            + (np.abs(Xm_flat[0]) ** 2 + np.abs(Ym_flat[0]) ** 2) * C_ispm
+        )
+        phi_ixpm_y[t - D] = np.imag(
+            dot_numba(2 * A2 + A1, C_ixpm_mask1)
+            + (np.abs(Ym_flat[0]) ** 2 + np.abs(Xm_flat[0]) ** 2) * C_ispm
+        )
 
         dx[t - D] = dot_numba(DX, C_ifwm) + dot_numba(M2 * Xm_flat, C_ixpm_mask2)
         dy[t - D] = dot_numba(DY, C_ifwm) + dot_numba(M1 * Ym_flat, C_ixpm_mask2)
@@ -334,13 +372,15 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
 
 
 @njit(parallel=True)
-def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, coeffTol=-20, prec=np.complex128):
+def additiveMultiplicativeNLINreducedComplexity(
+    C_ifwm, C_ixpm, C_ispm, x, y, coeffTol=-20, prec=np.complex128
+):
     """
-    Calculates the perturbation-based additive and multiplicative NLIN with reduced 
+    Calculates the perturbation-based additive and multiplicative NLIN with reduced
     number of coefficients.
 
-    This function performs the additive-multiplicative model computation with 
-    complex-valued inputs `x` and `y`, using a reduced number of coefficients based on a 
+    This function performs the additive-multiplicative model computation with
+    complex-valued inputs `x` and `y`, using a reduced number of coefficients based on a
     specified tolerance for coefficient magnitude, to enhance computational efficiency.
 
     Parameters
@@ -361,8 +401,8 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
         Input signal for the Y component (complex-valued).
 
     coeffTol : float
-        Coefficient magnitude tolerance in dB. Coefficients with a magnitude 
-        below this threshold (in dB) are excluded from the calculation to reduce 
+        Coefficient magnitude tolerance in dB. Coefficients with a magnitude
+        below this threshold (in dB) are excluded from the calculation to reduce
         computational complexity. Default is -20 dB.
 
     prec : dtype, optional
@@ -384,13 +424,13 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
 
     Notes
     -----
-    - The function reduces the number of coefficients used in the computation 
+    - The function reduces the number of coefficients used in the computation
       based on the provided `coeff_tol` value.
-    - The results are computed efficiently using parallelism and Numba's 
+    - The results are computed efficiently using parallelism and Numba's
       JIT compilation.
-    - The function assumes that the input arrays `x` and `y` are complex-valued 
+    - The function assumes that the input arrays `x` and `y` are complex-valued
       and normalized.
-    """        
+    """
     # Definitions
     L = (len(C_ifwm) - 1) // 2
     D = len(C_ifwm) - 1
@@ -401,10 +441,10 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
     C_m_non_equal_zero[:, L] = np.inf
     C_ixpm_mask1 = C_ixpm * np.isinf(C_m_non_equal_zero.T)
     C_ixpm_mask2 = C_ixpm * np.isinf(C_m_non_equal_zero)
-       
+
     # Normalize power
-    x = x / np.sqrt(np.mean(np.abs(x)**2))
-    y = y / np.sqrt(np.mean(np.abs(y)**2))
+    x = x / np.sqrt(np.mean(np.abs(x) ** 2))
+    y = y / np.sqrt(np.mean(np.abs(y) ** 2))
 
     # Pre-allocations
     Nsymb = len(x)
@@ -413,19 +453,19 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
     phi_ixpm_x = np.zeros(Nsymb)
     phi_ixpm_y = np.zeros(Nsymb)
 
-    symbX = np.zeros(Nsymb + 2*D, dtype=prec)
-    symbY = np.zeros(Nsymb + 2*D, dtype=prec)
+    symbX = np.zeros(Nsymb + 2 * D, dtype=prec)
+    symbY = np.zeros(Nsymb + 2 * D, dtype=prec)
     symbX[D:-D] = x
     symbY[D:-D] = y
 
     # Indexing matrices
-    indL = 2*L + 1
+    indL = 2 * L + 1
     M = np.zeros((indL, indL), dtype=np.int64)
     for i in range(indL):
         M[i, :] = np.arange(indL)
-    NplusM = -(M.T - L + M - L) + 2*L   
-    NplusM = NplusM[:, ::-1] # rotate and flip on axis 0
-    
+    NplusM = -(M.T - L + M - L) + 2 * L
+    NplusM = NplusM[:, ::-1]  # rotate and flip on axis 0
+
     # Flatten
     C_ixpm_mask1 = C_ixpm_mask1.flatten()
     C_ixpm_mask2 = C_ixpm_mask2.flatten()
@@ -441,13 +481,13 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
     C_ixpm_mask1 = C_ixpm_mask1[ind_sort]
     C_ixpm_mask2 = C_ixpm_mask2[ind_sort]
     C_ifwm = C_ifwm[ind_sort]
-    
-    print('Number of used coefficients:', n_reduced_coeff)
-    print('Reduction of ', np.round(100 * (1 - n_reduced_coeff / len(C)), 2),'%')
-    print('Sum of squares of original matrix:', np.round(np.sum(np.abs(C)**2), 2))
-    print('Sum of squares of simplified matrix:',np.round(np.sum(np.abs(C[ind_sort])**2),2))
-        
-    for t in prange(D, len(symbX) - D):  
+
+    print("Number of used coefficients:", n_reduced_coeff)
+    print("Reduction of ", np.round(100 * (1 - n_reduced_coeff / len(C)), 2), "%")
+    # print('Sum of squares of original matrix:', np.round(np.sum(np.abs(C)**2), 2))
+    # print('Sum of squares of simplified matrix:',np.round(np.sum(np.abs(C[ind_sort])**2),2))
+
+    for t in prange(D, len(symbX) - D):
         # Pre-allocate 2D arrays
         Xm = np.zeros((indL, indL), dtype=prec)
         Ym = np.zeros((indL, indL), dtype=prec)
@@ -455,25 +495,25 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
         Yn = np.zeros((indL, indL), dtype=prec)
         X_NplusM = np.empty((indL, indL), dtype=prec)
         Y_NplusM = np.empty((indL, indL), dtype=prec)
-       
-        windowX = symbX[t - D:t + D + 1]
-        windowY = symbY[t - D:t + D + 1]
 
-        X_center = windowX[L:L+2*L+1]
-        Y_center = windowY[L:L+2*L+1]
+        windowX = symbX[t - D : t + D + 1]
+        windowY = symbY[t - D : t + D + 1]
 
-        for i in range(2*L+1):
-            for j in range(2*L+1):
+        X_center = windowX[L : L + 2 * L + 1]
+        Y_center = windowY[L : L + 2 * L + 1]
+
+        for i in range(2 * L + 1):
+            for j in range(2 * L + 1):
                 Xm[i, j] = X_center[j]
                 Ym[i, j] = Y_center[j]
-                Xn[i, j] = X_center[2*L - i]  # flipud
-                Yn[i, j] = Y_center[2*L - i]  # flipud      
+                Xn[i, j] = X_center[2 * L - i]  # flipud
+                Yn[i, j] = Y_center[2 * L - i]  # flipud
 
-        for i in range(2*L+1):
-            for j in range(2*L+1):
+        for i in range(2 * L + 1):
+            for j in range(2 * L + 1):
                 X_NplusM[i, j] = windowX[NplusM[i, j]]
                 Y_NplusM[i, j] = windowY[NplusM[i, j]]
-  
+
         # Flatten and select only significant terms
         Xm_flat = Xm.flatten()[ind_sort]
         Ym_flat = Ym.flatten()[ind_sort]
@@ -482,21 +522,28 @@ def additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, x, y, co
         X_NplusM_flat = X_NplusM.flatten()[ind_sort]
         Y_NplusM_flat = Y_NplusM.flatten()[ind_sort]
 
-        A1 = np.abs(Xm_flat)**2
-        A2 = np.abs(Ym_flat)**2
+        A1 = np.abs(Xm_flat) ** 2
+        A2 = np.abs(Ym_flat) ** 2
         M1 = Xn_flat * np.conj(X_NplusM_flat)
         M2 = Yn_flat * np.conj(Y_NplusM_flat)
 
         DX = (M1 + M2) * Xm_flat
         DY = (M2 + M1) * Ym_flat
 
-        phi_ixpm_x[t - D] = np.imag(dot_numba(2*A1 + A2, C_ixpm_mask1) + (np.abs(Xm_flat[0])**2 + np.abs(Ym_flat[0])**2) * C_ispm)
-        phi_ixpm_y[t - D] = np.imag(dot_numba(2*A2 + A1, C_ixpm_mask1) + (np.abs(Ym_flat[0])**2 + np.abs(Xm_flat[0])**2) * C_ispm)
+        phi_ixpm_x[t - D] = np.imag(
+            dot_numba(2 * A1 + A2, C_ixpm_mask1)
+            + (np.abs(Xm_flat[0]) ** 2 + np.abs(Ym_flat[0]) ** 2) * C_ispm
+        )
+        phi_ixpm_y[t - D] = np.imag(
+            dot_numba(2 * A2 + A1, C_ixpm_mask1)
+            + (np.abs(Ym_flat[0]) ** 2 + np.abs(Xm_flat[0]) ** 2) * C_ispm
+        )
 
         dx[t - D] = dot_numba(DX, C_ifwm) + dot_numba(M2 * Xm_flat, C_ixpm_mask2)
         dy[t - D] = dot_numba(DY, C_ifwm) + dot_numba(M1 * Ym_flat, C_ixpm_mask2)
 
     return dx, dy, phi_ixpm_x, phi_ixpm_y
+
 
 def perturbationNLIN(Ein, param):
     """
@@ -551,46 +598,62 @@ def perturbationNLIN(Ein, param):
         Nonlinear perturbation for dual-polarization signals.
         The first column represents the X polarization, and the second column represents the Y polarization.
     """
-    param.D = getattr(param, 'D', 17) # Dispersion parameter (ps/nm/km) 
-    param.alpha = getattr(param, 'alpha', 0.2) # Attenuation (dB/km)
-    param.lspan = getattr(param, 'lspan', 50) # Span length (km)
-    param.length = getattr(param, 'length', 800) # Total length (km)
-    param.pulseWidth = getattr(param, 'pulseWidth', 0.5) # Pulse width (fraction of symbol period)
-    param.gamma = getattr(param, 'gamma', 1.3) # Nonlinear coefficient (1/W/km)
-    param.Fc = getattr(param, 'Fc', 193.1e12) # Carrier frequency (Hz)
-    param.powerWeighted = getattr(param, 'powerWeighted', False) # Power-weighted calculation (bool)
-    param.Rs = getattr(param, 'Rs', 32e9) # Symbol rate (baud)
-    param.powerWeightN = getattr(param, 'powerWeightN', 10) # Power-weighted order (int)
-    param.matrixOrder = getattr(param, 'matrixOrder', 25) # Matrix order (int)
-    mode = getattr(param, 'mode', 'AM') # Dispersion parameter (ps/nm/km)
-    prec = getattr(param, 'prec', np.complex128) # Precision of the computation (complex64 or complex128)
+    param.D = getattr(param, "D", 17)  # Dispersion parameter (ps/nm/km)
+    param.alpha = getattr(param, "alpha", 0.2)  # Attenuation (dB/km)
+    param.lspan = getattr(param, "lspan", 50)  # Span length (km)
+    param.length = getattr(param, "length", 800)  # Total length (km)
+    param.pulseWidth = getattr(
+        param, "pulseWidth", 0.5
+    )  # Pulse width (fraction of symbol period)
+    param.gamma = getattr(param, "gamma", 1.3)  # Nonlinear coefficient (1/W/km)
+    param.Fc = getattr(param, "Fc", 193.1e12)  # Carrier frequency (Hz)
+    param.powerWeighted = getattr(
+        param, "powerWeighted", False
+    )  # Power-weighted calculation (bool)
+    param.Rs = getattr(param, "Rs", 32e9)  # Symbol rate (baud)
+    param.powerWeightN = getattr(
+        param, "powerWeightN", 10
+    )  # Power-weighted order (int)
+    param.matrixOrder = getattr(param, "matrixOrder", 25)  # Matrix order (int)
+    mode = getattr(param, "mode", "AM")  # Dispersion parameter (ps/nm/km)
+    prec = getattr(
+        param, "prec", np.complex128
+    )  # Precision of the computation (complex64 or complex128)
 
-    coeffTol = getattr(param, 'coeffTol', -20)
-    Pin = getattr(param, 'Pin', 0) # Power (dBm)
+    coeffTol = getattr(param, "coeffTol", -20)
+    Pin = getattr(param, "Pin", 0)  # Power (dBm)
 
-    Plaunch = 10**(Pin / 10) * 1e-3  # Launch power (W)	
-    PeakPower = 0.5 * Plaunch        # Peak power (W)
+    Plaunch = 10 ** (Pin / 10) * 1e-3  # Launch power (W)
+    PeakPower = 0.5 * Plaunch  # Peak power (W)
     Ein = pnorm(Ein)
 
     # Calculate the perturbation coefficients matrix
     C, C_ifwm, C_ixpm, C_ispm = calcPertCoeffMatrix(param)
-    
+
     nlin = np.zeros((len(Ein), 2), dtype=Ein.dtype)
-    if mode == 'AM':
+    if mode == "AM":
         # Calculate the perturbation-based additive and multiplicative NLIN
-        dx, dy, phi_ixpm_x, phi_ixpm_y = additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, Ein[:,0], Ein[:,1], prec)
-    elif mode == 'AMR':
-        # Calculate the perturbation-based additive and multiplicative NLIN with reduced complexity        
-        dx, dy, phi_ixpm_x, phi_ixpm_y = additiveMultiplicativeNLINreducedComplexity(C_ifwm, C_ixpm, C_ispm, Ein[:,0], Ein[:,1], coeffTol, prec)
+        dx, dy, phi_ixpm_x, phi_ixpm_y = additiveMultiplicativeNLIN(
+            C_ifwm, C_ixpm, C_ispm, Ein[:, 0], Ein[:, 1], prec
+        )
+    elif mode == "AMR":
+        # Calculate the perturbation-based additive and multiplicative NLIN with reduced complexity
+        dx, dy, phi_ixpm_x, phi_ixpm_y = additiveMultiplicativeNLINreducedComplexity(
+            C_ifwm, C_ixpm, C_ispm, Ein[:, 0], Ein[:, 1], coeffTol, prec
+        )
 
     # Scale the perturbation results according to the peak power
-    deltaX = PeakPower**(3/2) * dx
-    deltaY = PeakPower**(3/2) * dy
+    deltaX = PeakPower ** (3 / 2) * dx
+    deltaY = PeakPower ** (3 / 2) * dy
     phiX = PeakPower * phi_ixpm_x
     phiY = PeakPower * phi_ixpm_y
-    
+
     # Calculate the nonlinear perturbation for each polarization
-    nlin[:,0] = np.sqrt(PeakPower)*Ein[:,0] * (np.exp(1j * phiX) - 1) + deltaX * np.exp(1j * phiX)
-    nlin[:,1] = np.sqrt(PeakPower)*Ein[:,1] * (np.exp(1j * phiY) - 1) + deltaY * np.exp(1j * phiY)
+    nlin[:, 0] = np.sqrt(PeakPower) * Ein[:, 0] * (
+        np.exp(1j * phiX) - 1
+    ) + deltaX * np.exp(1j * phiX)
+    nlin[:, 1] = np.sqrt(PeakPower) * Ein[:, 1] * (
+        np.exp(1j * phiY) - 1
+    ) + deltaY * np.exp(1j * phiY)
 
     return nlin
