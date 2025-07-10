@@ -26,14 +26,10 @@ import logging as logg
 
 import numpy as np
 import scipy.constants as const
-from optic.utils import parameters, dBm2W
-from optic.dsp.core import (
-    lowPassFIR,
-    gaussianComplexNoise,
-    phaseNoise,
-    clockSamplingInterp,
-    quantizer,
-)
+
+from optic.dsp.core import (clockSamplingInterp, gaussianComplexNoise,
+                            lowPassFIR, phaseNoise, quantizer)
+from optic.utils import dBm2W, parameters
 
 try:
     from optic.dsp.coreGPU import checkGPU

@@ -18,13 +18,14 @@ import logging as logg
 
 import numpy as np
 import scipy.constants as const
-from scipy.linalg import norm
-from numpy.fft import fft, fftfreq, ifft
-from tqdm.notebook import tqdm
-from optic.utils import parameters
-from optic.dsp.core import sigPow, gaussianComplexNoise, gaussianNoise
-from optic.models.devices import edfa
 from numba import njit
+from numpy.fft import fft, fftfreq, ifft
+from scipy.linalg import norm
+from tqdm.notebook import tqdm
+
+from optic.dsp.core import gaussianComplexNoise, gaussianNoise, sigPow
+from optic.models.devices import edfa
+from optic.utils import parameters
 
 
 def linearFiberChannel(Ei, param):

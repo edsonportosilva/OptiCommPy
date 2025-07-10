@@ -12,6 +12,7 @@ Functions adapted to run with GPU (CuPy) processing (:mod:`optic.dsp.carrierReco
 import cupy as cp
 from cupyx.scipy.signal import oaconvolve
 
+
 def bpsGPU(Ei, N, constSymb, B):
     """
     Blind phase search (BPS) algorithm

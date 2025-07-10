@@ -16,20 +16,21 @@ Customized functions for plotting and vizualization (:mod:`optic.plot`)
 """
 
 """Plot utilities."""
+import copy
+import warnings
+
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from matplotlib import cm
-from matplotlib.colors import ListedColormap
 import mpl_scatter_density
 import numpy as np
-import copy
+from matplotlib import cm
+from matplotlib.animation import FuncAnimation
+from matplotlib.colors import ListedColormap
 from scipy.interpolate import interp1d
 from scipy.ndimage.filters import gaussian_filter
 
-from optic.dsp.core import pnorm, signal_power
 from optic.comm.modulation import detector
+from optic.dsp.core import pnorm, signal_power
 from optic.utils import dB2lin
-import warnings
 
 warnings.filterwarnings("ignore", r"All-NaN (slice|axis) encountered")
 

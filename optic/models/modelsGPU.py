@@ -18,13 +18,13 @@ import logging as logg
 import cupy as cp
 import numpy as np
 import scipy.constants as const
+from cupy.fft import fft, fftfreq, ifft
 from cupy.linalg import norm
 from cupy.random import normal
-from cupy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
-from optic.utils import parameters
 from optic.dsp.core import signal_power
+from optic.utils import parameters
 
 
 def gaussianComplexNoise(shapeOut, σ2=1.0):

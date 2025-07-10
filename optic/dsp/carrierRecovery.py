@@ -20,8 +20,8 @@ import numpy as np
 from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
 
-from optic.dsp.core import pnorm, movingAverage
 from optic.comm.modulation import grayMapping
+from optic.dsp.core import movingAverage, pnorm
 
 try:
     from optic.dsp.coreGPU import checkGPU
