@@ -626,7 +626,9 @@ def perturbationNLIN(Ein, param):
 
     Plaunch = dBm2W(Pin)  # Launch power (W)
     PeakPower = 0.5 * Plaunch  # Peak power (W)
-    Ein = pnorm(Ein)
+
+    Ein[:, 0] = pnorm(Ein[:, 0])
+    Ein[:, 1] = pnorm(Ein[:, 1])
 
     # Calculate the perturbation coefficients matrix
     C, C_ifwm, C_ixpm, C_ispm = calcPertCoeffMatrix(param)
