@@ -21,6 +21,7 @@ from scipy.constants import c as c_light
 from scipy.special import exp1
 from numba import njit, prange
 from optic.dsp.core import pnorm
+from optic.utils import dBm2W
 import logging
 
 
@@ -623,7 +624,7 @@ def perturbationNLIN(Ein, param):
     coeffTol = getattr(param, "coeffTol", -20)
     Pin = getattr(param, "Pin", 0)  # Power (dBm)
 
-    Plaunch = 10 ** (Pin / 10) * 1e-3  # Launch power (W)
+    Plaunch = dBm2W(Pin)  # Launch power (W)
     PeakPower = 0.5 * Plaunch  # Peak power (W)
     Ein = pnorm(Ein)
 
