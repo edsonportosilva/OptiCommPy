@@ -7,8 +7,8 @@ Functions adapted to run with GPU (CuPy) processing (:mod:`optic.models.modelsGP
    :toctree: generated/
 
    ssfm           -- Nonlinear fiber optic channel model based on the NLSE equation [GPU].
-   manakovSSF     -- Nonlinear fiber optic channel model based on the Manakov equation [GPU].  
-   manakovDBP     -- Manakov SSF digital backpropagation [GPU]. 
+   manakovSSF     -- Nonlinear fiber optic channel model based on the Manakov equation [GPU].
+   manakovDBP     -- Manakov SSF digital backpropagation [GPU].
    edfa           -- Simple EDFA model (gain + AWGN noise)[GPU].
 """
 
@@ -56,12 +56,15 @@ def edfa(Ei, param):
     ----------
     Ei : np.array
         Input signal field.
-    param : parameter object (struct), optional
+    param : optic.utils.parameters object, optional
         Parameters of the edfa.
 
         - param.G : amplifier gain in dB. The default is 20.
+
         - param.NF : EDFA noise figure in dB. The default is 4.5.
+
         - param.Fc : central optical frequency. The default is 193.1e12.
+
         - param.Fs : sampling frequency in samples/second.
 
     Returns
@@ -114,7 +117,7 @@ def ssfm(Ei, param):
     ----------
     Ei : np.array
         Input optical signal field.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
@@ -147,7 +150,7 @@ def ssfm(Ei, param):
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
 
     References
@@ -284,7 +287,7 @@ def manakovSSF(Ei, param):
     Ei : np.array
         Input optical signal field.
 
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
@@ -327,7 +330,7 @@ def manakovSSF(Ei, param):
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
 
     References
@@ -577,7 +580,7 @@ def manakovDBP(Ei, param):
     ----------
     Ei : np.array
         Input optical signal field.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
@@ -619,7 +622,7 @@ def manakovDBP(Ei, param):
     -------
     Ech : np.array
         Optical signal after nonlinear backward propagation.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
 
     References
