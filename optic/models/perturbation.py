@@ -21,38 +21,8 @@ from scipy.constants import c as c_light
 from scipy.special import exp1
 from numba import njit, prange
 from optic.dsp.core import pnorm
-from optic.utils import dBm2W
+from optic.utils import dBm2W, dotNumba
 import logging
-
-
-@njit
-def dot_numba(a, b):
-    """
-    Computes the dot product of two 1D arrays in a Numba-compatible way.
-
-    This function is equivalent to `np.dot` for 1D arrays but can be
-    JIT-compiled with Numba for accelerated execution.
-
-    Parameters
-    ----------
-    a : ndarray of shape (N,)
-        First input array (complex-valued).
-
-    b : ndarray of shape (N,)
-        Second input array (complex-valued).
-
-    Returns
-    -------
-    result : complex
-        The dot product of `a` and `b`, computed as the sum of element-wise products.
-
-    Notes
-    -----
-    - Both input arrays must have the same length.
-    - This function initializes the result as a complex number to support
-      complex-valued operations.
-    """
-    return np.sum(a * b)
 
 
 def calcPertCoeffMatrix(param):
@@ -271,7 +241,7 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
     -----
     - The input signals `x` and `y` are normalized to have unit average power internally.
     - The function uses a window-based convolution with precomputed matrices and masks.
-    - Requires `dot_numba` to perform dot products compatible with Numba.
+    - Requires `dotNumba` to perform dot products compatible with Numba.
     - The function is highly optimized and runs in parallel across time indices.
 
     """
@@ -358,16 +328,16 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
         DY = (M2 + M1) * Ym_flat
 
         phi_ixpm_x[t - D] = np.imag(
-            dot_numba(2 * A1 + A2, C_ixpm_mask1)
+            dotNumba(2 * A1 + A2, C_ixpm_mask1)
             + (np.abs(Xm_flat[0]) ** 2 + np.abs(Ym_flat[0]) ** 2) * C_ispm
         )
         phi_ixpm_y[t - D] = np.imag(
-            dot_numba(2 * A2 + A1, C_ixpm_mask1)
+            dotNumba(2 * A2 + A1, C_ixpm_mask1)
             + (np.abs(Ym_flat[0]) ** 2 + np.abs(Xm_flat[0]) ** 2) * C_ispm
         )
 
-        dx[t - D] = dot_numba(DX, C_ifwm) + dot_numba(M2 * Xm_flat, C_ixpm_mask2)
-        dy[t - D] = dot_numba(DY, C_ifwm) + dot_numba(M1 * Ym_flat, C_ixpm_mask2)
+        dx[t - D] = dotNumba(DX, C_ifwm) + dotNumba(M2 * Xm_flat, C_ixpm_mask2)
+        dy[t - D] = dotNumba(DY, C_ifwm) + dotNumba(M1 * Ym_flat, C_ixpm_mask2)
 
     return dx, dy, phi_ixpm_x, phi_ixpm_y
 
@@ -529,16 +499,16 @@ def additiveMultiplicativeNLINreducedComplexity(
         DY = (M2 + M1) * Ym_flat
 
         phi_ixpm_x[t - D] = np.imag(
-            dot_numba(2 * A1 + A2, C_ixpm_mask1)
+            dotNumba(2 * A1 + A2, C_ixpm_mask1)
             + (np.abs(Xm_flat[0]) ** 2 + np.abs(Ym_flat[0]) ** 2) * C_ispm
         )
         phi_ixpm_y[t - D] = np.imag(
-            dot_numba(2 * A2 + A1, C_ixpm_mask1)
+            dotNumba(2 * A2 + A1, C_ixpm_mask1)
             + (np.abs(Ym_flat[0]) ** 2 + np.abs(Xm_flat[0]) ** 2) * C_ispm
         )
 
-        dx[t - D] = dot_numba(DX, C_ifwm) + dot_numba(M2 * Xm_flat, C_ixpm_mask2)
-        dy[t - D] = dot_numba(DY, C_ifwm) + dot_numba(M1 * Ym_flat, C_ixpm_mask2)
+        dx[t - D] = dotNumba(DX, C_ifwm) + dotNumba(M2 * Xm_flat, C_ixpm_mask2)
+        dy[t - D] = dotNumba(DY, C_ifwm) + dotNumba(M1 * Ym_flat, C_ixpm_mask2)
 
     return dx, dy, phi_ixpm_x, phi_ixpm_y, nReducedCoeffs, reductionFactor
 
