@@ -224,7 +224,7 @@ def calcPertCoeffMatrix(param):
 
 
 @njit(parallel=True, fastmath=True)
-def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128):
+def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
     """
     Calculates the perturbation-based additive and multiplicative NLIN for dual-polarization signals.
 
@@ -251,7 +251,7 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
         Input signal for polarization Y (complex-valued).
 
     prec : data-type, optional
-        Precision of the computation (`np.complex64` or `np.complex128`), by default `np.complex128`.
+        Precision of the computation (`np.complex64` or `np.complex128`), by default `np.complex64`.
 
     Returns
     -------
@@ -342,12 +342,12 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
                 X_NplusM[i, j] = windowX[NplusM[i, j]]
                 Y_NplusM[i, j] = windowY[NplusM[i, j]]
 
-        Xm_flat = Xm.flatten()
-        Ym_flat = Ym.flatten()
-        Xn_flat = Xn.flatten()
-        Yn_flat = Yn.flatten()
-        X_NplusM_flat = X_NplusM.flatten()
-        Y_NplusM_flat = Y_NplusM.flatten()
+        Xm_flat = Xm.ravel()
+        Ym_flat = Ym.ravel()
+        Xn_flat = Xn.ravel()
+        Yn_flat = Yn.ravel()
+        X_NplusM_flat = X_NplusM.ravel()
+        Y_NplusM_flat = Y_NplusM.ravel()
 
         A1 = np.abs(Xm_flat) ** 2
         A2 = np.abs(Ym_flat) ** 2
@@ -374,7 +374,7 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
 
 @njit(parallel=True, fastmath=True)
 def additiveMultiplicativeNLINreducedComplexity(
-    C_ifwm, C_ixpm, C_ispm, x, y, coeffTol=-20, prec=np.complex128
+    C_ifwm, C_ixpm, C_ispm, x, y, coeffTol=-20, prec=np.complex64
 ):
     """
     Calculates the perturbation-based additive and multiplicative NLIN with reduced
@@ -407,7 +407,7 @@ def additiveMultiplicativeNLINreducedComplexity(
         computational complexity. Default is -20 dB.
 
     prec : dtype, optional
-        The precision of the computation. Default is `np.complex128`.
+        The precision of the computation. Default is `np.complex64`.
 
     Returns
     -------
@@ -516,12 +516,12 @@ def additiveMultiplicativeNLINreducedComplexity(
                 Y_NplusM[i, j] = windowY[NplusM[i, j]]
 
         # Flatten and select only significant terms
-        Xm_flat = Xm.flatten()[ind_sort]
-        Ym_flat = Ym.flatten()[ind_sort]
-        Xn_flat = Xn.flatten()[ind_sort]
-        Yn_flat = Yn.flatten()[ind_sort]
-        X_NplusM_flat = X_NplusM.flatten()[ind_sort]
-        Y_NplusM_flat = Y_NplusM.flatten()[ind_sort]
+        Xm_flat = Xm.ravel()[ind_sort]
+        Ym_flat = Ym.ravel()[ind_sort]
+        Xn_flat = Xn.ravel()[ind_sort]
+        Yn_flat = Yn.ravel()[ind_sort]
+        X_NplusM_flat = X_NplusM.ravel()[ind_sort]
+        Y_NplusM_flat = Y_NplusM.ravel()[ind_sort]
 
         A1 = np.abs(Xm_flat) ** 2
         A2 = np.abs(Ym_flat) ** 2
