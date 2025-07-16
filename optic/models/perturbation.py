@@ -27,44 +27,34 @@ import logging
 
 def calcPertCoeffMatrix(param):
     """
-    Calculates the coefficients for the first-order perturbation model of intra-channel fiber nonlinear interference.
+    Calculates the coefficient matrix for the first-order perturbation model of intra-channel fiber nonlinear interference.
 
     Parameters
     ----------
-    param : optic.utils.parameters object
-        optic.utils.parameters object containing the following attributes:
-        - D : float, optional
-            Dispersion parameter (ps/nm/km). Default is 17.
+    param : parameter object  (struct)
+        Object with physical/simulation parameters of the optical channel.
 
-        - alpha : float, optional
-            Attenuation (dB/km). Default is None.
+        - param.D : chromatic dispersion parameter [ps/nm/km] [default: 17]
 
-        - lspan : float, optional
-            Span length (km). Default is None.
+        - param.alpha : fiber attenuation parameter [dB/km] [default: None]
 
-        - length : float, optional
-            Total length (km). Default is None.
+        - param.lspan : span length [km] [default: None]
 
-        - pulseWidth : float, optional
-            Pulse width (fraction of symbol period). Default is 0.5.
+        - param.length : total fiber length [km] [default: None]
 
-        - gamma : float, optional
-            Nonlinear coefficient (1/W/km). Default is None.
+        - param.pulseWidth : pulse width (fraction of symbol period) [default: 0.5]
 
-        - Fc : float, optional
-            Carrier frequency (THz). Default is None.
+        - param.gamma : fiber nonlinear coefficient [1/W/km] [default: None]
 
-        - powerWeighted : bool, optional
-            Power-weighted calculation. Default is False.
+        - param.Fc : carrier frequency [THz] [default: None]
 
-        - Rs : float, optional
-            Symbol rate (baud). Default is None.
+        - param.powerWeighted : power-weighted coefficient calculation? Boolean variable [default: False]
 
-        - powerWeightN : int, optional
-            Power-weighted order. Default is 10.
+        - param.Rs : symbol rate [baud] [default: None]
 
-        - matrixOrder : int, optional
-            Matrix order. Default is 25.
+        - param.powerWeightN : power-weighting order [default: 10]
+
+        - param.matrixOrder : nonlinear memory matrix order [default: 25]
 
     Returns
     -------
@@ -532,49 +522,38 @@ def perturbationNLIN(Ein, param):
         Input signal for dual-polarization (complex-valued).
         The first column represents the X polarization, and the second column represents the Y polarization.
 
-    param : optic.utils.parameters object
-        An object containing the following attributes:
-        - D : float, optional
-            Dispersion parameter (ps/nm/km). Default is 17.
+    param : parameter object  (struct)
+        Object with physical/simulation parameters of the optical channel.
 
-        - alpha : float, optional
-            Attenuation (dB/km). Default is 0.2.
+        - param.D : chromatic dispersion parameter [ps/nm/km] [default: 17]
 
-        - lspan : float, optional
-            Span length (km). Default is 50.
+        - param.alpha : fiber attenuation parameter [dB/km] [default: None]
 
-        - length : float, optional
-            Total length (km). Default is 800.
+        - param.lspan : span length [km] [default: None]
 
-        - pulseWidth : float, optional
-            Pulse width (fraction of symbol period). Default is 0.5.
+        - param.length : total fiber length [km] [default: None]
 
-        - gamma : float, optional
-            Nonlinear coefficient (1/W/km). Default is 1.3.
+        - param.pulseWidth : pulse width (fraction of symbol period) [default: 0.5]
 
-        - Fc : float, optional
-            Carrier frequency (Hz). Default is 193.1e12.
+        - param.gamma : fiber nonlinear coefficient [1/W/km] [default: None]
 
-        - powerWeighted : bool, optional
-            Power-weighted calculation. Default is False.
+        - param.Fc : carrier frequency [THz] [default: None]
 
-        - Rs : float, optional
-            Symbol rate (baud). Default is 32e9.
+        - param.powerWeighted : power-weighted coefficient calculation? Boolean variable [default: False]
 
-        - powerWeightN : int, optional
-            Power-weighted order. Default is 10.
+        - param.Rs : symbol rate [baud] [default: None]
 
-        - matrixOrder : int, optional
-            Matrix order. Default is 25.
+        - param.powerWeightN : power-weighting order [default: 10]
 
-        - mode : str, optional
+        - param.matrixOrder : nonlinear memory matrix order [default: 25]
+
+        - mode : 'AM' for standard perturbation calculation or 'AMR' for reduced complexity calculation [default: 'AM']
 
     Returns
     -------
     nlin : ndarray of shape (N, 2)
         Nonlinear perturbation for dual-polarization signals.
         The first column represents the X polarization, and the second column represents the Y polarization.
-
 
     References
     ----------
