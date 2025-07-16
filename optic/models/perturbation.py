@@ -476,17 +476,14 @@ def additiveMultiplicativeNLINreducedComplexity(
     # Coefficient reduction
     absC = np.abs(C)
     maxC = np.max(absC)
-    n_reduced_coeff = np.sum(20 * np.log10(absC / maxC) > coeffTol)
-    ind_sort = np.argsort(-absC)[:n_reduced_coeff]
+    nReducedCoeffs = np.sum(20 * np.log10(absC / maxC) > coeffTol)
+    ind_sort = np.argsort(-absC)[:nReducedCoeffs]
 
     C_ixpm_mask1 = C_ixpm_mask1[ind_sort]
     C_ixpm_mask2 = C_ixpm_mask2[ind_sort]
     C_ifwm = C_ifwm[ind_sort]
 
-    print("Number of used coefficients:", n_reduced_coeff)
-    print("Reduction of ", np.round(100 * (1 - n_reduced_coeff / len(C)), 2), "%")
-    # print('Sum of squares of original matrix:', np.round(np.sum(np.abs(C)**2), 2))
-    # print('Sum of squares of simplified matrix:',np.round(np.sum(np.abs(C[ind_sort])**2),2))
+    reductionFactor = np.round(100 * (1 - nReducedCoeffs / len(C)), 2)
 
     for t in prange(D, len(symbX) - D):
         # Pre-allocate 2D arrays
@@ -543,7 +540,7 @@ def additiveMultiplicativeNLINreducedComplexity(
         dx[t - D] = dot_numba(DX, C_ifwm) + dot_numba(M2 * Xm_flat, C_ixpm_mask2)
         dy[t - D] = dot_numba(DY, C_ifwm) + dot_numba(M1 * Ym_flat, C_ixpm_mask2)
 
-    return dx, dy, phi_ixpm_x, phi_ixpm_y
+    return dx, dy, phi_ixpm_x, phi_ixpm_y, nReducedCoeffs, reductionFactor
 
 
 def perturbationNLIN(Ein, param):
@@ -641,8 +638,13 @@ def perturbationNLIN(Ein, param):
         )
     elif mode == "AMR":
         # Calculate the perturbation-based additive and multiplicative NLIN with reduced complexity
-        dx, dy, phi_ixpm_x, phi_ixpm_y = additiveMultiplicativeNLINreducedComplexity(
-            C_ifwm, C_ixpm, C_ispm, Ein[:, 0], Ein[:, 1], coeffTol, prec
+        dx, dy, phi_ixpm_x, phi_ixpm_y, nReducedCoeffs, reductionFactor = (
+            additiveMultiplicativeNLINreducedComplexity(
+                C_ifwm, C_ixpm, C_ispm, Ein[:, 0], Ein[:, 1], coeffTol, prec
+            )
+        )
+        logging.info(
+            f"Reduced complexity perturbation calculation: {nReducedCoeffs} coefficients used, reduction factor: {reductionFactor:.2f}%"
         )
 
     # Scale the perturbation results according to the peak power
