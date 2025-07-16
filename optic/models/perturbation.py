@@ -223,7 +223,7 @@ def calcPertCoeffMatrix(param):
     return C, C_ifwm, C_ixpm, C_ispm
 
 
-@njit(parallel=True)
+@njit(parallel=True, fastmath=True)
 def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128):
     """
     Calculates the perturbation-based additive and multiplicative NLIN for dual-polarization signals.
@@ -317,28 +317,28 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
 
     for t in prange(D, len(symbX) - D):
         # Pre-allocate 2D arrays
-        Xm = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
-        Ym = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
-        Xn = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
-        Yn = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
-        X_NplusM = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
-        Y_NplusM = np.empty((2 * L + 1, 2 * L + 1), dtype=prec)
+        Xm = np.empty((indL, indL), dtype=prec)
+        Ym = np.empty((indL, indL), dtype=prec)
+        Xn = np.empty((indL, indL), dtype=prec)
+        Yn = np.empty((indL, indL), dtype=prec)
+        X_NplusM = np.empty((indL, indL), dtype=prec)
+        Y_NplusM = np.empty((indL, indL), dtype=prec)
 
         windowX = symbX[t - D : t + D + 1]
         windowY = symbY[t - D : t + D + 1]
 
-        X_center = windowX[L : L + 2 * L + 1]
-        Y_center = windowY[L : L + 2 * L + 1]
+        X_center = windowX[L : L + indL]
+        Y_center = windowY[L : L + indL]
 
-        for i in range(2 * L + 1):
-            for j in range(2 * L + 1):
+        for i in range(indL):
+            for j in range(indL):
                 Xm[i, j] = X_center[j]
                 Ym[i, j] = Y_center[j]
                 Xn[i, j] = X_center[2 * L - i]  # flipud
                 Yn[i, j] = Y_center[2 * L - i]  # flipud
 
-        for i in range(2 * L + 1):
-            for j in range(2 * L + 1):
+        for i in range(indL):
+            for j in range(indL):
                 X_NplusM[i, j] = windowX[NplusM[i, j]]
                 Y_NplusM[i, j] = windowY[NplusM[i, j]]
 
@@ -372,7 +372,7 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex128)
     return dx, dy, phi_ixpm_x, phi_ixpm_y
 
 
-@njit(parallel=True)
+@njit(parallel=True, fastmath=True)
 def additiveMultiplicativeNLINreducedComplexity(
     C_ifwm, C_ixpm, C_ispm, x, y, coeffTol=-20, prec=np.complex128
 ):
@@ -500,18 +500,18 @@ def additiveMultiplicativeNLINreducedComplexity(
         windowX = symbX[t - D : t + D + 1]
         windowY = symbY[t - D : t + D + 1]
 
-        X_center = windowX[L : L + 2 * L + 1]
-        Y_center = windowY[L : L + 2 * L + 1]
+        X_center = windowX[L : L + indL]
+        Y_center = windowY[L : L + indL]
 
-        for i in range(2 * L + 1):
-            for j in range(2 * L + 1):
+        for i in range(indL):
+            for j in range(indL):
                 Xm[i, j] = X_center[j]
                 Ym[i, j] = Y_center[j]
                 Xn[i, j] = X_center[2 * L - i]  # flipud
                 Yn[i, j] = Y_center[2 * L - i]  # flipud
 
-        for i in range(2 * L + 1):
-            for j in range(2 * L + 1):
+        for i in range(indL):
+            for j in range(indL):
                 X_NplusM[i, j] = windowX[NplusM[i, j]]
                 Y_NplusM[i, j] = windowY[NplusM[i, j]]
 
