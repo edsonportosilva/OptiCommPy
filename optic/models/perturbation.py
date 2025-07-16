@@ -70,6 +70,7 @@ def calcPertCoeffMatrix(param):
     References
     ----------
     [1] Z. Tao, et al., "Analytical Intrachannel Nonlinear Models to Predict the Nonlinear Noise Waveform," Journal of Lightwave Technology, vol. 33, no. 10, pp. 2111-2119, 2015.
+
     [2] E. P. da Silva, et al., "Perturbation-Based FEC-Assisted Iterative Nonlinearity Compensation for WDM Systems," Journal of Lightwave Technology, vol. 37, no. 3, pp. 875-881, 2019.
 
     """
@@ -399,6 +400,7 @@ def calcNLINperturbationSimplified(
     References
     ----------
     [1] Z. Tao, et al., "Analytical Intrachannel Nonlinear Models to Predict the Nonlinear Noise Waveform," Journal of Lightwave Technology, vol. 33, no. 10, pp. 2111-2119, 2015.
+
     [2] E. P. da Silva, et al., "Perturbation-Based FEC-Assisted Iterative Nonlinearity Compensation for WDM Systems," Journal of Lightwave Technology, vol. 37, no. 3, pp. 875-881, 2019.
     """
     # Definitions
@@ -558,6 +560,7 @@ def perturbationNLIN(Ein, param):
     References
     ----------
     [1] Z. Tao, et al., "Analytical Intrachannel Nonlinear Models to Predict the Nonlinear Noise Waveform," Journal of Lightwave Technology, vol. 33, no. 10, pp. 2111-2119, 2015.
+
     [2] E. P. da Silva, et al., "Perturbation-Based FEC-Assisted Iterative Nonlinearity Compensation for WDM Systems," Journal of Lightwave Technology, vol. 37, no. 3, pp. 875-881, 2019.
     """
     param.D = getattr(param, "D", 17)  # Dispersion parameter (ps/nm/km)
