@@ -8,10 +8,9 @@ Models for fiber optic channels (:mod:`optic.models.channels`)
 
    linearFiberChannel   -- Linear optical fiber channel model.
    ssfm                 -- Nonlinear fiber optic channel model based on the NLSE equation.
-   manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.   
-   awgn                 -- AWGN channel model.   
+   manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.
+   awgn                 -- AWGN channel model.
 """
-
 
 """Basic physical models for optical channels."""
 import logging as logg
@@ -36,7 +35,7 @@ def linearFiberChannel(Ei, param):
     ----------
     Ei : np.array
         Input optical field.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters of the optical channel.
 
         - param.L: total fiber length [km][default: 50 km]
@@ -99,9 +98,7 @@ def linearFiberChannel(Ei, param):
         Ei = Ei.reshape(Ei.size, Nmodes)
 
     ω = np.tile(ω, (1, Nmodes))
-    Eo = ifft(
-        fft(Ei, axis=0) * np.exp(-α / 2 * L + 1j * (β2 / 2) * (ω**2) * L), axis=0
-    )
+    Eo = ifft(fft(Ei, axis=0) * np.exp(-α / 2 * L + 1j * (β2 / 2) * (ω**2) * L), axis=0)
 
     if Nmodes == 1:
         Eo = Eo.reshape(
@@ -121,7 +118,7 @@ def ssfm(Ei, param=None):
         Input optical signal field.
     Fs : scalar
         Sampling frequency in Hz.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
@@ -154,12 +151,12 @@ def ssfm(Ei, param=None):
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
-  
+
     References
     ----------
-    [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013. 
+    [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013.
 
     [2] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
 
@@ -271,7 +268,7 @@ def manakovSSF(Ei, param):
         Input optical signal field.
     Fs : scalar
         Sampling frequency in Hz.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
@@ -314,7 +311,7 @@ def manakovSSF(Ei, param):
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
 
     References
@@ -493,6 +490,7 @@ def manakovSSF(Ei, param):
         return Ech, param
     else:
         return Ech
+
 
 @njit
 def nlinPhaseRot(Ex, Ey, Pch, γ):
