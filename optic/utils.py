@@ -18,6 +18,7 @@
 """General utilities."""
 import numpy as np
 from numba import njit
+from scipy.special import erfcinv
 
 
 class parameters:
@@ -171,3 +172,20 @@ def bitarray2dec(x_bitarray):
         number = number + x_bitarray[i] * pow(2, len(x_bitarray) - 1 - i)
 
     return number
+
+
+def ber2Qfactor(ber):
+    """
+    Converts a bit error rate (BER) to a Q factor in dB.
+
+    Parameters
+    ----------
+    ber : float
+        The bit error rate to be converted.
+
+    Returns
+    -------
+    float
+        The Q factor corresponding to the input BER.
+    """
+    return 10 * np.log10(np.sqrt(2) * erfcinv(2 * ber))
