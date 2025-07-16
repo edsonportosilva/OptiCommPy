@@ -6,10 +6,10 @@ Models perturbation (:mod:`optic.models.perturbation`)
 .. autosummary::
    :toctree: generated/
 
-   calcPertCoeffMatrix                             -- Calculates the perturbation coefficients for intra-channel fiber nonlinear interference.
-   additiveMultiplicativeNLIN                      -- Calculates the perturbation-based AM NLIN model for dual-polarization signals.
-   additiveMultiplicativeNLINreducedComplexity     -- Calculates the perturbation-based AM NLIN model with reduced number of coefficients.
-   perturbationNLIN                                -- Calculates the perturbation-based NLIN for dual-polarization signals.
+   calcPertCoeffMatrix                 -- Calculates the perturbation coefficients for intra-channel fiber nonlinear interference.
+   calcNLINperturbation                -- Calculates the first-order perturbation AM NLIN model for dual-polarization signals.
+   calcNLINperturbationSimplified      -- Calculates the first-order perturbation AM NLIN model with reduced number of coefficients.
+   perturbationNLIN                    -- Main function to calculate perturbation NLIN for dual-polarization signals.
 
 """
 
@@ -27,35 +27,60 @@ import logging
 
 def calcPertCoeffMatrix(param):
     """
-    Calculates the perturbation coefficients for nonlinear impairments in optical communication systems.
+    Calculates the coefficients for the first-order perturbation model of intra-channel fiber nonlinear interference.
 
     Parameters
     ----------
-    param : object
-        An object containing the following attributes:
+    param : optic.utils.parameters object
+        optic.utils.parameters object containing the following attributes:
         - D : float, optional
             Dispersion parameter (ps/nm/km). Default is 17.
+
         - alpha : float, optional
             Attenuation (dB/km). Default is None.
+
         - lspan : float, optional
             Span length (km). Default is None.
+
         - length : float, optional
             Total length (km). Default is None.
+
         - pulseWidth : float, optional
             Pulse width (fraction of symbol period). Default is 0.5.
+
         - gamma : float, optional
             Nonlinear coefficient (1/W/km). Default is None.
+
         - Fc : float, optional
             Carrier frequency (THz). Default is None.
+
         - powerWeighted : bool, optional
             Power-weighted calculation. Default is False.
+
         - Rs : float, optional
             Symbol rate (baud). Default is None.
+
         - powerWeightN : int, optional
             Power-weighted order. Default is 10.
+
         - matrixOrder : int, optional
             Matrix order. Default is 25.
 
+    Returns
+    -------
+    C : ndarray of shape (2L+1, 2L+1)
+        Matrix of perturbation coefficients for nonlinear impairments.
+    C_ifwm : ndarray of shape (2L+1, 2L+1)
+        Nonlinear coefficient matrix for intrachannel four-wave mixing (IFWM).
+    C_ixpm : ndarray of shape (2L+1, 2L+1)
+        Nonlinear coefficient matrix for intrachannel cross-phase modulation (IXPM).
+    C_ispm : float
+        Scalar nonlinear coefficient for intrachannel self-phase modulation (SPM).
+
+    References
+    ----------
+    [1] Z. Tao, et al., "Analytical Intrachannel Nonlinear Models to Predict the Nonlinear Noise Waveform," Journal of Lightwave Technology, vol. 33, no. 10, pp. 2111-2119, 2015.
+    [2] E. P. da Silva, et al., "Perturbation-Based FEC-Assisted Iterative Nonlinearity Compensation for WDM Systems," Journal of Lightwave Technology, vol. 37, no. 3, pp. 875-881, 2019.
 
     """
     D = getattr(param, "D", 17)  # Dispersion parameter (ps/nm/km)
@@ -194,14 +219,9 @@ def calcPertCoeffMatrix(param):
 
 
 @njit(parallel=True, fastmath=True)
-def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
+def calcNLINperturbation(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
     """
     Calculates the perturbation-based additive and multiplicative NLIN for dual-polarization signals.
-
-    This function models nonlinear impairments in optical communication systems
-    considering intrachannel four-wave mixing (IFWM), intrachannel cross-phase modulation (IXPM),
-    and self-phase modulation (SPM) effects, using a memory-based convolution approach.
-    Optimized for high-speed execution with Numba JIT compilation and parallelization.
 
     Parameters
     ----------
@@ -237,13 +257,10 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
     phi_ixpm_y : ndarray of shape (N,)
         Phase rotation due to cross-phase modulation affecting polarization Y.
 
-    Notes
-    -----
-    - The input signals `x` and `y` are normalized to have unit average power internally.
-    - The function uses a window-based convolution with precomputed matrices and masks.
-    - Requires `dotNumba` to perform dot products compatible with Numba.
-    - The function is highly optimized and runs in parallel across time indices.
-
+    References
+    ----------
+    [1] Z. Tao, et al., "Analytical Intrachannel Nonlinear Models to Predict the Nonlinear Noise Waveform," Journal of Lightwave Technology, vol. 33, no. 10, pp. 2111-2119, 2015.
+    [2] E. P. da Silva, et al., "Perturbation-Based FEC-Assisted Iterative Nonlinearity Compensation for WDM Systems," Journal of Lightwave Technology, vol. 37, no. 3, pp. 875-881, 2019.
     """
     L = (C_ifwm.shape[0] - 1) // 2
     D = C_ifwm.shape[0] - 1
@@ -343,16 +360,12 @@ def additiveMultiplicativeNLIN(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
 
 
 @njit(parallel=True, fastmath=True)
-def additiveMultiplicativeNLINreducedComplexity(
+def calcNLINperturbationSimplified(
     C_ifwm, C_ixpm, C_ispm, x, y, coeffTol=-20, prec=np.complex64
 ):
     """
     Calculates the perturbation-based additive and multiplicative NLIN with reduced
     number of coefficients.
-
-    This function performs the additive-multiplicative model computation with
-    complex-valued inputs `x` and `y`, using a reduced number of coefficients based on a
-    specified tolerance for coefficient magnitude, to enhance computational efficiency.
 
     Parameters
     ----------
@@ -393,14 +406,10 @@ def additiveMultiplicativeNLINreducedComplexity(
     phi_ixpm_y : ndarray of shape (N,)
         Phase information related to the XPM effect on the Y component.
 
-    Notes
-    -----
-    - The function reduces the number of coefficients used in the computation
-      based on the provided `coeff_tol` value.
-    - The results are computed efficiently using parallelism and Numba's
-      JIT compilation.
-    - The function assumes that the input arrays `x` and `y` are complex-valued
-      and normalized.
+    References
+    ----------
+    [1] Z. Tao, et al., "Analytical Intrachannel Nonlinear Models to Predict the Nonlinear Noise Waveform," Journal of Lightwave Technology, vol. 33, no. 10, pp. 2111-2119, 2015.
+    [2] E. P. da Silva, et al., "Perturbation-Based FEC-Assisted Iterative Nonlinearity Compensation for WDM Systems," Journal of Lightwave Technology, vol. 37, no. 3, pp. 875-881, 2019.
     """
     # Definitions
     L = (len(C_ifwm) - 1) // 2
@@ -565,6 +574,12 @@ def perturbationNLIN(Ein, param):
     nlin : ndarray of shape (N, 2)
         Nonlinear perturbation for dual-polarization signals.
         The first column represents the X polarization, and the second column represents the Y polarization.
+
+
+    References
+    ----------
+    [1] Z. Tao, et al., "Analytical Intrachannel Nonlinear Models to Predict the Nonlinear Noise Waveform," Journal of Lightwave Technology, vol. 33, no. 10, pp. 2111-2119, 2015.
+    [2] E. P. da Silva, et al., "Perturbation-Based FEC-Assisted Iterative Nonlinearity Compensation for WDM Systems," Journal of Lightwave Technology, vol. 37, no. 3, pp. 875-881, 2019.
     """
     param.D = getattr(param, "D", 17)  # Dispersion parameter (ps/nm/km)
     param.alpha = getattr(param, "alpha", 0.2)  # Attenuation (dB/km)
@@ -603,13 +618,13 @@ def perturbationNLIN(Ein, param):
     nlin = np.zeros((len(Ein), 2), dtype=Ein.dtype)
     if mode == "AM":
         # Calculate the perturbation-based additive and multiplicative NLIN
-        dx, dy, phi_ixpm_x, phi_ixpm_y = additiveMultiplicativeNLIN(
+        dx, dy, phi_ixpm_x, phi_ixpm_y = calcNLINperturbation(
             C_ifwm, C_ixpm, C_ispm, Ein[:, 0], Ein[:, 1], prec
         )
     elif mode == "AMR":
         # Calculate the perturbation-based additive and multiplicative NLIN with reduced complexity
         dx, dy, phi_ixpm_x, phi_ixpm_y, nReducedCoeffs, reductionFactor = (
-            additiveMultiplicativeNLINreducedComplexity(
+            calcNLINperturbationSimplified(
                 C_ifwm, C_ixpm, C_ispm, Ein[:, 0], Ein[:, 1], coeffTol, prec
             )
         )
