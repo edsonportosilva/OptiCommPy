@@ -31,7 +31,7 @@ def calcPertCoeffMatrix(param):
 
     Parameters
     ----------
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters of the optical channel.
 
         - param.D : chromatic dispersion parameter [ps/nm/km] [default: 17]
@@ -524,7 +524,7 @@ def perturbationNLIN(Ein, param):
         Input signal for dual-polarization (complex-valued).
         The first column represents the X polarization, and the second column represents the Y polarization.
 
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters of the optical channel.
 
         - param.D : chromatic dispersion parameter [ps/nm/km] [default: 17]
