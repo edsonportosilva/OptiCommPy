@@ -1,19 +1,21 @@
-# """
-# ======================================
-# General utilities (:mod:`optic.utils`)
-# ======================================
+"""
+======================================
+General utilities (:mod:`optic.utils`)
+======================================
 
-# .. autosummary::
-#    :toctree: generated/
+.. autosummary::
+   :toctree: generated/
 
-#    parameters             -- Class to be used as a struct of parameters
-#    lin2dB                 -- Convert linear value to dB (decibels)
-#    dB2lin                 -- Convert dB (decibels) to a linear value
-#    dBm2W                  -- Convert dBm to Watts
-#    dec2bitarray           -- Convert decimals to arrays of bits
-#    decimal2bitarray       -- Convert decimal to array of bits
-#    bitarray2dec           -- Convert array of bits to decimal
-# """
+   parameters             -- Class to be used as a struct of parameters
+   lin2dB                 -- Convert linear value to dB (decibels)
+   dB2lin                 -- Convert dB (decibels) to a linear value
+   dBm2W                  -- Convert dBm to Watts
+   dec2bitarray           -- Convert decimals to arrays of bits
+   decimal2bitarray       -- Convert decimal to array of bits
+   dotNumba              -- Compute dot product using Numba
+   bitarray2dec           -- Convert array of bits to decimal
+   ber2Qfactor            -- Convert bit error rate (BER) to Q factor in dB
+"""
 
 """General utilities."""
 import numpy as np
@@ -172,6 +174,36 @@ def bitarray2dec(x_bitarray):
         number = number + x_bitarray[i] * pow(2, len(x_bitarray) - 1 - i)
 
     return number
+
+
+@njit
+def dotNumba(a, b):
+    """
+    Computes the dot product of two 1D arrays in a Numba-compatible way.
+
+    This function is equivalent to `np.dot` for 1D arrays but can be
+    JIT-compiled with Numba for accelerated execution.
+
+    Parameters
+    ----------
+    a : ndarray of shape (N,)
+        First input array (complex-valued).
+
+    b : ndarray of shape (N,)
+        Second input array (complex-valued).
+
+    Returns
+    -------
+    result : complex
+        The dot product of `a` and `b`, computed as the sum of element-wise products.
+
+    Notes
+    -----
+    - Both input arrays must have the same length.
+    - This function initializes the result as a complex number to support
+      complex-valued operations.
+    """
+    return np.sum(a * b)
 
 
 def ber2Qfactor(ber):
