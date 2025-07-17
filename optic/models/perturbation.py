@@ -36,21 +36,21 @@ def calcPertCoeffMatrix(param):
 
         - param.D : chromatic dispersion parameter [ps/nm/km] [default: 17]
 
-        - param.alpha : fiber attenuation parameter [dB/km] [default: None]
+        - param.alpha : fiber attenuation parameter [dB/km] [default: 0.2]
 
-        - param.lspan : span length [km] [default: None]
+        - param.lspan : span length [km] [default: 50]
 
-        - param.length : total fiber length [km] [default: None]
+        - param.length : total fiber length [km] [default: 800]
 
         - param.pulseWidth : pulse width (fraction of symbol period) [default: 0.5]
 
-        - param.gamma : fiber nonlinear coefficient [1/W/km] [default: None]
+        - param.gamma : fiber nonlinear coefficient [1/W/km] [default: 1.3]
 
-        - param.Fc : carrier frequency [THz] [default: None]
+        - param.Fc : carrier frequency [THz] [default: 193.2e12]
 
         - param.powerWeighted : power-weighted coefficient calculation? Boolean variable [default: False]
 
-        - param.Rs : symbol rate [baud] [default: None]
+        - param.Rs : symbol rate [baud] [default: 32e9]
 
         - param.powerWeightN : power-weighting order [default: 10]
 
@@ -526,21 +526,21 @@ def perturbationNLIN(Ein, param):
 
         - param.D : chromatic dispersion parameter [ps/nm/km] [default: 17]
 
-        - param.alpha : fiber attenuation parameter [dB/km] [default: None]
+        - param.alpha : fiber attenuation parameter [dB/km] [default: 0.2]
 
-        - param.lspan : span length [km] [default: None]
+        - param.lspan : span length [km] [default: 50]
 
-        - param.length : total fiber length [km] [default: None]
+        - param.length : total fiber length [km] [default: 800]
 
         - param.pulseWidth : pulse width (fraction of symbol period) [default: 0.5]
 
-        - param.gamma : fiber nonlinear coefficient [1/W/km] [default: None]
+        - param.gamma : fiber nonlinear coefficient [1/W/km] [default: 1.3]
 
-        - param.Fc : carrier frequency [THz] [default: None]
+        - param.Fc : carrier frequency [THz] [default: 193.2e12]
 
         - param.powerWeighted : power-weighted coefficient calculation? Boolean variable [default: False]
 
-        - param.Rs : symbol rate [baud] [default: None]
+        - param.Rs : symbol rate [baud] [default: 32e9]
 
         - param.powerWeightN : power-weighting order [default: 10]
 
