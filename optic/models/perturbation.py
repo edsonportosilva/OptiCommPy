@@ -6,7 +6,7 @@ Perturbation models for fiber nonlinear interference (:mod:`optic.models.perturb
 .. autosummary::
    :toctree: generated/
 
-   calcPertCoeffMatrix                 -- Calculates the coefficients for intrachannel nonlinear perturbation model.
+   calcPertCoeffMatrix                 -- Calculates the coefficients for the intrachannel nonlinear first-order perturbation model.
    calcNLINperturbation                -- Fast calculation of the first-order perturbation model.
    calcNLINperturbationSimplified      -- Fast calculation of the first-order perturbation model with reduced number of coefficients.
    perturbationNLIN                    -- Main function to calculate intrachannel NLIN via first-order perturbation models.
@@ -27,7 +27,7 @@ import logging
 
 def calcPertCoeffMatrix(param):
     """
-    Calculates the coefficients for intrachannel nonlinear perturbation model.
+    Calculates the coefficients for the intrachannel nonlinear first-order perturbation model.
 
     Parameters
     ----------
