@@ -523,7 +523,7 @@ def edfa(Ei, param=None):
     Ei : np.array
         Input signal field.
     param : optic.utils.parameters object, optional
-        Parameters of the edfa model.
+        Parameters of the EDFA model.
         - param.G : amplifier gain [dB][default: 20 dB]
         - param.NF : EDFA noise figure [dB][default: 4.5 dB]
         - param.Fc : central optical frequency [Hz][default: 193.1 THz]
@@ -623,8 +623,8 @@ def adc(Ei, param):
     ----------
     Ei : ndarray
         Input signal.
-    param :optic.utils.parameters object
-        Resampling parameters:
+    param : optic.utils.parameters object, optional
+        Parameters of the ADC model.:
         - param.Fs_in  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
         - param.Fs_out : sampling frequency of the output signal [samples/s][default: 1 sample/s]
         - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [s][default: 0 s]
