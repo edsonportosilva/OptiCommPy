@@ -6,10 +6,10 @@ Perturbation models for fiber nonlinear interference (:mod:`optic.models.perturb
 .. autosummary::
    :toctree: generated/
 
-   calcPertCoeffMatrix                 -- Calculates the perturbation coefficients for intra-channel fiber nonlinear interference.
-   calcNLINperturbation                -- Calculates the first-order perturbation AM NLIN model for dual-polarization signals.
-   calcNLINperturbationSimplified      -- Calculates the first-order perturbation AM NLIN model with reduced number of coefficients.
-   perturbationNLIN                    -- Main function to calculate perturbation NLIN for dual-polarization signals.
+   calcPertCoeffMatrix                 -- Calculates the coefficients for intrachannel nonlinear perturbation model.
+   calcNLINperturbation                -- Fast calculation of the first-order perturbation model.
+   calcNLINperturbationSimplified      -- Fast calculation of the first-order perturbation model with reduced number of coefficients.
+   perturbationNLIN                    -- Main function to calculate intrachannel NLIN via first-order perturbation models.
 
 """
 
@@ -27,7 +27,7 @@ import logging
 
 def calcPertCoeffMatrix(param):
     """
-    Calculates the coefficient matrix for the first-order perturbation model of intra-channel fiber nonlinear interference.
+    Calculates the coefficients for intrachannel nonlinear perturbation model.
 
     Parameters
     ----------
@@ -70,9 +70,6 @@ def calcPertCoeffMatrix(param):
     References
     ----------
     [1] Z. Tao, et al., "Analytical Intrachannel Nonlinear Models to Predict the Nonlinear Noise Waveform," Journal of Lightwave Technology, vol. 33, no. 10, pp. 2111-2119, 2015.
-
-    [2] E. P. da Silva, et al., "Perturbation-Based FEC-Assisted Iterative Nonlinearity Compensation for WDM Systems," Journal of Lightwave Technology, vol. 37, no. 3, pp. 875-881, 2019.
-
     """
     D = getattr(param, "D", 17)  # Dispersion parameter (ps/nm/km)
     alpha = getattr(param, "alpha", 0.2)  # Attenuation (dB/km)
@@ -212,7 +209,7 @@ def calcPertCoeffMatrix(param):
 @njit(parallel=True, fastmath=True)
 def calcNLINperturbation(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
     """
-    Calculates the perturbation-based additive and multiplicative NLIN for dual-polarization signals.
+    Fast calculation of the first-order perturbation model.
 
     Parameters
     ----------
@@ -251,6 +248,7 @@ def calcNLINperturbation(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
     References
     ----------
     [1] Z. Tao, et al., "Analytical Intrachannel Nonlinear Models to Predict the Nonlinear Noise Waveform," Journal of Lightwave Technology, vol. 33, no. 10, pp. 2111-2119, 2015.
+
     [2] E. P. da Silva, et al., "Perturbation-Based FEC-Assisted Iterative Nonlinearity Compensation for WDM Systems," Journal of Lightwave Technology, vol. 37, no. 3, pp. 875-881, 2019.
     """
     L = (C_ifwm.shape[0] - 1) // 2
@@ -355,8 +353,7 @@ def calcNLINperturbationSimplified(
     C_ifwm, C_ixpm, C_ispm, x, y, coeffTol=-20, prec=np.complex64
 ):
     """
-    Calculates the perturbation-based additive and multiplicative NLIN with reduced
-    number of coefficients.
+    Fast calculation of the first-order perturbation model with reduced number of coefficients.
 
     Parameters
     ----------
@@ -516,7 +513,7 @@ def calcNLINperturbationSimplified(
 
 def perturbationNLIN(Ein, param):
     """
-    Calculates the perturbation-based additive and multiplicative NLIN for dual-polarization signals.
+    Calculates the intrachannel NLIN via first-order perturbation models.
 
     Parameters
     ----------
