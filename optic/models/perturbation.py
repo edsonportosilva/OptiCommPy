@@ -34,26 +34,16 @@ def calcPertCoeffMatrix(param):
     param : optic.utils.parameters object
         Object with physical/simulation parameters of the optical channel.
 
-        - param.D : chromatic dispersion parameter [ps/nm/km] [default: 17]
-
-        - param.alpha : fiber attenuation parameter [dB/km] [default: 0.2]
-
-        - param.lspan : span length [km] [default: 50]
-
-        - param.length : total fiber length [km] [default: 800]
-
+        - param.D : chromatic dispersion parameter [ps/nm/km] [default: 17 ps/nm/km]
+        - param.alpha : fiber attenuation parameter [dB/km] [default: 0.2 dB/km]
+        - param.lspan : span length [km] [default: 50 km]
+        - param.length : total fiber length [km] [default: 800 km]
         - param.pulseWidth : pulse width (fraction of symbol period) [default: 0.5]
-
-        - param.gamma : fiber nonlinear coefficient [1/W/km] [default: 1.3]
-
-        - param.Fc : carrier frequency [THz] [default: 193.2e12]
-
+        - param.gamma : fiber nonlinear coefficient [1/W/km] [default: 1.3 1/W/km]
+        - param.Fc : carrier frequency [THz] [default: 193.2e12 Hz]
         - param.powerWeighted : power-weighted coefficient calculation? Boolean variable [default: False]
-
-        - param.Rs : symbol rate [baud] [default: 32e9]
-
+        - param.Rs : symbol rate [baud] [default: 32e9 baud]
         - param.powerWeightN : power-weighting order [default: 10]
-
         - param.matrixOrder : nonlinear memory matrix order [default: 25]
 
     Returns
@@ -524,28 +514,17 @@ def perturbationNLIN(Ein, param):
     param : optic.utils.parameters object
         Object with physical/simulation parameters of the optical channel.
 
-        - param.D : chromatic dispersion parameter [ps/nm/km] [default: 17]
-
-        - param.alpha : fiber attenuation parameter [dB/km] [default: 0.2]
-
-        - param.lspan : span length [km] [default: 50]
-
-        - param.length : total fiber length [km] [default: 800]
-
+        - param.D : chromatic dispersion parameter [ps/nm/km] [default: 17 ps/nm/km]
+        - param.alpha : fiber attenuation parameter [dB/km] [default: 0.2 dB/km]
+        - param.lspan : span length [km] [default: 50 km]
+        - param.length : total fiber length [km] [default: 800 km]
         - param.pulseWidth : pulse width (fraction of symbol period) [default: 0.5]
-
-        - param.gamma : fiber nonlinear coefficient [1/W/km] [default: 1.3]
-
-        - param.Fc : carrier frequency [THz] [default: 193.2e12]
-
+        - param.gamma : fiber nonlinear coefficient [1/W/km] [default: 1.3 1/W/km]
+        - param.Fc : carrier frequency [THz] [default: 193.2e12 Hz]
         - param.powerWeighted : power-weighted coefficient calculation? Boolean variable [default: False]
-
-        - param.Rs : symbol rate [baud] [default: 32e9]
-
+        - param.Rs : symbol rate [baud] [default: 32e9 baud]
         - param.powerWeightN : power-weighting order [default: 10]
-
         - param.matrixOrder : nonlinear memory matrix order [default: 25]
-
         - mode : 'AM' for standard perturbation calculation or 'AMR' for reduced complexity calculation [default: 'AM']
 
     Returns
