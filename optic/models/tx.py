@@ -13,12 +13,12 @@ import numpy as np
 from tqdm.notebook import tqdm
 
 from optic.comm.modulation import grayMapping, modulateGray
-from optic.dsp.core import (phaseNoise, pnorm, pulseShape, signal_power,
-                            upsample)
+from optic.dsp.core import phaseNoise, pnorm, pulseShape, signal_power, upsample
 from optic.models.devices import iqm
 
 try:
     from optic.dsp.coreGPU import checkGPU
+
     if checkGPU():
         from optic.dsp.coreGPU import firFilter
     else:
@@ -38,36 +38,23 @@ def simpleWDMTx(param):
 
     Parameters
     ----------
-    param : system parameters of the WDM transmitter.
-        optic.core.parameter object.
+    param : optic.core.parameter object, optional
+         Parameters of the WDM transmitter.
 
-        - param.M: modulation order [default: 16].
-
-        - param.constType: 'qam' or 'psk' [default: 'qam'].
-
-        - param.Rs: carrier baud rate [baud][default: 32e9].
-
-        - param.SpS: samples per symbol [default: 16].
-
-        - param.Nbits: total number of bits per carrier [default: 60000].
-
-        - param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc'].
-
-        - param.Ntaps: number of coefficients of the rrc filter [default: 4096].
-
-        - param.alphaRRC: rolloff do rrc filter [default: 0.01].
-
-        - param.Pch_dBm: launched power per WDM channel [dBm][default:-3 dBm].
-
-        - param.Nch: number of WDM channels [default: 5].
-
-        - param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz].
-
-        - param.lw: laser linewidth [Hz][default: 100 kHz].
-
-        - param.freqSpac: frequency spacing of the WDM grid [Hz][default: 40e9 Hz].
-
-        - param.Nmodes: number of polarization modes [default: 1].
+        - param.M: modulation order [default: 16]
+        - param.constType: 'qam' or 'psk' [default: 'qam']
+        - param.Rs: carrier baud rate [baud][default: 32e9]
+        - param.SpS: samples per symbol [default: 16]
+        - param.Nbits: total number of bits per carrier [default: 60000]
+        - param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc']
+        - param.Ntaps: number of coefficients of the rrc filter [default: 4096]
+        - param.alphaRRC: rolloff do rrc filter [default: 0.01]
+        - param.Pch_dBm: launched power per WDM channel [dBm][default:-3 dBm]
+        - param.Nch: number of WDM channels [default: 5]
+        - param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz]
+        - param.lw: laser linewidth [Hz][default: 100 kHz]
+        - param.freqSpac: frequency spacing of the WDM grid [Hz][default: 40e9 Hz]
+        - param.Nmodes: number of polarization modes [default: 1]
 
     Returns
     -------
