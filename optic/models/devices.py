@@ -326,7 +326,17 @@ def photodiode(E, param=None):
 
     assert R > 0, "PD responsivity should be a positive scalar"
 
-    ipd = R * E * np.conj(E)  # ideal photocurrent
+    try:
+        nModes = E.shape[1]
+    except IndexError:
+        nModes = 1
+
+    if nModes > 1:
+        ipd = R * np.sum(
+            np.abs(E) ** 2, axis=1
+        )  # ideal photocurrent with two or more modes
+    else:
+        ipd = R * E * np.conj(E)  # ideal photocurrent
 
     if not (ideal):
         try:
@@ -342,14 +352,14 @@ def photodiode(E, param=None):
         if shotNoise:
             # shot noise
             σ2_s = 2 * q * (ipd + Id) * B  # shot noise variance
-            Is = np.sqrt(Fs * (σ2_s / (2 * B))) * np.random.normal(0, 1, ipd.size)
+            Is = np.sqrt(Fs * (σ2_s / (2 * B))) * np.random.normal(0, 1, ipd.shape)
             # add shot noise to photocurrent
             ipd += Is
         if thermalNoise:
             # thermal noise
             T = Tc + 273.15  # temperature in Kelvin
             σ2_T = 4 * kB * T * B / RL  # thermal noise variance
-            It = np.sqrt(Fs * (σ2_T / (2 * B))) * np.random.normal(0, 1, ipd.size)
+            It = np.sqrt(Fs * (σ2_T / (2 * B))) * np.random.normal(0, 1, ipd.shape)
             # add thermal noise to photocurrent
             ipd += It
         if bandwidthLimitation:
