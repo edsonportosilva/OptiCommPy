@@ -371,7 +371,7 @@ def balancedPD(E1, E2, param=None):
     E2 : np.array
         Input optical field.
     param : optic.utils.parameters object, optional
-        Parameters of the photodiodes.
+        Parameters of the photodiode models.
 
         - param.R: photodiode responsivity [A/W][default: 1 A/W]
         - param.Tc: temperature [°C][default: 25°C]
@@ -629,7 +629,7 @@ def adc(Ei, param):
     Ei : ndarray
         Input signal.
     param : optic.utils.parameters object, optional
-        Parameters of the ADC model.:
+        Parameters of the ADC model.
 
         - param.Fs_in  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
         - param.Fs_out : sampling frequency of the output signal [samples/s][default: 1 sample/s]
