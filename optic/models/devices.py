@@ -98,6 +98,7 @@ def mzm(Ai, u, param=None):
         Electrical driving signal.
     param : optic.utils.parameters object, optional
         Parameters of the MZM model.
+
         - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
         - param.Vb: MZM's bias voltage [V][default: -1 V]
 
@@ -149,6 +150,7 @@ def iqm(Ai, u, param=None):
         Modulator's driving signal (complex-valued baseband).
     param : optic.utils.parameters object, optional
         Parameters of the MZM models.
+
         - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
         - param.VbI: I-MZM's bias voltage [V][default: -2 V]
         - param.VbQ: Q-MZM's bias voltage [V][default: -2 V]
@@ -276,6 +278,7 @@ def photodiode(E, param=None):
         Input optical field.
     param : optic.utils.parameters object, optional
         Parameters of the photodiode model.
+
         - param.R: photodiode responsivity [A/W][default: 1 A/W]
         - param.Tc: temperature [°C][default: 25°C]
         - param.Id: dark current [A][default: 5e-9 A]
@@ -524,6 +527,7 @@ def edfa(Ei, param=None):
         Input signal field.
     param : optic.utils.parameters object, optional
         Parameters of the EDFA model.
+
         - param.G : amplifier gain [dB][default: 20 dB]
         - param.NF : EDFA noise figure [dB][default: 4.5 dB]
         - param.Fc : central optical frequency [Hz][default: 193.1 THz]
@@ -577,6 +581,7 @@ def basicLaserModel(param=None):
     ----------
     param : optic.utils.parameters object, optional
         Parameters of the laser model.
+
         - param.P: laser power [dBm] [default: 10 dBm]
         - param.lw: laser linewidth [Hz] [default: 1 kHz]
         - param.RIN_var: variance of the RIN noise [default: 1e-20]
@@ -625,6 +630,7 @@ def adc(Ei, param):
         Input signal.
     param : optic.utils.parameters object, optional
         Parameters of the ADC model.:
+
         - param.Fs_in  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
         - param.Fs_out : sampling frequency of the output signal [samples/s][default: 1 sample/s]
         - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [s][default: 0 s]
