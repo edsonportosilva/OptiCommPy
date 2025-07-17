@@ -27,12 +27,18 @@ import logging as logg
 import numpy as np
 import scipy.constants as const
 
-from optic.dsp.core import (clockSamplingInterp, gaussianComplexNoise,
-                            lowPassFIR, phaseNoise, quantizer)
+from optic.dsp.core import (
+    clockSamplingInterp,
+    gaussianComplexNoise,
+    lowPassFIR,
+    phaseNoise,
+    quantizer,
+)
 from optic.utils import dBm2W, parameters
 
 try:
     from optic.dsp.coreGPU import checkGPU
+
     if checkGPU():
         from optic.dsp.coreGPU import firFilter
     else:
@@ -90,11 +96,9 @@ def mzm(Ai, u, param=None):
         Amplitude of the optical field at the input of the MZM.
     u : np.array
         Electrical driving signal.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the mzm.
-
+    param : optic.utils.parameters object, optional
+        Parameters of the MZM model.
         - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
-
         - param.Vb: MZM's bias voltage [V][default: -1 V]
 
     Returns
@@ -143,15 +147,11 @@ def iqm(Ai, u, param=None):
         Amplitude of the optical field at the input of the IQM.
     u : complex-valued np.array
         Modulator's driving signal (complex-valued baseband).
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the mzm.
-
+    param : optic.utils.parameters object, optional
+        Parameters of the MZM models.
         - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
-
         - param.VbI: I-MZM's bias voltage [V][default: -2 V]
-
         - param.VbQ: Q-MZM's bias voltage [V][default: -2 V]
-
         - param.Vphi: PM bias voltage [V][default: 1 V]
 
     Returns
@@ -239,6 +239,7 @@ def pbs(E, θ=0):
 
     return Ex, Ey
 
+
 def voa(E, A=0):
     """
     Variable optical attenuator (VOA).
@@ -248,7 +249,7 @@ def voa(E, A=0):
     E : np.array
         Input optical field.
     A : float
-        attenuation [dB][default: 0 dB]    
+        attenuation [dB][default: 0 dB]
 
     Returns
     -------
@@ -259,10 +260,11 @@ def voa(E, A=0):
     ----------
     [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
 
-    """   
+    """
     assert A >= 0, "Attenuation should be a positive scalar"
 
     return E * 10 ** (-A / 20)
+
 
 def photodiode(E, param=None):
     """
@@ -272,35 +274,21 @@ def photodiode(E, param=None):
     ----------
     E : np.array
         Input optical field.
-    param : parameter object (struct), optional
-        Parameters of the photodiode.
-
+    param : optic.utils.parameters object, optional
+        Parameters of the photodiode model.
         - param.R: photodiode responsivity [A/W][default: 1 A/W]
-
         - param.Tc: temperature [°C][default: 25°C]
-
         - param.Id: dark current [A][default: 5e-9 A]
-
         - param.Ipd_sat: saturation value of the photocurrent [A][default: 5e-3 A]
-
         - param.RL: impedance load [Ω] [default: 50Ω]
-
         - param.B bandwidth [Hz][default: 30e9 Hz]
-
         - param.Fs: sampling frequency [Hz] [default: None]
-
         - param.fType: frequency response type [default: 'rect']
-
         - param.N: number of the frequency resp. filter taps. [default: 256]
-
-        - param.ideal: consider ideal photodiode (i.e. $i_{pd} = R|E|^2$) [default: False]
-
+        - param.ideal: consider ideal photodiode (i.e. :math:`i_{pd}(t) = R|E(t)|^2`) [default: False]
         - param.shotNoise: add shot noise to photocurrent. [default: True]
-
         - param.thermalNoise: add thermal noise to photocurrent. [default: True]
-
         - param.currentSaturation: consider photocurrent saturation. [default: False]
-
         - param.bandwidthLimitation: consider bandwidth limitation. [default: True]
 
     Returns
@@ -347,7 +335,7 @@ def photodiode(E, param=None):
 
         if currentSaturation:
             ipd[ipd > Ipd_sat] = Ipd_sat  # saturation of the photocurrent
-        
+
         if shotNoise:
             # shot noise
             σ2_s = 2 * q * (ipd + Id) * B  # shot noise variance
@@ -379,7 +367,7 @@ def balancedPD(E1, E2, param=None):
         Input optical field.
     E2 : np.array
         Input optical field.
-    param : parameter object (struct), optional
+    param : optic.utils.parameters object, optional
         Parameters of the photodiodes.
 
         - param.R: photodiode responsivity [A/W][default: 1 A/W]
@@ -534,9 +522,8 @@ def edfa(Ei, param=None):
     ----------
     Ei : np.array
         Input signal field.
-    param : parameter object (struct), optional
-        Parameters of the edfa.
-
+    param : optic.utils.parameters object, optional
+        Parameters of the edfa model.
         - param.G : amplifier gain [dB][default: 20 dB]
         - param.NF : EDFA noise figure [dB][default: 4.5 dB]
         - param.Fc : central optical frequency [Hz][default: 193.1 THz]
@@ -588,9 +575,8 @@ def basicLaserModel(param=None):
 
     Parameters
     ----------
-    param : parameter object (struct), optional
-        Parameters of the laser.
-
+    param : optic.utils.parameters object, optional
+        Parameters of the laser model.
         - param.P: laser power [dBm] [default: 10 dBm]
         - param.lw: laser linewidth [Hz] [default: 1 kHz]
         - param.RIN_var: variance of the RIN noise [default: 1e-20]
@@ -637,16 +623,16 @@ def adc(Ei, param):
     ----------
     Ei : ndarray
         Input signal.
-    param : core.parameter
+    param :optic.utils.parameters object
         Resampling parameters:
-            - param.Fs_in  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
-            - param.Fs_out : sampling frequency of the output signal [samples/s][default: 1 sample/s]
-            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [s][default: 0 s]
-            - param.nBits : number of bits used for quantization [default: 8 bits]
-            - param.Vmax : maximum value for the ADC's full-scale range [V][default: 1V]
-            - param.Vmin : minimum value for the ADC's full-scale range [V][default: -1V]
-            - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
-            - param.N : number of taps of the anti-aliasing filters [default: 201]
+        - param.Fs_in  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
+        - param.Fs_out : sampling frequency of the output signal [samples/s][default: 1 sample/s]
+        - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [s][default: 0 s]
+        - param.nBits : number of bits used for quantization [default: 8 bits]
+        - param.Vmax : maximum value for the ADC's full-scale range [V][default: 1V]
+        - param.Vmin : minimum value for the ADC's full-scale range [V][default: -1V]
+        - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
+        - param.N : number of taps of the anti-aliasing filters [default: 201]
 
     Returns
     -------
