@@ -115,7 +115,7 @@ def ssfm(Ei, param):
     Ei : np.array
         Input optical signal field.
     param : optic.utils.parameters object
-        Object with physical/simulation parameters of the optical channel.
+        Physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
         - param.Lspan: span length [km][default: 80 km]
@@ -273,7 +273,7 @@ def manakovSSF(Ei, param):
         Input optical signal field.
 
     param : optic.utils.parameters object
-        Object with physical/simulation parameters of the optical channel.
+         Physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
         - param.Lspan: span length [km][default: 80 km]

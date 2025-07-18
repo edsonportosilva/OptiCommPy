@@ -36,18 +36,13 @@ def linearFiberChannel(Ei, param):
     Ei : np.array
         Input optical field.
     param : optic.utils.parameters object
-        Object with physical/simulation parameters of the optical channel.
+        Physical/simulation parameters of the optical channel.
 
         - param.L: total fiber length [km][default: 50 km]
-
         - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-
-        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
+        - param.D: chromatic dispersion parameter [ps/nm/km][default: 17 ps/nm/km]
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: sampling frequency [Hz] [default: None]
-
         - param.returnParameters: bool, return channel parameters [default: False]
 
     Returns
@@ -70,7 +65,7 @@ def linearFiberChannel(Ei, param):
     # check input parameters
     param.L = getattr(param, "L", 50)
     param.alpha = getattr(param, "alpha", 0.2)
-    param.D = getattr(param, "D", 16)
+    param.D = getattr(param, "D", 17)
     param.Fc = getattr(param, "Fc", 193.1e12)
     param.returnParameters = getattr(param, "returnParameters", False)
 
@@ -119,32 +114,20 @@ def ssfm(Ei, param=None):
     Fs : scalar
         Sampling frequency in Hz.
     param : optic.utils.parameters object
-        Object with physical/simulation parameters of the optical channel.
+        Physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
-
         - param.Lspan: span length [km][default: 80 km]
-
         - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-
         - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-
         - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
         - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: simulation sampling frequency [samples/second][default: None]
-
         - param.prec: numerical precision [default: np.complex128]
-
         - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-
         - param.NF: edfa noise figure [dB] [default: 4.5 dB]
-
         - param.prgsBar: display progress bar? bolean variable [default:True]
-
         - param.returnParameters: bool, return channel parameters [default: False]
 
     Returns
@@ -269,42 +252,25 @@ def manakovSSF(Ei, param):
     Fs : scalar
         Sampling frequency in Hz.
     param : optic.utils.parameters object
-        Object with physical/simulation parameters of the optical channel.
+        Physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
-
         - param.Lspan: span length [km][default: 80 km]
-
         - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-
         - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-
         - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
         - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: simulation sampling frequency [samples/second][default: None]
-
         - param.prec: numerical precision [default: np.complex128]
-
         - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-
         - param.NF: edfa noise figure [dB] [default: 4.5 dB]
-
         - param.maxIter: max number of iter. in the trap. integration [default: 10]
-
         - param.tol: convergence tol. of the trap. integration.[default: 1e-5]
-
         - param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
-
         - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
-
         - param.prgsBar: display progress bar? bolean variable [default:True]
-
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
-
         - param.returnParameters: bool, return channel parameters [default: False]
 
     Returns

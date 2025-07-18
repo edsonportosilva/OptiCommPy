@@ -38,8 +38,8 @@ def edc(Ei, param):
     ----------
     Ei : np.array
         Input optical field.
-    param : optic.utils.parameters object, optional
-        Object with physical/simulation parameters of the optical channel.
+    param : optic.utils.parameters object
+        Parameters of the optical channel.
 
         - param.L: total fiber length [km][default: 50 km]
         - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
@@ -884,8 +884,8 @@ def manakovDBP(Ei, param):
     ----------
     Ei : np.array
         Input optical signal field.
-    param : optic.utils.parameters object, optional
-        Object with physical/simulation parameters of the optical channel.
+    param : optic.utils.parameters object
+        Physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
         - param.Lspan: span length [km][default: 80 km]
