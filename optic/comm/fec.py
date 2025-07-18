@@ -6,23 +6,23 @@ Forward error correction (FEC) utilities (:mod:`optic.comm.fec`)
 .. autosummary::
    :toctree: generated/
 
-   par2gen                -- Parity-check matrix to generator matrix conversion
-   gaussElim              -- Gaussian elimination over GF(2)
-   encoder                -- Performs linear block encoding
-   encodeDVBS2            -- Encode binary sequences using a DVB-S2 LDPC parity-check matrix
-   encodeTriang           -- Encode binary sequences using lower-triangular parity-check matrices
-   sumProductAlgorithm    -- Belief propagation decoding using the sum-product algorithm
-   minSumAlgorithm        -- Belief propagation decoding using the min-sum algorithm
-   encodeLDPC             -- Encode binary sequences using a LDPC parity-check matrix
-   decodeLDPC             -- Decode multiple LDPC codewords using belief propagation
-   writeAlist             -- Save a binary parity-check matrix to ALIST format
-   readAlist              -- Read an ALIST file and reconstruct the binary parity-check matrix
-   triangularize          -- Convert binary matrix to lower-triangular form
-   triangP1P2             -- Extract matrices that compute parities from lower-triangular form H
-   inverseMatrixGF2       -- Invert a square binary matrix over GF(2)
-   plotBinaryMatrix       -- Plot a binary matrix using matplotlib
-   parseAlist             -- Parse an ALIST file and extract the code parameters
-   summarizeAlistFolder   -- Summarize ALIST files in a folder in a table
+   par2gen                -- Parity-check matrix to generator matrix conversion.
+   gaussElim              -- Gaussian elimination over GF(2).
+   encoder                -- Performs linear block encoding.
+   encodeDVBS2            -- Encode binary sequences using a DVB-S2 LDPC parity-check matrix.
+   encodeTriang           -- Encode binary sequences using lower-triangular parity-check matrices.
+   sumProductAlgorithm    -- Belief propagation decoding using the sum-product algorithm.
+   minSumAlgorithm        -- Belief propagation decoding using the min-sum algorithm.
+   encodeLDPC             -- Encode binary sequences using a LDPC parity-check matrix.
+   decodeLDPC             -- Decode multiple LDPC codewords using belief propagation.
+   writeAlist             -- Save a binary parity-check matrix to ALIST format.
+   readAlist              -- Read an ALIST file and reconstruct the binary parity-check matrix.
+   triangularize          -- Convert binary matrix to lower-triangular form.
+   triangP1P2             -- Extract matrices that compute parities from lower-triangular form H.
+   inverseMatrixGF2       -- Invert a square binary matrix over GF(2).
+   plotBinaryMatrix       -- Plot a binary matrix using matplotlib.
+   parseAlist             -- Parse an ALIST file and extract the code parameters.
+   summarizeAlistFolder   -- Summarize ALIST files in a folder in a table.
 """
 
 """Forward error correction (FEC) utilities."""
@@ -220,7 +220,7 @@ def encodeLDPC(bits, param):
     elif mode == "IEEE_802.11nD2":
         if P1 is None or P2 is None:
             # attempt to triangularize H
-            P1, P2, Hm = triangP1P2(H) 
+            P1, P2, Hm = triangP1P2(H)
             if P1 is None or P2 is None:
                 # if H cannot be triangularized, encode with G
                 if G is None:
@@ -233,9 +233,9 @@ def encodeLDPC(bits, param):
                 else:
                     G = G.astype(np.uint8)
                     codedBits = encoder(G, bits, systematic)
-                    return codedBits[0 : param.n, :]                     
-            else:           
-                # encode with triangularized H      
+                    return codedBits[0 : param.n, :]
+            else:
+                # encode with triangularized H
                 param.P1 = P1
                 param.P2 = P2
                 param.H = csr_matrix(Hm)

@@ -7,11 +7,11 @@ DSP algorithms for clock and timming recovery (:mod:`optic.dsp.clockRecovery`)
    :toctree: generated/
    :nosignatures:
 
-   gardnerTED             -- Calculate the timing error using the Gardner timing error detector
-   gardnerTEDnyquist      -- Modified Gardner timing error detector for Nyquist pulses
-   interpolator           -- Perform cubic interpolation using the Farrow structure
-   gardnerClockRecovery   -- Perform clock recovery using Gardner's algorithm with a loop PI filter
-   calcClockDrift         -- Estimate clock drift from relative time delays fed to the interpolator
+   gardnerTED             -- Calculate the timing error using the Gardner timing error detector.
+   gardnerTEDnyquist      -- Modified Gardner timing error detector for Nyquist pulses.
+   interpolator           -- Perform cubic interpolation using the Farrow structure.
+   gardnerClockRecovery   -- Perform clock recovery using Gardner's algorithm with a loop PI filter.
+   calcClockDrift         -- Estimate clock drift from relative time delays fed to the interpolator.
 """
 
 import logging as logg

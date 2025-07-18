@@ -6,19 +6,19 @@ Models for optoelectronic devices (:mod:`optic.models.devices`)
 .. autosummary::
    :toctree: generated/
 
-   pm                    -- Optical phase modulator
-   mzm                   -- Optical Mach-Zhender modulator
-   iqm                   -- Optical In-Phase/Quadrature Modulator (IQM)
-   pbs                   -- Polarization beam splitter (PBS)
-   hybrid_2x4_90deg      -- Optical 2 x 4 90° hybrid
-   voa                   -- Variable optical attenuator (VOA)
-   photodiode            -- Pin photodiode
-   balancedPD            -- Balanced photodiode pair
-   coherentReceiver      -- Optical coherent receiver (single polarization)
-   pdmCoherentReceiver   -- Optical polarization-multiplexed coherent receiver
-   edfa                  -- Simple EDFA model (gain + AWGN noise)
-   basicLaserModel       -- Laser model with Maxwellian random walk phase noise and RIN
-   adc                   -- Analog-to-digital converter (ADC) model
+   pm                    -- Optical phase modulator.
+   mzm                   -- Optical Mach-Zhender modulator.
+   iqm                   -- Optical In-Phase/Quadrature Modulator (IQM).
+   pbs                   -- Polarization beam splitter (PBS).
+   hybrid_2x4_90deg      -- Optical 2 x 4 90° hybrid.
+   voa                   -- Variable optical attenuator (VOA).
+   photodiode            -- Pin photodiode.
+   balancedPD            -- Balanced photodiode pair.
+   coherentReceiver      -- Optical coherent receiver (single polarization).
+   pdmCoherentReceiver   -- Optical polarization-multiplexed coherent receiver.
+   edfa                  -- Simple EDFA model (gain + AWGN noise).
+   basicLaserModel       -- Laser model with Maxwellian random walk phase noise and RIN.
+   adc                   -- Analog-to-digital converter (ADC) model.
 """
 
 """Basic physical models for optical/electronic devices."""

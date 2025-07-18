@@ -7,11 +7,11 @@ DSP algorithms for carrier phase and frequency recovery (:mod:`optic.dsp.carrier
    :toctree: generated/
    :nosignatures:
 
-   bps            -- Blind phase search (BPS) carrier phase recovery algorithm
-   ddpll          -- Decision-directed phase-locked loop (DD-PLL) carrier phase recovery algorithm
-   viterbi        -- Viterbi & Viterbi carrier phase recovery algorithm
-   fourthPowerFOE -- Frequency offset (FO) estimation and compensation with the 4th-power method
-   cpr            -- General function to call and configure any of the CPR algorithms in this module
+   bps            -- Blind phase search (BPS) carrier phase recovery algorithm.
+   ddpll          -- Decision-directed phase-locked loop (DD-PLL) carrier phase recovery algorithm.
+   viterbi        -- Viterbi & Viterbi carrier phase recovery algorithm.
+   fourthPowerFOE -- Frequency offset (FO) estimation and compensation with the 4th-power method.
+   cpr            -- General function to call and configure any of the CPR algorithms in this module.
 """
 
 import logging as logg

@@ -6,9 +6,9 @@ DSP algorithms for equalization (:mod:`optic.dsp.equalization`)
 .. autosummary::
    :toctree: generated/
 
-   edc                 -- Electronic chromatic dispersion compensation (EDC)
-   mimoAdaptEqualizer  -- General N-by-N MIMO adaptive equalizer with several adaptive filtering algorithms available.
-   manakovDBP          -- Manakov SSF digital backpropagation (DBP) algorithm
+   edc                 -- Electronic chromatic dispersion compensation (EDC).
+   mimoAdaptEqualizer  -- General :math:`N \times N` MIMO adaptive equalizer with several adaptive filtering algorithms available.
+   manakovDBP          -- Manakov SSF digital backpropagation (DBP) algorithm.
 """
 
 """Functions for adaptive and static equalization."""
