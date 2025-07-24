@@ -1,9 +1,10 @@
 """GPU-based digital signal processing utilities."""
 
 import logging as logg
+
 import cupy as cp
-from cupy.fft import fft, ifft, fftshift
 import numpy as np
+from cupy.fft import fft, fftshift, ifft
 
 
 def checkGPU():

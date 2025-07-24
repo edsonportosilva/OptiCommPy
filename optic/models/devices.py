@@ -6,19 +6,19 @@ Models for optoelectronic devices (:mod:`optic.models.devices`)
 .. autosummary::
    :toctree: generated/
 
-   pm                    -- Optical phase modulator
-   mzm                   -- Optical Mach-Zhender modulator
-   iqm                   -- Optical In-Phase/Quadrature Modulator (IQM)
-   pbs                   -- Polarization beam splitter (PBS)
-   hybrid_2x4_90deg      -- Optical 2 x 4 90° hybrid
-   voa                   -- Variable optical attenuator (VOA)
-   photodiode            -- Pin photodiode
-   balancedPD            -- Balanced photodiode pair
-   coherentReceiver      -- Optical coherent receiver (single polarization)
-   pdmCoherentReceiver   -- Optical polarization-multiplexed coherent receiver
-   edfa                  -- Simple EDFA model (gain + AWGN noise)
-   basicLaserModel       -- Laser model with Maxwellian random walk phase noise and RIN
-   adc                   -- Analog-to-digital converter (ADC) model
+   pm                    -- Optical phase modulator.
+   mzm                   -- Optical Mach-Zhender modulator.
+   iqm                   -- Optical In-Phase/Quadrature Modulator (IQM).
+   pbs                   -- Polarization beam splitter (PBS).
+   hybrid_2x4_90deg      -- Optical 2 x 4 90° hybrid.
+   voa                   -- Variable optical attenuator (VOA).
+   photodiode            -- Pin photodiode.
+   balancedPD            -- Balanced photodiode pair.
+   coherentReceiver      -- Optical coherent receiver (single polarization).
+   pdmCoherentReceiver   -- Optical polarization-multiplexed coherent receiver.
+   edfa                  -- Simple EDFA model (gain + AWGN noise).
+   basicLaserModel       -- Laser model with Maxwellian random walk phase noise and RIN.
+   adc                   -- Analog-to-digital converter (ADC) model.
 """
 
 """Basic physical models for optical/electronic devices."""
@@ -26,14 +26,15 @@ import logging as logg
 
 import numpy as np
 import scipy.constants as const
-from optic.utils import parameters, dBm2W
+
 from optic.dsp.core import (
-    lowPassFIR,
-    gaussianComplexNoise,
-    phaseNoise,
     clockSamplingInterp,
+    gaussianComplexNoise,
+    lowPassFIR,
+    phaseNoise,
     quantizer,
 )
+from optic.utils import dBm2W, parameters
 
 try:
     from optic.dsp.coreGPU import checkGPU
@@ -95,11 +96,10 @@ def mzm(Ai, u, param=None):
         Amplitude of the optical field at the input of the MZM.
     u : np.array
         Electrical driving signal.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the mzm.
+    param : optic.utils.parameters object, optional
+        Parameters of the MZM model.
 
         - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
-
         - param.Vb: MZM's bias voltage [V][default: -1 V]
 
     Returns
@@ -148,15 +148,12 @@ def iqm(Ai, u, param=None):
         Amplitude of the optical field at the input of the IQM.
     u : complex-valued np.array
         Modulator's driving signal (complex-valued baseband).
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the mzm.
+    param : optic.utils.parameters object, optional
+        Parameters of the MZM models.
 
         - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
-
         - param.VbI: I-MZM's bias voltage [V][default: -2 V]
-
         - param.VbQ: Q-MZM's bias voltage [V][default: -2 V]
-
         - param.Vphi: PM bias voltage [V][default: 1 V]
 
     Returns
@@ -244,6 +241,7 @@ def pbs(E, θ=0):
 
     return Ex, Ey
 
+
 def voa(E, A=0):
     """
     Variable optical attenuator (VOA).
@@ -253,7 +251,7 @@ def voa(E, A=0):
     E : np.array
         Input optical field.
     A : float
-        attenuation [dB][default: 0 dB]    
+        attenuation [dB][default: 0 dB]
 
     Returns
     -------
@@ -264,10 +262,11 @@ def voa(E, A=0):
     ----------
     [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
 
-    """   
+    """
     assert A >= 0, "Attenuation should be a positive scalar"
 
     return E * 10 ** (-A / 20)
+
 
 def photodiode(E, param=None):
     """
@@ -277,35 +276,22 @@ def photodiode(E, param=None):
     ----------
     E : np.array
         Input optical field.
-    param : parameter object (struct), optional
-        Parameters of the photodiode.
+    param : optic.utils.parameters object, optional
+        Parameters of the photodiode model.
 
         - param.R: photodiode responsivity [A/W][default: 1 A/W]
-
         - param.Tc: temperature [°C][default: 25°C]
-
         - param.Id: dark current [A][default: 5e-9 A]
-
         - param.Ipd_sat: saturation value of the photocurrent [A][default: 5e-3 A]
-
         - param.RL: impedance load [Ω] [default: 50Ω]
-
         - param.B bandwidth [Hz][default: 30e9 Hz]
-
         - param.Fs: sampling frequency [Hz] [default: None]
-
         - param.fType: frequency response type [default: 'rect']
-
         - param.N: number of the frequency resp. filter taps. [default: 256]
-
-        - param.ideal: consider ideal photodiode (i.e. $i_{pd} = R|E|^2$) [default: False]
-
+        - param.ideal: consider ideal photodiode (i.e. :math:`i_{pd}(t) = R|E(t)|^2`) [default: False]
         - param.shotNoise: add shot noise to photocurrent. [default: True]
-
         - param.thermalNoise: add thermal noise to photocurrent. [default: True]
-
         - param.currentSaturation: consider photocurrent saturation. [default: False]
-
         - param.bandwidthLimitation: consider bandwidth limitation. [default: True]
 
         - param.seed: seed for the random number generator [default: None]
@@ -343,7 +329,17 @@ def photodiode(E, param=None):
 
     assert R > 0, "PD responsivity should be a positive scalar"
 
-    ipd = R * E * np.conj(E)  # ideal photocurrent
+    try:
+        nModes = E.shape[1]
+    except IndexError:
+        nModes = 1
+
+    if nModes > 1:
+        ipd = R * np.sum(
+            np.abs(E) ** 2, axis=1
+        )  # ideal photocurrent with two or more modes
+    else:
+        ipd = R * E * np.conj(E)  # ideal photocurrent
 
     if seed is not None:
         np.random.seed(seed)  # set seed for reproducibility
@@ -358,18 +354,18 @@ def photodiode(E, param=None):
 
         if currentSaturation:
             ipd[ipd > Ipd_sat] = Ipd_sat  # saturation of the photocurrent
-        
+
         if shotNoise:
             # shot noise
             σ2_s = 2 * q * (ipd + Id) * B  # shot noise variance
-            Is = np.sqrt(Fs * (σ2_s / (2 * B))) * np.random.normal(0, 1, ipd.size)
+            Is = np.sqrt(Fs * (σ2_s / (2 * B))) * np.random.normal(0, 1, ipd.shape)
             # add shot noise to photocurrent
             ipd += Is
         if thermalNoise:
             # thermal noise
             T = Tc + 273.15  # temperature in Kelvin
             σ2_T = 4 * kB * T * B / RL  # thermal noise variance
-            It = np.sqrt(Fs * (σ2_T / (2 * B))) * np.random.normal(0, 1, ipd.size)
+            It = np.sqrt(Fs * (σ2_T / (2 * B))) * np.random.normal(0, 1, ipd.shape)
             # add thermal noise to photocurrent
             ipd += It
         if bandwidthLimitation:
@@ -390,8 +386,8 @@ def balancedPD(E1, E2, param=None):
         Input optical field.
     E2 : np.array
         Input optical field.
-    param : parameter object (struct), optional
-        Parameters of the photodiodes.
+    param : optic.utils.parameters object, optional
+        Parameters of the photodiode models.
 
         - param.R: photodiode responsivity [A/W][default: 1 A/W].
         - param.Tc: temperature [°C][default: 25°C].
@@ -545,8 +541,8 @@ def edfa(Ei, param=None):
     ----------
     Ei : np.array
         Input signal field.
-    param : parameter object (struct), optional
-        Parameters of the edfa.
+    param : optic.utils.parameters object, optional
+        Parameters of the EDFA model.
 
         - param.G : amplifier gain [dB][default: 20 dB]
         - param.NF : EDFA noise figure [dB][default: 4.5 dB]
@@ -600,8 +596,8 @@ def basicLaserModel(param=None):
 
     Parameters
     ----------
-    param : parameter object (struct), optional
-        Parameters of the laser.
+    param : optic.utils.parameters object, optional
+        Parameters of the laser model.
 
         - param.P: laser power [dBm] [default: 10 dBm]
         - param.lw: laser linewidth [Hz] [default: 1 kHz]
@@ -650,16 +646,17 @@ def adc(Ei, param):
     ----------
     Ei : ndarray
         Input signal.
-    param : core.parameter
-        Resampling parameters:
-            - param.Fs_in  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
-            - param.Fs_out : sampling frequency of the output signal [samples/s][default: 1 sample/s]
-            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [s][default: 0 s]
-            - param.nBits : number of bits used for quantization [default: 8 bits]
-            - param.Vmax : maximum value for the ADC's full-scale range [V][default: 1V]
-            - param.Vmin : minimum value for the ADC's full-scale range [V][default: -1V]
-            - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
-            - param.N : number of taps of the anti-aliasing filters [default: 201]
+    param : optic.utils.parameters object, optional
+        Parameters of the ADC model.
+
+        - param.Fs_in  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
+        - param.Fs_out : sampling frequency of the output signal [samples/s][default: 1 sample/s]
+        - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [s][default: 0 s]
+        - param.nBits : number of bits used for quantization [default: 8 bits]
+        - param.Vmax : maximum value for the ADC's full-scale range [V][default: 1V]
+        - param.Vmin : minimum value for the ADC's full-scale range [V][default: -1V]
+        - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
+        - param.N : number of taps of the anti-aliasing filters [default: 201]
 
     Returns
     -------

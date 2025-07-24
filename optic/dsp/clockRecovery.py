@@ -7,12 +7,13 @@ DSP algorithms for clock and timming recovery (:mod:`optic.dsp.clockRecovery`)
    :toctree: generated/
    :nosignatures:
 
-   gardnerTED             -- Calculate the timing error using the Gardner timing error detector
-   gardnerTEDnyquist      -- Modified Gardner timing error detector for Nyquist pulses
-   interpolator           -- Perform cubic interpolation using the Farrow structure
-   gardnerClockRecovery   -- Perform clock recovery using Gardner's algorithm with a loop PI filter   
-   calcClockDrift         -- Estimate clock drift from relative time delays fed to the interpolator
+   gardnerTED             -- Calculate the timing error using the Gardner timing error detector.
+   gardnerTEDnyquist      -- Modified Gardner timing error detector for Nyquist pulses.
+   interpolator           -- Perform cubic interpolation using the Farrow structure.
+   gardnerClockRecovery   -- Perform clock recovery using Gardner's algorithm with a loop PI filter.
+   calcClockDrift         -- Estimate clock drift from relative time delays fed to the interpolator.
 """
+
 import logging as logg
 
 import numpy as np
@@ -91,17 +92,13 @@ def gardnerClockRecovery(Ei, param=None):
         Input array representing the received signal.
     param : core.parameter
         Clock recovery parameters:
-            - kp : Proportional gain for the loop filter. Default is 1e-3.
 
-            - ki : Integral gain for the loop filter. Default is 1e-6.
-
-            - isNyquist: is the pulse shape a Nyquist pulse? Default is True.
-
-            - returnTiming: return estimated timing values. Default is False.
-
-            - lpad: length of zero padding at the end of the input vector. Default is 1.
-
-            - maxPPM: maximum clock rate expected deviation in PPM. Default is 500.
+            - param.kp : Proportional gain for the loop filter. [default: 1e-3]
+            - param.ki : Integral gain for the loop filter. [default: 1e-6]
+            - param.isNyquist: is the pulse shape a Nyquist pulse? [default: True]
+            - param.returnTiming: return estimated timing values. [default: False]
+            - param.lpad: length of zero padding at the end of the input vector. [default: 1]
+            - param.maxPPM: maximum clock rate expected deviation in PPM. [default: 500]
 
     Returns
     -------
@@ -135,7 +132,7 @@ def gardnerClockRecovery(Ei, param=None):
     t_nco_values = np.zeros(Eo.shape, dtype=np.float64)
     last_n = 0
     logg.info(f"Running clock recovery...")
-    
+
     for indMode in range(nModes):
         intPart = 0
         t_nco = 0
@@ -175,10 +172,12 @@ def gardnerClockRecovery(Ei, param=None):
 
         if n > last_n:
             last_n = n
-        
-        logg.info(f"Estimated clock drift mode {indMode}: {calcClockDrift(t_nco_values[:, indMode])[0]:.2f} ppm")
 
-    Eo = Eo[0:last_n, :]   
+        logg.info(
+            f"Estimated clock drift mode {indMode}: {calcClockDrift(t_nco_values[:, indMode])[0]:.2f} ppm"
+        )
+
+    Eo = Eo[0:last_n, :]
 
     if returnTiming:
         return Eo, t_nco_values
@@ -193,12 +192,12 @@ def calcClockDrift(t_nco_values):
     Parameters
     ----------
     t_nco_values : np.array
-        An array containing the relative time delay values provided to the NCO.  
+        An array containing the relative time delay values provided to the NCO.
 
     Returns
     -------
     float
-        The clock deviation in parts per million (ppm).  
+        The clock deviation in parts per million (ppm).
     """
     try:
         t_nco_values.shape[1]
@@ -213,9 +212,9 @@ def calcClockDrift(t_nco_values):
     ppm = np.zeros(nModes)
 
     for indMode in range(nModes):
-        peaks, _ = find_peaks(np.abs(np.diff(timingError[:,indMode])), height=0.5)
-        mean_period = np.mean(np.diff(t[peaks])) # mean period of t_nco_values
-        fo = 1/mean_period
-        ppm[indMode] = np.sign(np.mean(t_nco_values))*fo*1e6
+        peaks, _ = find_peaks(np.abs(np.diff(timingError[:, indMode])), height=0.5)
+        mean_period = np.mean(np.diff(t[peaks]))  # mean period of t_nco_values
+        fo = 1 / mean_period
+        ppm[indMode] = np.sign(np.mean(t_nco_values)) * fo * 1e6
 
     return ppm

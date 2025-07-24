@@ -24,14 +24,14 @@ import logging as logg
 from collections import defaultdict
 
 import numpy as np
-from numba import njit, prange
-from scipy.special import erf
-from scipy.integrate import dblquad
 import scipy.constants as const
+from numba import njit, prange
+from scipy.integrate import dblquad
+from scipy.special import erf
 
-from optic.utils import dB2lin
+from optic.comm.modulation import demodulateGray, grayMapping, minEuclid
 from optic.dsp.core import pnorm, signal_power
-from optic.comm.modulation import grayMapping, demodulateGray, minEuclid
+from optic.utils import dB2lin
 
 
 def bert(Irx, bitsTx=None, seed=123):

@@ -6,9 +6,9 @@ DSP algorithms for equalization (:mod:`optic.dsp.equalization`)
 .. autosummary::
    :toctree: generated/
 
-   edc                 -- Electronic chromatic dispersion compensation (EDC)
-   mimoAdaptEqualizer  -- General N-by-N MIMO adaptive equalizer with several adaptive filtering algorithms available.
-   manakovDBP          -- Manakov SSF digital backpropagation (DBP) algorithm
+   edc                 -- Electronic chromatic dispersion compensation (EDC).
+   mimoAdaptEqualizer  -- General :math:`N \times N` MIMO adaptive equalizer with several adaptive filtering algorithms available.
+   manakovDBP          -- Manakov SSF digital backpropagation (DBP) algorithm.
 """
 
 """Functions for adaptive and static equalization."""
@@ -19,9 +19,10 @@ import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-from optic.dsp.core import pnorm, blockwiseFFTConv
+
 from optic.comm.modulation import grayMapping
-from optic.models.channels import nlinPhaseRot, convergenceCondition
+from optic.dsp.core import blockwiseFFTConv, pnorm
+from optic.models.channels import convergenceCondition, nlinPhaseRot
 
 # try:
 #     from optic.dsp.coreGPU import blockwiseFFTConv
@@ -37,21 +38,15 @@ def edc(Ei, param):
     ----------
     Ei : np.array
         Input optical field.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the optical channel.
+    param : optic.utils.parameters object
+        Parameters of the optical channel.
 
         - param.L: total fiber length [km][default: 50 km]
-
         - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: sampling frequency [Hz] [default: []]
-
         - param.Rs: symbol rate [baud] [default: 32e9]
-
         - param.NfilterCoeffs: number of filter coefficients [default: []]
-
         - param.Nfft: FFT size [default: []]
 
     Returns
@@ -128,36 +123,23 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
         Input array.
     dx : np.array, optional
         Syncronized exact symbol sequence corresponding to the received input array x.
-    param : object, optional
+    param : optic.utils.parameters object, optional
         Parameter object containing the following attributes:
 
-        - numIter : int, number of pre-convergence iterations (default: 1)
-
-        - nTaps : int, number of filter taps (default: 15)
-
-        - mu : float or list of floats, step size parameter(s) (default: [1e-3])
-
-        - lambdaRLS : float, RLS forgetting factor (default: 0.99)
-
-        - SpS : int, samples per symbol (default: 2)
-
-        - H : np.array, coefficient matrix (default: [])
-
-        - L : int or list of ints, length of the output of the training section (default: [])
-
-        - Hiter : list, history of coefficient matrices (default: [])
-
-        - storeCoeff : bool, flag indicating whether to store coefficient matrices (default: False)
-
-        - runWL: bool, flag indicating whether to run the equalizer in the widely-linear mode. (default: False)
-
-        - alg : str or list of strs, specifying the equalizer algorithm(s) (default: ['nlms'])
-
-        - constType : str, constellation type (default: 'qam')
-
-        - M : int, modulation order (default: 4)
-
-        - prgsBar : bool, flag indicating whether to display progress bar (default: True)
+        - numIter : int, number of pre-convergence iterations [default: 1]
+        - nTaps : int, number of filter taps [default: 15]
+        - mu : float or list of floats, step size parameter(s) [default: [1e-3]]
+        - lambdaRLS : float, RLS forgetting factor [default: 0.99]
+        - SpS : int, samples per symbol [default: 2]
+        - H : np.array, coefficient matrix [default: []]
+        - L : int or list of ints, length of the output of the training section [default: []]
+        - Hiter : list, history of coefficient matrices [default: []]
+        - storeCoeff : bool, flag indicating whether to store coefficient matrices [default: False]
+        - runWL: bool, flag indicating whether to run the equalizer in the widely-linear mode [default: False]
+        - alg : str or list of strs, specifying the equalizer algorithm(s) [default: ['nlms']]
+        - constType : str, constellation type [default: 'qam']
+        - M : int, modulation order [default: 4]
+        - prgsBar : bool, flag indicating whether to display progress bar [default: True]
 
     Returns
     -------
@@ -909,41 +891,25 @@ def manakovDBP(Ei, param):
     ----------
     Ei : np.array
         Input optical signal field.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the optical channel.
+    param : optic.utils.parameters object
+        Physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
-
         - param.Lspan: span length [km][default: 80 km]
-
         - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-
         - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-
         - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
         - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: simulation sampling frequency [samples/second][default: None]
-
         - param.prec: numerical precision [default: np.complex128]
-
         - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-
         - param.maxIter: max number of iter. in the trap. integration [default: 10]
-
         - param.tol: convergence tol. of the trap. integration.[default: 1e-5]
-
         - param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
-
         - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
-
         - param.prgsBar: display progress bar? bolean variable [default:True]
-
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
-
         - param.returnParameters: bool, return channel parameters [default: False]
 
 
@@ -1013,7 +979,7 @@ def manakovDBP(Ei, param):
     # generate frequency axis
     Nfft = len(Ei)
     ω = 2 * np.pi * Fs * fftfreq(Nfft).astype(prec)
-  
+
     Ech_x = Ei[:, 0::2].T
     Ech_y = Ei[:, 1::2].T
 

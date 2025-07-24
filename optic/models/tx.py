@@ -21,6 +21,7 @@ from optic.utils import parameters, dBm2W
 
 try:
     from optic.dsp.coreGPU import checkGPU
+
     if checkGPU():
         from optic.dsp.coreGPU import firFilter
     else:
@@ -40,8 +41,8 @@ def simpleWDMTx(param):
 
     Parameters
     ----------
-    param : system parameters of the WDM transmitter.
-        optic.core.parameter object.
+    param : optic.core.parameter object, optional
+         Parameters of the WDM transmitter.
 
         - param.M: modulation order [default: 16].
 
@@ -135,15 +136,15 @@ def simpleWDMTx(param):
     paramSymb.shapingFactor = param.shapingFactor
 
     # Pulse shaping filter parameters
-    paramPulse = parameters()   
+    paramPulse = parameters()
     paramPulse.pulse = param.pulse
     paramPulse.nPulseTaps = param.nPulseTaps
     paramPulse.rollOff = param.pulseRollOff
     paramPulse.SpS = param.SpS
 
-    # pulse shaping filter   
+    # pulse shaping filter
     pulse = pulseShape(paramPulse)
-    
+
     # central frequencies of the WDM channels
     freqGrid = (
         np.arange(-np.floor(param.nChannels / 2), np.floor(param.nChannels / 2) + 1, 1)
@@ -175,7 +176,7 @@ def simpleWDMTx(param):
     )
 
     Psig = 0
-    
+
     if param.seed is not None:
         seed = param.seed
     else:
@@ -207,7 +208,7 @@ def simpleWDMTx(param):
 
             # pulse shaping
             sigTx = firFilter(pulse, symbolsUp)
-            sigTx = sigTx / np.max(np.abs(sigTx)) # normalize signal to amplitude 1
+            sigTx = sigTx / np.max(np.abs(sigTx))  # normalize signal to amplitude 1
 
             # optical modulation
             if indMode == 0:  # generate LO field with phase noise

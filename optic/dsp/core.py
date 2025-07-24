@@ -6,35 +6,36 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
 .. autosummary::
    :toctree: generated/
 
-   sigPow                 -- Calculate the average power of x
-   signal_power           -- Calculate the total average power of x
-   firFilter              -- Perform FIR filtering and compensate for filter delay
-   rrcFilterTaps          -- Generate Root-Raised Cosine (RRC) filter coefficients
-   rcFilterTaps           -- Generate Raised Cosine (RC) filter coefficients
-   pulseShape             -- Generate a pulse shaping filter
-   clockSamplingInterp    -- Interpolate signal to a given sampling rate
-   quantizer              -- Quantize the input signal using a uniform quantizer 
-   lowPassFIR             -- Calculate FIR coefficients of a lowpass filter
-   decimate               -- Decimate signal
-   resample               -- Signal resampling
-   upsample               -- Upsample a signal by inserting zeros between samples
-   symbolSync             -- Synchronizer delayed sequences of symbols
-   finddelay              -- Estimate the delay between sequences of symbols
-   pnorm                  -- Normalize the average power of each componennt of x
-   gaussianComplexNoise   -- Generate complex-valued circular Gaussian noise
-   gaussianNoise          -- Generate Gaussian noise
-   phaseNoise             -- Generate realization of a random-walk phase-noise process
-   movingAverage          -- Calculate the sliding window moving average
-   delaySignal            -- Apply a time delay to a signal
-   blockwiseFFTConv       -- Calculates convolutions in the frequency domain
+   sigPow                 -- Calculate the average power of x.
+   signal_power           -- Calculate the total average power of x.
+   firFilter              -- Perform FIR filtering and compensate for filter delay.
+   rrcFilterTaps          -- Generate Root-Raised Cosine (RRC) filter coefficients.
+   rcFilterTaps           -- Generate Raised Cosine (RC) filter coefficients.
+   pulseShape             -- Generate a pulse shaping filter.
+   clockSamplingInterp    -- Interpolate signal to a given sampling rate.
+   quantizer              -- Quantize the input signal using a uniform quantizer.
+   lowPassFIR             -- Calculate FIR coefficients of a lowpass filter.
+   decimate               -- Decimate signal.
+   resample               -- Signal resampling.
+   upsample               -- Upsample a signal by inserting zeros between samples.
+   symbolSync             -- Synchronizer delayed sequences of symbols.
+   finddelay              -- Estimate the delay between sequences of symbols.
+   pnorm                  -- Normalize the average power of each componennt of x.
+   gaussianComplexNoise   -- Generate complex-valued circular Gaussian noise.
+   gaussianNoise          -- Generate Gaussian noise.
+   phaseNoise             -- Generate realization of a random-walk phase-noise process.
+   movingAverage          -- Calculate the sliding window moving average.
+   delaySignal            -- Apply a time delay to a signal.
+   blockwiseFFTConv       -- Calculates convolutions in the frequency domain.
 """
 
 """Digital signal processing utilities."""
 import logging as logg
+
 import numpy as np
 from numba import njit, prange
+from numpy.fft import fft, fftfreq, fftshift, ifft
 from scipy import signal
-from numpy.fft import fft, ifft, fftfreq, fftshift
 
 
 @njit

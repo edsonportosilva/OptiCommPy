@@ -7,12 +7,13 @@ DSP algorithms for carrier phase and frequency recovery (:mod:`optic.dsp.carrier
    :toctree: generated/
    :nosignatures:
 
-   bps            -- Blind phase search (BPS) carrier phase recovery algorithm
-   ddpll          -- Decision-directed phase-locked loop (DD-PLL) carrier phase recovery algorithm
-   viterbi        -- Viterbi & Viterbi carrier phase recovery algorithm
-   fourthPowerFOE -- Frequency offset (FO) estimation and compensation with the 4th-power method
-   cpr            -- General function to call and configure any of the CPR algorithms in this module   
+   bps            -- Blind phase search (BPS) carrier phase recovery algorithm.
+   ddpll          -- Decision-directed phase-locked loop (DD-PLL) carrier phase recovery algorithm.
+   viterbi        -- Viterbi & Viterbi carrier phase recovery algorithm.
+   fourthPowerFOE -- Frequency offset (FO) estimation and compensation with the 4th-power method.
+   cpr            -- General function to call and configure any of the CPR algorithms in this module.
 """
+
 import logging as logg
 
 import matplotlib.pyplot as plt
@@ -20,15 +21,16 @@ import numpy as np
 from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
 
-from optic.dsp.core import pnorm, movingAverage
 from optic.comm.modulation import grayMapping
+from optic.dsp.core import movingAverage, pnorm
 
 try:
     from optic.dsp.coreGPU import checkGPU
+
     if checkGPU():
-        from optic.dsp.carrierRecoveryGPU import bpsGPU 
+        from optic.dsp.carrierRecoveryGPU import bpsGPU
     else:
-        pass        
+        pass
 except ImportError:
     pass
 
@@ -41,8 +43,8 @@ def cpr(Ei, param=None, symbTx=None):
     ----------
     Ei : complex-valued np.array
         received constellation symbols.
-    param : core.param object, optional
-        configuration parameters. The default is [].
+    param : optic.utils.parameter object, optional
+        Configuration parameters [default: None].
 
         - param.alg: CPR algorithm to be used ['bps', 'bpsGPU', 'ddpll', or 'viterbi']
 
@@ -50,30 +52,24 @@ def cpr(Ei, param=None, symbTx=None):
 
         BPS params:
 
-        - param.M: constellation order. The default is 4.
-
-        - param.N: length of BPS the moving average window. The default is 35.
-
-        - param.B: number of BPS test phases. The default is 64.
+        - param.M: constellation order. [default: 4]
+        - param.N: length of BPS the moving average window. [default: 35]
+        - param.B: number of BPS test phases. [default: 64]
 
         DDPLL params:
 
-        - param.tau1: DDPLL loop filter param. 1. The default is 1/2*pi*10e6.
-
-        - param.tau2: DDPLL loop filter param. 2. The default is 1/2*pi*10e6.
-
-        - param.Kv: DDPLL loop filter gain. The default is 0.1.
-
-        - param.Ts: symbol period. The default is 1/32e9.
-
+        - param.tau1: DDPLL loop filter param. 1. [default: 1/2*pi*10e6]
+        - param.tau2: DDPLL loop filter param. 2. [default: 1/2*pi*10e6]
+        - param.Kv: DDPLL loop filter gain. [default: 0.1]
+        - param.Ts: symbol period. [default: 1/32e9]
         - param.pilotInd: indexes of pilot-symbol locations.
 
         Viterbi params:
 
-        - param.N: length of the moving average window. The default is 35.
+        - param.N: length of the moving average window. [default: 35]
 
     symbTx :complex-valued np.array, optional
-        Transmitted symbol sequence. The default is [].
+        Transmitted symbol sequence. [default: None]
 
     Raises
     ------
@@ -87,13 +83,13 @@ def cpr(Ei, param=None, symbTx=None):
         Phase-compensated signal.
     θ : real-valued np.array
         Time-varying estimated phase-shifts.
-    
+
     References
     ----------
     [1] T. Pfau, S. Hoffmann, e R. Noé, “Hardware-efficient coherent digital receiver concept with feedforward carrier recovery for M-QAM constellations”, Journal of Lightwave Technology, vol. 27, nº 8, p. 989–999, 2009, doi: 10.1109/JLT.2008.2010511.
 
     [2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
-    
+
     [3] H. Meyer, Digital Communication Receivers: Synchronization, Channel estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
     """
     if symbTx is None:
@@ -137,7 +133,7 @@ def cpr(Ei, param=None, symbTx=None):
     elif alg == "bps":
         logg.info(f"Running BPS carrier phase recovery...")
         θ = bps(Ei, N // 2, constSymb, B)
-    elif alg == "bpsGPU": 
+    elif alg == "bpsGPU":
         try:
             logg.info("Running GPU-based BPS carrier phase recovery...")
             θ = bpsGPU(Ei, N // 2, constSymb, B)
@@ -308,15 +304,13 @@ def viterbi(Ei, N=35, M=4):
     -------
     np.array, float
         Estimated phase error.
-    
+
     References
     ----------
     [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
     """
     return (
-        -np.unwrap(
-            np.angle(movingAverage(Ei**M, N)) / M, period=2 * np.pi / M, axis=0
-        )
+        -np.unwrap(np.angle(movingAverage(Ei**M, N)) / M, period=2 * np.pi / M, axis=0)
         - np.pi / 4
     )
 
@@ -339,7 +333,7 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
     np.array, float
         - The output signal after applying frequency offset correction.
         - The estimated frequency offset.
-    
+
     References
     ----------
     [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.

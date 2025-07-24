@@ -7,8 +7,8 @@ Functions adapted to run with GPU (CuPy) processing (:mod:`optic.models.modelsGP
    :toctree: generated/
 
    ssfm           -- Nonlinear fiber optic channel model based on the NLSE equation [GPU].
-   manakovSSF     -- Nonlinear fiber optic channel model based on the Manakov equation [GPU].  
-   manakovDBP     -- Manakov SSF digital backpropagation [GPU]. 
+   manakovSSF     -- Nonlinear fiber optic channel model based on the Manakov equation [GPU].
+   manakovDBP     -- Manakov SSF digital backpropagation [GPU].
    edfa           -- Simple EDFA model (gain + AWGN noise)[GPU].
 """
 
@@ -18,13 +18,13 @@ import logging as logg
 import cupy as cp
 import numpy as np
 import scipy.constants as const
+from cupy.fft import fft, fftfreq, ifft
 from cupy.linalg import norm
 from cupy.random import normal
-from cupy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
-from optic.utils import parameters
 from optic.dsp.core import signal_power
+from optic.utils import parameters
 
 
 def gaussianComplexNoise(shapeOut, σ2=1.0, seed=None):
@@ -61,14 +61,13 @@ def edfa(Ei, param):
     ----------
     Ei : np.array
         Input signal field.
-    param : parameter object (struct), optional
-        Parameters of the edfa.
+    param : optic.utils.parameters object, optional
+        Parameters of the EDFA model.
 
-        - param.G : amplifier gain in dB. The default is 20.
-        - param.NF : EDFA noise figure in dB. The default is 4.5.
-        - param.Fc : central optical frequency. The default is 193.1e12.
-        - param.Fs : sampling frequency in samples/second.
-        - param.seed : seed for the random number generator. The default is None.
+        - param.G : amplifier gain in dB [default: 20 dB].
+        - param.NF : EDFA noise figure in dB [default: 4.5 dB].
+        - param.Fc : central optical frequency [default: 193.1e12 Hz].
+        - param.Fs : sampling frequency in samples/second [default: None].
 
     Returns
     -------
@@ -115,55 +114,47 @@ def edfa(Ei, param):
 
 def ssfm(Ei, param):
     """
-    Split-step Fourier method (symmetric, single-pol.).
+        Split-step Fourier method (symmetric, single-pol.).
 
-    Parameters
-    ----------
-    Ei : np.array
-        Input optical signal field.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the optical channel.
+        Parameters
+        ----------
+        Ei : np.array
+            Input optical signal field.
+        param : optic.utils.parameters object
+            Physical/simulation parameters of the optical channel.
 
-        - param.Ltotal: total fiber length [km][default: 400 km]
+            - param.Ltotal: total fiber length [km][default: 400 km]
+            - param.Lspan: span length [km][default: 80 km]
+            - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+            - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+            - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+            - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+            - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+            - param.Fs: simulation sampling frequency [samples/second][default: None]
+            - param.prec: numerical precision [default: cp.complex128]
+            - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+            - param.NF: edfa noise figure [dB] [default: 4.5 dB]
+    <<<<<<< HEAD
 
-        - param.Lspan: span length [km][default: 80 km]
+            - param.seed: seed for the random number generator [default: None].
 
-        - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+    =======
+    >>>>>>> main
+            - param.prgsBar: display progress bar? bolean variable [default:True]
+            - param.returnParameters: bool, return channel parameters [default: False]
 
-        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+        Returns
+        -------
+        Ech : np.array
+            Optical signal after nonlinear propagation.
+        param : optic.utils.parameters object
+            Object with physical/simulation parameters used in the split-step alg.
 
-        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+        References
+        ----------
+        [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013.
 
-        - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-
-        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
-        - param.Fs: simulation sampling frequency [samples/second][default: None]
-
-        - param.prec: numerical precision [default: cp.complex128]
-
-        - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-
-        - param.NF: edfa noise figure [dB] [default: 4.5 dB]
-
-        - param.seed: seed for the random number generator [default: None].
-
-        - param.prgsBar: display progress bar? bolean variable [default:True]
-
-        - param.returnParameters: bool, return channel parameters [default: False]
-
-    Returns
-    -------
-    Ech : np.array
-        Optical signal after nonlinear propagation.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters used in the split-step alg.
-
-    References
-    ----------
-    [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013.
-
-    [2] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
+        [2] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
 
 
     """
@@ -296,52 +287,34 @@ def manakovSSF(Ei, param):
     Ei : np.array
         Input optical signal field.
 
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the optical channel.
+    param : optic.utils.parameters object
+         Physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
-
         - param.Lspan: span length [km][default: 80 km]
-
         - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-
         - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-
         - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
         - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: simulation sampling frequency [samples/second][default: None]
-
         - param.prec: numerical precision [default: cp.complex128]
-
         - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-
         - param.NF: edfa noise figure [dB] [default: 4.5 dB]
-
         - param.maxIter: max number of iter. in the trap. integration [default: 10]
-
         - param.tol: convergence tol. of the trap. integration.[default: 1e-5]
-
         - param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
-
         - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
-
         - param.seed: seed for the random number generator [default: None]
-
         - param.prgsBar: display progress bar? bolean variable [default:True]
-
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
-
         - param.returnParameters: bool, return channel parameters [default: False]
 
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
 
     References
@@ -594,41 +567,25 @@ def manakovDBP(Ei, param):
     ----------
     Ei : np.array
         Input optical signal field.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
-
         - param.Lspan: span length [km][default: 80 km]
-
         - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-
         - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-
         - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
         - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: simulation sampling frequency [samples/second][default: None]
-
         - param.prec: numerical precision [default: cp.complex128]
-
         - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-
         - param.maxIter: max number of iter. in the trap. integration [default: 10]
-
         - param.tol: convergence tol. of the trap. integration.[default: 1e-5]
-
         - param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
-
         - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
-
         - param.prgsBar: display progress bar? bolean variable [default:True]
-
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
-
         - param.returnParameters: bool, return channel parameters [default: False]
 
 
@@ -636,7 +593,7 @@ def manakovDBP(Ei, param):
     -------
     Ech : np.array
         Optical signal after nonlinear backward propagation.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
 
     References
