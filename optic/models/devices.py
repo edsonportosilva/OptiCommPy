@@ -604,6 +604,7 @@ def basicLaserModel(param=None):
         - param.RIN_var: variance of the RIN noise [default: 1e-20]
         - param.Fs: sampling rate [samples/s]
         - param.Ns: number of signal samples [default: 1e3]
+        - param.seed: random seed for noise generation [default: None]
 
     Returns
     -------
@@ -626,13 +627,18 @@ def basicLaserModel(param=None):
     Ns = getattr(param, "Ns", 1000)  # Number of samples of the signal
     seed = getattr(param, "seed", None)  # Seed for the random number generator
 
-    t = np.arange(0, Ns) * 1 / Fs
+    if seed is None:
+        seedPN = None
+        seedRIN = None
+    else:
+        seedPN = seed
+        seedRIN = seed + 1  # to ensure different seeds for phase noise and RIN
 
     # Simulate Maxwellian random walk phase noise
-    pn = phaseNoise(lw, Ns, 1 / Fs, seed)
+    pn = phaseNoise(lw, Ns, 1 / Fs, seedPN)
 
     # Simulate relative intensity noise  (RIN)[todo:check correct model]
-    deltaP = gaussianComplexNoise(pn.shape, RIN_var, seed)
+    deltaP = gaussianComplexNoise(pn.shape, RIN_var, seedRIN)
 
     # Return optical signal
     return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * pn)
