@@ -19,6 +19,7 @@ General utilities (:mod:`optic.utils`)
 
 """General utilities."""
 import numpy as np
+import copy
 from numba import njit
 from scipy.special import erfcinv
 
@@ -44,24 +45,26 @@ class parameters:
 
     def to_engineering_notation(self, value):
         prefixes = {
-            -12: 'p',  # pico
-            -9:  'n',  # nano
-            -6:  'µ',  # micro
-            -3:  'm',  # milli
-             0:  '',   # base unit (no prefix)
-             3:  'k',  # kilo
-             6:  'M',  # mega
-             9:  'G',  # giga
-            12:  'T',  # tera
-            15:  'P',  # peta
+            -12: "p",  # pico
+            -9: "n",  # nano
+            -6: "µ",  # micro
+            -3: "m",  # milli
+            0: "",  # base unit (no prefix)
+            3: "k",  # kilo
+            6: "M",  # mega
+            9: "G",  # giga
+            12: "T",  # tera
+            15: "P",  # peta
         }
 
-        if isinstance(value, (int, float)) and (abs(value) >= 10000 or (0 < abs(value) < 0.0001)):
+        if isinstance(value, (int, float)) and (
+            abs(value) >= 10000 or (0 < abs(value) < 0.0001)
+        ):
             exponent = int(np.floor(np.log10(abs(value))))  # Calculate the exponent
             exponent = (exponent // 3) * 3  # Round to nearest multiple of 3
 
-            scaled_value = value / (10 ** exponent)  # Scale the value
-            prefix = prefixes.get(exponent, '')  # Get the corresponding prefix
+            scaled_value = value / (10**exponent)  # Scale the value
+            prefix = prefixes.get(exponent, "")  # Get the corresponding prefix
 
             return f"{scaled_value:.1f} {prefix}"
         return value
@@ -70,7 +73,7 @@ class parameters:
         attributes = vars(self)
         markdown = "| Parameter Name | Value |\n"
         markdown += "|----------------|-----------------|\n"
-        
+
         for name, value in attributes.items():
             if isinstance(value, (list, np.ndarray, tuple)):
                 markdown += f"| {name} | Array |\n"
@@ -78,7 +81,7 @@ class parameters:
                 # Apply engineering notation where necessary
                 formatted_value = self.to_engineering_notation(value)
                 markdown += f"| {name} | {formatted_value} |\n"
-        
+
         return print(markdown)
 
     def latex_table(self):
@@ -87,7 +90,7 @@ class parameters:
         latex += "\\hline\n"
         latex += "Parameter Name & Value \\\\\n"
         latex += "\\hline\n"
-        
+
         for name, value in attributes.items():
             if isinstance(value, (list, np.ndarray, tuple)):
                 latex += f"{name} & Array \\\\\n"
@@ -96,9 +99,22 @@ class parameters:
                 formatted_value = self.to_engineering_notation(value)
                 latex += f"{name} & {formatted_value} \\\\\n"
             latex += "\\hline\n"
-        
+
         latex += "\\end{tabular}"
         return print(latex)
+
+    def copy(self):
+        """
+        Returns a deep copy of the parameters object.
+
+        This method creates a new instance of the parameters class with the same attributes and values.
+
+        Returns
+        -------
+        parameters
+            A new instance of the parameters class with copied attributes.
+        """
+        return copy.deepcopy(self)
 
 
 def lin2dB(x):
