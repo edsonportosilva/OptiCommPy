@@ -45,39 +45,22 @@ def simpleWDMTx(param):
          Parameters of the WDM transmitter.
 
         - param.M: modulation order [default: 16].
-
         - param.constType: 'qam' or 'psk' [default: 'qam'].
-
         - param.Rs: carrier baud rate [baud][default: 32e9].
-
         - param.SpS: samples per symbol [default: 16].
-
         - param.probabilityDistribution: probability distribution of the symbols [default: 'uniform'].
-
         - param.shapingFactor: shaping factor of the symbols [default: 0].
-
         - param.seed: seed for the random number generator [default: None].
-
         - param.nBits: total number of bits per carrier [default: 60000].
-
         - param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc'].
-
-        - param.nPulseTaps: number of coefficients of the rrc filter [default: 4096].
-
+        - param.nPulseTaps: number of coefficients of the rrc filter [default: 1024].
         - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
-
         - param.mzmScale: MZM modulation scale factor Vrf/Vpi [default: 0.25].
-
         - param.powerPerChannel: launched power per WDM channel [dBm][default:-3 dBm].
-
         - param.nChannels: number of WDM channels [default: 5].
-
         - param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz].
-
         - param.laserLinewidth: laser linewidth [Hz][default: 100 kHz].
-
         - param.wdmGridSpacing: frequency spacing of the WDM grid [Hz][default: 40e9 Hz].
-
         - param.nPolModes: number of polarization modes [default: 1].
 
     Returns
@@ -99,8 +82,8 @@ def simpleWDMTx(param):
     param.shapingFactor = getattr(param, "shapingFactor", 0)
     param.seed = getattr(param, "seed", None)
     param.nBits = getattr(param, "nBits", 60000)
-    param.pulse = getattr(param, "pulse", "rrc")
-    param.nPulseTaps = getattr(param, "nPulseTaps", 4096)
+    param.pulseType = getattr(param, "pulseType", "rrc")
+    param.nFilterTaps = getattr(param, "nFilterTaps", 1024)
     param.pulseRollOff = getattr(param, "pulseRollOff", 0.01)
     param.mzmScale = getattr(param, "mzmScale", 0.5)
     param.powerPerChannel = getattr(param, "powerPerChannel", -3)
@@ -137,8 +120,8 @@ def simpleWDMTx(param):
 
     # Pulse shaping filter parameters
     paramPulse = parameters()
-    paramPulse.pulse = param.pulse
-    paramPulse.nPulseTaps = param.nPulseTaps
+    paramPulse.pulseType = param.pulseType
+    paramPulse.nFilterTaps = param.nFilterTaps
     paramPulse.rollOff = param.pulseRollOff
     paramPulse.SpS = param.SpS
 
