@@ -114,47 +114,42 @@ def edfa(Ei, param):
 
 def ssfm(Ei, param):
     """
-        Split-step Fourier method (symmetric, single-pol.).
+    Split-step Fourier method (symmetric, single-pol.).
 
-        Parameters
-        ----------
-        Ei : np.array
-            Input optical signal field.
-        param : optic.utils.parameters object
-            Physical/simulation parameters of the optical channel.
+    Parameters
+    ----------
+    Ei : np.array
+        Input optical signal field.
+    param : optic.utils.parameters object
+        Physical/simulation parameters of the optical channel.
 
-            - param.Ltotal: total fiber length [km][default: 400 km]
-            - param.Lspan: span length [km][default: 80 km]
-            - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-            - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-            - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-            - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-            - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-            - param.Fs: simulation sampling frequency [samples/second][default: None]
-            - param.prec: numerical precision [default: cp.complex128]
-            - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-            - param.NF: edfa noise figure [dB] [default: 4.5 dB]
-    <<<<<<< HEAD
+        - param.Ltotal: total fiber length [km][default: 400 km]
+        - param.Lspan: span length [km][default: 80 km]
+        - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
+        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+        - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
+        - param.Fs: simulation sampling frequency [samples/second][default: None]
+        - param.prec: numerical precision [default: cp.complex128]
+        - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
+        - param.NF: edfa noise figure [dB] [default: 4.5 dB]
+        - param.seed: seed for the random number generator [default: None].
+        - param.prgsBar: display progress bar? bolean variable [default:True]
+        - param.returnParameters: bool, return channel parameters [default: False]
 
-            - param.seed: seed for the random number generator [default: None].
+    Returns
+    -------
+    Ech : np.array
+        Optical signal after nonlinear propagation.
+    param : optic.utils.parameters object
+        Object with physical/simulation parameters used in the split-step alg.
 
-    =======
-    >>>>>>> main
-            - param.prgsBar: display progress bar? bolean variable [default:True]
-            - param.returnParameters: bool, return channel parameters [default: False]
+    References
+    ----------
+    [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013.
 
-        Returns
-        -------
-        Ech : np.array
-            Optical signal after nonlinear propagation.
-        param : optic.utils.parameters object
-            Object with physical/simulation parameters used in the split-step alg.
-
-        References
-        ----------
-        [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013.
-
-        [2] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
+    [2] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
 
 
     """
@@ -258,6 +253,8 @@ def ssfm(Ei, param):
         # amplification step
         Ech = ifft(Ech)
         if amp == "edfa":
+            if seed is not None:
+                paramAmp.seed = seed + spanN
             Ech = edfa(Ech, paramAmp)
         elif amp == "ideal":
             Ech = Ech * cp.exp(α / 2 * Nsteps * hz)
@@ -483,6 +480,8 @@ def manakovSSF(Ei, param):
 
         # amplification step
         if amp == "edfa":
+            if seed is not None:
+                paramAmp.seed = seed + spanN  # change seed for each span
             Ech_x = edfa(Ech_x, paramAmp)
             Ech_y = edfa(Ech_y, paramAmp)
         elif amp == "ideal":
