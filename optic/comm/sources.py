@@ -8,7 +8,7 @@ Sources of discrete sequences (:mod:`optic.comm.sources`)
 
    bitSource          -- Generate a random bit sequence of length nBits.
    prbsGenerator      -- Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.
-   symbolSource       -- Generate a random symbol sequence from a given modulation scheme.  
+   symbolSource       -- Generate a random symbol sequence from a given modulation scheme.
    cazacSequence      -- Generate a CAZAC (Zadoff-Chu) sequence of length N.
 """
 
@@ -26,15 +26,13 @@ def bitSource(param):
 
     Parameters
     ----------
-    param : parameter object
-        Parameter object containing the following attributes:
+    param : optic.utils.parameters
+        Parameters for the bit source:
+
         - nBits : int, optional. The number of bits in the sequence. [default: 1000]
-
-        - mode : str, optional. The mode of the bit generation. If 'random', a sequence of random bits is generated. If 'prbs', a pseudo-random binary sequence (PRBS) is generated. [default: 'random']
-
-        - order : int, optional. The order of the PRBS generator. Only used if `mode` is 'prbs'. If not specified, a default order of 23 is used.
-
-        - seed : int, optional. The seed for the random number generator. Only applicable when `mode` is 'random'. If not provided, a random seed will be used.
+        - mode : str, optional. The mode of the bit generation. If 'random', a sequence of random bits is generated. If 'prbs', a pseudo-random binary sequence (PRBS) is generated [default: 'random'].
+        - order : int, optional. The order of the PRBS generator. Only used if `mode` is 'prbs' [default: 23].
+        - seed : int, optional. The seed for the random number generator. Only applicable when `mode` is 'random' [default: None].
 
     Returns
     -------
@@ -131,20 +129,15 @@ def symbolSource(param):
 
     Parameters
     ----------
-    param : parameter object
-        Parameter object containing the following attributes:
+    param : optic.utils.parameters object
+        Parameters of the symbol source:
+
         - nSymbols : int, optional. The number of symbols to generate. [default: 1000]
-
         - M : int, optional. The modulation order, defining the size of the constellation. [default: 4]
-
         - constType : str, optional. The type of modulation scheme. Supported types are 'qam', 'pam', 'psk', and 'apsk'. [default: 'qam'].
-
         - dist : str, optional. The probability distribution for generating symbols. Options are 'uniform' or 'maxwell-boltzmann' [default: 'uniform'].
-
         - shapingFactor : float, optional. The shaping factor applied when `dist` is 'maxwell-boltzmann'. Controls the shaping of the constellation points. [default: 0.0].
-
         - px : array-like, optional. Custom probability distribution for the constellation points. If `None`, the distribution is determined by `dist`. [default: None].
-
         - seed : int, optional. Seed for the random number generator to ensure reproducibility [default: None].
 
     Returns
