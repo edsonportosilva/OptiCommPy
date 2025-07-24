@@ -60,7 +60,7 @@ def bitSource(param):
         bits = np.random.randint(0, 2, nBits)
     elif mode == "prbs":
         if order is None:
-            logg.warn("PRBS order not specified. Using the default order 23.")
+            logg.warning("PRBS order not specified. Using the default order 23.")
             prbs = prbsGenerator()
         else:
             prbs = prbsGenerator(order)
