@@ -293,7 +293,6 @@ def photodiode(E, param=None):
         - param.thermalNoise: add thermal noise to photocurrent. [default: True]
         - param.currentSaturation: consider photocurrent saturation. [default: False]
         - param.bandwidthLimitation: consider bandwidth limitation. [default: True]
-
         - param.seed: seed for the random number generator [default: None]
 
     Returns
@@ -398,6 +397,7 @@ def balancedPD(E1, E2, param=None):
         - param.fType: frequency response type [default: 'rect'].
         - param.N: number of the frequency resp. filter taps. [default: 8001].
         - param.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True].
+        - param.seed: seed for the random number generator [default: None].
 
     Returns
     -------
@@ -412,8 +412,17 @@ def balancedPD(E1, E2, param=None):
     """
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
-    i1 = photodiode(E1, param)
-    i2 = photodiode(E2, param)
+    # duplicate PD parameters:
+    paramPD1 = param.copy()
+    paramPD2 = param.copy()
+
+    # in case the seed is provided, make sure to use different seeds for each photodiode
+    if param.seed is not None:
+        paramPD1.seed = param.seed
+        paramPD2.seed = param.seed + 1  # to ensure different seeds for each photodiode
+
+    i1 = photodiode(E1, paramPD1)
+    i2 = photodiode(E2, paramPD2)
     return i1 - i2
 
 
@@ -548,6 +557,7 @@ def edfa(Ei, param=None):
         - param.NF : EDFA noise figure [dB][default: 4.5 dB]
         - param.Fc : central optical frequency [Hz][default: 193.1 THz]
         - param.Fs : sampling frequency in [samples/s]
+        - param.seed : random seed for noise generation [default: None]
 
     Returns
     -------
