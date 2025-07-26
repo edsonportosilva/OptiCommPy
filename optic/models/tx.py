@@ -308,7 +308,7 @@ def pamTransmitter(param):
             seed = None
 
         # generate pseudo-random bit sequence
-        paramSymb.seed = seed
+        paramSymb.seed = seed + indMode
         symbTx_ = symbolSource(paramSymb)
 
         # upsampling
