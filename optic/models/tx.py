@@ -41,21 +41,21 @@ def simpleWDMTx(param):
 
     Parameters
     ----------
-    param : optic.core.parameter object, optional
+    param : optic.core.parameter object
          Parameters of the WDM transmitter.
 
         - param.M: modulation order [default: 16].
         - param.constType: 'qam' or 'psk' [default: 'qam'].
         - param.Rs: carrier baud rate [baud][default: 32e9].
         - param.SpS: samples per symbol [default: 16].
-        - param.probabilityDistribution: probability distribution of the symbols [default: 'uniform'].
+        - param.probDist: pmf type of the symbol source, either 'uniform' or 'maxwell-boltzmann' [default: 'uniform'].
         - param.shapingFactor: shaping factor of the symbols [default: 0].
         - param.seed: seed for the random number generator [default: None].
         - param.nBits: total number of bits per carrier [default: 60000].
         - param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc'].
         - param.nPulseTaps: number of coefficients of the rrc filter [default: 1024].
         - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
-        - param.mzmScale: MZM modulation scale factor Vrf/Vpi [default: 0.25].
+        - param.mzmScale: MZM modulation scale factor Vrf/Vpi [default: 0.5].
         - param.powerPerChannel: launched power per WDM channel [dBm][default:-3 dBm].
         - param.nChannels: number of WDM channels [default: 5].
         - param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz].
@@ -78,7 +78,7 @@ def simpleWDMTx(param):
     param.constType = getattr(param, "constType", "qam")
     param.Rs = getattr(param, "Rs", 32e9)
     param.SpS = getattr(param, "SpS", 16)
-    param.probabilityDistribution = getattr(param, "probabilityDistribution", "uniform")
+    param.probDist = getattr(param, "probDist", "uniform")
     param.shapingFactor = getattr(param, "shapingFactor", 0)
     param.seed = getattr(param, "seed", None)
     param.nBits = getattr(param, "nBits", 60000)
@@ -101,9 +101,9 @@ def simpleWDMTx(param):
 
     # get constellation pmf
     constSymb = grayMapping(param.M, param.constType)
-    if param.probabilityDistribution == "uniform":
+    if param.probDist == "uniform":
         px = np.ones(param.M) / param.M
-    elif param.probabilityDistribution == "maxwell-boltzmann":
+    elif param.probDist == "maxwell-boltzmann":
         px = np.exp(-param.shapingFactor * np.abs(constSymb) ** 2)
         px = px / np.sum(px)
     else:
@@ -115,7 +115,7 @@ def simpleWDMTx(param):
     paramSymb.nSymbols = param.nBits // int(np.log2(param.M))
     paramSymb.M = param.M
     paramSymb.constType = param.constType
-    paramSymb.dist = param.probabilityDistribution
+    paramSymb.dist = param.probDist
     paramSymb.shapingFactor = param.shapingFactor
 
     # Pulse shaping filter parameters
@@ -228,31 +228,20 @@ def pamTransmitter(param):
 
     Parameters
     ----------
-    param : system parameters of the PAM transmitter.
-        optic.core.parameter object.
+    param :  optic.core.parameter object
+         Parameters of the PAM transmitter.
 
         - param.M: modulation order [default: 4].
-
         - param.Rs: symbol rate [baud][default: 32e9].
-
         - param.SpS: samples per symbol [default: 16].
-
-        - param.probabilityDistribution: probability distribution of the symbols [default: 'uniform'].
-
+        - param.probDist: pmf type of the symbol source, either 'uniform' or 'maxwell-boltzmann' [default: 'uniform'].
         - param.shapingFactor: shaping factor of the symbols [default: 0].
-
         - param.seed: seed for the random number generator [default: None].
-
         - param.nBits: total number of bits [default: 40000].
-
         - param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc'].
-
         - param.nPulseTaps: number of coefficients of the rrc filter [default: 4096].
-
         - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
-
         - param.power: optical output power [dBm][default:-3 dBm].
-
         - param.nPolModes: number of polarization modes [default: 1].
 
     Returns
@@ -269,7 +258,7 @@ def pamTransmitter(param):
     param.M = getattr(param, "M", 4)
     param.Rs = getattr(param, "Rs", 32e9)
     param.SpS = getattr(param, "SpS", 16)
-    param.probabilityDistribution = getattr(param, "probabilityDistribution", "uniform")
+    param.probDist = getattr(param, "probDist", "uniform")
     param.shapingFactor = getattr(param, "shapingFactor", 0)
     param.seed = getattr(param, "seed", None)
     param.nBits = getattr(param, "nBits", 40000)
@@ -288,7 +277,7 @@ def pamTransmitter(param):
     paramSymb.nSymbols = param.nBits // int(np.log2(param.M))
     paramSymb.M = param.M
     paramSymb.constType = "pam"
-    paramSymb.dist = param.probabilityDistribution
+    paramSymb.dist = param.probDist
     paramSymb.shapingFactor = param.shapingFactor
 
     # Pulse shaping filter parameters
