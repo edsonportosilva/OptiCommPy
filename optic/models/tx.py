@@ -266,7 +266,7 @@ def pamTransmitter(param):
     param.nFilterTaps = getattr(param, "nFilterTaps", 256)
     param.pulseRollOff = getattr(param, "pulseRollOff", 0.01)
     param.mzmVpi = getattr(param, "mzmVpi", 3)
-    param.mzmVb = getattr(param, "mzmVb", -1.5)
+    param.mzmVb = getattr(param, "mzmVb", 1.5)
     param.mzmScale = getattr(param, "mzmScale", 0.25)
     param.nPolModes = getattr(param, "nPolModes", 1)
     param.power = getattr(param, "power", -3)
@@ -325,8 +325,11 @@ def pamTransmitter(param):
         sigTxo_ = mzm(1, param.mzmScale * sigTx, paramMZM)
 
         # adjust output power
-        sigTxo[:, indMode] = dBm2W(param.power) * pnorm(sigTxo_)
+        sigTxo[:, indMode] = np.sqrt(dBm2W(param.power)) * pnorm(sigTxo_)
         symbTx[:, indMode] = symbTx_
+
+    if param.nPolModes == 1:
+        sigTxo = sigTxo.reshape(sigTxo.size,)
 
     if param.returnParam:
         return sigTxo, symbTx, param
