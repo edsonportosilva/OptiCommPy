@@ -52,8 +52,8 @@ def simpleWDMTx(param):
         - param.shapingFactor: shaping factor of the symbols [default: 0].
         - param.seed: seed for the random number generator [default: None].
         - param.nBits: total number of bits per carrier [default: 60000].
-        - param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc'].
-        - param.nPulseTaps: number of coefficients of the rrc filter [default: 1024].
+        - param.pulseType: pulse shape ['nrz', 'rrc'][default: 'rrc'].
+        - param.nFilterTaps: number of coefficients of the rrc filter [default: 1024].
         - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
         - param.mzmScale: MZM modulation scale factor Vrf/Vpi [default: 0.5].
         - param.powerPerChannel: launched power per WDM channel [dBm][default:-3 dBm].
@@ -238,8 +238,8 @@ def pamTransmitter(param):
         - param.shapingFactor: shaping factor of the symbols [default: 0].
         - param.seed: seed for the random number generator [default: None].
         - param.nBits: total number of bits [default: 40000].
-        - param.pulse: pulse shape ['nrz', 'rrc'][default: 'rrc'].
-        - param.nPulseTaps: number of coefficients of the rrc filter [default: 4096].
+        - param.pulseType: pulse shape ['nrz', 'rrc'][default: 'rrc'].
+        - param.nFilterTaps: number of coefficients of the rrc filter [default: 4096].
         - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
         - param.power: optical output power [dBm][default:-3 dBm].
         - param.nPolModes: number of polarization modes [default: 1].
@@ -262,8 +262,8 @@ def pamTransmitter(param):
     param.shapingFactor = getattr(param, "shapingFactor", 0)
     param.seed = getattr(param, "seed", None)
     param.nBits = getattr(param, "nBits", 40000)
-    param.pulse = getattr(param, "pulse", "nrz")
-    param.nPulseTaps = getattr(param, "nPulseTaps", 256)
+    param.pulseType = getattr(param, "pulseType", "nrz")
+    param.nFilterTaps = getattr(param, "nFilterTaps", 256)
     param.pulseRollOff = getattr(param, "pulseRollOff", 0.01)
     param.mzmVpi = getattr(param, "mzmVpi", 3)
     param.mzmVb = getattr(param, "mzmVb", -1.5)
@@ -282,8 +282,8 @@ def pamTransmitter(param):
 
     # Pulse shaping filter parameters
     paramPulse = parameters()
-    paramPulse.pulse = param.pulse
-    paramPulse.nPulseTaps = param.nPulseTaps
+    paramPulse.pulseType = param.pulseType
+    paramPulse.nFilterTaps = param.nFilterTaps
     paramPulse.rollOff = param.pulseRollOff
     paramPulse.SpS = param.SpS
 
