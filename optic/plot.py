@@ -444,9 +444,9 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
 
         elif ptype == "fast":
             y[x == n * SpS] = np.nan
-            y[x == 0] = np.nan
+            #y[x == 0] = np.nan
 
-            plt.plot(x / SpS, y, color="blue", alpha=0.8, label=plotlabel_)
+            plt.plot(x / SpS, y, color="blue", alpha=0.85, label=plotlabel_)
             plt.xlim(min(x / SpS), max(x / SpS))
 
             if plotlabel is not None:
