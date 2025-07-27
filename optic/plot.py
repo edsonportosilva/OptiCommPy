@@ -415,6 +415,10 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             plotlabel_ = f"{plotlabel} [imag]" if plotlabel else "[imag]"
         plt.figure()
         if ptype == "fancy":
+            nsymb = y.size // SpS
+            if nsymb < 500000:
+                y = np.tile(y, int(np.ceil(500000 / nsymb)))
+
             f = interp1d(np.arange(y.size), y, kind="cubic")
 
             Nup = 40 * SpS
