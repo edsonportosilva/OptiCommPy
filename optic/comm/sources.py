@@ -61,9 +61,9 @@ def bitSource(param):
     elif mode == "prbs":
         if order is None:
             logg.warning("PRBS order not specified. Using the default order 23.")
-            prbs = prbsGenerator()
+            prbs = prbsGenerator(23, nBits)
         else:
-            prbs = prbsGenerator(order)
+            prbs = prbsGenerator(order, nBits)
 
         if len(prbs) < nBits:
             prbs = np.tile(prbs, nBits // len(prbs) + 1)
@@ -74,7 +74,7 @@ def bitSource(param):
 
 
 @njit
-def prbsGenerator(order=23):
+def prbsGenerator(order=23, length=None):
     """
     Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.
 
@@ -82,6 +82,8 @@ def prbsGenerator(order=23):
     ----------
     order : int
         The order of the PRBS sequence. Supported orders are 7, 9, 11, 13, 15, 23, 31.
+    length : int, optional
+        The length of the PRBS sequence to generate. If not specified, the length is :math:`2^{order} - 1`.
 
     Returns
     -------
@@ -109,15 +111,16 @@ def prbsGenerator(order=23):
         )
 
     # Initialize parameters
-    lenPRBS = 2**order - 1
-    tap_a, tap_b = taps[order]
+    if length is None or length > 2**order - 1:
+        length = 2**order - 1 
 
-    bits = np.zeros(lenPRBS, dtype=np.int64)
+    tap_a, tap_b = taps[order]
+    bits = np.zeros(length, dtype=np.int64)
 
     lfsr = 1
-    for i in range(1, lenPRBS):
+    for i in range(1, length):
         fb = (lfsr >> tap_a) ^ (lfsr >> tap_b) & 1
-        lfsr = ((lfsr << 1) + fb) & (lenPRBS)
+        lfsr = ((lfsr << 1) + fb) & (length)
         bits[i - 1] = fb
 
     return bits
