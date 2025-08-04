@@ -44,6 +44,19 @@ class parameters:
                 print(f"{attr}: {value}")
 
     def to_engineering_notation(self, value):
+        """
+        Converts a numerical value to engineering notation with appropriate prefixes.
+
+        Parameters
+        ----------
+        value : int or float
+            The numerical value to be converted.
+
+        Returns
+        -------
+        str or value
+            The value formatted in engineering notation with a prefix, or the original value if it does not meet the criteria.
+        """
         prefixes = {
             -12: "p",  # pico
             -9: "n",  # nano
@@ -70,6 +83,14 @@ class parameters:
         return value
 
     def table(self):
+        """
+        Generates a Markdown table of the parameters and their values.
+
+        Returns
+        -------
+        str
+            A Markdown table representation of the parameters and their values.
+        """
         attributes = vars(self)
         markdown = "| Parameter Name | Value |\n"
         markdown += "|----------------|-----------------|\n"
@@ -85,6 +106,14 @@ class parameters:
         return print(markdown)
 
     def latex_table(self):
+        """
+        Generates a LaTeX table of the parameters and their values.
+
+        Returns
+        -------
+        str
+            A LaTeX table representation of the parameters and their values.
+        """
         attributes = vars(self)
         latex = "\\begin{tabular}{|c|c|}\n"
         latex += "\\hline\n"
