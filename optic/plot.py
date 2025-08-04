@@ -171,6 +171,7 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
             plt.ylim(-radius, radius)
 
     plt.show()
+    plt.pause(0.01) # Allow the plot to update 
 
     return fig, ax
 
@@ -274,6 +275,7 @@ def plotColoredConst(
     ax.axis("square")
     ax.set_xlabel("In-Phase (I)")
     ax.set_ylabel("Quadrature (Q)")
+    plt.pause(0.01) # Allow the plot to update 
 
     return fig, ax
 
@@ -461,6 +463,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
         plt.title(f"eye diagram {plotlabel_}")
         plt.grid(alpha=0.15)
         plt.show()
+        plt.pause(0.01) # Allow the plot to update 
 
     return None
 
@@ -518,6 +521,7 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
         )
     plt.legend(loc="lower left")
     plt.xlim(Fc - Fs / 2, Fc + Fs / 2)
+    plt.pause(0.01) # Allow the plot to update 
 
     return fig, plt.gca()
 
