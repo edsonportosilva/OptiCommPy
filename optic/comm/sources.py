@@ -51,9 +51,7 @@ def bitSource(param):
     mode = getattr(param, "mode", "random")
     order = getattr(param, "order", None)
     seed = getattr(param, "seed", None)
-
-    if seed is not None:
-        np.random.seed(seed)
+    
     if mode == "random":
         if seed is not None:
             np.random.seed(seed)  # Seed the random number generator
@@ -61,9 +59,9 @@ def bitSource(param):
     elif mode == "prbs":
         if order is None:
             logg.warning("PRBS order not specified. Using the default order 23.")
-            prbs = prbsGenerator(23, nBits)
+            prbs = prbsGenerator(23, nBits, seed)
         else:
-            prbs = prbsGenerator(order, nBits)
+            prbs = prbsGenerator(order, nBits, seed)
 
         if len(prbs) < nBits:
             prbs = np.tile(prbs, nBits // len(prbs) + 1)
@@ -95,7 +93,13 @@ def prbsGenerator(order=23, length=None, seed=1):
     References
     ----------
     [1] Wikipedia, "Pseudorandom binary sequence," https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence
-    """
+    """    
+    if seed is None:
+        seed = 1  # Default seed if not provided
+
+    if seed <= 0:
+        raise ValueError("Seed must be a positive integer.")
+
     # Predefined taps for each PRBS order
     taps = {
         7: (6, 5),  # PRBS-7: x^7 + x^6 + 1
