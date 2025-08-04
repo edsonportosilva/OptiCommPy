@@ -377,7 +377,7 @@ def photodiode(E, param=None):
 
 def balancedPD(E1, E2, param=None):
     """
-    Balanced photodiode (BPD).
+    Balanced photodiode pair (BPD).
 
     Parameters
     ----------
