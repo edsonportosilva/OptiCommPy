@@ -429,6 +429,7 @@ def balancedPD(E1, E2, param=None):
 
     i1 = photodiode(E1, paramPD1)
     i2 = photodiode(E2, paramPD2)
+    
     return i1 - i2
 
 
