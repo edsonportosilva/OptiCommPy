@@ -10,7 +10,7 @@ Models for optoelectronic devices (:mod:`optic.models.devices`)
    mzm                   -- Optical Mach-Zhender modulator.
    iqm                   -- Optical In-Phase/Quadrature Modulator (IQM).
    pbs                   -- Polarization beam splitter (PBS).
-   hybrid_2x4_90deg      -- Optical 2 x 4 90° hybrid.
+   opticalHybrid2x4      -- Optical hybrid 2 x 4 90°.
    voa                   -- Variable optical attenuator (VOA).
    photodiode            -- Pin photodiode.
    balancedPD            -- Balanced photodiode pair.
@@ -429,13 +429,13 @@ def balancedPD(E1, E2, param=None):
 
     i1 = photodiode(E1, paramPD1)
     i2 = photodiode(E2, paramPD2)
-    
+
     return i1 - i2
 
 
-def hybrid_2x4_90deg(Es, Elo):
+def opticalHybrid2x4(Es, Elo):
     """
-    Optical 2 x 4 90° hybrid.
+    Optical hybrid 2 x 4 90°.
 
     Parameters
     ----------
@@ -502,8 +502,8 @@ def coherentReceiver(Es, Elo, param=None):
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
     assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
 
-    # optical 2 x 4 90° hybrid
-    Eo = hybrid_2x4_90deg(Es, Elo)
+    # optical hybrid 2 x 4 90° 
+    Eo = opticalHybrid2x4(Es, Elo)
 
     # balanced photodetection
     sI = balancedPD(Eo[1, :], Eo[0, :], param)
