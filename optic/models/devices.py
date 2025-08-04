@@ -411,15 +411,21 @@ def balancedPD(E1, E2, param=None):
     [2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.
     """
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
-
-    # duplicate PD parameters:
-    paramPD1 = param.copy()
-    paramPD2 = param.copy()
-
-    # in case the seed is provided, make sure to use different seeds for each photodiode
-    if param.seed is not None:
-        paramPD1.seed = param.seed
-        paramPD2.seed = param.seed + 1  # to ensure different seeds for each photodiode
+    
+    # check if input parameters are provided
+    if param is None:
+        paramPD1 = None
+        paramPD2 = None
+    else:
+        # duplicate PD parameters:
+        paramPD1 = param.copy()
+        paramPD2 = param.copy()
+    
+        # check for seed in parameters
+        if hasattr(paramPD1, "seed"):
+            # in case the seed is provided, make sure to use different seeds for each photodiode
+            if paramPD1.seed is not None:            
+                paramPD2.seed = paramPD1.seed + 1  # to ensure different seeds for each photodiode
 
     i1 = photodiode(E1, paramPD1)
     i2 = photodiode(E2, paramPD2)
