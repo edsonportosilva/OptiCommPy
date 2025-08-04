@@ -74,7 +74,7 @@ def bitSource(param):
 
 
 @njit
-def prbsGenerator(order=23, length=None):
+def prbsGenerator(order=23, length=None, seed=1):
     """
     Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.
 
@@ -84,6 +84,8 @@ def prbsGenerator(order=23, length=None):
         The order of the PRBS sequence. Supported orders are 7, 9, 11, 13, 15, 23, 31.
     length : int, optional
         The length of the PRBS sequence to generate. If not specified, the length is :math:`2^{order} - 1`.
+    seed : int, optional
+        The seed for the linear feedback shift register (LFSR). Default is 1.
 
     Returns
     -------
@@ -116,12 +118,13 @@ def prbsGenerator(order=23, length=None):
 
     tap_a, tap_b = taps[order]
     bits = np.zeros(length, dtype=np.int64)
+    max_val = (1 << order) - 1
 
-    lfsr = 1
-    for i in range(1, length):
+    lfsr = seed
+    for i in range(length):
+        bits[i] = (lfsr >> (order - 1)) & 1        
         fb = (lfsr >> tap_a) ^ (lfsr >> tap_b) & 1
-        lfsr = ((lfsr << 1) + fb) & (length)
-        bits[i - 1] = fb
+        lfsr = ((lfsr << 1) | fb) & max_val
 
     return bits
 
