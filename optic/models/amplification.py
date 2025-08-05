@@ -36,7 +36,7 @@ from scipy.signal import find_peaks
 from scipy.special import jv, kv
 from simple_pid import PID
 
-from optic.dsp.core import signal_power as power_meter
+from optic.dsp.core import signalPower as power_meter
 from optic.utils import parameters
 
 # def power_meter(x):
