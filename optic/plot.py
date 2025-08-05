@@ -521,7 +521,7 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
         )
     plt.legend(loc="lower left")
     plt.xlim(Fc - Fs / 2, Fc + Fs / 2)
-    plt.pause(0.01) # Allow the plot to update 
+    
 
     return fig, plt.gca()
 
