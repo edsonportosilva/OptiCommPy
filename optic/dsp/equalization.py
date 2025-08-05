@@ -69,9 +69,11 @@ def edc(Ei, param):
 
     try:
         nModes = Ei.shape[1]
+        input1D = False
     except IndexError:
         nModes = 1
         Ei = Ei.reshape(Ei.size, nModes)
+        input1D = True
 
     # check input parameters
     L = getattr(param, "L", 50)
@@ -109,6 +111,10 @@ def edc(Ei, param):
         Eo[:, indMode] = blockwiseFFTConv(
             Ei[:, indMode], H, NFFT=Nfft, freqDomainFilter=True
         )
+
+    if input1D:
+        # If the input was 1D, return a 1D array
+        Eo = Eo.flatten()
 
     return Eo
 
@@ -196,8 +202,10 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     try:
         if x.shape[1] > x.shape[0]:
             x = x.T
+        input1D = False
     except IndexError:
         x = x.reshape(len(x), 1)
+        input1D = True
     try:
         if dx.shape[1] > dx.shape[0]:
             dx = dx.T
@@ -299,6 +307,10 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
                 x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb
             )
             logg.info(f"{alg}MSE = %.6f.", np.nanmean(errSq))
+    
+    if input1D:
+        # If the input was 1D, return a 1D array
+        yEq = yEq.flatten()
 
     if returnResults:
         if runWL:

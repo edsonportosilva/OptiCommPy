@@ -88,9 +88,11 @@ def linearFiberChannel(Ei, param):
 
     try:
         Nmodes = Ei.shape[1]
+        input1D = False
     except IndexError:
         Nmodes = 1
         Ei = Ei.reshape(Ei.size, Nmodes)
+        input1D = True
 
     ω = np.tile(ω, (1, Nmodes))
     Eo = ifft(fft(Ei, axis=0) * np.exp(-α / 2 * L + 1j * (β2 / 2) * (ω**2) * L), axis=0)
@@ -99,7 +101,11 @@ def linearFiberChannel(Ei, param):
         Eo = Eo.reshape(
             Eo.size,
         )
-
+    
+    if input1D:
+        # If the input was 1D, return a 1D array
+        Eo = Eo.flatten()
+        
     return (Eo, param) if returnParameters else Eo
 
 

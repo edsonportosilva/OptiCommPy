@@ -115,7 +115,9 @@ def gardnerClockRecovery(Ei, param=None):
 
     try:
         Ei.shape[1]
+        input1D = False
     except IndexError:
+        input1D = True
         Ei = Ei.reshape(len(Ei), 1)
 
     Ei = np.pad(Ei, ((0, lpad), (0, 0)))
@@ -179,6 +181,10 @@ def gardnerClockRecovery(Ei, param=None):
 
     Eo = Eo[0:last_n, :]
 
+    if input1D:
+        # If input was 1D, return a 1D array
+        Eo = Eo.flatten()
+
     if returnTiming:
         return Eo, t_nco_values
     else:
@@ -201,8 +207,10 @@ def calcClockDrift(t_nco_values):
     """
     try:
         t_nco_values.shape[1]
+        input1D = False
     except IndexError:
         t_nco_values = t_nco_values.reshape(len(t_nco_values), 1)
+        input1D = True
 
     timingError = t_nco_values - np.mean(t_nco_values)
 
@@ -217,4 +225,8 @@ def calcClockDrift(t_nco_values):
         fo = 1 / mean_period
         ppm[indMode] = np.sign(np.mean(t_nco_values)) * fo * 1e6
 
+    if input1D:
+        # If input was 1D, return a 1D array
+        ppm = ppm.flatten()
+        
     return ppm

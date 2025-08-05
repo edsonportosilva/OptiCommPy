@@ -113,8 +113,10 @@ def cpr(Ei, param=None, symbTx=None):
 
     try:
         Ei.shape[1]
+        input1D = False
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
+        input1D = True
 
     # constellation parameters
     constSymb = grayMapping(M, constType)    
@@ -149,9 +151,10 @@ def cpr(Ei, param=None, symbTx=None):
 
     Eo = pnorm(Ei * np.exp(1j * θ))
 
-    if Eo.shape[1] == 1:
-        Eo = Eo[:]
-        θ = θ[:]
+    if input1D:
+        # If input was 1D, return a 1D array
+        Eo = Eo.flatten()
+        θ = θ.flatten()
 
     return (Eo, θ) if returnPhases else Eo
 
