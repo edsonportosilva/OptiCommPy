@@ -23,7 +23,7 @@ from cupy.linalg import norm
 from cupy.random import normal
 from tqdm.notebook import tqdm
 
-from optic.dsp.core import signal_power
+from optic.dsp.core import signalPower
 from optic.utils import parameters
 
 
@@ -776,10 +776,10 @@ def setPowerforParSSFM(sig, powers):
     for i in np.arange(0, sig.shape[1], 2):
         for k in range(2):
             sig[:, i + k] = (
-                np.sqrt(powers_lin[i] / signal_power(sig[:, i + k])) * sig[:, i + k]
+                np.sqrt(powers_lin[i] / signalPower(sig[:, i + k])) * sig[:, i + k]
             )
             print(
                 "power mode %d: %.2f dBm"
-                % (i + k, 10 * np.log10(signal_power(sig[:, i + k]) / 1e-3))
+                % (i + k, 10 * np.log10(signalPower(sig[:, i + k]) / 1e-3))
             )
     return sig
