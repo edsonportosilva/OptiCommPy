@@ -287,7 +287,7 @@ def photodiode(E, param=None):
         - param.B bandwidth [Hz][default: 30e9 Hz]
         - param.Fs: sampling frequency [Hz] [default: None]
         - param.fType: frequency response type [default: 'rect']
-        - param.N: number of the frequency resp. filter taps. [default: 256]
+        - param.N: number of the frequency resp. filter taps. [default: 255]
         - param.ideal: consider ideal photodiode (i.e. :math:`i_{pd}(t) = R|E(t)|^2`) [default: False]
         - param.shotNoise: add shot noise to photocurrent. [default: True]
         - param.thermalNoise: add thermal noise to photocurrent. [default: True]
@@ -317,7 +317,7 @@ def photodiode(E, param=None):
     RL = getattr(param, "RL", 50)
     B = getattr(param, "B", 30e9)
     Ipd_sat = getattr(param, "Ipd_sat", 5e-3)
-    N = getattr(param, "N", 256)
+    N = getattr(param, "N", 255)
     fType = getattr(param, "fType", "rect")
     seed = getattr(param, "seed", None)
     ideal = getattr(param, "ideal", False)
@@ -339,6 +339,10 @@ def photodiode(E, param=None):
         )  # ideal photocurrent with two or more modes
     else:
         ipd = R * E * np.conj(E)  # ideal photocurrent
+
+    if N % 2 == 0:
+        N += 1  # make sure N is odd
+        logg.warning("Number of filter taps (N) was even, incrementing by one to make it odd.")
 
     if seed is not None:
         np.random.seed(seed)  # set seed for reproducibility
