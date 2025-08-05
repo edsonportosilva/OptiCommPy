@@ -496,30 +496,32 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
 
     """
     if fig is None:
-        fig = []
-    if label is None:
-        label = []
+        fig = []  
     if not fig:
         fig = plt.figure()
-
-    if not label:
-        label = " "
-
+  
     try:
         sig.shape[1]
     except IndexError:
         sig = sig.reshape(len(sig), 1)
 
     for indMode in range(sig.shape[1]):
+        if label is None:
+            labelString = None
+        else:
+            labelString = f"{label}: Mode {str(indMode)}"
+            
         plt.psd(
             sig[:, indMode],
             Fs=Fs,
             Fc=Fc,
             NFFT=NFFT,
             sides="twosided",
-            label=f"{label}: Mode {str(indMode)}",
+            label=labelString,
         )
-    plt.legend(loc="lower left")
+        
+    if label is not None:
+        plt.legend(loc="lower left")
     plt.xlim(Fc - Fs / 2, Fc + Fs / 2)
     
 
