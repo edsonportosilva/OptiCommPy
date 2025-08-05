@@ -28,11 +28,10 @@ import numpy as np
 import numpy.matlib as npmat
 from numpy.fft import fft, fftfreq, ifft
 from scipy import interpolate, signal
-from scipy.constants import Planck, c, lambda2nu
+from scipy.constants import Planck, c
 from scipy.integrate import solve_ivp
 
 # import pandas as pd
-from scipy.signal import find_peaks
 from scipy.special import jv, kv
 from simple_pid import PID
 
