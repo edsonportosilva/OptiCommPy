@@ -47,7 +47,9 @@ def firFilter(h, x, prec=None):
     """
     try:
         x.shape[1]
+        input1D = False
     except IndexError:
+        input1D = True
         x = x.reshape(len(x), 1)
     nModes = x.shape[1]
 
@@ -67,9 +69,11 @@ def firFilter(h, x, prec=None):
     for n in range(nModes):
         y_[:, n] = cp.convolve(x_[:, n], h_, mode="same")
     y = cp.asnumpy(y_)
+    
+    if input1D:
+        # If the input was 1D, return a 1D array
+        y = y.flatten()
 
-    if y.shape[1] == 1:
-        y = y[:, 0]
     return y
 
 

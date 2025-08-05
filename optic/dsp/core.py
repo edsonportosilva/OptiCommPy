@@ -99,15 +99,22 @@ def firFilter(h, x):
     """
     try:
         x.shape[1]
+        input1D = False
     except IndexError:
+        input1D = True
+        # If x is a 1D array, reshape it to a 2D array with one column
         x = x.reshape(len(x), 1)
+
     y = x.copy()
     nModes = x.shape[1]
 
     for n in range(nModes):
         y[:, n] = np.convolve(x[:, n], h, mode="same")
-    if y.shape[1] == 1:
-        y = y[:, 0]
+    
+    if input1D:
+        # If the input is 1D, return it as a 1D array
+        y = y.flatten()
+
     return y
 
 
@@ -376,6 +383,8 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
             * fu
             * np.exp(-(2 / np.log(2)) * (np.pi * fu * (n - d)) ** 2)
         )
+    h = h / np.sum(h) # Normalize the filter coefficients
+
     return h
 
 
@@ -427,12 +436,11 @@ def decimate(Ei, param):
     ----------
     Ei : np.array
         Input signal.
-    param : core.parameter
-        Decimation parameters:
+    param : optic.utils.parameters object, optional
+        Parameters of the decimation process.        
 
-        - param.SpS_in  : samples per symbol of the input signal.
-
-        - param.SpS_out : samples per symbol of the output signal.
+        - param.SpSin  : samples per symbol of the input signal.
+        - param.SpSout : samples per symbol of the output signal.
 
     Returns
     -------
@@ -446,10 +454,13 @@ def decimate(Ei, param):
     """
     try:
         Ei.shape[1]
+        input1D = False
     except IndexError:
+        input1D = True
+        # If Ei is a 1D array, reshape it to a 2D array
         Ei = Ei.reshape(len(Ei), 1)
 
-    decFactor = int(param.SpS_in / param.SpS_out)
+    decFactor = int(param.SpSin / param.SpSout)
 
     # simple timing recovery
     sampDelay = np.zeros(Ei.shape[1])
@@ -458,7 +469,7 @@ def decimate(Ei, param):
     # (maximum variance sampling time)
     for k in range(Ei.shape[1]):
         a = Ei[:, k].reshape(Ei.shape[0], 1)
-        varVector = np.var(a.reshape(-1, param.SpS_in), axis=0)
+        varVector = np.var(a.reshape(-1, param.SpSin), axis=0)
         sampDelay[k] = np.where(varVector == np.amax(varVector))[0][0]
     # downsampling
     Eo = Ei[::decFactor, :].copy()
@@ -466,24 +477,28 @@ def decimate(Ei, param):
     for k in range(Ei.shape[1]):
         Ei[:, k] = np.roll(Ei[:, k], -int(sampDelay[k]))
         Eo[:, k] = Ei[0::decFactor, k]
+
+    if input1D:
+        # If the output is 1D, return it as a 1D array
+        Eo = Eo.flatten()
+
     return Eo
 
 
 def resample(Ei, param):
     """
-    Resample signal to a given sampling rate.
+    Resample signal to a desired sampling rate.
 
     Parameters
     ----------
     Ei : np.array
         Input signal.
-    param : core.parameter
-        Resampling parameters:
-            - param.Rs      : symbol rate of the signal.
-
-            - param.SpS_in  : samples per symbol of the input signal.
-
-            - param.SpS_out : samples per symbol of the output signal.
+    param : optic.utils.parameters object, optional
+        Parameters of the resampling process.     
+            
+            - param.inFs : sampling rate of the input signal [default: 2].
+            - param.outFs : sampling rate of the output signal [default: 2].
+            - param.N : order of anti-aliasing filter [default: 501].
 
     Returns
     -------
@@ -495,30 +510,35 @@ def resample(Ei, param):
     [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
 
     """
+    # check input parameters
+    N = getattr(param, 'N', 501)          
+    inFs = getattr(param, 'inFs', 2)
+    outFs = getattr(param, 'outFs', 2)
+
     try:
         Ei.shape[1]
+        input1D = False
     except IndexError:
-        Ei = Ei.reshape(len(Ei), 1)
-    nModes = Ei.shape[1]
-    inFs = param.SpS_in * param.Rs
-    outFs = param.SpS_out * param.Rs
-
-    tin = np.arange(0, Ei.shape[0]) * (1 / inFs)
-    tout = np.arange(0, Ei.shape[0] * (1 / inFs), 1 / outFs)
-
-    Eo = np.zeros((len(tout), Ei.shape[1]), dtype="complex")
+        input1D = True
+        # If Ei is a 1D array, reshape it to a 2D array
+        Ei = Ei.reshape(len(Ei), 1)    
+    
     # Anti-aliasing filters:
-    N = min(Ei.shape[0], 202)
-    # hi = lowPassFIR(inFs / 2, inFs, N, typeF="rect")
-    hi = lowPassFIR(outFs / 2, inFs, N, typeF="rect")
+    if outFs < inFs:
+        N_ = min(Ei.shape[0], N)    
+        hi = lowPassFIR(outFs / 2, inFs, N_, typeF="rect")
+        Ei = firFilter(hi, Ei)
+    
+    Eo = clockSamplingInterp(Ei, inFs, outFs)
 
-    Ei = firFilter(hi, Ei)
+    if outFs > inFs:
+        N_ = min(Eo.shape[0], N)    
+        ho = lowPassFIR(inFs / 2, outFs, N_, typeF="rect")        
+        Eo = firFilter(ho, Eo)
 
-    if nModes == 1:
-        Ei = Ei.reshape(len(Ei), 1)
-    for k in range(nModes):
-        Eo[:, k] = np.interp(tout, tin, Ei[:, k])
-    # Eo = firFilter(ho, Eo)
+    if input1D:
+        # If the output is 1D, return it as a 1D array
+        Eo = Eo.flatten()
 
     return Eo
 

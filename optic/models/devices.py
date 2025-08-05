@@ -399,7 +399,7 @@ def balancedPD(E1, E2, param=None):
         - param.B bandwidth [Hz][default: 30e9 Hz].
         - param.Fs: sampling frequency [Hz] [default: 60e9 Hz].
         - param.fType: frequency response type [default: 'rect'].
-        - param.N: number of the frequency resp. filter taps. [default: 8001].
+        - param.N: number of the frequency resp. filter taps. [default: 255].
         - param.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True].
         - param.seed: seed for the random number generator [default: None].
 
@@ -751,5 +751,9 @@ def adc(Ei, param):
     # Apply anti-aliasing filters to the output if AAF is enabled
     if AAF:
         Eo = firFilter(ho, Eo)
+
+    if Eo.shape[1] == 1:
+        # If the output is a single column, return it as a 1D array
+        Eo = Eo.flatten()
 
     return Eo
