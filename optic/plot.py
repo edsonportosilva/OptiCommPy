@@ -29,7 +29,7 @@ from scipy.interpolate import interp1d
 from scipy.ndimage.filters import gaussian_filter
 
 from optic.comm.modulation import detector
-from optic.dsp.core import pnorm, signal_power
+from optic.dsp.core import pnorm, signalPower
 from optic.utils import dB2lin
 
 warnings.filterwarnings("ignore", r"All-NaN (slice|axis) encountered")
@@ -82,7 +82,7 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
             x[0] = x[0].reshape(len(x[0]), 1)
 
         nSubPts = x[0].shape[1]
-        radius = R * np.sqrt(signal_power(x[0]))
+        radius = R * np.sqrt(signalPower(x[0]))
     else:
         x = pnorm(x)
         try:
@@ -91,7 +91,7 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
             x = x.reshape(len(x), 1)
 
         nSubPts = x.shape[1]
-        radius = R * np.sqrt(signal_power(x))
+        radius = R * np.sqrt(signalPower(x))
 
     if nSubPts > 1:
         if nSubPts < 5:

@@ -30,7 +30,7 @@ from scipy.integrate import dblquad
 from scipy.special import erf
 
 from optic.comm.modulation import demodulateGray, grayMapping, minEuclid
-from optic.dsp.core import pnorm, signal_power
+from optic.dsp.core import pnorm, signalPower
 from optic.utils import dB2lin
 
 
@@ -181,7 +181,7 @@ def fastBERcalc(rx, tx, M, constType, px=None):
 
         # estimate SNR of the received constellation
         SNR[k] = 10 * np.log10(
-            signal_power(tx[:, k]) / signal_power(rx[:, k] - tx[:, k])
+            signalPower(tx[:, k]) / signalPower(rx[:, k] - tx[:, k])
         )
     for k in range(nModes):
         brx = demodulateGray(np.sqrt(Es) * rx[:, k], M, constType)
@@ -709,7 +709,7 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
     [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
     """
     constSymb = grayMapping(M, constType)  # get constellation
-    Es = signal_power(constSymb)  # calculate average symbol energy
+    Es = signalPower(constSymb)  # calculate average symbol energy
     constSymb = constSymb / np.sqrt(Es)  # normalize average symbol energy
 
     σ = np.sqrt((1 / 2) * 1 / dB2lin(SNR))  # noise variance per dimension
