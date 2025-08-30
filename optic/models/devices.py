@@ -33,6 +33,7 @@ from optic.dsp.core import (
     lowPassFIR,
     phaseNoise,
     quantizer,
+    delaySignal
 )
 from optic.utils import dBm2W, parameters
 
@@ -306,7 +307,7 @@ def photodiode(E, param=None):
 
     """
     if param is None:
-        param = []
+        param = parameters()
     kB = const.value("Boltzmann constant")
     q = const.value("elementary charge")
 
@@ -516,7 +517,7 @@ def coherentReceiver(Es, Elo, param=None):
     return sI + 1j * sQ
 
 
-def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
+def pdmCoherentReceiver(Es, Elo, paramFE=None, paramPD=None):
     """
     Polarization multiplexed coherent optical front-end.
 
@@ -528,8 +529,16 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
         Input LO optical field.
     θsig : scalar, optional
         Input polarization rotation angle in rad. [default: 0 rad].
-    param : parameter object (struct), optional
-        Parameters of the photodiodes.
+    paramFE : parameter object (struct), optional
+        Parameters of the optical frontend:
+
+            - paramFE.Fs : simulation sampling frequency [samples/s].
+            - paramFE.signalRotation : input polarization rotation angle [rad].
+            - paramFE.pdl : polarization dependent loss [dB]. If > 0, loss is on X polarization. If < 0, loss is on Y polarization.
+            - paramFE.polDelay : polarization delay [s]. If > 0, delay is on X polarization. If < 0, delay is on Y polarization.
+
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiodes (see photodiode model documentation)
 
     Returns
     -------
@@ -544,11 +553,32 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     """
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
-    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
-    Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orth. polarizations
+    try:
+        Fs = paramFE.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
 
-    Sx = coherentReceiver(Esx, Elox, param)  # coherent detection of pol.X
-    Sy = coherentReceiver(Esy, Eloy, param)  # coherent detection of pol.Y
+    if paramPD is None:
+        paramPD = parameters()
+        paramPD.Fs = Fs
+
+    signalRotation = getattr(paramFE, "signalRotation", 0)
+    pdl = getattr(paramFE, "pdl", 0)
+    polDelay = getattr(paramFE, "polDelay", 0)
+
+    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
+    Esx, Esy = pbs(Es, θ=signalRotation)  # split signal into two orth. polarizations
+
+    if polDelay != 0:
+        Esx = delaySignal(Esx, -polDelay/2, Fs)  # apply delay to polarization X
+        Esy = delaySignal(Esy, polDelay/2, Fs)   # apply delay to polarization Y
+    
+    if pdl != 0:
+        Esx = 10 ** (- (pdl / 2) / 20) * Esx  # apply PDL to pol.X
+        Esy = 10 ** (  (pdl / 2) / 20) * Esy  # apply PDL to pol.Y
+
+    Sx = coherentReceiver(Esx, Elox, paramPD)  # coherent detection of pol.X
+    Sy = coherentReceiver(Esy, Eloy, paramPD)  # coherent detection of pol.Y
 
     return np.array([Sx, Sy]).T
 
