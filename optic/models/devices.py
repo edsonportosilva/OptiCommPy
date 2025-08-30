@@ -626,6 +626,7 @@ def basicLaserModel(param=None):
         - param.Fs: sampling rate [samples/s]
         - param.Ns: number of signal samples [default: 1e3]
         - param.seed: random seed for noise generation [default: None]
+        - param.freqShift: frequency shift with respect to the central simulation frequency [Hz] [default: 0 Hz]
 
     Returns
     -------
@@ -647,13 +648,14 @@ def basicLaserModel(param=None):
     RIN_var = getattr(param, "RIN_var", 1e-20)  # RIN variance
     Ns = getattr(param, "Ns", 1000)  # Number of samples of the signal
     seed = getattr(param, "seed", None)  # Seed for the random number generator
+    freqShift = getattr(param, "freqShift", 0)  # Frequency shift with respect to the central simulation frequency
 
     if seed is None:
         seedPN = None
         seedRIN = None
     else:
         seedPN = seed
-        seedRIN = seed + 1  # to ensure different seeds for phase noise and RIN
+        seedRIN = seed + 73  # to ensure different seeds for phase noise and RIN
 
     # Simulate Maxwellian random walk phase noise
     pn = phaseNoise(lw, Ns, 1 / Fs, seedPN)
@@ -661,8 +663,14 @@ def basicLaserModel(param=None):
     # Simulate relative intensity noise  (RIN)[todo:check correct model]
     deltaP = gaussianComplexNoise(pn.shape, RIN_var, seedRIN)
 
+    # Apply frequency shift if required
+    if freqShift != 0:
+        fo = 2 * np.pi * freqShift * np.arange(Ns) / Fs
+    else:
+        fo = 0
+
     # Return optical signal
-    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * pn)
+    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * (fo + pn))
 
 
 def adc(Ei, param):
