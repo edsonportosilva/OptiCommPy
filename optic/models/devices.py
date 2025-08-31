@@ -533,7 +533,7 @@ def pdmCoherentReceiver(Es, Elo, paramFE=None, paramPD=None):
         Parameters of the optical frontend:
 
             - paramFE.Fs : simulation sampling frequency [samples/s].
-            - paramFE.signalRotation : input polarization rotation angle [rad].
+            - paramFE.polRotation : input polarization rotation angle [rad].
             - paramFE.pdl : polarization dependent loss [dB]. If > 0, loss is on X polarization. If < 0, loss is on Y polarization.
             - paramFE.polDelay : polarization delay [s]. If > 0, delay is on X polarization. If < 0, delay is on Y polarization.
 
@@ -562,12 +562,12 @@ def pdmCoherentReceiver(Es, Elo, paramFE=None, paramPD=None):
         paramPD = parameters()
         paramPD.Fs = Fs
 
-    signalRotation = getattr(paramFE, "signalRotation", 0)
+    polRotation = getattr(paramFE, "polRotation", 0)
     pdl = getattr(paramFE, "pdl", 0)
     polDelay = getattr(paramFE, "polDelay", 0)
 
     Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
-    Esx, Esy = pbs(Es, θ=signalRotation)  # split signal into two orth. polarizations
+    Esx, Esy = pbs(Es, θ=polRotation)  # split signal into two orth. polarizations
 
     if polDelay != 0:
         Esx = delaySignal(Esx, -polDelay/2, Fs)  # apply delay to polarization X
