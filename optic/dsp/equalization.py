@@ -146,6 +146,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
         - constType : str, constellation type [default: 'qam']
         - M : int, modulation order [default: 4]
         - prgsBar : bool, flag indicating whether to display progress bar [default: True]
+        - prec: data type, precision of the computations [default: np.complex64]
 
     Returns
     -------
@@ -195,6 +196,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     shapingFactor = getattr(param,'shapingFactor', 0)
     prgsBar = getattr(param, "prgsBar", True)
     returnResults = getattr(param, "returnResults", False)
+    prec = getattr(param, "prec", np.complex64)
 
     # We want all the signal sequences to be disposed in columns:
     if not len(dx):
@@ -213,14 +215,19 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
         dx = dx.reshape(len(dx), 1)
     nModes = int(x.shape[1])  # number of sinal modes (order of the MIMO equalizer)
 
+    dx = dx.astype(prec)
+    x = x.astype(prec)
+    mu = np.array(mu).astype(np.float32)
+    lambdaRLS = np.array([lambdaRLS]).astype(prec)[0]
+
     Lpad = int(np.floor(nTaps / 2))
-    zeroPad = np.zeros((Lpad, nModes), dtype="complex")
+    zeroPad = np.zeros((Lpad, nModes), dtype=prec)
     x = np.concatenate(
         (zeroPad, x, zeroPad)
     )  # pad start and end of the signal with zeros
 
     # Defining training parameters:
-    constSymb = grayMapping(M, constType)  # constellation
+    constSymb = grayMapping(M, constType).astype(prec)  # constellation
 
     # Calculate MB distribution
     px = np.exp(-shapingFactor*np.abs(constSymb)**2)
@@ -236,20 +243,20 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
             totalNumSymb
         ]  # Length of the output (1 sample/symbol) of the training section
     if not H:  # if H is not defined
-        H = np.zeros((nModes**2, nTaps), dtype="complex")
+        H = np.zeros((nModes**2, nTaps), dtype=prec)
 
         for initH in range(nModes):  # initialize filters' taps
             H[initH + initH * nModes, int(np.floor(H.shape[1] / 2))] = (
-                1  # Central spike initialization
+                1 + 1j*0  # Central spike initialization
             )
     if not H_:  # if H_ is not defined
-        H_ = np.zeros((nModes**2, nTaps), dtype="complex")
+        H_ = np.zeros((nModes**2, nTaps), dtype=prec)
 
     logg.info(f"Running adaptive equalizer...")
     # Equalizer training:
     if type(alg) == list:
-        yEq = np.zeros((totalNumSymb, x.shape[1]), dtype="complex")
-        errSq = np.zeros((totalNumSymb, x.shape[1])).T
+        yEq = np.zeros((totalNumSymb, x.shape[1]), dtype=prec)
+        errSq = np.zeros((totalNumSymb, x.shape[1]), dtype=prec).T
 
         nStart = 0
         for indstage, runAlg in enumerate(alg):
@@ -277,10 +284,11 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
                             runWL,
                             runAlg,
                             constSymb,
+                            prec,
                         )
                     )
                     logg.info(
-                        f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd])
+                        f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]).real
                     )
             else:
                 yEq[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
@@ -297,16 +305,17 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
                     runWL,
                     runAlg,
                     constSymb,
+                    prec
                 )
-                logg.info(f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]))
+                logg.info(f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]).real)
             nStart = nEnd
     else:
         for indIter in tqdm(range(numIter), disable=not (prgsBar)):
             logg.info(f"{alg}training iteration #%d", indIter)
             yEq, H, errSq, Hiter = coreAdaptEq(
-                x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb
+                x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb, prec
             )
-            logg.info(f"{alg}MSE = %.6f.", np.nanmean(errSq))
+            logg.info(f"{alg}MSE = %.6f.", np.nanmean(errSq).real)
     
     if input1D:
         # If the input was 1D, return a 1D array
@@ -323,7 +332,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
 
 @njit
 def coreAdaptEq(
-    x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, alg, constSymb
+    x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, alg, constSymb, prec
 ):
     """
     Adaptive equalizer core processing function
@@ -356,6 +365,8 @@ def coreAdaptEq(
         Equalizer algorithm.
     constSymb : np.array
         Constellation symbols.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -377,32 +388,36 @@ def coreAdaptEq(
     indMode = np.arange(0, nModes)
 
     errSq = np.empty((nModes, L))
+    x = x.astype(prec)
+    H = H.astype(prec)
+    H_ = H_.astype(prec)
+
     yEq = x[:L].copy()
     yEq[:] = np.nan
-    outEq = np.array([[0 + 1j * 0]]).repeat(nModes).reshape(nModes, 1)
+    outEq = np.array([[0 + 1j * 0]]).repeat(nModes).reshape(nModes, 1).astype(prec)
 
     if storeCoeff:
         Hiter = (
             np.array([[0 + 1j * 0]])
             .repeat((nModes**2) * nTaps * L)
-            .reshape(nModes**2, nTaps, L)
+            .reshape(nModes**2, nTaps, L).astype(prec)
         )
     else:
         Hiter = (
             np.array([[0 + 1j * 0]])
             .repeat((nModes**2) * nTaps)
-            .reshape(nModes**2, nTaps, 1)
+            .reshape(nModes**2, nTaps, 1).astype(prec)
         )
     if alg == "rls":
-        Sd = np.eye(nTaps, dtype=np.complex128)
+        Sd = np.eye(nTaps, dtype=prec)
         a = Sd.copy()
         for _ in range(nTaps - 1):
             Sd = np.concatenate((Sd, a))
     # Radii cma, rde
     Rcma = (
         np.mean(np.abs(constSymb) ** 4) / np.mean(np.abs(constSymb) ** 2)
-    ) * np.ones((1, nModes)) + 1j * 0
-    Rrde = np.unique(np.abs(constSymb))
+    ) * np.ones((1, nModes)).astype(prec)
+    Rrde = np.unique(np.abs(constSymb)).astype(prec)
 
     for ind in range(L):
         outEq[:] = 0
@@ -416,9 +431,8 @@ def coreAdaptEq(
                 H[indMode + N * nModes, :] @ inEq
             )  # add contribution from the Nth mode to the equalizer's output
             if runWL:
-                outEq += H_[indMode + N * nModes, :] @ np.conj(
-                    inEq
-                )  # add augmented contribution from the Nth mode to the equalizer's output
+                outEq += H_[indMode + N * nModes, :] @ inEq.conjugate() 
+                # add augmented contribution from the Nth mode to the equalizer's output
 
         yEq[ind, :] = outEq.T
 
@@ -426,31 +440,31 @@ def coreAdaptEq(
         # algorithm and save squared error:
         if alg == "nlms":
             H, H_, errSq[:, ind] = nlmsUp(
-                x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL
+                x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL, prec
             )
         elif alg == "cma":
             H, H_, errSq[:, ind] = cmaUp(
-                x[indIn, :], Rcma, outEq, mu, H, H_, nModes, runWL
+                x[indIn, :], Rcma, outEq, mu, H, H_, nModes, runWL, prec
             )
         elif alg == "dd-lms":
             H, H_, errSq[:, ind] = ddlmsUp(
-                x[indIn, :], constSymb, outEq, mu, H, H_, nModes, runWL
+                x[indIn, :], constSymb, outEq, mu, H, H_, nModes, runWL, prec
             )
         elif alg == "rde":
             H, H_, errSq[:, ind] = rdeUp(
-                x[indIn, :], Rrde, outEq, mu, H, H_, nModes, runWL
+                x[indIn, :], Rrde, outEq, mu, H, H_, nModes, runWL, prec
             )
         elif alg == "da-rde":
             H, H_, errSq[:, ind] = dardeUp(
-                x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL
+                x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL, prec
             )
         elif alg == "rls":
             H, Sd, errSq[:, ind] = rlsUp(
-                x[indIn, :], dx[ind, :], outEq, lambdaRLS, H, Sd, nModes
+                x[indIn, :], dx[ind, :], outEq, lambdaRLS, H, Sd, nModes, prec
             )
         elif alg == "dd-rls":
             H, Sd, errSq[:, ind] = ddrlsUp(
-                x[indIn, :], constSymb, outEq, lambdaRLS, H, Sd, nModes
+                x[indIn, :], constSymb, outEq, lambdaRLS, H, Sd, nModes, prec
             )
         elif alg == "static":
             errSq[:, ind] = errSq[:, ind - 1]
@@ -467,7 +481,7 @@ def coreAdaptEq(
 
 
 @njit
-def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
+def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the NLMS algorithm.
 
@@ -489,6 +503,8 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
         Number of modes.
     runWL: bool
         Run widely-linear mode.
+    prec: data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -502,8 +518,8 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
     """
     indMode = np.arange(0, nModes)
     err = dx - outEq.T  # calculate output error for the NLMS algorithm
-
-    errDiag = np.diag(err[0])  # define diagonal matrix from error array
+    
+    errDiag = np.diag(err[0]).astype(prec)  # define diagonal matrix from error array
 
     # update equalizer taps
     for N in range(nModes):
@@ -513,7 +529,7 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
             inAdapt.repeat(nModes).reshape(len(x), -1).T
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
-            mu * errDiag @ np.conj(inAdaptPar)
+            mu * errDiag @ inAdaptPar.conjugate()
         )  # gradient descent update
         if runWL:
             H_[indUpdTaps, :] += mu * errDiag @ inAdaptPar  # gradient descent update
@@ -521,7 +537,7 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
 
 
 @njit
-def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
+def rlsUp(x, dx, outEq, λ, H, Sd, nModes, prec):
     """
     Coefficient update with the RLS algorithm.
 
@@ -541,6 +557,8 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
         Inverse correlation matrix.
     nModes : int
         Number of modes.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -555,37 +573,43 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
     nTaps = H.shape[1]
     indMode = np.arange(0, nModes)
     indTaps = np.arange(0, nTaps)
+    Sd = Sd.astype(prec)
 
     err = dx - outEq.T  # calculate output error for the NLMS algorithm
-
-    errDiag = np.diag(err[0])  # define diagonal matrix from error array
+    
+    errDiag = np.diag(err[0]).astype(prec)  # define diagonal matrix from error array
 
     # update equalizer taps
+    Sd = Sd.astype(prec)
+
     for N in range(nModes):
         indUpdModes = indMode + N * nModes
         indUpdTaps = indTaps + N * nTaps
 
         Sd_ = Sd[indUpdTaps, :]
 
-        inAdapt = np.conj(x[:, N]).reshape(-1, 1)  # input samples
+        inAdapt = x[:, N].conjugate().reshape(-1, 1).astype(prec)  # input samples
         inAdaptPar = (
             (inAdapt.T).repeat(nModes).reshape(len(x), -1).T
-        )  # expand input to parallelize tap adaptation
+        ).astype(prec)   # expand input to parallelize tap adaptation
+        
+        A = (Sd_ @ inAdapt).astype(prec)
+        B = (inAdapt.conjugate().astype(prec).T @ Sd_).astype(prec)
+        C = (inAdapt.conjugate().astype(prec).T @ A).astype(prec)
+        num = (A @ B).astype(prec)
 
-        Sd_ = (1 / λ) * (
-            Sd_
-            - (Sd_ @ (inAdapt @ (np.conj(inAdapt).T)) @ Sd_)
-            / (λ + (np.conj(inAdapt).T) @ Sd_ @ inAdapt)
-        )
+        Sd_ = ((1 / λ) * (Sd_- num/ (λ + C) )).astype(prec)
 
-        H[indUpdModes, :] += errDiag @ (Sd_ @ inAdaptPar.T).T
+        Y = (Sd_ @ inAdaptPar.T).astype(prec).T
+
+        H[indUpdModes, :] += errDiag @ Y
 
         Sd[indUpdTaps, :] = Sd_
     return H, Sd, np.abs(err) ** 2
 
 
 @njit
-def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
+def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the DD-LMS algorithm.
 
@@ -607,6 +631,8 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
         Number of modes.
     runWL: bool
         Run widely-linear mode.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -620,13 +646,15 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
     """
     indMode = np.arange(0, nModes)
     outEq = outEq.T
-    decided = np.zeros(outEq.shape, dtype=np.complex128)
+    decided = np.zeros(outEq.shape, dtype=prec)
+    x = x.astype(prec)
 
     for k in range(nModes):
         indSymb = np.argmin(np.abs(outEq[0, k] - constSymb))
         decided[0, k] = constSymb[indSymb]
     err = decided - outEq  # calculate output error for the DDLMS algorithm
-
+    
+    err = err.astype(prec)
     errDiag = np.diag(err[0])  # define diagonal matrix from error array
 
     # update equalizer taps
@@ -637,7 +665,7 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
             inAdapt.repeat(nModes).reshape(len(x), -1).T
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
-            mu * errDiag @ np.conj(inAdaptPar)
+            mu * errDiag @ inAdaptPar.conjugate()
         )  # gradient descent update
         if runWL:
             H_[indUpdTaps, :] += mu * errDiag @ inAdaptPar  # gradient descent update
@@ -645,7 +673,7 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
 
 
 @njit
-def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
+def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes, prec):
     """
     Coefficient update with the DD-RLS algorithm.
 
@@ -665,6 +693,8 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
         Inverse correlation matrix.
     nModes : int
         Number of modes.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -681,7 +711,7 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
     indTaps = np.arange(0, nTaps)
 
     outEq = outEq.T
-    decided = np.zeros(outEq.shape, dtype=np.complex128)
+    decided = np.zeros(outEq.shape, dtype=prec)
 
     for k in range(nModes):
         indSymb = np.argmin(np.abs(outEq[0, k] - constSymb))
@@ -691,31 +721,36 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
     errDiag = np.diag(err[0])  # define diagonal matrix from error array
 
     # update equalizer taps
+    Sd = Sd.astype(prec)
+
     for N in range(nModes):
         indUpdModes = indMode + N * nModes
         indUpdTaps = indTaps + N * nTaps
 
         Sd_ = Sd[indUpdTaps, :]
 
-        inAdapt = np.conj(x[:, N]).reshape(-1, 1)  # input samples
+        inAdapt = x[:, N].conjugate().reshape(-1, 1).astype(prec)  # input samples
         inAdaptPar = (
             (inAdapt.T).repeat(nModes).reshape(len(x), -1).T
-        )  # expand input to parallelize tap adaptation
+        ).astype(prec)   # expand input to parallelize tap adaptation
+        
+        A = (Sd_ @ inAdapt).astype(prec)
+        B = (inAdapt.conjugate().astype(prec).T @ Sd_).astype(prec)
+        C = (inAdapt.conjugate().astype(prec).T @ A).astype(prec)
+        num = (A @ B).astype(prec)
 
-        Sd_ = (1 / λ) * (
-            Sd_
-            - (Sd_ @ (inAdapt @ (np.conj(inAdapt).T)) @ Sd_)
-            / (λ + (np.conj(inAdapt).T) @ Sd_ @ inAdapt)
-        )
+        Sd_ = ((1 / λ) * (Sd_- num/ (λ + C) )).astype(prec)
 
-        H[indUpdModes, :] += errDiag @ (Sd_ @ inAdaptPar.T).T
+        Y = (Sd_ @ inAdaptPar.T).astype(prec).T
+
+        H[indUpdModes, :] += errDiag @ Y
 
         Sd[indUpdTaps, :] = Sd_
     return H, Sd, np.abs(err) ** 2
 
 
 @njit
-def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
+def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the CMA algorithm.
 
@@ -737,6 +772,8 @@ def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
         Number of modes.
     runWL: bool
         Run widely-linear mode.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -751,6 +788,7 @@ def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
     indMode = np.arange(0, nModes)
     outEq = outEq.T
     err = R - np.abs(outEq) ** 2  # calculate output error for the CMA algorithm
+    err = err.astype(prec)
 
     prodErrOut = np.diag(err[0]) @ np.diag(outEq[0])  # define diagonal matrix
 
@@ -762,7 +800,7 @@ def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
             inAdapt.repeat(nModes).reshape(len(x), -1).T
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
-            mu * prodErrOut @ np.conj(inAdaptPar)
+            mu * prodErrOut @ inAdaptPar.conjugate()
         )  # gradient descent update
         if runWL:
             H_[indUpdTaps, :] += mu * prodErrOut @ inAdaptPar  # gradient descent update
@@ -770,7 +808,7 @@ def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
 
 
 @njit
-def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
+def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the RDE algorithm.
 
@@ -792,6 +830,8 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
         Number of modes.
     runWL: bool
         Run widely-linear mode.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -805,7 +845,7 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
     """
     indMode = np.arange(0, nModes)
     outEq = outEq.T
-    decidedR = np.zeros(outEq.shape, dtype=np.complex128)
+    decidedR = np.zeros(outEq.shape, dtype=prec)
 
     # find closest constellation radius
     for k in range(nModes):
@@ -825,7 +865,7 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
             inAdapt.repeat(nModes).reshape(len(x), -1).T
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
-            mu * prodErrOut @ np.conj(inAdaptPar)
+            mu * prodErrOut @ inAdaptPar.conjugate()
         )  # gradient descent update
         if runWL:
             H_[indUpdTaps, :] += mu * prodErrOut @ inAdaptPar  # gradient descent update
@@ -834,7 +874,7 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
 
 
 @njit
-def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
+def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the data-aided RDE algorithm.
 
@@ -856,6 +896,8 @@ def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
         Number of modes.
     runWL: bool
         Run widely-linear mode.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -869,7 +911,7 @@ def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
     """
     indMode = np.arange(0, nModes)
     outEq = outEq.T
-    decidedR = np.zeros(outEq.shape, dtype=np.complex128)
+    decidedR = np.zeros(outEq.shape, dtype=prec)
 
     # find exact constellation radius
     for k in range(nModes):
@@ -888,7 +930,7 @@ def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
             inAdapt.repeat(nModes).reshape(len(x), -1).T
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
-            mu * prodErrOut @ np.conj(inAdaptPar)
+            mu * prodErrOut @ inAdaptPar.conjugate()
         )  # gradient descent update
         if runWL:
             H_[indUpdTaps, :] += mu * prodErrOut @ inAdaptPar  # gradient descent update
