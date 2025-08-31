@@ -193,7 +193,7 @@ def constHist(symb, ax, cmap="turbo", whiteb=True):
         axis of the plot.
 
     """
-    cmap = copy.copy(cm.get_cmap(cmap))
+    cmap = copy.copy(plt.get_cmap(cmap))
     if whiteb:
         cmap.set_under(alpha=0)
 
@@ -257,7 +257,7 @@ def plotColoredConst(
     The detected symbols are determined using a detector based on the provided input symbols, noise
     variance, detection rule, and prior probabilities (if available).
     """
-    cmap = copy.copy(cm.get_cmap(cmap))
+    cmap = copy.copy(plt.get_cmap(cmap))
 
     σ2 = 1 / dB2lin(SNR)
 
