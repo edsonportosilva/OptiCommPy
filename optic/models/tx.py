@@ -13,7 +13,7 @@ Advanced models for optical transmitters (:mod:`optic.models.tx`)
 import numpy as np
 from tqdm.notebook import tqdm
 
-from optic.dsp.core import pnorm, pulseShape, signalPower, upsample, phaseNoise
+from optic.dsp.core import pnorm, pulseShape, signalPower, upsample, phaseNoise, freqShift
 from optic.models.devices import iqm, mzm
 from optic.comm.modulation import grayMapping
 from optic.comm.sources import symbolSource
@@ -203,9 +203,7 @@ def simpleWDMTx(param):
             sigTxCh = iqm(sigLO, param.mzmScale * sigTx)
             sigTxCh = np.sqrt(Pch[indCh] / param.nPolModes) * pnorm(sigTxCh)
 
-            sigTxWDM[:, indMode] += sigTxCh * np.exp(
-                1j * 2 * π * (freqGrid[indCh] / Fs) * t
-            )
+            sigTxWDM[:, indMode] += freqShift(sigTxCh, freqGrid[indCh], Fs)
 
             Pmode += signalPower(sigTxCh)
 
