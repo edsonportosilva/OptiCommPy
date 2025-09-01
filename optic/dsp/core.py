@@ -27,6 +27,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    movingAverage          -- Calculate the sliding window moving average.
    delaySignal            -- Apply a time delay to a signal.
    blockwiseFFTConv       -- Calculates convolutions in the frequency domain.
+   freqShift              -- Applies a frequency shift to a signal.
 """
 
 """Digital signal processing utilities."""
@@ -920,3 +921,28 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
         return y[D:-padLen]
     else:
         return y[D:-padLen].real
+    
+@njit
+def freqShift(x, deltaF, Fs):
+    """
+    Frequency shift of a signal.
+
+    Parameters
+    ----------
+    x : np.array
+        Input signal.
+    deltaF : float
+        Frequency shift (Hz).
+    Fs : float
+        Sampling frequency (Hz).
+
+    Returns
+    -------
+    y : np.array
+        Frequency shifted signal.
+
+    """
+    t = np.arange(len(x)) * (1 / Fs)
+    y = x * np.exp(1j * 2 * np.pi * deltaF * t)
+
+    return y
