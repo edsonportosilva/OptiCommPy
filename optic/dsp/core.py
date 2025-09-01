@@ -109,8 +109,8 @@ def firFilter(h, x):
     nModes = x.shape[1]
 
     for n in range(nModes):
-        y[:, n] = np.convolve(x[:, n], h, mode="same")
-    
+         y[:, n] = signal.fftconvolve(x[:, n], h, mode="same")
+        
     if input1D:
         # If the input is 1D, return it as a 1D array
         y = y.flatten()
