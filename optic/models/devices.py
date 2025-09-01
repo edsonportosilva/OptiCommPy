@@ -35,7 +35,7 @@ from optic.dsp.core import (
     quantizer,
     delaySignal
 )
-from optic.utils import dBm2W, parameters
+from optic.utils import dBm2W, parameters, fastMZM, fastPM
 
 try:
     from optic.dsp.coreGPU import checkGPU
@@ -82,9 +82,8 @@ def pm(Ai, u, Vπ):
             assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
-
-    π = np.pi
-    return Ai * np.exp(1j * (u / Vπ) * π)
+    
+    return fastPM(Ai, Vπ, u)
 
 
 def mzm(Ai, u, param=None):
@@ -134,9 +133,8 @@ def mzm(Ai, u, param=None):
             assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
-
-    π = np.pi
-    return Ai * np.cos(0.5 / Vpi * (u + Vb) * π)
+    
+    return fastMZM(Ai, Vpi, u, Vb)
 
 
 def iqm(Ai, u, param=None):
