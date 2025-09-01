@@ -12,9 +12,11 @@ General utilities (:mod:`optic.utils`)
    dBm2W                  -- Convert dBm to Watts.
    dec2bitarray           -- Convert decimals to arrays of bits.
    decimal2bitarray       -- Convert decimal to array of bits.
-   dotNumba              -- Compute dot product using Numba.
+   dotNumba               -- Compute dot product using Numba.
    bitarray2dec           -- Convert array of bits to decimal.
    ber2Qfactor            -- Convert bit error rate (BER) to Q factor in dB.
+   fastMZM                -- Fast function to be used in the Mach-Zehnder modulator (MZM) model.
+   fastPM                 -- Fast function to be used in the phase modulator (PM) model.
 """
 
 """General utilities."""
@@ -324,3 +326,50 @@ def ber2Qfactor(ber):
         The Q factor corresponding to the input BER.
     """
     return 10 * np.log10(np.sqrt(2) * erfcinv(2 * ber))
+
+
+@njit
+def fastMZM(Ai, Vpi, u, Vb):
+    """
+    Fast function to calculate the model for a Mach-Zehnder modulator (MZM).
+
+    Parameters
+    ----------
+    Ai : float
+        Amplitude of the input signal.
+    Vpi : float
+        Half-wave voltage of the MZM.
+    u : float
+        DC bias voltage.
+    Vb : float
+        Voltage applied to the MZM.
+
+    Returns
+    -------
+    float
+        Output signal after modulation.
+    """
+    return Ai * np.cos(0.5 / Vpi * (u + Vb) * np.pi)
+
+@njit
+def fastPM(Ai, Vpi, u):
+    """
+    Fast function to calculate the model for a phase modulator (PM).
+
+    Parameters
+    ----------
+    Ai : float
+        Amplitude of the input signal.
+    Vpi : float
+        Half-wave voltage of the PM.
+    u : float
+        DC bias voltage.
+    Vb : float
+        Voltage applied to the PM.
+
+    Returns
+    -------
+    float
+        Output signal after modulation.
+    """
+    return Ai * np.exp(1j * (u / Vpi) * np.pi)
