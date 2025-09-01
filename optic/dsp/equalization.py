@@ -330,7 +330,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
         return yEq
 
 
-@njit
+@njit(fastmath=True)
 def coreAdaptEq(
     x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, alg, constSymb, prec
 ):
@@ -418,7 +418,7 @@ def coreAdaptEq(
         np.mean(np.abs(constSymb) ** 4) / np.mean(np.abs(constSymb) ** 2)
     ) * np.ones((1, nModes)).astype(prec)
     Rrde = np.unique(np.abs(constSymb)).astype(prec)
-
+     
     for ind in range(L):
         outEq[:] = 0
 
@@ -480,7 +480,7 @@ def coreAdaptEq(
     return yEq, H, H_, errSq, Hiter
 
 
-@njit
+@njit(fastmath=True)
 def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the NLMS algorithm.
@@ -536,7 +536,7 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL, prec):
     return H, H_, np.abs(err) ** 2
 
 
-@njit
+@njit(fastmath=True)
 def rlsUp(x, dx, outEq, λ, H, Sd, nModes, prec):
     """
     Coefficient update with the RLS algorithm.
@@ -608,7 +608,7 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes, prec):
     return H, Sd, np.abs(err) ** 2
 
 
-@njit
+@njit(fastmath=True)
 def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the DD-LMS algorithm.
@@ -672,7 +672,7 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL, prec):
     return H, H_, np.abs(err) ** 2
 
 
-@njit
+@njit(fastmath=True)
 def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes, prec):
     """
     Coefficient update with the DD-RLS algorithm.
@@ -749,7 +749,7 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes, prec):
     return H, Sd, np.abs(err) ** 2
 
 
-@njit
+@njit(fastmath=True)
 def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the CMA algorithm.
@@ -807,7 +807,7 @@ def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL, prec):
     return H, H_, np.abs(err) ** 2
 
 
-@njit
+@njit(fastmath=True)
 def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the RDE algorithm.
@@ -873,7 +873,7 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL, prec):
     return H, H_, np.abs(err) ** 2
 
 
-@njit
+@njit(fastmath=True)
 def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the data-aided RDE algorithm.
