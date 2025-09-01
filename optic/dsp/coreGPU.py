@@ -5,6 +5,7 @@ import logging as logg
 import cupy as cp
 import numpy as np
 from cupy.fft import fft, fftshift, ifft
+from cupyx.scipy import signal
 
 
 def checkGPU():
@@ -67,7 +68,7 @@ def firFilter(h, x, prec=None):
     y_ = x_.copy()
 
     for n in range(nModes):
-        y_[:, n] = cp.convolve(x_[:, n], h_, mode="same")
+        y_[:, n] = signal.fftconvolve(x_[:, n], h_, mode="same")
     y = cp.asnumpy(y_)
     
     if input1D:
