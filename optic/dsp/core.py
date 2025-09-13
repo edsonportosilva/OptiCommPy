@@ -805,7 +805,7 @@ def delaySignal(sig, delay, Fs=1, NFFT=None):
 
     Parameters
     ----------
-    sig : array_like
+    sig : ndarray
         The input signal.
     delay : float
         The time delay to apply to the signal (in seconds).
@@ -818,7 +818,7 @@ def delaySignal(sig, delay, Fs=1, NFFT=None):
 
     Returns
     -------
-    array_like
+    ndarray
         The delayed signal.
     """
     # Calculate the length of the signal
@@ -842,6 +842,61 @@ def delaySignal(sig, delay, Fs=1, NFFT=None):
     delayedSig = np.roll(delayedSig, -1)
 
     return delayedSig[:N]
+
+def iqMixing(sig, param):
+    """
+    Add IQ mixing to a signal.
+
+    Parameters
+    ----------
+    sig : ndarray
+        Input signal.
+    param : object, optional
+        Object containing parameters for IQ mixing.
+        Default is None.
+
+        ampImb : float, optional
+            Amplitude imbalance parameter.
+            Default is 0.
+        phaseImb : float, optional
+            Phase imbalance parameter (in radians).
+            Default is 0.
+        skewI : float, optional
+            Skewness parameter for I component.
+            Default is 0.
+        skewQ : float, optional
+            Skewness parameter for Q component.
+            Default is 0.
+        Fs : float, optional
+            Sampling frequency.
+            Default is None.
+
+    Returns
+    -------
+    ndarray
+        IQ-mixed signal.        
+    """
+    # check input parameters
+    ampImb = getattr(param, "ampImb", 0)
+    phaseImb = getattr(param, "phaseImb", 0)
+    skewI = getattr(param, "skewI", 0)
+    skewQ = getattr(param, "skewQ", 0)
+    Fs = getattr(param, "Fs", None)
+
+    if Fs is None:
+        logg.error('Sampling frequency not provided.')  
+
+    # IQ-imbalance
+    k1 = (1-ampImb)*np.exp(1j*phaseImb/2)/2 + (1+ampImb)*np.exp(-1j*phaseImb/2)/2
+    k2 = (1-ampImb)*np.exp(-1j*phaseImb/2)/2 - (1+ampImb)*np.exp(1j*phaseImb/2)/2
+    
+    sig_ = k1 * sig + k2 * np.conj(sig)
+
+    # IQ-skew     
+    sI = delaySignal(np.real(sig_), skewI, Fs).real
+    sQ = delaySignal(np.imag(sig_), skewQ, Fs).real
+
+    return sI + 1j * sQ
 
 
 def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
