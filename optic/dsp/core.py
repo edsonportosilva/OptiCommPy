@@ -110,8 +110,8 @@ def firFilter(h, x):
     nModes = x.shape[1]
 
     for n in range(nModes):
-         y[:, n] = signal.fftconvolve(x[:, n], h, mode="same")
-        
+        y[:, n] = signal.fftconvolve(x[:, n], h, mode="same")
+
     if input1D:
         # If the input is 1D, return it as a 1D array
         y = y.flatten()
@@ -217,7 +217,7 @@ def pulseShape(param):
     param : core.parameter
         Pulse shaping parameters:
         - param.pulseType : string ('rect','nrz','rrc','rc', 'doubinary')
-            Type of pulse shaping filter. The default is 'rrc'. 
+            Type of pulse shaping filter. The default is 'rrc'.
 
         - param.SpS : int, optional
             Number of samples per symbol of input signal. The default is 2.
@@ -234,10 +234,10 @@ def pulseShape(param):
         Array of filter coefficients (normalized).
 
     """
-    pulseType = getattr(param, 'pulseType', 'rrc')
-    SpS = getattr(param, 'SpS', 2)
-    nFilterTaps = getattr(param, 'nFilterTaps', 256)
-    rollOff = getattr(param, 'rollOff', 0.1)         
+    pulseType = getattr(param, "pulseType", "rrc")
+    SpS = getattr(param, "SpS", 2)
+    nFilterTaps = getattr(param, "nFilterTaps", 256)
+    rollOff = getattr(param, "rollOff", 0.1)
 
     if pulseType == "rect":
         pulse = np.concatenate(
@@ -258,9 +258,11 @@ def pulseShape(param):
         t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
         pulse = rcFilterTaps(t, rollOff, 1)
     elif pulseType == "duobinary":
-        t = np.linspace(-nFilterTaps // 2 - SpS//2, nFilterTaps // 2 + SpS//2, nFilterTaps) * (1 / SpS)
-        pulse = np.sinc(t)     
-        pulse += np.roll(pulse, SpS)        
+        t = np.linspace(
+            -nFilterTaps // 2 - SpS // 2, nFilterTaps // 2 + SpS // 2, nFilterTaps
+        ) * (1 / SpS)
+        pulse = np.sinc(t)
+        pulse += np.roll(pulse, SpS)
 
     pulse = pulse / np.sum(pulse)
 
@@ -384,7 +386,7 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
             * fu
             * np.exp(-(2 / np.log(2)) * (np.pi * fu * (n - d)) ** 2)
         )
-    h = h / np.sum(h) # Normalize the filter coefficients
+    h = h / np.sum(h)  # Normalize the filter coefficients
 
     return h
 
@@ -438,7 +440,7 @@ def decimate(Ei, param):
     Ei : np.array
         Input signal.
     param : optic.utils.parameters object, optional
-        Parameters of the decimation process.        
+        Parameters of the decimation process.
 
         - param.SpSin  : samples per symbol of the input signal.
         - param.SpSout : samples per symbol of the output signal.
@@ -495,8 +497,8 @@ def resample(Ei, param):
     Ei : np.array
         Input signal.
     param : optic.utils.parameters object, optional
-        Parameters of the resampling process.     
-            
+        Parameters of the resampling process.
+
             - param.inFs : sampling rate of the input signal [default: 2].
             - param.outFs : sampling rate of the output signal [default: 2].
             - param.N : order of anti-aliasing filter [default: 501].
@@ -512,9 +514,9 @@ def resample(Ei, param):
 
     """
     # check input parameters
-    N = getattr(param, 'N', 501)          
-    inFs = getattr(param, 'inFs', 2)
-    outFs = getattr(param, 'outFs', 2)
+    N = getattr(param, "N", 501)
+    inFs = getattr(param, "inFs", 2)
+    outFs = getattr(param, "outFs", 2)
 
     try:
         Ei.shape[1]
@@ -522,19 +524,19 @@ def resample(Ei, param):
     except IndexError:
         input1D = True
         # If Ei is a 1D array, reshape it to a 2D array
-        Ei = Ei.reshape(len(Ei), 1)    
-    
+        Ei = Ei.reshape(len(Ei), 1)
+
     # Anti-aliasing filters:
     if outFs < inFs:
-        N_ = min(Ei.shape[0], N)    
+        N_ = min(Ei.shape[0], N)
         hi = lowPassFIR(outFs / 2, inFs, N_, typeF="rect")
         Ei = firFilter(hi, Ei)
-    
+
     Eo = clockSamplingInterp(Ei, inFs, outFs)
 
     if outFs > inFs:
-        N_ = min(Eo.shape[0], N)    
-        ho = lowPassFIR(inFs / 2, outFs, N_, typeF="rect")        
+        N_ = min(Eo.shape[0], N)
+        ho = lowPassFIR(inFs / 2, outFs, N_, typeF="rect")
         Eo = firFilter(ho, Eo)
 
     if input1D:
@@ -843,6 +845,7 @@ def delaySignal(sig, delay, Fs=1, NFFT=None):
 
     return delayedSig[:N]
 
+
 def iqMixing(sig, param):
     """
     Add IQ mixing to a signal.
@@ -853,19 +856,15 @@ def iqMixing(sig, param):
         Input signal.
     param : object, optional
         Object containing parameters for IQ mixing.
-        Default is None.
 
         ampImb : float, optional
-            Amplitude imbalance parameter.
+            Amplitude imbalance parameter in dB.
             Default is 0.
         phaseImb : float, optional
             Phase imbalance parameter (in radians).
             Default is 0.
-        skewI : float, optional
+        timeSkew : float, optional
             Skewness parameter for I component.
-            Default is 0.
-        skewQ : float, optional
-            Skewness parameter for Q component.
             Default is 0.
         Fs : float, optional
             Sampling frequency.
@@ -874,27 +873,31 @@ def iqMixing(sig, param):
     Returns
     -------
     ndarray
-        IQ-mixed signal.        
+        IQ-mixed signal.
     """
     # check input parameters
     ampImb = getattr(param, "ampImb", 0)
     phaseImb = getattr(param, "phaseImb", 0)
-    skewI = getattr(param, "skewI", 0)
-    skewQ = getattr(param, "skewQ", 0)
+    timeSkew = getattr(param, "timeSkew", 0)
     Fs = getattr(param, "Fs", None)
 
     if Fs is None:
-        logg.error('Sampling frequency not provided.')  
+        logg.error("Sampling frequency not provided.")
 
     # IQ-imbalance
-    k1 = (1-ampImb)*np.exp(1j*phaseImb/2)/2 + (1+ampImb)*np.exp(-1j*phaseImb/2)/2
-    k2 = (1-ampImb)*np.exp(-1j*phaseImb/2)/2 - (1+ampImb)*np.exp(1j*phaseImb/2)/2
-    
+    ampImb = 10 ** (ampImb / 20) - 1  # convert from dB to linear scale
+    k1 = (1 - ampImb) * np.exp(1j * phaseImb / 2) / 2 + (1 + ampImb) * np.exp(
+        -1j * phaseImb / 2
+    ) / 2
+    k2 = (1 - ampImb) * np.exp(-1j * phaseImb / 2) / 2 - (1 + ampImb) * np.exp(
+        1j * phaseImb / 2
+    ) / 2
     sig_ = k1 * sig + k2 * np.conj(sig)
 
-    # IQ-skew     
-    sI = delaySignal(np.real(sig_), skewI, Fs).real
-    sQ = delaySignal(np.imag(sig_), skewQ, Fs).real
+    # IQ-skew
+    delay = timeSkew / 2
+    sI = delaySignal(np.real(sig_), -delay, Fs).real
+    sQ = delaySignal(np.imag(sig_), delay, Fs).real
 
     return sI + 1j * sQ
 
@@ -976,7 +979,8 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
         return y[D:-padLen]
     else:
         return y[D:-padLen].real
-    
+
+
 @njit
 def freqShift(x, deltaF, Fs):
     """
