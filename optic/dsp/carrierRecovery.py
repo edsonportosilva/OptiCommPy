@@ -46,9 +46,8 @@ def cpr(Ei, param=None, symbTx=None):
     param : optic.utils.parameter object, optional
         Configuration parameters [default: None].
 
-        - param.alg: CPR algorithm to be used ['bps', 'bpsGPU', 'ddpll', or 'viterbi']
-
-        - param.shapingFactor: shaping factor, for probabilistic shaped QAM with MB dististribution. The default is 0.
+        - param.alg: CPR algorithm to be used ['bps', 'bpsGPU', 'ddpll', or 'viterbi'] [default: 'bps'].
+        - param.shapingFactor: shaping factor, for probabilistic shaped QAM with MB dististribution.[default: 0]
 
         BPS params:
 
@@ -71,17 +70,11 @@ def cpr(Ei, param=None, symbTx=None):
     symbTx :complex-valued np.array, optional
         Transmitted symbol sequence. [default: None]
 
-    Raises
-    ------
-    ValueError
-        Error is generated if the CPR algorithm is not correctly
-        passed.
-
     Returns
     -------
     Eo : complex-valued np.array
         Phase-compensated signal.
-    θ : real-valued np.array
+    phaseEst : real-valued np.array
         Time-varying estimated phase-shifts.
 
     References
@@ -101,7 +94,7 @@ def cpr(Ei, param=None, symbTx=None):
     alg = getattr(param, "alg", "bps")
     M = getattr(param, "M", 4)
     constType = getattr(param, "constType", "qam")
-    shapingFactor = getattr(param,'shapingFactor', 0)
+    shapingFactor = getattr(param, "shapingFactor", 0)
     B = getattr(param, "B", 64)
     N = getattr(param, "N", 35)
     Kv = getattr(param, "Kv", 0.1)
@@ -119,44 +112,51 @@ def cpr(Ei, param=None, symbTx=None):
         input1D = True
 
     # constellation parameters
-    constSymb = grayMapping(M, constType)    
-    px = np.exp(-shapingFactor*np.abs(constSymb)**2)
+    constSymb = grayMapping(M, constType)
+    px = np.exp(-shapingFactor * np.abs(constSymb) ** 2)
     px = px / np.sum(px)
-    constSymb /= np.sqrt(np.sum(np.abs(constSymb)**2*px))
+    constSymb /= np.sqrt(np.sum(np.abs(constSymb) ** 2 * px))
 
     # 4th power frequency offset estimation/compensation
     logg.info(f"Running frequency offset compensation...")
-    Ei, _ = fourthPowerFOE(Ei, 1 / Ts)
+    Ei, fo = fourthPowerFOE(Ei, 1 / Ts)
     Ei = pnorm(Ei)
+    logg.info(f"Estimated frequency offset: {fo/1e6:.3f} MHz")
 
     if alg == "ddpll":
         logg.info(f"Running DDPLL carrier phase recovery...")
-        θ = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
+        phaseEst = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
         logg.info(f"Running BPS carrier phase recovery...")
-        θ = bps(Ei, N // 2, constSymb, B)
+        phaseEst = bps(Ei, N // 2, constSymb, B)
     elif alg == "bpsGPU":
         try:
             logg.info("Running GPU-based BPS carrier phase recovery...")
-            θ = bpsGPU(Ei, N // 2, constSymb, B)
+            phaseEst = bpsGPU(Ei, N // 2, constSymb, B)
         except NameError:
             logg.warning("GPU unavailable, switching to CPU processing...")
-            θ = bps(Ei, N // 2, constSymb, B)
+            phaseEst = bps(Ei, N // 2, constSymb, B)
     elif alg == "viterbi":
         logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")
-        θ = viterbi(Ei, N)
+        phaseEst = viterbi(Ei, N)
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
-    θ = np.unwrap(4 * θ, axis=0) / 4
+    phaseEst = np.unwrap(4 * phaseEst, axis=0) / 4
 
-    Eo = pnorm(Ei * np.exp(1j * θ))
+    discard = (
+        phaseEst.shape[0] // 4
+    )  # discard 1/4 of the symbols at the beginning and end
+    sigmaPhase = np.mean(np.var(np.diff(phaseEst[discard:-discard, :], axis=0), axis=0))
+    logg.info(f"Estimated linewidth: {sigmaPhase/(2 * np.pi* Ts)/1e3:.3f} kHz")
+
+    Eo = pnorm(Ei * np.exp(1j * phaseEst))
 
     if input1D:
         # If input was 1D, return a 1D array
         Eo = Eo.flatten()
-        θ = θ.flatten()
+        phaseEst = phaseEst.flatten()
 
-    return (Eo, θ) if returnPhases else Eo
+    return (Eo, phaseEst) if returnPhases else Eo
 
 
 @njit
@@ -177,7 +177,7 @@ def bps(Ei, N, constSymb, B):
 
     Returns
     -------
-    θ : real-valued np.array
+    phaseEst : real-valued np.array
         Time-varying estimated phase-shifts.
 
     References
@@ -186,9 +186,9 @@ def bps(Ei, N, constSymb, B):
     """
     nModes = Ei.shape[1]
 
-    ϕ_test = np.arange(0, B) * (np.pi / 2) / B  # test phases
+    testPhases = np.arange(0, B) * (np.pi / 2) / B  # test phases
 
-    θ = np.zeros(Ei.shape, dtype="float")
+    phaseEst = np.zeros(Ei.shape, dtype="float")
 
     zeroPad = np.zeros((N, nModes), dtype="complex")
     x = np.concatenate(
@@ -202,15 +202,15 @@ def bps(Ei, N, constSymb, B):
         dmin = np.zeros((B, 2 * N + 1), dtype="float")
 
         for k in range(L):
-            for indPhase, ϕ in enumerate(ϕ_test):
-                dist[indPhase, :] = np.abs(x[k, n] * np.exp(1j * ϕ) - constSymb) ** 2
+            for indPhase, phi in enumerate(testPhases):
+                dist[indPhase, :] = np.abs(x[k, n] * np.exp(1j * phi) - constSymb) ** 2
                 dmin[indPhase, -1] = np.min(dist[indPhase, :])
             if k >= 2 * N:
                 sumDmin = np.sum(dmin, axis=1)
                 indRot = np.argmin(sumDmin)
-                θ[k - 2 * N, n] = ϕ_test[indRot]
+                phaseEst[k - 2 * N, n] = testPhases[indRot]
             dmin = np.roll(dmin, -1)
-    return θ
+    return phaseEst
 
 
 @njit
@@ -239,7 +239,7 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
 
     Returns
     -------
-    θ : real-valued np.array
+    phaseEst : real-valued np.array
         Time-varying estimated phase-shifts.
 
     References
@@ -248,7 +248,7 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     """
     nSymbols, nModes = Ei.shape
 
-    θ = np.zeros((nSymbols, nModes), dtype=np.float64)
+    phaseEst = np.zeros((nSymbols, nModes), dtype=np.float64)
 
     # Loop filter coefficients
     a1b = np.array(
@@ -269,7 +269,7 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
             u[1] = u[2]
 
             # Remove estimate of phase error from input symbol
-            Eo = Ei[k, n] * np.exp(1j * θ[k, n])
+            Eo = Ei[k, n] * np.exp(1j * phaseEst[k, n])
 
             # Slicer (perform hard decision on symbol)
             if k in pilotInd:
@@ -286,8 +286,8 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
 
             # Estimate the phase error for the next symbol
             if k < Ei.shape[0] - 1:
-                θ[k + 1, n] = θ[k, n] - Kv * u[0]
-    return θ
+                phaseEst[k + 1, n] = phaseEst[k, n] - Kv * u[0]
+    return phaseEst
 
 
 def viterbi(Ei, N=35, M=4):
