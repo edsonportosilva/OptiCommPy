@@ -32,8 +32,6 @@ class parameters:
 
     """
 
-    pass
-
     def view(self):
         """
         Prints the attributes and their values in either standard or scientific notation.
@@ -350,6 +348,7 @@ def fastMZM(Ai, Vpi, u, Vb):
         Output signal after modulation.
     """
     return Ai * np.cos(0.5 / Vpi * (u + Vb) * np.pi)
+
 
 @njit
 def fastPM(Ai, Vpi, u):
