@@ -767,14 +767,14 @@ def movingAverage(x, N):
 
     Parameters
     ----------
-    x : numpy.np.array
+    x : np.array
         Input 2D array with shape (M, N), where M is the number of samples and N is the number of columns.
     N : int
         Size of the sliding window.
 
     Returns
     -------
-    numpy.np.array
+    np.array
         2D array containing the sliding window moving averages along each column.
 
     Notes
