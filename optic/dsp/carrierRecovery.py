@@ -121,7 +121,7 @@ def cpr(Ei, param=None, symbTx=None):
     logg.info(f"Running frequency offset compensation...")
     Ei, fo = fourthPowerFOE(Ei, 1 / Ts)
     Ei = pnorm(Ei)
-    logg.info(f"Estimated frequency offset: {fo/1e6:.3f} MHz")
+    logg.info(f"Estimated frequency offset (MHz): {np.round(fo/1e6, 3)}")
 
     if alg == "ddpll":
         logg.info(f"Running DDPLL carrier phase recovery...")
@@ -349,16 +349,16 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
     nModes = Ei.shape[1]
     Eo = Ei.copy()
     t = np.arange(0, Eo.shape[0]) * 1 / Fs
-
+    fo = np.zeros(nModes)
     for n in range(nModes):
         f4 = 10 * np.log10(np.abs(fftshift(fft(Ei[:, n] ** 4))))
         indFO = np.argmax(f4)
-        fo = f[indFO] / 4
-        Eo[:, n] = Ei[:, n] * np.exp(-1j * 2 * np.pi * fo * t)
+        fo[n] = f[indFO] / 4
+        Eo[:, n] = Ei[:, n] * np.exp(-1j * 2 * np.pi * fo[n] * t)
 
     if plotSpec:
         plotSpectrum(f, f4, indFO)
-    return Eo, f[indFO] / 4
+    return Eo, fo
 
 
 def plotSpectrum(f, f4, indFO):
