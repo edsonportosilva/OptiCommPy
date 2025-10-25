@@ -1005,3 +1005,51 @@ def freqShift(x, deltaF, Fs):
     y = x * np.exp(1j * 2 * np.pi * deltaF * t)
 
     return y
+
+
+@njit
+def calcMZM(Ai, Vpi, u, Vb):
+    """
+    Fast function to calculate the Mach-Zehnder modulator (MZM) model.
+
+    Parameters
+    ----------
+    Ai : float
+        Amplitude of the input signal.
+    Vpi : float
+        Half-wave voltage of the MZM.
+    u : float
+        DC bias voltage.
+    Vb : float
+        Voltage applied to the MZM.
+
+    Returns
+    -------
+    float
+        Output signal after modulation.
+    """
+    return Ai * np.cos(0.5 / Vpi * (u + Vb) * np.pi)
+
+
+@njit
+def calcPM(Ai, Vpi, u):
+    """
+    Fast function to calculate the phase modulator (PM) model.
+
+    Parameters
+    ----------
+    Ai : float
+        Amplitude of the input signal.
+    Vpi : float
+        Half-wave voltage of the PM.
+    u : float
+        DC bias voltage.
+    Vb : float
+        Voltage applied to the PM.
+
+    Returns
+    -------
+    float
+        Output signal after modulation.
+    """
+    return Ai * np.exp(1j * (u / Vpi) * np.pi)

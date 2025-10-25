@@ -35,8 +35,10 @@ from optic.dsp.core import (
     quantizer,
     delaySignal,
     iqMixing,
+    calcMZM,
+    calcPM,
 )
-from optic.utils import dBm2W, parameters, fastMZM, fastPM
+from optic.utils import dBm2W, parameters
 
 try:
     from optic.dsp.coreGPU import checkGPU
@@ -84,7 +86,7 @@ def pm(Ai, u, Vπ):
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
-    return fastPM(Ai, Vπ, u)
+    return calcPM(Ai, Vπ, u)
 
 
 def mzm(Ai, u, param=None):
@@ -135,7 +137,7 @@ def mzm(Ai, u, param=None):
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
-    return fastMZM(Ai, Vpi, u, Vb)
+    return calcMZM(Ai, Vpi, u, Vb)
 
 
 def iqm(Ai, u, param=None):
