@@ -28,6 +28,8 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    delaySignal            -- Apply a time delay to a signal.
    blockwiseFFTConv       -- Calculates convolutions in the frequency domain.
    freqShift              -- Applies a frequency shift to a signal.
+   calcMZM                -- Fast function to be used in the Mach-Zehnder modulator (MZM) model.
+   calcPM                 -- Fast function to be used in the phase modulator (PM) model.
 """
 
 """Digital signal processing utilities."""

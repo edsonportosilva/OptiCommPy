@@ -15,8 +15,6 @@ General utilities (:mod:`optic.utils`)
    dotNumba               -- Compute dot product using Numba.
    bitarray2dec           -- Convert array of bits to decimal.
    ber2Qfactor            -- Convert bit error rate (BER) to Q factor in dB.
-   fastMZM                -- Fast function to be used in the Mach-Zehnder modulator (MZM) model.
-   fastPM                 -- Fast function to be used in the phase modulator (PM) model.
 """
 
 """General utilities."""
