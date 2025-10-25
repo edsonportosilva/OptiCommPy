@@ -12,7 +12,7 @@ General utilities (:mod:`optic.utils`)
    dBm2W                  -- Convert dBm to Watts.
    dec2bitarray           -- Convert decimals to arrays of bits.
    decimal2bitarray       -- Convert decimal to array of bits.
-   dotNumba              -- Compute dot product using Numba.
+   dotNumba               -- Compute dot product using Numba.
    bitarray2dec           -- Convert array of bits to decimal.
    ber2Qfactor            -- Convert bit error rate (BER) to Q factor in dB.
 """
@@ -29,8 +29,6 @@ class parameters:
     Basic class to be used as a struct of parameters
 
     """
-
-    pass
 
     def view(self):
         """

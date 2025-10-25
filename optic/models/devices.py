@@ -33,6 +33,10 @@ from optic.dsp.core import (
     lowPassFIR,
     phaseNoise,
     quantizer,
+    delaySignal,
+    iqMixing,
+    calcMZM,
+    calcPM,
 )
 from optic.utils import dBm2W, parameters
 
@@ -82,8 +86,7 @@ def pm(Ai, u, Vπ):
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
-    π = np.pi
-    return Ai * np.exp(1j * (u / Vπ) * π)
+    return calcPM(Ai, Vπ, u)
 
 
 def mzm(Ai, u, param=None):
@@ -134,8 +137,7 @@ def mzm(Ai, u, param=None):
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
-    π = np.pi
-    return Ai * np.cos(0.5 / Vpi * (u + Vb) * π)
+    return calcMZM(Ai, Vpi, u, Vb)
 
 
 def iqm(Ai, u, param=None):
@@ -306,7 +308,7 @@ def photodiode(E, param=None):
 
     """
     if param is None:
-        param = []
+        param = parameters()
     kB = const.value("Boltzmann constant")
     q = const.value("elementary charge")
 
@@ -342,7 +344,9 @@ def photodiode(E, param=None):
 
     if N % 2 == 0:
         N += 1  # make sure N is odd
-        logg.warning("Number of filter taps (N) was even, incrementing by one to make it odd.")
+        logg.warning(
+            "Number of filter taps (N) was even, incrementing by one to make it odd."
+        )
 
     if seed is not None:
         np.random.seed(seed)  # set seed for reproducibility
@@ -415,7 +419,7 @@ def balancedPD(E1, E2, param=None):
     [2] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.
     """
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
-    
+
     # check if input parameters are provided
     if param is None:
         paramPD1 = None
@@ -424,12 +428,14 @@ def balancedPD(E1, E2, param=None):
         # duplicate PD parameters:
         paramPD1 = param.copy()
         paramPD2 = param.copy()
-    
+
         # check for seed in parameters
         if hasattr(paramPD1, "seed"):
             # in case the seed is provided, make sure to use different seeds for each photodiode
-            if paramPD1.seed is not None:            
-                paramPD2.seed = paramPD1.seed + 1  # to ensure different seeds for each photodiode
+            if paramPD1.seed is not None:
+                paramPD2.seed = (
+                    paramPD1.seed + 1
+                )  # to ensure different seeds for each photodiode
 
     i1 = photodiode(E1, paramPD1)
     i2 = photodiode(E2, paramPD2)
@@ -478,7 +484,7 @@ def opticalHybrid2x4(Es, Elo):
     return T @ Ei
 
 
-def coherentReceiver(Es, Elo, param=None):
+def coherentReceiver(Es, Elo, paramFE=None, paramPD=None):
     """
     Single polarization coherent optical front-end.
 
@@ -488,8 +494,16 @@ def coherentReceiver(Es, Elo, param=None):
         Input signal optical field.
     Elo : np.array
         Input LO optical field.
-    param : parameter object (struct), optional
-        Parameters of the photodiodes.
+    paramFE : parameter object (struct), optional
+        Parameters of the optical frontend:
+
+            - paramFE.Fs : simulation sampling frequency [samples/s].
+            - paramFE.phaseImb: phase imbalance of the I/Q [rad].
+            - paramFE.ampImb: amplitude imbalance of the I/Q [dB].
+            - paramFE.timeSkew: delay of the I of the I/Q [s].
+
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiodes
 
     Returns
     -------
@@ -506,17 +520,31 @@ def coherentReceiver(Es, Elo, param=None):
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
     assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
 
-    # optical hybrid 2 x 4 90° 
+    try:
+        Fs = paramFE.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
+
+    if paramPD is None:
+        paramPD = parameters()
+        paramPD.Fs = Fs
+
+    # optical hybrid 2 x 4 90°
     Eo = opticalHybrid2x4(Es, Elo)
 
     # balanced photodetection
-    sI = balancedPD(Eo[1, :], Eo[0, :], param)
-    sQ = balancedPD(Eo[2, :], Eo[3, :], param)
+    sI = balancedPD(Eo[1, :], Eo[0, :], paramPD)
+    sQ = balancedPD(Eo[2, :], Eo[3, :], paramPD)
 
-    return sI + 1j * sQ
+    s = sI + 1j * sQ
+
+    # add receiver front-end impairments
+    s = iqMixing(s, paramFE)
+
+    return s
 
 
-def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
+def pdmCoherentReceiver(Es, Elo, paramFE, paramPD=None):
     """
     Polarization multiplexed coherent optical front-end.
 
@@ -528,8 +556,24 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
         Input LO optical field.
     θsig : scalar, optional
         Input polarization rotation angle in rad. [default: 0 rad].
-    param : parameter object (struct), optional
-        Parameters of the photodiodes.
+    paramFE : parameter object (struct), optional
+        Parameters of the optical frontend:
+
+            - paramFE.Fs : simulation sampling frequency [samples/s].
+            - paramFE.polRotation : input polarization rotation angle [rad].
+            - paramFE.pdl : polarization dependent loss [dB]. If > 0, loss is on X polarization. If < 0, loss is on Y polarization.
+            - paramFE.polDelay : polarization delay [s]. If > 0, delay is on X polarization. If < 0, delay is on Y polarization.
+            - paramFE.polX.phaseImb: phase imbalance of the I/Q of the X polarization [rad].
+            - paramFE.polX.ampImb: amplitude imbalance of the I/Q of the X polarization [dB].
+            - paramFE.polX.skewI: delay of the I of the X polarization [s].
+            - paramFE.polX.skewQ: delay of the Q of the X polarization [s].
+            - paramFE.polY.phaseImb: phase imbalance of the I/Q of the Y polarization [rad].
+            - paramFE.polY.ampImb: amplitude imbalance of the I/Q of the Y polarization [dB].
+            - paramFE.polY.skewI: delay of the I of the Y polarization [s].
+            - paramFE.polY.skewQ: delay of the Q of the Y polarization [s].
+
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiodes (see photodiode model documentation)
 
     Returns
     -------
@@ -544,11 +588,46 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     """
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
-    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
-    Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orth. polarizations
+    try:
+        Fs = paramFE.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
 
-    Sx = coherentReceiver(Esx, Elox, param)  # coherent detection of pol.X
-    Sy = coherentReceiver(Esy, Eloy, param)  # coherent detection of pol.Y
+    # define frontend parameters for the X polarization:
+    paramX = parameters()
+    paramX.Fs = Fs
+    paramX.phaseImb = getattr(paramFE, "phaseImbX", 0)
+    paramX.ampImb = getattr(paramFE, "ampImbX", 0)
+    paramX.timeSkew = getattr(paramFE, "timeSkewX", 0)
+
+    # define frontend parameters for the Y polarization:
+    paramY = parameters()
+    paramY.Fs = Fs
+    paramY.phaseImb = getattr(paramFE, "phaseImbY", 0)
+    paramY.ampImb = getattr(paramFE, "ampImbY", 0)
+    paramY.timeSkew = getattr(paramFE, "timeSkewY", 0)
+
+    if paramPD is None:
+        paramPD = parameters()
+        paramPD.Fs = Fs
+
+    polRotation = getattr(paramFE, "polRotation", 0)
+    pdl = getattr(paramFE, "pdl", 0)
+    polDelay = getattr(paramFE, "polDelay", 0)
+
+    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
+    Esx, Esy = pbs(Es, θ=polRotation)  # split signal into two orth. polarizations
+
+    if polDelay != 0:
+        Esx = delaySignal(Esx, -polDelay / 2, Fs)  # apply delay to polarization X
+        Esy = delaySignal(Esy, polDelay / 2, Fs)  # apply delay to polarization Y
+
+    if pdl != 0:
+        Esx = 10 ** (-(pdl / 2) / 20) * Esx  # apply PDL to pol.X
+        Esy = 10 ** ((pdl / 2) / 20) * Esy  # apply PDL to pol.Y
+
+    Sx = coherentReceiver(Esx, Elox, paramX, paramPD)  # coherent detection of pol.X
+    Sy = coherentReceiver(Esy, Eloy, paramY, paramPD)  # coherent detection of pol.Y
 
     return np.array([Sx, Sy]).T
 
@@ -626,6 +705,7 @@ def basicLaserModel(param=None):
         - param.Fs: sampling rate [samples/s]
         - param.Ns: number of signal samples [default: 1e3]
         - param.seed: random seed for noise generation [default: None]
+        - param.freqShift: frequency shift with respect to the central simulation frequency [Hz] [default: 0 Hz]
 
     Returns
     -------
@@ -647,13 +727,16 @@ def basicLaserModel(param=None):
     RIN_var = getattr(param, "RIN_var", 1e-20)  # RIN variance
     Ns = getattr(param, "Ns", 1000)  # Number of samples of the signal
     seed = getattr(param, "seed", None)  # Seed for the random number generator
+    freqShift = getattr(
+        param, "freqShift", 0
+    )  # Frequency shift with respect to the central simulation frequency
 
     if seed is None:
         seedPN = None
         seedRIN = None
     else:
         seedPN = seed
-        seedRIN = seed + 1  # to ensure different seeds for phase noise and RIN
+        seedRIN = seed + 73  # to ensure different seeds for phase noise and RIN
 
     # Simulate Maxwellian random walk phase noise
     pn = phaseNoise(lw, Ns, 1 / Fs, seedPN)
@@ -661,8 +744,14 @@ def basicLaserModel(param=None):
     # Simulate relative intensity noise  (RIN)[todo:check correct model]
     deltaP = gaussianComplexNoise(pn.shape, RIN_var, seedRIN)
 
+    # Apply frequency shift if required
+    if freqShift != 0:
+        fo = 2 * np.pi * freqShift * np.arange(Ns) / Fs
+    else:
+        fo = 0
+
     # Return optical signal
-    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * pn)
+    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * (fo + pn))
 
 
 def adc(Ei, param):
