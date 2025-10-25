@@ -567,6 +567,20 @@ def symbolSync(rx, tx, SpS, mode="amp"):
         Transmitted sequence synchronized to rx.
 
     """
+    try:
+        rx.shape[1]
+        input1D = False
+    except IndexError:
+        input1D = True
+        # If rx is a 1D array, reshape it to a 2D array
+        rx = rx.reshape(len(rx), 1)
+
+    try:
+        tx.shape[1]
+    except IndexError:
+        # If tx is a 1D array, reshape it to a 2D array
+        tx = tx.reshape(len(tx), 1)
+
     nModes = rx.shape[1]
 
     rx = rx[0::SpS, :]
@@ -612,6 +626,11 @@ def symbolSync(rx, tx, SpS, mode="amp"):
     # compensate time delay
     for k in range(nModes):
         tx[:, k] = np.roll(tx[:, k], -int(delay[k]))
+
+    if input1D:
+        # If the output is 1D, return it as a 1D array
+        tx = tx.flatten()
+
     return tx
 
 
