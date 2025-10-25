@@ -193,7 +193,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     alg = getattr(param, "alg", ["nlms"])
     constType = getattr(param, "constType", "qam")
     M = getattr(param, "M", 4)
-    shapingFactor = getattr(param,'shapingFactor', 0)
+    shapingFactor = getattr(param, "shapingFactor", 0)
     prgsBar = getattr(param, "prgsBar", True)
     returnResults = getattr(param, "returnResults", False)
     prec = getattr(param, "prec", np.complex64)
@@ -230,12 +230,12 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
 
     # Calculate MB distribution
-    px = np.exp(-shapingFactor*np.abs(constSymb)**2)
-    px = px/np.sum(px)
+    px = np.exp(-shapingFactor * np.abs(constSymb) ** 2)
+    px = px / np.sum(px)
 
     # normalize reference constellation accouting for the probability mass function
-    constSymb /= np.sqrt(np.sum(np.abs(constSymb)**2*px)) 
-    
+    constSymb /= np.sqrt(np.sum(np.abs(constSymb) ** 2 * px))
+
     totalNumSymb = int(np.fix((len(x) - nTaps) / SpS + 1))
 
     if not L:  # if L is not defined
@@ -247,7 +247,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
 
         for initH in range(nModes):  # initialize filters' taps
             H[initH + initH * nModes, int(np.floor(H.shape[1] / 2))] = (
-                1 + 1j*0  # Central spike initialization
+                1 + 1j * 0  # Central spike initialization
             )
     if not H_:  # if H_ is not defined
         H_ = np.zeros((nModes**2, nTaps), dtype=prec)
@@ -305,9 +305,11 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
                     runWL,
                     runAlg,
                     constSymb,
-                    prec
+                    prec,
                 )
-                logg.info(f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]).real)
+                logg.info(
+                    f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]).real
+                )
             nStart = nEnd
     else:
         for indIter in tqdm(range(numIter), disable=not (prgsBar)):
@@ -316,7 +318,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
                 x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb, prec
             )
             logg.info(f"{alg}MSE = %.6f.", np.nanmean(errSq).real)
-    
+
     if input1D:
         # If the input was 1D, return a 1D array
         yEq = yEq.flatten()
@@ -400,13 +402,15 @@ def coreAdaptEq(
         Hiter = (
             np.array([[0 + 1j * 0]])
             .repeat((nModes**2) * nTaps * L)
-            .reshape(nModes**2, nTaps, L).astype(prec)
+            .reshape(nModes**2, nTaps, L)
+            .astype(prec)
         )
     else:
         Hiter = (
             np.array([[0 + 1j * 0]])
             .repeat((nModes**2) * nTaps)
-            .reshape(nModes**2, nTaps, 1).astype(prec)
+            .reshape(nModes**2, nTaps, 1)
+            .astype(prec)
         )
     if alg == "rls":
         Sd = np.eye(nTaps, dtype=prec)
@@ -418,7 +422,7 @@ def coreAdaptEq(
         np.mean(np.abs(constSymb) ** 4) / np.mean(np.abs(constSymb) ** 2)
     ) * np.ones((1, nModes)).astype(prec)
     Rrde = np.unique(np.abs(constSymb)).astype(prec)
-     
+
     for ind in range(L):
         outEq[:] = 0
 
@@ -431,7 +435,7 @@ def coreAdaptEq(
                 H[indMode + N * nModes, :] @ inEq
             )  # add contribution from the Nth mode to the equalizer's output
             if runWL:
-                outEq += H_[indMode + N * nModes, :] @ inEq.conjugate() 
+                outEq += H_[indMode + N * nModes, :] @ inEq.conjugate()
                 # add augmented contribution from the Nth mode to the equalizer's output
 
         yEq[ind, :] = outEq.T
@@ -518,7 +522,7 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL, prec):
     """
     indMode = np.arange(0, nModes)
     err = dx - outEq.T  # calculate output error for the NLMS algorithm
-    
+
     errDiag = np.diag(err[0]).astype(prec)  # define diagonal matrix from error array
 
     # update equalizer taps
@@ -576,7 +580,7 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes, prec):
     Sd = Sd.astype(prec)
 
     err = dx - outEq.T  # calculate output error for the NLMS algorithm
-    
+
     errDiag = np.diag(err[0]).astype(prec)  # define diagonal matrix from error array
 
     # update equalizer taps
@@ -589,16 +593,16 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes, prec):
         Sd_ = Sd[indUpdTaps, :]
 
         inAdapt = x[:, N].conjugate().reshape(-1, 1).astype(prec)  # input samples
-        inAdaptPar = (
-            (inAdapt.T).repeat(nModes).reshape(len(x), -1).T
-        ).astype(prec)   # expand input to parallelize tap adaptation
-        
+        inAdaptPar = ((inAdapt.T).repeat(nModes).reshape(len(x), -1).T).astype(
+            prec
+        )  # expand input to parallelize tap adaptation
+
         A = (Sd_ @ inAdapt).astype(prec)
         B = (inAdapt.conjugate().astype(prec).T @ Sd_).astype(prec)
         C = (inAdapt.conjugate().astype(prec).T @ A).astype(prec)
         num = (A @ B).astype(prec)
 
-        Sd_ = ((1 / λ) * (Sd_- num/ (λ + C) )).astype(prec)
+        Sd_ = ((1 / λ) * (Sd_ - num / (λ + C))).astype(prec)
 
         Y = (Sd_ @ inAdaptPar.T).astype(prec).T
 
@@ -653,7 +657,7 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL, prec):
         indSymb = np.argmin(np.abs(outEq[0, k] - constSymb))
         decided[0, k] = constSymb[indSymb]
     err = decided - outEq  # calculate output error for the DDLMS algorithm
-    
+
     err = err.astype(prec)
     errDiag = np.diag(err[0])  # define diagonal matrix from error array
 
@@ -730,16 +734,16 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes, prec):
         Sd_ = Sd[indUpdTaps, :]
 
         inAdapt = x[:, N].conjugate().reshape(-1, 1).astype(prec)  # input samples
-        inAdaptPar = (
-            (inAdapt.T).repeat(nModes).reshape(len(x), -1).T
-        ).astype(prec)   # expand input to parallelize tap adaptation
-        
+        inAdaptPar = ((inAdapt.T).repeat(nModes).reshape(len(x), -1).T).astype(
+            prec
+        )  # expand input to parallelize tap adaptation
+
         A = (Sd_ @ inAdapt).astype(prec)
         B = (inAdapt.conjugate().astype(prec).T @ Sd_).astype(prec)
         C = (inAdapt.conjugate().astype(prec).T @ A).astype(prec)
         num = (A @ B).astype(prec)
 
-        Sd_ = ((1 / λ) * (Sd_- num/ (λ + C) )).astype(prec)
+        Sd_ = ((1 / λ) * (Sd_ - num / (λ + C))).astype(prec)
 
         Y = (Sd_ @ inAdaptPar.T).astype(prec).T
 
@@ -1135,3 +1139,145 @@ def manakovDBP(Ei, param):
         Ech[:, 1::2] = Ech_y.T
 
     return (Ech, param) if returnParameters else Ech
+
+
+def dfe(inEq, d, param):
+    """
+    Decision feedback equalizer (DFE) implementation.
+
+    Parameters
+    ----------
+    inEq : np.array
+        Input signal to be equalized.
+    d : np.array
+        Desired (reference) signal.
+    param : optic.utils.parameters object
+        DFE parameters.
+        - param.nTapsFF: number of feedforward taps [default: 11]
+        - param.nTapsFB: number of feedback taps [default: 5]
+        - param.mu: step size [default: 0.001]
+        - param.ntrain: number of training symbols [default: 1000]
+        - param.prec: precision [default: np.float32]
+        - param.M: modulation order [default: 2]
+        - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
+    Returns
+    -------
+    outEq : np.array
+        Equalized output signal.
+    f : np.array
+        Final feedforward filter coefficients.
+    b : np.array
+        Final feedback filter coefficients.
+
+    References
+    ----------
+    [1] S. Haykin, "Adaptive Filter Theory," 5th ed., Pearson, 2013.
+
+    """
+    nTapsFF = getattr(param, "nTapsFF", 11)  # number of feedforward taps
+    nTapsFB = getattr(param, "nTapsFB", 5)  # number of feedback taps
+    mu = getattr(param, "mu", 0.001)  # step size
+    ntrain = getattr(param, "ntrain", 1000)  # number of training symbols
+    prec = getattr(param, "prec", np.float32)  # precision
+    M = getattr(param, "M", 2)  # modulation order
+    constType = getattr(param, "constType", "pam")  # constellation type
+
+    constSymb = grayMapping(M, constType).astype(prec)  # constellation
+    constSymb = pnorm(constSymb)  # power-normalize constellation
+
+    outEq, f, b, mse = dfeCore(inEq, d, nTapsFF, nTapsFB, mu, ntrain, prec, constSymb)
+
+    return outEq, f, b, mse
+
+
+@njit(fastmath=True)
+def dfeCore(
+    inEq,
+    d,
+    nTapsFF=11,
+    nTapsFB=5,
+    mu=0.001,
+    ntrain=1000,
+    prec=np.float32,
+    constSymb=None,
+):
+    """
+    Decision feedback equalizer (DFE) core implementation.
+
+    Parameters
+    ----------
+    inEq : np.array
+        Input signal to be equalized.
+    d : np.array
+        Desired (reference) signal.
+    nTapsFF : int
+        Number of feedforward taps [default: 11]
+    nTapsFB : int
+        Number of feedback taps [default: 5]
+    mu : float
+        Step size [default: 0.001]
+    ntrain : int
+        Number of training symbols [default: 1000]
+    prec : data type
+        Precision [default: np.float32]
+    M : int
+        Modulation order [default: 2]
+    constType : str
+        Constellation type ('pam', 'qam', etc.) [default: 'pam']
+
+    Returns
+    -------
+    outEq : np.array
+        Equalized output signal.
+    f : np.array
+        Final feedforward filter coefficients.
+    b : np.array
+        Final feedback filter coefficients.
+
+    References
+    ----------
+    [1] S. Haykin, "Adaptive Filter Theory," 5th ed., Pearson, 2013.
+
+    """
+    N = len(inEq)  # number of input samples
+
+    # Initialize filters (center the main tap roughly in the middle of FF)
+    f = np.zeros(nTapsFF, dtype=prec)
+    f[0] = 1.0
+    b = np.zeros(nTapsFB, dtype=prec)
+
+    # Buffers
+    xbuf = inEq[0:nTapsFF].astype(prec)  # past input samples
+    dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
+    outEq = np.zeros(N, dtype=prec)
+    mse = np.zeros(N, dtype=prec)
+
+    for k in range(N):
+        # Update FF buffer: newest sample at index 0
+        xbuf = np.roll(xbuf, -1)
+        xbuf[nTapsFF - 1] = inEq[k + nTapsFF - 1] if k + nTapsFF - 1 < N else 0.0
+
+        # Compute output
+        outEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
+
+        # Reference for adaptation: training then decision-directed
+        if k < ntrain:
+            d_ref = d[k]
+        else:
+            indSymb = np.argmin(np.abs(outEq[k] - constSymb))
+            d_ref = constSymb[indSymb]
+
+        # Error
+        ek = d_ref - outEq[k]
+        mse[k] = ek**2
+
+        # LMS updates
+        f += mu * ek * xbuf
+        b += mu * ek * dbuf
+
+        # Update feedback buffer with the new decision
+        if nTapsFB > 0:
+            dbuf = np.roll(dbuf, 1)
+            dbuf[0] = d_ref
+
+    return outEq, f, b, mse
