@@ -7,7 +7,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    :toctree: generated/
 
    sigPow                 -- Calculate the average power of x.
-   signalPower           -- Calculate the total average power of x.
+   signalPower            -- Calculate the total average power of x.
    firFilter              -- Perform FIR filtering and compensate for filter delay.
    rrcFilterTaps          -- Generate Root-Raised Cosine (RRC) filter coefficients.
    rcFilterTaps           -- Generate Raised Cosine (RC) filter coefficients.
