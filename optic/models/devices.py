@@ -553,9 +553,7 @@ def pdmCoherentReceiver(Es, Elo, paramFE, paramPD=None):
     Es : np.array
         Input signal optical field.
     Elo : np.array
-        Input LO optical field.
-    θsig : scalar, optional
-        Input polarization rotation angle in rad. [default: 0 rad].
+        Input LO optical field.    
     paramFE : parameter object (struct), optional
         Parameters of the optical frontend:
 
