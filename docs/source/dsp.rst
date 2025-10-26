@@ -8,7 +8,7 @@ Digital Signal Processing (DSP)
 
 .. automodule:: optic.dsp.equalization
     :members:
-    :exclude-members: cmaUp, dardeUp, ddlmsUp, ddrlsUp, nlmsUp, rdeUp, rlsUp, coreAdaptEq
+    :exclude-members: cmaUp, dardeUp, ddlmsUp, ddrlsUp, nlmsUp, rdeUp, rlsUp, coreAdaptEq, realValuedFFECore, complexValuedFFECore, realValuedDFECore, complexValuedDFECore, volterraCore
     :noindex:
 
 .. automodule:: optic.dsp.carrierRecovery
