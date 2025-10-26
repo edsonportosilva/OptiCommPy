@@ -1563,7 +1563,7 @@ def complexValuedFFECore(
     ----------
     [1] S. Haykin, "Adaptive Filter Theory," 5th ed., Pearson, 2013.
     """
-    N = len(inEq)  # number of input samples
+    N = len(inEq) - nTaps + nTaps % 2  # number of input samples
 
     # Initialize filter (center the main tap roughly in the middle)
     f = np.zeros(nTaps, dtype=prec)
@@ -1572,14 +1572,12 @@ def complexValuedFFECore(
     constSymb = constSymb.astype(prec)
 
     # Buffer
-    xbuf = inEq[0:nTaps].astype(prec)  # past input samples
     outEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
 
     for k in range(N):
         # Update buffer: newest sample at index 0
-        xbuf = np.roll(xbuf, -1)
-        xbuf[nTaps - 1] = inEq[k + nTaps - 1] if k + nTaps - 1 < N else 0.0 + 0j
+        xbuf = inEq[k : k + nTaps]
 
         # Compute output
         outEq[k] = np.dot(f, xbuf)
