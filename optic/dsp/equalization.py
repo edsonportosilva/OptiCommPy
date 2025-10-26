@@ -1646,8 +1646,8 @@ def volterra(inEq, d, param):
     M = getattr(param, "M", 4)  # modulation order
     constType = getattr(param, "constType", "pam")  # constellation type
 
-    constSymb = grayMapping(M, constType).astype(prec)  # constellation
-    constSymb = anorm(constSymb)  # amplitude-normalize constellation
+    constSymb = grayMapping(M, constType).astype(prec)  # constellation    
+    constSymb = pnorm(constSymb)  # amplitude-normalize constellation   
 
     inEq = inEq.astype(prec)
     d = d.astype(prec)
@@ -1655,8 +1655,7 @@ def volterra(inEq, d, param):
 
     nTaps = max(n1Taps, n2Taps, n3Taps)
 
-    inEq = anorm(inEq)
-    d = anorm(d)
+    inEq = anorm(inEq)  
 
     inEq = np.pad(inEq, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
@@ -1667,7 +1666,7 @@ def volterra(inEq, d, param):
     h = [h1, h2, h3]
 
     outEq = pnorm(outEq)
-
+    
     return outEq, h, mse
 
 @njit(fastmath=True)
@@ -1775,12 +1774,12 @@ def volterraCore(
         h1 += mu * ek * xbuf
         for i in range(n2Taps):
             for j in range(n2Taps):
-                h2[i, j] += mu * ek * xbuf[t2+i] * xbuf[t2+j]
+                h2[i, j] += mu/2 * ek * xbuf[t2+i] * xbuf[t2+j]
 
         if order == 3:            
             for i in range(n3Taps):
                 for j in range(n3Taps):
                     for l in range(n3Taps):
-                        h3[i, j, l] += mu * ek * xbuf[t3+i] * xbuf[t3+j] * xbuf[t3+l]
+                        h3[i, j, l] += mu/2 * ek * xbuf[t3+i] * xbuf[t3+j] * xbuf[t3+l]
       
     return outEq, h1, h2, h3, mse
