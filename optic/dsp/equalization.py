@@ -1155,7 +1155,7 @@ def dfe(inEq, d, param):
         Desired (reference) signal.
     param : optic.utils.parameters object
         DFE parameters:
-        
+
         - param.nTapsFF: number of feedforward taps [default: 5]
         - param.nTapsFB: number of feedback taps [default: 5]
         - param.mu: step size [default: 0.0001]
@@ -1175,7 +1175,7 @@ def dfe(inEq, d, param):
 
     References
     ----------
-    [1] S. Haykin, "Adaptive Filter Theory," 5th ed., Pearson, 2013.
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
     nTapsFF = getattr(param, "nTapsFF", 5)  # number of feedforward taps
@@ -1251,7 +1251,7 @@ def realValuedDFECore(
 
     References
     ----------
-    [1] S. Haykin, "Adaptive Filter Theory," 5th ed., Pearson, 2013.
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
     N = len(inEq)  # number of input samples
@@ -1344,7 +1344,7 @@ def complexValuedDFECore(
 
     References
     ----------
-    [1] S. Haykin, "Adaptive Filter Theory," 5th ed., Pearson, 2013.
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
     N = len(inEq)  # number of input samples
@@ -1488,7 +1488,7 @@ def realValuedFFECore(
 
     References
     ----------
-    [1] S. Haykin, "Adaptive Filter Theory," 5th ed., Pearson, 2013.
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
     N = len(inEq) - nTaps + nTaps % 2  # number of input samples
@@ -1555,15 +1555,17 @@ def complexValuedFFECore(
         Precision
     constSymb : np.array
         Constellation symbols
+
     Returns
     -------
     outEq : np.array
         Equalized output signal.
     f : np.array
         Final feedforward filter coefficients.
+
     References
     ----------
-    [1] S. Haykin, "Adaptive Filter Theory," 5th ed., Pearson, 2013.
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
     """
     N = len(inEq) - nTaps + nTaps % 2  # number of input samples
 
