@@ -1154,8 +1154,8 @@ def dfe(inEq, d, param):
     d : np.array
         Desired (reference) signal.
     param : optic.utils.parameters object
-
         DFE parameters:
+        
         - param.nTapsFF: number of feedforward taps [default: 5]
         - param.nTapsFB: number of feedback taps [default: 5]
         - param.mu: step size [default: 0.0001]
@@ -1402,8 +1402,8 @@ def ffe(inEq, d, param):
     d : np.array
         Desired (reference) signal.
     param : optic.utils.parameters object
-
         FFE parameters:
+
         - param.nTaps: number of feedforward taps [default: 5]
         - param.mu: step size [default: 0.0001]
         - param.ntrain: number of training symbols [default: 1000]
