@@ -1600,3 +1600,146 @@ def complexValuedFFECore(
         # LMS update
         f += mu * ek * xbuf.conjugate()
     return outEq, f, mse
+
+def volterra(inEq, d, param):
+    """
+    Volterra equalizer implementation.
+
+    Parameters
+    ----------
+    inEq : np.array
+        Input signal to be equalized.
+    d : np.array
+        Desired (reference) signal.
+    param : optic.utils.parameters object
+        Volterra equalizer parameters:
+
+        - param.nTaps: number of taps [default: 5]
+        - param.mu: step size [default: 0.0001]
+        - param.ntrain: number of training symbols [default: 1000]
+        - param.prec: precision [default: np.float32]
+        - param.M: modulation order [default: 4]
+        - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
+
+    Returns
+    -------
+    outEq : np.array
+        Equalized output signal.
+    h1 : np.array
+        Final linear filter coefficients.
+    h2 : np.array
+        Final quadratic filter coefficients.
+
+    References
+    ----------
+    [1] Diniz, P. R., da Silva, E. A. B., & Netto, S. L. (2010). Adaptive Filtering: Algorithms and Practical Implementation. Springer Science & Business Media.
+
+    """
+    nTaps = getattr(param, "nTaps", 5)  # number of taps
+    mu = getattr(param, "mu", 0.0001)  # step size
+    ntrain = getattr(param, "ntrain", 1000)  # number of training symbols
+    prec = getattr(param, "prec", np.float32)  # precision
+    M = getattr(param, "M", 4)  # modulation order
+    constType = getattr(param, "constType", "pam")  # constellation type
+
+    constSymb = grayMapping(M, constType).astype(prec)  # constellation
+    constSymb = pnorm(constSymb)  # power-normalize constellation
+
+    inEq = inEq.astype(prec)
+    d = d.astype(prec)
+    d = d.flatten()
+
+    inEq = np.pad(inEq, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
+
+    outEq, h1, h2, mse = volterraCore(
+        inEq, d, nTaps, mu, ntrain, prec, constSymb
+    )
+    return outEq, h1, h2, mse
+
+@njit(fastmath=True)
+def volterraCore(
+    inEq,
+    d,
+    nTaps=5,
+    mu=0.0001,
+    ntrain=1000,
+    prec=np.float32,
+    constSymb=None,
+):
+    """
+    Volterra equalizer core implementation.
+
+    Parameters
+    ----------
+    inEq : np.array
+        Input signal to be equalized.
+    d : np.array
+        Desired (reference) signal.
+    nTaps : int
+        Number of taps
+    mu : float
+        Step size
+    ntrain : int
+        Number of training symbols
+    prec : data type
+        Precision
+    constSymb : np.array
+        Constellation symbols
+
+    Returns
+    -------
+    outEq : np.array
+        Equalized output signal.
+    h1 : np.array
+        Final linear filter coefficients.
+    h2 : np.array
+        Final quadratic filter coefficients.
+
+    References
+    ----------
+    [1] R. C. de Lamare, "Adaptive and Iterative Multi-Branch MMSE Decision Feedback Detection Algorithms for Multi-Antenna Systems," IEEE Transactions on Vehicular Technology, vol. 59, no. 4, pp. 2032-2044, May 2010, doi: 10.1109/TVT.2010.2041680.
+
+    """
+    N = len(inEq) - nTaps + nTaps % 2  # number of input samples
+
+    # Initialize filters (center the main tap roughly in the middle)
+    h1 = np.zeros(nTaps, dtype=prec)
+    h1[nTaps // 2] = 1.0
+
+    h2 = np.zeros((nTaps, nTaps), dtype=prec)
+
+    constSymb = constSymb.astype(prec)
+
+    # Buffer
+    outEq = np.zeros(N, dtype=prec)
+    mse = np.zeros(N, dtype=prec)
+
+    for k in range(N):
+        # Update buffer: newest sample at index 0
+        xbuf = inEq[k : k + nTaps]
+
+        # Compute output
+        linearPart = np.dot(h1, xbuf)
+        quadraticPart = 0.0
+        for i in range(nTaps):
+            for j in range(nTaps):
+                quadraticPart += h2[i, j] * xbuf[i] * xbuf[j]   
+        outEq[k] = linearPart + quadraticPart   
+        # Reference for adaptation: training then decision-directed
+        if k < ntrain:
+            d_ref = d[k]
+        else:
+            indSymb = np.argmin(np.abs(outEq[k] - constSymb))
+            d_ref = constSymb[indSymb]
+
+        # Error
+        ek = d_ref - outEq[k]
+        mse[k] = ek**2
+
+        # LMS updates
+        h1 += mu * ek * xbuf
+        for i in range(nTaps):
+            for j in range(nTaps):
+                h2[i, j] += mu * ek * xbuf[i] * xbuf[j]
+
+    return outEq, h1, h2, mse
