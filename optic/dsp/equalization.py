@@ -1167,7 +1167,7 @@ def dfe(x, dx, param):
 
     Returns
     -------
-    outEq : np.array
+    yEq : np.array
         Equalized output signal.
     f : np.array
         Final feedforward filter coefficients.
@@ -1195,15 +1195,15 @@ def dfe(x, dx, param):
     dx = dx.flatten()
 
     if constType == "pam":
-        outEq, f, b, mse = realValuedDFECore(
+        yEq, f, b, mse = realValuedDFECore(
             x, dx, nTapsFF, nTapsFB, mu, nTrain, prec, constSymb
         )
     else:
-        outEq, f, b, mse = complexValuedDFECore(
+        yEq, f, b, mse = complexValuedDFECore(
             x, dx, nTapsFF, nTapsFB, mu, nTrain, prec, constSymb
         )
 
-    return outEq, f, b, mse
+    return yEq, f, b, mse
 
 
 @njit(fastmath=True)
@@ -1243,7 +1243,7 @@ def realValuedDFECore(
 
     Returns
     -------
-    outEq : np.array
+    yEq : np.array
         Equalized output signal.
     f : np.array
         Final feedforward filter coefficients.
@@ -1267,7 +1267,7 @@ def realValuedDFECore(
     # Buffers
     xbuf = x[0:nTapsFF].astype(prec)  # past input samples
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
-    outEq = np.zeros(N, dtype=prec)
+    yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
 
     for k in range(N):
@@ -1276,17 +1276,17 @@ def realValuedDFECore(
         xbuf[nTapsFF - 1] = x[k + nTapsFF - 1] if k + nTapsFF - 1 < N else 0.0
 
         # Compute output
-        outEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
+        yEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
 
         # Reference for adaptation: training then decision-directed
         if k < nTrain:
             d_ref = dx[k]
         else:
-            indSymb = np.argmin(np.abs(outEq[k] - constSymb))
+            indSymb = np.argmin(np.abs(yEq[k] - constSymb))
             d_ref = constSymb[indSymb]
 
         # Error
-        ek = d_ref - outEq[k]
+        ek = d_ref - yEq[k]
         mse[k] = ek**2
 
         # LMS updates
@@ -1298,7 +1298,7 @@ def realValuedDFECore(
             dbuf = np.roll(dbuf, 1)
             dbuf[0] = d_ref
 
-    return outEq, f, b, mse
+    return yEq, f, b, mse
 
 
 @njit(fastmath=True)
@@ -1336,7 +1336,7 @@ def complexValuedDFECore(
 
     Returns
     -------
-    outEq : np.array
+    yEq : np.array
         Equalized output signal.
     f : np.array
         Final feedforward filter coefficients.
@@ -1358,7 +1358,7 @@ def complexValuedDFECore(
     # Buffers
     xbuf = x[0:nTapsFF].astype(prec)  # past input samples
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
-    outEq = np.zeros(N, dtype=prec)
+    yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
 
     for k in range(N):
@@ -1367,17 +1367,17 @@ def complexValuedDFECore(
         xbuf[nTapsFF - 1] = x[k + nTapsFF - 1] if k + nTapsFF - 1 < N else 0.0 + 0j
 
         # Compute output
-        outEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
+        yEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
 
         # Reference for adaptation: training then decision-directed
         if k < nTrain:
             d_ref = dx[k]
         else:
-            indSymb = np.argmin(np.abs(outEq[k] - constSymb))
+            indSymb = np.argmin(np.abs(yEq[k] - constSymb))
             d_ref = constSymb[indSymb]
 
         # Error
-        ek = d_ref - outEq[k]
+        ek = d_ref - yEq[k]
         mse[k] = np.abs(ek) ** 2
 
         # LMS updates
@@ -1389,7 +1389,7 @@ def complexValuedDFECore(
             dbuf = np.roll(dbuf, 1)
             dbuf[0] = d_ref
 
-    return outEq, f, b, mse
+    return yEq, f, b, mse
 
 
 def ffe(x, dx, param):
@@ -1414,7 +1414,7 @@ def ffe(x, dx, param):
 
     Returns
     -------
-    outEq : np.array
+    yEq : np.array
         Equalized output signal.
     f : np.array
         Final feedforward filter coefficients.
@@ -1441,13 +1441,13 @@ def ffe(x, dx, param):
     x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
     if constType == "pam":
-        outEq, f, mse = realValuedFFECore(x, dx, nTaps, mu, nTrain, prec, constSymb)
+        yEq, f, mse = realValuedFFECore(x, dx, nTaps, mu, nTrain, prec, constSymb)
     else:
-        outEq, f, mse = complexValuedFFECore(
+        yEq, f, mse = complexValuedFFECore(
             x, dx, nTaps, mu, nTrain, prec, constSymb
         )
 
-    return outEq, f, mse
+    return yEq, f, mse
 
 
 @njit(fastmath=True)
@@ -1482,7 +1482,7 @@ def realValuedFFECore(
 
     Returns
     -------
-    outEq : np.array
+    yEq : np.array
         Equalized output signal.
     f : np.array
         Final feedforward filter coefficients.
@@ -1501,7 +1501,7 @@ def realValuedFFECore(
     constSymb = constSymb.astype(prec)
 
     # Buffer
-    outEq = np.zeros(N, dtype=prec)
+    yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
 
     for k in range(N):
@@ -1509,22 +1509,22 @@ def realValuedFFECore(
         xbuf = x[k : k + nTaps]
 
         # Compute output
-        outEq[k] = np.dot(f, xbuf)
+        yEq[k] = np.dot(f, xbuf)
 
         # Reference for adaptation: training then decision-directed
         if k < nTrain:
             d_ref = dx[k]
         else:
-            indSymb = np.argmin(np.abs(outEq[k] - constSymb))
+            indSymb = np.argmin(np.abs(yEq[k] - constSymb))
             d_ref = constSymb[indSymb]
 
         # Error
-        ek = d_ref - outEq[k]
+        ek = d_ref - yEq[k]
         mse[k] = ek**2
 
         # LMS update
         f += mu * ek * xbuf
-    return outEq, f, mse
+    return yEq, f, mse
 
 
 @njit(fastmath=True)
@@ -1559,7 +1559,7 @@ def complexValuedFFECore(
 
     Returns
     -------
-    outEq : np.array
+    yEq : np.array
         Equalized output signal.
     f : np.array
         Final feedforward filter coefficients.
@@ -1577,7 +1577,7 @@ def complexValuedFFECore(
     constSymb = constSymb.astype(prec)
 
     # Buffer
-    outEq = np.zeros(N, dtype=prec)
+    yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
 
     for k in range(N):
@@ -1585,22 +1585,22 @@ def complexValuedFFECore(
         xbuf = x[k : k + nTaps]
 
         # Compute output
-        outEq[k] = np.dot(f, xbuf)
+        yEq[k] = np.dot(f, xbuf)
 
         # Reference for adaptation: training then decision-directed
         if k < nTrain:
             d_ref = dx[k]
         else:
-            indSymb = np.argmin(np.abs(outEq[k] - constSymb))
+            indSymb = np.argmin(np.abs(yEq[k] - constSymb))
             d_ref = constSymb[indSymb]
 
         # Error
-        ek = d_ref - outEq[k]
+        ek = d_ref - yEq[k]
         mse[k] = np.abs(ek) ** 2
 
         # LMS update
         f += mu * ek * xbuf.conjugate()
-    return outEq, f, mse
+    return yEq, f, mse
 
 def volterra(x, dx, param):
     """
@@ -1627,7 +1627,7 @@ def volterra(x, dx, param):
 
     Returns
     -------
-    outEq : np.array
+    yEq : np.array
         Equalized output signal.
     h : list of np.array
         Final Volterra filter coefficients [h1, h2, h3].
@@ -1660,15 +1660,15 @@ def volterra(x, dx, param):
 
     x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
-    outEq, h1, h2, h3, mse = volterraCore(
+    yEq, h1, h2, h3, mse = volterraCore(
         x, dx, n1Taps, n2Taps, n3Taps, order, mu, nTrain, prec, constSymb
     )
 
     h = [h1, h2, h3]
 
-    outEq = pnorm(outEq)
+    yEq = pnorm(yEq)
     
-    return outEq, h, mse
+    return yEq, h, mse
 
 @njit(fastmath=True)
 def volterraCore(
@@ -1711,7 +1711,7 @@ def volterraCore(
 
     Returns
     -------
-    outEq : np.array
+    yEq : np.array
         Equalized output signal.
     h1 : np.array
         Final linear filter coefficients.
@@ -1739,7 +1739,7 @@ def volterraCore(
     constSymb = constSymb.astype(prec)
 
     # Buffer
-    outEq = np.zeros(N, dtype=prec)
+    yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
 
     t2 = int((n1Taps-n2Taps) //2)
@@ -1764,17 +1764,17 @@ def volterraCore(
                     for l in range(n3Taps):
                         cubicPart += h3[i, j, l] * xbuf[t3+i] * xbuf[t3+j] * xbuf[t3+l]
 
-        outEq[k] = linearPart + quadraticPart + cubicPart
+        yEq[k] = linearPart + quadraticPart + cubicPart
          
         # Reference for adaptation: training then decision-directed
         if k < nTrain:
             d_ref = dx[k]
         else:
-            indSymb = np.argmin(np.abs(outEq[k] - constSymb))
+            indSymb = np.argmin(np.abs(yEq[k] - constSymb))
             d_ref = constSymb[indSymb]
 
         # Error
-        ek = d_ref - outEq[k]
+        ek = d_ref - yEq[k]
         mse[k] = ek**2
 
         # LMS updates
@@ -1789,4 +1789,4 @@ def volterraCore(
                     for l in range(n3Taps):
                         h3[i, j, l] += mu/2 * ek * xbuf[t3+i] * xbuf[t3+j] * xbuf[t3+l]
       
-    return outEq, h1, h2, h3, mse
+    return yEq, h1, h2, h3, mse
