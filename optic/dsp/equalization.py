@@ -23,7 +23,7 @@ from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
 from optic.comm.modulation import grayMapping
-from optic.dsp.core import blockwiseFFTConv, pnorm
+from optic.dsp.core import blockwiseFFTConv, pnorm, anorm
 from optic.models.channels import convergenceCondition, nlinPhaseRot
 
 # try:
@@ -1617,9 +1617,10 @@ def volterra(inEq, d, param):
         - param.nTaps: number of taps [default: 5]
         - param.mu: step size [default: 0.0001]
         - param.ntrain: number of training symbols [default: 1000]
+        - param.order: Volterra series order (2 for quadratic) [default: 2]
         - param.prec: precision [default: np.float32]
         - param.M: modulation order [default: 4]
-        - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
+        - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']        
 
     Returns
     -------
@@ -1635,32 +1636,48 @@ def volterra(inEq, d, param):
     [1] Diniz, P. R., da Silva, E. A. B., & Netto, S. L. (2010). Adaptive Filtering: Algorithms and Practical Implementation. Springer Science & Business Media.
 
     """
-    nTaps = getattr(param, "nTaps", 5)  # number of taps
+    n1Taps = getattr(param, "n1Taps", 5)  # number of taps of linear part
+    n2Taps = getattr(param, "n2Taps", 3)  # number of taps of quadratic part
+    n3Taps = getattr(param, "n3Taps", 2)  # number of taps of cubic part
     mu = getattr(param, "mu", 0.0001)  # step size
     ntrain = getattr(param, "ntrain", 1000)  # number of training symbols
+    order = getattr(param, "order", 2)  # Volterra series order
     prec = getattr(param, "prec", np.float32)  # precision
     M = getattr(param, "M", 4)  # modulation order
     constType = getattr(param, "constType", "pam")  # constellation type
 
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
-    constSymb = pnorm(constSymb)  # power-normalize constellation
+    constSymb = anorm(constSymb)  # amplitude-normalize constellation
 
     inEq = inEq.astype(prec)
     d = d.astype(prec)
     d = d.flatten()
 
+    nTaps = max(n1Taps, n2Taps, n3Taps)
+
+    inEq = anorm(inEq)
+    d = anorm(d)
+
     inEq = np.pad(inEq, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
-    outEq, h1, h2, mse = volterraCore(
-        inEq, d, nTaps, mu, ntrain, prec, constSymb
+    outEq, h1, h2, h3, mse = volterraCore(
+        inEq, d, n1Taps, n2Taps, n3Taps, order, mu, ntrain, prec, constSymb
     )
-    return outEq, h1, h2, mse
+
+    h = [h1, h2, h3]
+
+    outEq = pnorm(outEq)
+
+    return outEq, h, mse
 
 @njit(fastmath=True)
 def volterraCore(
     inEq,
     d,
-    nTaps=5,
+    n1Taps=7,
+    n2Taps=5,
+    n3Taps=3,
+    order=2,
     mu=0.0001,
     ntrain=1000,
     prec=np.float32,
@@ -1677,6 +1694,8 @@ def volterraCore(
         Desired (reference) signal.
     nTaps : int
         Number of taps
+    order : int
+        Volterra series order (2 for quadratic)
     mu : float
         Step size
     ntrain : int
@@ -1700,19 +1719,25 @@ def volterraCore(
     [1] R. C. de Lamare, "Adaptive and Iterative Multi-Branch MMSE Decision Feedback Detection Algorithms for Multi-Antenna Systems," IEEE Transactions on Vehicular Technology, vol. 59, no. 4, pp. 2032-2044, May 2010, doi: 10.1109/TVT.2010.2041680.
 
     """
+    nTaps = np.max(np.array([n1Taps, n2Taps, n3Taps]))
+
     N = len(inEq) - nTaps + nTaps % 2  # number of input samples
 
     # Initialize filters (center the main tap roughly in the middle)
-    h1 = np.zeros(nTaps, dtype=prec)
-    h1[nTaps // 2] = 1.0
-
-    h2 = np.zeros((nTaps, nTaps), dtype=prec)
-
+    h1 = np.zeros(n1Taps, dtype=prec)
+    h1[n1Taps // 2] = 1.0
+       
+    h2 = np.zeros((n2Taps, n2Taps), dtype=prec)
+    h3 = np.zeros((n3Taps, n3Taps, n3Taps), dtype=prec)            
+     
     constSymb = constSymb.astype(prec)
 
     # Buffer
     outEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
+
+    t2 = int((n1Taps-n2Taps) //2)
+    t3 = int((n1Taps-n3Taps) //2)
 
     for k in range(N):
         # Update buffer: newest sample at index 0
@@ -1721,10 +1746,20 @@ def volterraCore(
         # Compute output
         linearPart = np.dot(h1, xbuf)
         quadraticPart = 0.0
-        for i in range(nTaps):
-            for j in range(nTaps):
-                quadraticPart += h2[i, j] * xbuf[i] * xbuf[j]   
-        outEq[k] = linearPart + quadraticPart   
+        cubicPart = 0.0
+
+        for i in range(n2Taps):
+            for j in range(n2Taps):
+                quadraticPart += h2[i, j] * xbuf[t2+i] * xbuf[t2+j] 
+
+        if order == 3:            
+            for i in range(n3Taps):
+                for j in range(n3Taps):
+                    for l in range(n3Taps):
+                        cubicPart += h3[i, j, l] * xbuf[t3+i] * xbuf[t3+j] * xbuf[t3+l]
+
+        outEq[k] = linearPart + quadraticPart + cubicPart
+         
         # Reference for adaptation: training then decision-directed
         if k < ntrain:
             d_ref = d[k]
@@ -1738,8 +1773,14 @@ def volterraCore(
 
         # LMS updates
         h1 += mu * ek * xbuf
-        for i in range(nTaps):
-            for j in range(nTaps):
-                h2[i, j] += mu * ek * xbuf[i] * xbuf[j]
+        for i in range(n2Taps):
+            for j in range(n2Taps):
+                h2[i, j] += mu * ek * xbuf[t2+i] * xbuf[t2+j]
 
-    return outEq, h1, h2, mse
+        if order == 3:            
+            for i in range(n3Taps):
+                for j in range(n3Taps):
+                    for l in range(n3Taps):
+                        h3[i, j, l] += mu * ek * xbuf[t3+i] * xbuf[t3+j] * xbuf[t3+l]
+      
+    return outEq, h1, h2, h3, mse
