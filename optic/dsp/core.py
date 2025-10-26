@@ -804,6 +804,13 @@ def movingAverage(x, N):
     of the moving average and the original signal.
 
     """
+    try:
+        x.shape[1]
+        input1D = False
+    except IndexError:
+        x = x.reshape(len(x), 1)
+        input1D = True
+
     nCol = x.shape[1]
     y = np.zeros(x.shape, dtype=x.dtype)
 
@@ -818,6 +825,9 @@ def movingAverage(x, N):
         h = np.ones(N) / N
         ma = np.convolve(padded_x, h, "same")
         y[:, indCol] = ma[startInd:endInd]
+
+    if input1D:
+        y = y.flatten()
 
     return y
 
