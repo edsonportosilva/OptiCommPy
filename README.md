@@ -52,7 +52,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 
 ## Requirements/Dependencies
 
--  python>=3.2
+-  python>=3.10
 -  numpy>=1.24.4
 -  scipy>=1.13.0
 -  matplotlib>=3.7.0
