@@ -124,7 +124,7 @@ def edc(Ei, param):
 
 def mimoAdaptEqualizer(x, param=None, dx=None):
     """
-    N-by-N MIMO adaptive equalizer.
+    General :math:`N \times N` MIMO adaptive equalizer with several adaptive filtering algorithms available.
 
     Parameters
     ----------
@@ -1146,7 +1146,7 @@ def manakovDBP(Ei, param):
 
 def dfe(x, dx, param):
     """
-    Decision feedback equalizer (DFE) implementation.
+    Decision feedback adaptive equalizer (DFE) for SISO receivers.
 
     Parameters
     ----------
@@ -1394,7 +1394,7 @@ def complexValuedDFECore(
 
 def ffe(x, dx, param):
     """
-    Decision-directed feedforward equalizer (FFE) implementation.
+    Decision-directed feedforward adaptive equalizer (FFE) for SISO receivers.
 
     Parameters
     ----------
@@ -1604,7 +1604,7 @@ def complexValuedFFECore(
 
 def volterra(x, dx, param):
     """
-    Decision-directed Volterra equalizer implementation up to 3rd order.
+    Decision-directed Volterra equalizer implementation up to 3rd order for SISO receivers..
 
     Parameters
     ----------
