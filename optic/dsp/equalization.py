@@ -1144,15 +1144,15 @@ def manakovDBP(Ei, param):
     return (Ech, param) if returnParameters else Ech
 
 
-def dfe(inEq, d, param):
+def dfe(x, dx, param):
     """
     Decision feedback equalizer (DFE) implementation.
 
     Parameters
     ----------
-    inEq : np.array
+    x : np.array
         Input signal to be equalized.
-    d : np.array
+    dx : np.array
         Desired (reference) signal.
     param : optic.utils.parameters object
         DFE parameters:
@@ -1160,7 +1160,7 @@ def dfe(inEq, d, param):
         - param.nTapsFF: number of feedforward taps [default: 5]
         - param.nTapsFB: number of feedback taps [default: 5]
         - param.mu: step size [default: 0.0001]
-        - param.ntrain: number of training symbols [default: 1000]
+        - param.nTrain: number of training symbols [default: 1000]
         - param.prec: precision [default: np.float32]
         - param.M: modulation order [default: 4]
         - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
@@ -1182,7 +1182,7 @@ def dfe(inEq, d, param):
     nTapsFF = getattr(param, "nTapsFF", 5)  # number of feedforward taps
     nTapsFB = getattr(param, "nTapsFB", 5)  # number of feedback taps
     mu = getattr(param, "mu", 0.0001)  # step size
-    ntrain = getattr(param, "ntrain", 1000)  # number of training symbols
+    nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
     prec = getattr(param, "prec", np.float32)  # precision
     M = getattr(param, "M", 4)  # modulation order
     constType = getattr(param, "constType", "pam")  # constellation type
@@ -1190,17 +1190,17 @@ def dfe(inEq, d, param):
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
 
-    inEq = inEq.astype(prec)
-    d = d.astype(prec)
-    d = d.flatten()
+    x = x.astype(prec)
+    dx = dx.astype(prec)
+    dx = dx.flatten()
 
     if constType == "pam":
         outEq, f, b, mse = realValuedDFECore(
-            inEq, d, nTapsFF, nTapsFB, mu, ntrain, prec, constSymb
+            x, dx, nTapsFF, nTapsFB, mu, nTrain, prec, constSymb
         )
     else:
         outEq, f, b, mse = complexValuedDFECore(
-            inEq, d, nTapsFF, nTapsFB, mu, ntrain, prec, constSymb
+            x, dx, nTapsFF, nTapsFB, mu, nTrain, prec, constSymb
         )
 
     return outEq, f, b, mse
@@ -1208,12 +1208,12 @@ def dfe(inEq, d, param):
 
 @njit(fastmath=True)
 def realValuedDFECore(
-    inEq,
-    d,
+    x,
+    dx,
     nTapsFF=5,
     nTapsFB=5,
     mu=0.0001,
-    ntrain=1000,
+    nTrain=1000,
     prec=np.float32,
     constSymb=None,
 ):
@@ -1222,9 +1222,9 @@ def realValuedDFECore(
 
     Parameters
     ----------
-    inEq : np.array
+    x : np.array
         Input signal to be equalized.
-    d : np.array
+    dx : np.array
         Desired (reference) signal.
     nTapsFF : int
         Number of feedforward taps
@@ -1232,7 +1232,7 @@ def realValuedDFECore(
         Number of feedback taps
     mu : float
         Step size
-    ntrain : int
+    nTrain : int
         Number of training symbols
     prec : data type
         Precision
@@ -1255,7 +1255,7 @@ def realValuedDFECore(
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
-    N = len(inEq)  # number of input samples
+    N = len(x)  # number of input samples
 
     # Initialize filters (center the main tap roughly in the middle of FF)
     f = np.zeros(nTapsFF, dtype=prec)
@@ -1265,7 +1265,7 @@ def realValuedDFECore(
     constSymb = constSymb.astype(prec)
 
     # Buffers
-    xbuf = inEq[0:nTapsFF].astype(prec)  # past input samples
+    xbuf = x[0:nTapsFF].astype(prec)  # past input samples
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
     outEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
@@ -1273,14 +1273,14 @@ def realValuedDFECore(
     for k in range(N):
         # Update FF buffer: newest sample at index 0
         xbuf = np.roll(xbuf, -1)
-        xbuf[nTapsFF - 1] = inEq[k + nTapsFF - 1] if k + nTapsFF - 1 < N else 0.0
+        xbuf[nTapsFF - 1] = x[k + nTapsFF - 1] if k + nTapsFF - 1 < N else 0.0
 
         # Compute output
         outEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
 
         # Reference for adaptation: training then decision-directed
-        if k < ntrain:
-            d_ref = d[k]
+        if k < nTrain:
+            d_ref = dx[k]
         else:
             indSymb = np.argmin(np.abs(outEq[k] - constSymb))
             d_ref = constSymb[indSymb]
@@ -1303,12 +1303,12 @@ def realValuedDFECore(
 
 @njit(fastmath=True)
 def complexValuedDFECore(
-    inEq,
-    d,
+    x,
+    dx,
     nTapsFF=5,
     nTapsFB=5,
     mu=0.0001,
-    ntrain=1000,
+    nTrain=1000,
     prec=np.complex64,
     constSymb=None,
 ):
@@ -1317,9 +1317,9 @@ def complexValuedDFECore(
 
     Parameters
     ----------
-    inEq : np.array
+    x : np.array
         Input signal to be equalized.
-    d : np.array
+    dx : np.array
         Desired (reference) signal.
     nTapsFF : int
         Number of feedforward taps
@@ -1327,7 +1327,7 @@ def complexValuedDFECore(
         Number of feedback taps
     mu : float
         Step size
-    ntrain : int
+    nTrain : int
         Number of training symbols
     prec : data type
         Precision
@@ -1348,7 +1348,7 @@ def complexValuedDFECore(
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
-    N = len(inEq)  # number of input samples
+    N = len(x)  # number of input samples
 
     # Initialize filters (center the main tap roughly in the middle of FF)
     f = np.zeros(nTapsFF, dtype=prec)
@@ -1356,7 +1356,7 @@ def complexValuedDFECore(
     b = np.zeros(nTapsFB, dtype=prec)
 
     # Buffers
-    xbuf = inEq[0:nTapsFF].astype(prec)  # past input samples
+    xbuf = x[0:nTapsFF].astype(prec)  # past input samples
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
     outEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
@@ -1364,14 +1364,14 @@ def complexValuedDFECore(
     for k in range(N):
         # Update FF buffer: newest sample at index 0
         xbuf = np.roll(xbuf, -1)
-        xbuf[nTapsFF - 1] = inEq[k + nTapsFF - 1] if k + nTapsFF - 1 < N else 0.0 + 0j
+        xbuf[nTapsFF - 1] = x[k + nTapsFF - 1] if k + nTapsFF - 1 < N else 0.0 + 0j
 
         # Compute output
         outEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
 
         # Reference for adaptation: training then decision-directed
-        if k < ntrain:
-            d_ref = d[k]
+        if k < nTrain:
+            d_ref = dx[k]
         else:
             indSymb = np.argmin(np.abs(outEq[k] - constSymb))
             d_ref = constSymb[indSymb]
@@ -1392,22 +1392,22 @@ def complexValuedDFECore(
     return outEq, f, b, mse
 
 
-def ffe(inEq, d, param):
+def ffe(x, dx, param):
     """
     Decision-directed feedforward equalizer (FFE) implementation.
 
     Parameters
     ----------
-    inEq : np.array
+    x : np.array
         Input signal to be equalized.
-    d : np.array
+    dx : np.array
         Desired (reference) signal.
     param : optic.utils.parameters object
         FFE parameters:
 
         - param.nTaps: number of feedforward taps [default: 5]
         - param.mu: step size [default: 0.0001]
-        - param.ntrain: number of training symbols [default: 1000]
+        - param.nTrain: number of training symbols [default: 1000]
         - param.prec: precision [default: np.float32]
         - param.M: modulation order [default: 4]
         - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
@@ -1426,7 +1426,7 @@ def ffe(inEq, d, param):
     """
     nTaps = getattr(param, "nTaps", 5)  # number of feedforward taps
     mu = getattr(param, "mu", 0.0001)  # step size
-    ntrain = getattr(param, "ntrain", 1000)  # number of training symbols
+    nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
     prec = getattr(param, "prec", np.float32)  # precision
     M = getattr(param, "M", 4)  # modulation order
     constType = getattr(param, "constType", "pam")  # constellation type
@@ -1434,17 +1434,17 @@ def ffe(inEq, d, param):
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
 
-    inEq = inEq.astype(prec)
-    d = d.astype(prec)
-    d = d.flatten()
+    x = x.astype(prec)
+    dx = dx.astype(prec)
+    dx = dx.flatten()
 
-    inEq = np.pad(inEq, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
+    x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
     if constType == "pam":
-        outEq, f, mse = realValuedFFECore(inEq, d, nTaps, mu, ntrain, prec, constSymb)
+        outEq, f, mse = realValuedFFECore(x, dx, nTaps, mu, nTrain, prec, constSymb)
     else:
         outEq, f, mse = complexValuedFFECore(
-            inEq, d, nTaps, mu, ntrain, prec, constSymb
+            x, dx, nTaps, mu, nTrain, prec, constSymb
         )
 
     return outEq, f, mse
@@ -1452,11 +1452,11 @@ def ffe(inEq, d, param):
 
 @njit(fastmath=True)
 def realValuedFFECore(
-    inEq,
-    d,
+    x,
+    dx,
     nTaps=5,
     mu=0.0001,
-    ntrain=1000,
+    nTrain=1000,
     prec=np.float32,
     constSymb=None,
 ):
@@ -1465,15 +1465,15 @@ def realValuedFFECore(
 
     Parameters
     ----------
-    inEq : np.array
+    x : np.array
         Input signal to be equalized.
-    d : np.array
+    dx : np.array
         Desired (reference) signal.
     nTaps : int
         Number of feedforward taps
     mu : float
         Step size
-    ntrain : int
+    nTrain : int
         Number of training symbols
     prec : data type
         Precision
@@ -1492,7 +1492,7 @@ def realValuedFFECore(
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
-    N = len(inEq) - nTaps + nTaps % 2  # number of input samples
+    N = len(x) - nTaps + nTaps % 2  # number of input samples
 
     # Initialize filter (center the main tap roughly in the middle)
     f = np.zeros(nTaps, dtype=prec)
@@ -1506,14 +1506,14 @@ def realValuedFFECore(
 
     for k in range(N):
         # Update buffer: newest sample at index 0
-        xbuf = inEq[k : k + nTaps]
+        xbuf = x[k : k + nTaps]
 
         # Compute output
         outEq[k] = np.dot(f, xbuf)
 
         # Reference for adaptation: training then decision-directed
-        if k < ntrain:
-            d_ref = d[k]
+        if k < nTrain:
+            d_ref = dx[k]
         else:
             indSymb = np.argmin(np.abs(outEq[k] - constSymb))
             d_ref = constSymb[indSymb]
@@ -1529,11 +1529,11 @@ def realValuedFFECore(
 
 @njit(fastmath=True)
 def complexValuedFFECore(
-    inEq,
-    d,
+    x,
+    dx,
     nTaps=5,
     mu=0.0001,
-    ntrain=1000,
+    nTrain=1000,
     prec=np.complex64,
     constSymb=None,
 ):
@@ -1542,15 +1542,15 @@ def complexValuedFFECore(
 
     Parameters
     ----------
-    inEq : np.array
+    x : np.array
         Input signal to be equalized.
-    d : np.array
+    dx : np.array
         Desired (reference) signal.
     nTaps : int
         Number of feedforward taps
     mu : float
         Step size
-    ntrain : int
+    nTrain : int
         Number of training symbols
     prec : data type
         Precision
@@ -1568,7 +1568,7 @@ def complexValuedFFECore(
     ----------
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
     """
-    N = len(inEq) - nTaps + nTaps % 2  # number of input samples
+    N = len(x) - nTaps + nTaps % 2  # number of input samples
 
     # Initialize filter (center the main tap roughly in the middle)
     f = np.zeros(nTaps, dtype=prec)
@@ -1582,14 +1582,14 @@ def complexValuedFFECore(
 
     for k in range(N):
         # Update buffer: newest sample at index 0
-        xbuf = inEq[k : k + nTaps]
+        xbuf = x[k : k + nTaps]
 
         # Compute output
         outEq[k] = np.dot(f, xbuf)
 
         # Reference for adaptation: training then decision-directed
-        if k < ntrain:
-            d_ref = d[k]
+        if k < nTrain:
+            d_ref = dx[k]
         else:
             indSymb = np.argmin(np.abs(outEq[k] - constSymb))
             d_ref = constSymb[indSymb]
@@ -1602,15 +1602,15 @@ def complexValuedFFECore(
         f += mu * ek * xbuf.conjugate()
     return outEq, f, mse
 
-def volterra(inEq, d, param):
+def volterra(x, dx, param):
     """
     Decision-directed Volterra equalizer implementation up to 3rd order.
 
     Parameters
     ----------
-    inEq : np.array
+    x : np.array
         Input signal to be equalized.
-    d : np.array
+    dx : np.array
         Desired (reference) signal.
     param : optic.utils.parameters object
         Volterra equalizer parameters:
@@ -1619,7 +1619,7 @@ def volterra(inEq, d, param):
         - param.n2Taps: number of taps of quadratic part [default: 3]
         - param.n3Taps: number of taps of cubic part [default: 2]
         - param.mu: step size [default: 0.001]
-        - param.ntrain: number of training symbols [default: 1000]
+        - param.nTrain: number of training symbols [default: 1000]
         - param.order: Volterra series order (2 for quadratic) [default: 2]
         - param.prec: precision [default: np.float32]
         - param.M: modulation order [default: 4]
@@ -1641,7 +1641,7 @@ def volterra(inEq, d, param):
     n2Taps = getattr(param, "n2Taps", 3)  # number of taps of quadratic part
     n3Taps = getattr(param, "n3Taps", 2)  # number of taps of cubic part
     mu = getattr(param, "mu", 0.001)  # step size
-    ntrain = getattr(param, "ntrain", 1000)  # number of training symbols
+    nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
     order = getattr(param, "order", 2)  # Volterra series order
     prec = getattr(param, "prec", np.float32)  # precision
     M = getattr(param, "M", 4)  # modulation order
@@ -1650,18 +1650,18 @@ def volterra(inEq, d, param):
     constSymb = grayMapping(M, constType).astype(prec)  # constellation    
     constSymb = pnorm(constSymb)  # amplitude-normalize constellation   
 
-    inEq = inEq.astype(prec)
-    d = d.astype(prec)
-    d = d.flatten()
+    x = x.astype(prec)
+    dx = dx.astype(prec)
+    dx = dx.flatten()
 
     nTaps = max(n1Taps, n2Taps, n3Taps)
 
-    inEq = anorm(inEq)  
+    x = anorm(x)  
 
-    inEq = np.pad(inEq, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
+    x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
     outEq, h1, h2, h3, mse = volterraCore(
-        inEq, d, n1Taps, n2Taps, n3Taps, order, mu, ntrain, prec, constSymb
+        x, dx, n1Taps, n2Taps, n3Taps, order, mu, nTrain, prec, constSymb
     )
 
     h = [h1, h2, h3]
@@ -1672,14 +1672,14 @@ def volterra(inEq, d, param):
 
 @njit(fastmath=True)
 def volterraCore(
-    inEq,
-    d,
+    x,
+    dx,
     n1Taps=7,
     n2Taps=5,
     n3Taps=3,
     order=2,
     mu=0.0001,
-    ntrain=1000,
+    nTrain=1000,
     prec=np.float32,
     constSymb=None,
 ):
@@ -1688,9 +1688,9 @@ def volterraCore(
 
     Parameters
     ----------
-    inEq : np.array
+    x : np.array
         Input signal to be equalized.
-    d : np.array
+    dx : np.array
         Desired (reference) signal.
     n1Taps : int
         Number of taps of linear part
@@ -1702,7 +1702,7 @@ def volterraCore(
         Volterra series order (2 for quadratic, 3 for cubic)
     mu : float
         Step size
-    ntrain : int
+    nTrain : int
         Number of training symbols
     prec : data type
         Precision
@@ -1727,7 +1727,7 @@ def volterraCore(
     """
     nTaps = np.max(np.array([n1Taps, n2Taps, n3Taps]))
 
-    N = len(inEq) - nTaps + nTaps % 2  # number of input samples
+    N = len(x) - nTaps + nTaps % 2  # number of input samples
 
     # Initialize filters (center the main tap roughly in the middle)
     h1 = np.zeros(n1Taps, dtype=prec)
@@ -1747,7 +1747,7 @@ def volterraCore(
 
     for k in range(N):
         # Update buffer: newest sample at index 0
-        xbuf = inEq[k : k + nTaps]
+        xbuf = x[k : k + nTaps]
 
         # Compute output
         linearPart = np.dot(h1, xbuf)
@@ -1767,8 +1767,8 @@ def volterraCore(
         outEq[k] = linearPart + quadraticPart + cubicPart
          
         # Reference for adaptation: training then decision-directed
-        if k < ntrain:
-            d_ref = d[k]
+        if k < nTrain:
+            d_ref = dx[k]
         else:
             indSymb = np.argmin(np.abs(outEq[k] - constSymb))
             d_ref = constSymb[indSymb]
