@@ -1647,6 +1647,9 @@ def volterra(x, dx, param):
     M = getattr(param, "M", 4)  # modulation order
     constType = getattr(param, "constType", "pam")  # constellation type
 
+    if n1Taps < n2Taps or n1Taps < n3Taps:
+        logg.error("n1Taps must be greater than or equal to n2Taps and n3Taps.")
+
     constSymb = grayMapping(M, constType).astype(prec)  # constellation    
     constSymb = pnorm(constSymb)  # amplitude-normalize constellation   
 
