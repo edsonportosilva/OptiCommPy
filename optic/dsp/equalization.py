@@ -1152,7 +1152,8 @@ def dfe(inEq, d, param):
     d : np.array
         Desired (reference) signal.
     param : optic.utils.parameters object
-        DFE parameters.
+
+        DFE parameters:
         - param.nTapsFF: number of feedforward taps [default: 11]
         - param.nTapsFB: number of feedback taps [default: 5]
         - param.mu: step size [default: 0.001]
@@ -1160,6 +1161,7 @@ def dfe(inEq, d, param):
         - param.prec: precision [default: np.float32]
         - param.M: modulation order [default: 2]
         - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
+
     Returns
     -------
     outEq : np.array
@@ -1185,22 +1187,20 @@ def dfe(inEq, d, param):
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
 
-    outEq, f, b, mse = dfeCore(inEq, d, nTapsFF, nTapsFB, mu, ntrain, prec, constSymb)
+    if constType == "pam":
+        outEq, f, b, mse = realValuedDFECore(
+            inEq, d, nTapsFF, nTapsFB, mu, ntrain, prec, constSymb
+        )
+    else:
+        outEq, f, b, mse = complexValuedDFECore(
+            inEq, d, nTapsFF, nTapsFB, mu, ntrain, prec, constSymb
+        )
 
     return outEq, f, b, mse
 
 
 @njit(fastmath=True)
-def dfeCore(
-    inEq,
-    d,
-    nTapsFF=11,
-    nTapsFB=5,
-    mu=0.001,
-    ntrain=1000,
-    prec=np.float32,
-    constSymb=None,
-):
+def realValuedDFECore(inEq, d, nTapsFF, nTapsFB, mu, ntrain, prec, constSymb):
     """
     Decision feedback equalizer (DFE) core implementation.
 
@@ -1211,19 +1211,19 @@ def dfeCore(
     d : np.array
         Desired (reference) signal.
     nTapsFF : int
-        Number of feedforward taps [default: 11]
+        Number of feedforward taps
     nTapsFB : int
-        Number of feedback taps [default: 5]
+        Number of feedback taps
     mu : float
-        Step size [default: 0.001]
+        Step size
     ntrain : int
-        Number of training symbols [default: 1000]
+        Number of training symbols
     prec : data type
-        Precision [default: np.float32]
+        Precision
     M : int
-        Modulation order [default: 2]
+        Modulation order
     constType : str
-        Constellation type ('pam', 'qam', etc.) [default: 'pam']
+        Constellation type ('pam', 'qam', etc.)
 
     Returns
     -------
@@ -1274,6 +1274,88 @@ def dfeCore(
         # LMS updates
         f += mu * ek * xbuf
         b += mu * ek * dbuf
+
+        # Update feedback buffer with the new decision
+        if nTapsFB > 0:
+            dbuf = np.roll(dbuf, 1)
+            dbuf[0] = d_ref
+
+    return outEq, f, b, mse
+
+
+@njit(fastmath=True)
+def complexValuedDFECore(inEq, d, nTapsFF, nTapsFB, mu, ntrain, prec, constSymb):
+    """
+    Decision feedback equalizer (DFE) core implementation for complex-valued signals.
+
+    Parameters
+    ----------
+    inEq : np.array
+        Input signal to be equalized.
+    d : np.array
+        Desired (reference) signal.
+    nTapsFF : int
+        Number of feedforward taps
+    nTapsFB : int
+        Number of feedback taps
+    mu : float
+        Step size
+    ntrain : int
+        Number of training symbols
+    prec : data type
+        Precision
+    constSymb : np.array
+        Constellation symbols
+
+    Returns
+    -------
+    outEq : np.array
+        Equalized output signal.
+    f : np.array
+        Final feedforward filter coefficients.
+    b : np.array
+        Final feedback filter coefficients.
+
+    References
+    ----------
+    [1] S. Haykin, "Adaptive Filter Theory," 5th ed., Pearson, 2013.
+
+    """
+    N = len(inEq)  # number of input samples
+
+    # Initialize filters (center the main tap roughly in the middle of FF)
+    f = np.zeros(nTapsFF, dtype=prec)
+    f[0] = 1.0 + 0j
+    b = np.zeros(nTapsFB, dtype=prec)
+
+    # Buffers
+    xbuf = inEq[0:nTapsFF].astype(prec)  # past input samples
+    dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
+    outEq = np.zeros(N, dtype=prec)
+    mse = np.zeros(N, dtype=prec)
+
+    for k in range(N):
+        # Update FF buffer: newest sample at index 0
+        xbuf = np.roll(xbuf, -1)
+        xbuf[nTapsFF - 1] = inEq[k + nTapsFF - 1] if k + nTapsFF - 1 < N else 0.0 + 0j
+
+        # Compute output
+        outEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
+
+        # Reference for adaptation: training then decision-directed
+        if k < ntrain:
+            d_ref = d[k]
+        else:
+            indSymb = np.argmin(np.abs(outEq[k] - constSymb))
+            d_ref = constSymb[indSymb]
+
+        # Error
+        ek = d_ref - outEq[k]
+        mse[k] = np.abs(ek) ** 2
+
+        # LMS updates
+        f += mu * ek * xbuf.conjugate()
+        b += mu * ek * dbuf.conjugate()
 
         # Update feedback buffer with the new decision
         if nTapsFB > 0:
