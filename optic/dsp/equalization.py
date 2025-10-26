@@ -10,7 +10,8 @@ DSP algorithms for equalization (:mod:`optic.dsp.equalization`)
    mimoAdaptEqualizer  -- General :math:`N \times N` MIMO adaptive equalizer with several adaptive filtering algorithms available.
    manakovDBP          -- Manakov SSF digital backpropagation (DBP) algorithm.
    dfe                 -- Decision feedback adaptive equalizer (DFE) for 1D signals.
-   ffe                 -- Feedforward adaptive equalizer (FFE) for 1D signals.
+   ffe                 -- Decision-directed feedforward adaptive equalizer (FFE) for 1D signals.
+   volterra            -- Decision-directed Volterra equalizer implementation up to 3rd order for 1D signals.
 """
 
 """Functions for adaptive and static equalization."""
@@ -1393,7 +1394,7 @@ def complexValuedDFECore(
 
 def ffe(inEq, d, param):
     """
-    Feedforward equalizer (FFE) implementation.
+    Decision-directed feedforward equalizer (FFE) implementation.
 
     Parameters
     ----------
@@ -1460,7 +1461,7 @@ def realValuedFFECore(
     constSymb=None,
 ):
     """
-    Feedforward equalizer (FFE) core implementation.
+    Decision-directed feedforward equalizer (FFE) core implementation.
 
     Parameters
     ----------
@@ -1537,7 +1538,7 @@ def complexValuedFFECore(
     constSymb=None,
 ):
     """
-    Feedforward equalizer (FFE) core implementation for complex-valued signals.
+    Decision-directed feedforward equalizer (FFE) core implementation for complex-valued signals.
 
     Parameters
     ----------
@@ -1603,7 +1604,7 @@ def complexValuedFFECore(
 
 def volterra(inEq, d, param):
     """
-    Volterra equalizer implementation.
+    Decision-directed Volterra equalizer implementation up to 3rd order.
 
     Parameters
     ----------
@@ -1614,8 +1615,10 @@ def volterra(inEq, d, param):
     param : optic.utils.parameters object
         Volterra equalizer parameters:
 
-        - param.nTaps: number of taps [default: 5]
-        - param.mu: step size [default: 0.0001]
+        - param.n1Taps: number of taps of linear part [default: 5]
+        - param.n2Taps: number of taps of quadratic part [default: 3]
+        - param.n3Taps: number of taps of cubic part [default: 2]
+        - param.mu: step size [default: 0.001]
         - param.ntrain: number of training symbols [default: 1000]
         - param.order: Volterra series order (2 for quadratic) [default: 2]
         - param.prec: precision [default: np.float32]
@@ -1626,10 +1629,8 @@ def volterra(inEq, d, param):
     -------
     outEq : np.array
         Equalized output signal.
-    h1 : np.array
-        Final linear filter coefficients.
-    h2 : np.array
-        Final quadratic filter coefficients.
+    h : list of np.array
+        Final Volterra filter coefficients [h1, h2, h3].
 
     References
     ----------
@@ -1639,7 +1640,7 @@ def volterra(inEq, d, param):
     n1Taps = getattr(param, "n1Taps", 5)  # number of taps of linear part
     n2Taps = getattr(param, "n2Taps", 3)  # number of taps of quadratic part
     n3Taps = getattr(param, "n3Taps", 2)  # number of taps of cubic part
-    mu = getattr(param, "mu", 0.0001)  # step size
+    mu = getattr(param, "mu", 0.001)  # step size
     ntrain = getattr(param, "ntrain", 1000)  # number of training symbols
     order = getattr(param, "order", 2)  # Volterra series order
     prec = getattr(param, "prec", np.float32)  # precision
@@ -1683,7 +1684,7 @@ def volterraCore(
     constSymb=None,
 ):
     """
-    Volterra equalizer core implementation.
+    Decision-directed Volterra equalizer core implementation.
 
     Parameters
     ----------
@@ -1691,10 +1692,14 @@ def volterraCore(
         Input signal to be equalized.
     d : np.array
         Desired (reference) signal.
-    nTaps : int
-        Number of taps
+    n1Taps : int
+        Number of taps of linear part
+    n2Taps : int
+        Number of taps of quadratic part
+    n3Taps : int
+        Number of taps of cubic part
     order : int
-        Volterra series order (2 for quadratic)
+        Volterra series order (2 for quadratic, 3 for cubic)
     mu : float
         Step size
     ntrain : int
@@ -1712,10 +1717,12 @@ def volterraCore(
         Final linear filter coefficients.
     h2 : np.array
         Final quadratic filter coefficients.
+    h3 : np.array
+        Final cubic filter coefficients.
 
     References
     ----------
-    [1] R. C. de Lamare, "Adaptive and Iterative Multi-Branch MMSE Decision Feedback Detection Algorithms for Multi-Antenna Systems," IEEE Transactions on Vehicular Technology, vol. 59, no. 4, pp. 2032-2044, May 2010, doi: 10.1109/TVT.2010.2041680.
+    [1] Diniz, P. R., da Silva, E. A. B., & Netto, S. L. (2010). Adaptive Filtering: Algorithms and Practical Implementation. Springer Science & Business Media.
 
     """
     nTaps = np.max(np.array([n1Taps, n2Taps, n3Taps]))
