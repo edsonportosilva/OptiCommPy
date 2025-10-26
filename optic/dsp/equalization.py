@@ -124,7 +124,7 @@ def edc(Ei, param):
 
 def mimoAdaptEqualizer(x, param=None, dx=None):
     """
-    General :math:`N \times N` MIMO adaptive equalizer with several adaptive filtering algorithms available.
+    General :math:`N \\times N` MIMO adaptive equalizer with several adaptive filtering algorithms available.
 
     Parameters
     ----------
