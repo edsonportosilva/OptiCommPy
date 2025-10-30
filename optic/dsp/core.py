@@ -713,6 +713,7 @@ def syncDataSequences(y, x, SpS=1):
     paramDec.SpSout = 1
     nsymb = np.floor(x_.shape[0] / SpS)
     symb = decimate(x_[0 : int(nsymb * SpS), :], paramDec)
+    symb = pnorm(symb)
 
     if input1D:
         x_ = x_.flatten()
