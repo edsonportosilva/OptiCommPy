@@ -40,6 +40,8 @@ from numba import njit, prange
 from numpy.fft import fft, fftfreq, fftshift, ifft
 from scipy import signal
 
+from optic.utils import parameters
+
 
 @njit
 def sigPow(x):
@@ -457,6 +459,7 @@ def decimate(Ei, param):
     [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
 
     """
+    Ei = Ei.copy()
     try:
         Ei.shape[1]
         input1D = False
@@ -474,6 +477,7 @@ def decimate(Ei, param):
     # (maximum variance sampling time)
     for k in range(Ei.shape[1]):
         a = Ei[:, k].reshape(Ei.shape[0], 1)
+        a = np.reshape(Ei[:, k], (Ei.shape[0], 1))
         varVector = np.var(a.reshape(-1, param.SpSin), axis=0)
         sampDelay[k] = np.where(varVector == np.amax(varVector))[0][0]
     # downsampling
@@ -559,7 +563,7 @@ def symbolSync(rx, tx, SpS, mode="amp"):
     tx : np.array
         Transmitted symbol sequence.
     SpS : int
-        Samples per symbol of input signals.
+        Samples per symbol of the received signal.
 
     Returns
     -------
@@ -652,6 +656,68 @@ def finddelay(x, y):
 
     """
     return np.argmax(np.abs(signal.correlate(x, y))) - x.shape[0] + 1
+
+
+def syncDataSequences(y, x, SpS=1):
+    """
+    Synchronize data sequences.
+
+    Parameters
+    ----------
+    y : np.array
+        Received signal.
+    x : np.array
+        Transmitted signal.
+
+    Returns
+    -------
+    np.array
+        Synchronized received signal.
+
+    Notes
+    -----
+    Signals x and y must have the same number of columns (modes), and the same sampling rate.
+
+    """
+    try:
+        y.shape[1]
+        input1D = False
+    except IndexError:
+        input1D = True
+        # If y is a 1D array, reshape it to a 2D array
+        y = y.reshape(len(y), 1)
+
+    try:
+        x.shape[1]
+    except IndexError:
+        # If x is a 1D array, reshape it to a 2D array
+        x = x.reshape(len(x), 1)
+
+    # repeat transmitted signal to match length of received signal
+    repeats = np.ceil(y.shape[0] / x.shape[0])
+    x_ = np.tile(x, (int(repeats), 1))
+
+    # calculate required padding
+    padL = x_.shape[0] - y.shape[0]
+
+    if padL > 0:
+        # pad received signal
+        y = np.pad(y, ((0, padL), (0, 0)))
+
+    # synchronize signals
+    x_ = symbolSync(y, x_, 1)
+    x_ = x_[0 : y.shape[0] - padL, :]
+
+    paramDec = parameters()
+    paramDec.SpSin = SpS
+    paramDec.SpSout = 1
+    nsymb = np.floor(x_.shape[0] / SpS)
+    symb = decimate(x_[0 : int(nsymb * SpS), :], paramDec)
+
+    if input1D:
+        x_ = x_.flatten()
+
+    return x_, symb
 
 
 @njit
