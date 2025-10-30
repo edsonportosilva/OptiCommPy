@@ -668,6 +668,8 @@ def syncDataSequences(y, x, SpS=1):
         Received signal.
     x : np.array
         Transmitted signal.
+    SpS : int, optional
+        Samples per symbol. The default is 1.
 
     Returns
     -------
@@ -713,7 +715,7 @@ def syncDataSequences(y, x, SpS=1):
     paramDec.SpSout = 1
     nsymb = np.floor(x_.shape[0] / SpS)
     symb = decimate(x_[0 : int(nsymb * SpS), :], paramDec)
-    symb = pnorm(symb)
+    symb = pnorm(symb - symb.mean(axis=0))
 
     if input1D:
         x_ = x_.flatten()
