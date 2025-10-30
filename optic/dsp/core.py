@@ -20,6 +20,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    upsample               -- Upsample a signal by inserting zeros between samples.
    symbolSync             -- Synchronizer delayed sequences of symbols.
    finddelay              -- Estimate the delay between sequences of symbols.
+   syncDataSequences      -- Synchronize data sequences with a given reference.
    pnorm                  -- Normalize the average power of each componennt of x.
    gaussianComplexNoise   -- Generate complex-valued circular Gaussian noise.
    gaussianNoise          -- Generate Gaussian noise.
@@ -660,21 +661,22 @@ def finddelay(x, y):
 
 def syncDataSequences(rx, tx, param):
     """
-    Synchronize data sequences.
+    Synchronize data sequences with a given reference.
 
     Parameters
     ----------
-    y : np.array
+    rx : np.array
         Received signal.
-    x : np.array
-        Transmitted signal.
+    tx : np.array
+        Transmitted reference signal.
     param : optic.utils.parameters object, optional
         Parameters of the synchronization process.
 
         - param.SpS : samples per symbol of the transmitted signal.
-        - param.seqType : string ('signal','symbols')
+        - param.reference : string ('signal','symbols')
         - param.pulseType : string ('rect','nrz','rrc','rc', 'doubinary')
         - param.rollOff : rolloff of RRC filter. Default is 0.1.
+        - param.nFilterTaps : number of filter coefficients. Default is 1024.
 
 
     Returns
@@ -684,7 +686,7 @@ def syncDataSequences(rx, tx, param):
 
     Notes
     -----
-    Signals x and y must have the same number of columns (modes), and the same sampling rate.
+    Signals x and y must have the same number of columns (modes).
 
     """
     SpS = getattr(param, "SpS", 1)
