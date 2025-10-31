@@ -22,7 +22,6 @@ Digital modulation utilities (:mod:`optic.comm.modulation`)
    detector                 -- Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule
 """
 
-
 """Digital modulation utilities."""
 import logging as logg
 
@@ -78,7 +77,7 @@ def grayMapping(M, constType):
     const : np.array
         constellation symbols (sorted according their corresponding
         Gray bit sequence as integer decimal).
-    
+
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
@@ -130,7 +129,7 @@ def pamConst(M):
     -------
     np.array
         1D PAM constellation.
-    
+
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
@@ -252,9 +251,9 @@ def apskConst(M, m1=None, phaseOffset=None):
                 pskConst(symbolsPerRing)
             )
         else:
-            const[
-                idx * symbolsPerRing : (idx + 1) * symbolsPerRing
-            ] = radius * pskConst(symbolsPerRing)
+            const[idx * symbolsPerRing : (idx + 1) * symbolsPerRing] = (
+                radius * pskConst(symbolsPerRing)
+            )
 
     return const * np.exp(1j * phaseOffset)
 
@@ -306,7 +305,7 @@ def demap(indSymb, bitMap):
     -------
     decBits : np.array
         Sequence of demapped bits.
-    
+
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
@@ -321,8 +320,9 @@ def demap(indSymb, bitMap):
         decBits[i * b : i * b + b] = bitMap[indSymb[i], :]
     return decBits
 
+
 @njit
-def detector(r, σ2, constSymb, px=None, rule='MAP'):
+def detector(r, σ2, constSymb, px=None, rule="MAP"):
     """
     Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule.
 
@@ -354,46 +354,46 @@ def detector(r, σ2, constSymb, px=None, rule='MAP'):
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
-    if px is None or rule == 'ML':
+    if px is None or rule == "ML":
         px = 1 / constSymb.size * np.ones(constSymb.size)
-           
-    decided = np.zeros(r.size, dtype=np.complex64) 
-    indDec = np.zeros(r.size, dtype=np.int64) 
-    π = np.pi  
-    
-    if rule == 'MAP':
-        for ii, ri in enumerate(r): # for each received symbol        
+
+    decided = np.zeros(r.size, dtype=r.dtype)
+    indDec = np.zeros(r.size, dtype=np.int64)
+    π = np.pi
+
+    if rule == "MAP":
+        for ii, ri in enumerate(r):  # for each received symbol
             log_probMetric = np.zeros(constSymb.size)
 
-            # calculate MAP probability metric        
+            # calculate MAP probability metric
             # calculate log(P(sm|r)) = log(p(r|sm)*P(sm)) for m= 1,2,...,M
-            log_probMetric = - np.abs(ri - constSymb)**2 / σ2 + np.log(px)
+            log_probMetric = -np.abs(ri - constSymb) ** 2 / σ2 + np.log(px)
 
-            # find the constellation symbol with the largest P(sm|r)       
+            # find the constellation symbol with the largest P(sm|r)
             indDec[ii] = np.argmax(log_probMetric)
 
             # make the decision in favor of the symbol with the largest metric
             decided[ii] = constSymb[indDec[ii]]
-            
-    elif rule == 'ML':      
-        for ii, ri in enumerate(r): # for each received symbol        
-            distMetric = np.zeros(constSymb.size)        
-            # calculate distance metric   
+
+    elif rule == "ML":
+        for ii, ri in enumerate(r):  # for each received symbol
+            distMetric = np.zeros(constSymb.size)
+            # calculate distance metric
 
             # calculate |r-sm|**2, for m= 1,2,...,M
-            distMetric = np.abs(ri - constSymb)**2
+            distMetric = np.abs(ri - constSymb) ** 2
 
-            # find the constellation symbol with the smallest distance metric       
+            # find the constellation symbol with the smallest distance metric
             indDec[ii] = np.argmin(distMetric)
 
             # make the decision in favor of the symbol with the smallest metric
             decided[ii] = constSymb[indDec[ii]]
     else:
-        print('Detection rule should be either MAP or ML')
-        
-    
+        print("Detection rule should be either MAP or ML")
+
     return decided, indDec
-    
+
+
 def modulateGray(bits, M, constType):
     """
     Modulate bit sequences to constellation symbol sequences (w/ Gray mapping).
@@ -411,7 +411,7 @@ def modulateGray(bits, M, constType):
     -------
     array of complex constellation symbols
         bits modulated to complex constellation symbols.
-    
+
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
@@ -470,6 +470,7 @@ def demodulateGray(symb, M, constType):
 
     return demap(indrx, bitMap)
 
+
 def softMapper(llr, M, constType, prec=np.float32):
     """
     Soft mapper for Gray-mapped modulation formats.
@@ -484,43 +485,44 @@ def softMapper(llr, M, constType, prec=np.float32):
         Type of constellation ('qam', 'psk', 'pam', 'apsk', or 'ook').
     prec : data type, optional
         Precision of the output (default is np.float32).
-           
+
     Returns
-    -------    
+    -------
     - softMean : 1D numpy array
         Soft mean of the constellation symbols.
 
     - softVar : 1D numpy array
-        Soft variance of the constellation symbols.    
+        Soft variance of the constellation symbols.
 
     """
     b = int(np.log2(M))
     constSymb = grayMapping(M, constType)
     constSymb = pnorm(constSymb)
-    
+
     # get bit to symbol mapping
     indMap = minEuclid(constSymb, constSymb)
-    bitMap = dec2bitarray(indMap, b)        
+    bitMap = dec2bitarray(indMap, b)
     bitMap = bitMap.reshape(-1, b).astype(prec)
-       
-    llr = llr.reshape(-1, b)  # shape: (num_symbols, bits_per_symbol) 
-                      
+
+    llr = llr.reshape(-1, b)  # shape: (num_symbols, bits_per_symbol)
+
     return softEstimator(llr, bitMap, constSymb)
+
 
 @njit(parallel=True)
 def softEstimator(llr, bitMap, constSymb):
     """
     Estimates the mean and variance of the received symbols based on LLRs and the bit mapping.
-    
+
     Parameters
     ----------
     llr : ndarray of shape (numSymb, numBits)
         Log-likelihood ratios for each bit in the symbol.
     bitMap : ndarray of shape (M, numBits)
-        Bit mapping of constellation points (binary matrix).    
+        Bit mapping of constellation points (binary matrix).
     constSymb : ndarray of shape (M,)
         Complex-valued constellation symbols.
-    
+
     Returns
     -------
     softMean : ndarray of shape (numSymb,)
@@ -528,15 +530,15 @@ def softEstimator(llr, bitMap, constSymb):
     """
     numSymb, numBits = llr.shape
     M = constSymb.shape[0]
-    
+
     softMean = np.zeros(numSymb, dtype=np.complex64)
     softVar = np.zeros(numSymb, dtype=np.float32)
-    absConst2 = np.abs(constSymb)**2
+    absConst2 = np.abs(constSymb) ** 2
 
-    # Compute bit probabilities       
+    # Compute bit probabilities
     Pb1 = llr2bitProb(-llr)
     Pb0 = 1.0 - Pb1
-    
+
     for i in prange(numSymb):
         # Clip LLRs
         for k in range(numBits):
@@ -544,13 +546,13 @@ def softEstimator(llr, bitMap, constSymb):
                 llr[i, k] = -300
             elif llr[i, k] > 300:
                 llr[i, k] = 300
-        
+
         # Compute symbol probabilities
         probSymbs = np.empty(M, dtype=np.float32)
         for m in range(M):
             prob = 1.0
             for b in range(numBits):
-                prob *= Pb1[i,b] if bitMap[m, b] else Pb0[i,b]
+                prob *= Pb1[i, b] if bitMap[m, b] else Pb0[i, b]
             probSymbs[m] = prob
 
         # Compute soft mean and variance
@@ -559,22 +561,23 @@ def softEstimator(llr, bitMap, constSymb):
         for m in range(M):
             acc_mean += constSymb[m] * probSymbs[m]
             acc_var += absConst2[m] * probSymbs[m]
-        
+
         softMean[i] = acc_mean
-        softVar[i] = acc_var - np.abs(acc_mean)**2
+        softVar[i] = acc_var - np.abs(acc_mean) ** 2
 
     return softMean, softVar
+
 
 @njit
 def llr2bitProb(llr, prec=np.float32):
     """
     Convert LLRs to bit probabilities using a numerically stable sigmoid.
-    
+
     Parameters
     ----------
     llrs : 1D numpy array
         Log-likelihood ratios (LLRs) of bits.
-    
+
     Returns
     -------
     probs : 1D numpy array
@@ -583,15 +586,15 @@ def llr2bitProb(llr, prec=np.float32):
     n = llr.shape[0]
     k = llr.shape[1]
     probs = np.empty((n, k), dtype=prec)
-    
+
     for i in range(n):
         for j in range(k):
             x = llr[i, j]
             # Numerically stable sigmoid
             if x >= 0:
                 z = np.exp(-x)
-                probs[i,j] = 1.0 / (1.0 + z)
+                probs[i, j] = 1.0 / (1.0 + z)
             else:
                 z = np.exp(x)
-                probs[i,j] = z / (1.0 + z)    
+                probs[i, j] = z / (1.0 + z)
     return probs
