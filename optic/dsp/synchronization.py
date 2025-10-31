@@ -58,6 +58,7 @@ def syncDataSequences(rx, tx, param):
     Signals x and y must have the same number of columns (modes).
 
     """
+    M = getattr(param, "M", 4)
     SpS = getattr(param, "SpS", 1)
     reference = getattr(param, "reference", "signal")
     syncMode = getattr(param, "syncMode", "real")
@@ -65,7 +66,6 @@ def syncDataSequences(rx, tx, param):
     rollOff = getattr(param, "rollOff", 0.01)
     nFilterTaps = getattr(param, "nFilterTaps", 1024)
     constType = getattr(param, "constType", "pam")
-    M = getattr(param, "M", 4)
 
     # generate pulse shaping filter
     paramPS = parameters()
