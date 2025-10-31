@@ -120,10 +120,10 @@ def syncDataSequences(rx, tx, param):
         tx_ = firFilter(pulse, tx_)
         tx_ = pnorm(tx_)
     elif reference == "signal":
-        # resample to 25 samples per symbol
+        # resample to 41 samples per symbol
         paramRes = parameters()
         paramRes.inFs = SpS  # samples per symbol before resampling
-        paramRes.outFs = 25  # samples per symbol after resampling
+        paramRes.outFs = 41  # samples per symbol after resampling
         x = resample(tx_, paramRes)
 
         # decimate to symbol rate
