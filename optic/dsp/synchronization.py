@@ -1,7 +1,7 @@
 """
-====================================================================
-DSP algorithms for synchronization (:mod:`optic.dsp.synchronization`)
-====================================================================
+===================================================================
+Signal synchronization functions (:mod:`optic.dsp.synchronization`)
+===================================================================
 
 .. autosummary::
    :toctree: generated/
