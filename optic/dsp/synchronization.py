@@ -41,10 +41,12 @@ def syncDataSequences(rx, tx, param):
 
         - param.SpS : samples per symbol of the transmitted signal.
         - param.reference : string ('signal','symbols')
+        - param.syncMode : string ('real','amp')
         - param.pulseType : string ('rect','nrz','rrc','rc', 'doubinary')
         - param.rollOff : rolloff of RRC filter. Default is 0.01.
         - param.nFilterTaps : number of filter coefficients. Default is 1024.
-
+        - param.constType : string ('pam','qam','psk')
+        - param.M : modulation order.
 
     Returns
     -------
@@ -58,6 +60,7 @@ def syncDataSequences(rx, tx, param):
     """
     SpS = getattr(param, "SpS", 1)
     reference = getattr(param, "reference", "signal")
+    syncMode = getattr(param, "syncMode", "real")
     pulseType = getattr(param, "pulseType", "rc")
     rollOff = getattr(param, "rollOff", 0.01)
     nFilterTaps = getattr(param, "nFilterTaps", 1024)
@@ -102,11 +105,17 @@ def syncDataSequences(rx, tx, param):
         rx = np.pad(rx, ((0, padL), (0, 0)))
 
     # synchronize signals
-    tx_ = symbolSync(rx, tx_, 1)
+    tx_ = symbolSync(rx, tx_, 1, mode=syncMode)
     tx_ = tx_[0 : rx.shape[0] - padL, :]
 
     if reference == "symbols":
-        symb = pnorm(tx_[tx_ != 0])  # extract transmitted symbols
+        nSymb = int(np.ceil(tx_.shape[0] // SpS) + 1)
+        symb = np.zeros((nSymb, tx_.shape[1]))
+
+        for ind in range(tx_.shape[1]):
+            outSymb = tx_[tx_[:, ind] != 0, ind]
+            symb[0 : len(outSymb), ind] = pnorm(outSymb)  # extract transmitted symbols
+
         # generate waveform from synchronized symbols
         tx_ = firFilter(pulse, tx_)
         tx_ = pnorm(tx_)
@@ -127,7 +136,10 @@ def syncDataSequences(rx, tx, param):
         # detect symbols
         constSymb = grayMapping(M, constType)
         constSymb = pnorm(constSymb)
-        symb = detector(symb.flatten(), 0.0001, constSymb, rule="ML")[0]
+        shap = np.shape(symb)
+        symb = symb.flatten()
+        symb = detector(pnorm(symb), 0.0001, constSymb, rule="ML")[0]
+        symb = symb.reshape(shap)
         symb = pnorm(symb)
 
     if input1D:
