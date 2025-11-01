@@ -28,7 +28,7 @@ from optic.utils import parameters
 
 def syncDataSequences(rx, tx, param):
     """
-    Synchronize data sequences with a given reference.
+    Synchronize data sequences with a given reference sequence.
 
     Parameters
     ----------
@@ -39,14 +39,14 @@ def syncDataSequences(rx, tx, param):
     param : optic.utils.parameters object, optional
         Parameters of the synchronization process.
 
-        - param.SpS : samples per symbol of the transmitted signal.
-        - param.reference : string ('signal','symbols')
-        - param.syncMode : string ('real','amp')
-        - param.pulseType : string ('rect','nrz','rrc','rc', 'doubinary')
-        - param.rollOff : rolloff of RRC filter. Default is 0.01.
-        - param.nFilterTaps : number of filter coefficients. Default is 1024.
-        - param.constType : string ('pam','qam','psk')
-        - param.M : modulation order.
+        - param.SpS : samples per symbol of the transmitted signal. [default: 1]
+        - param.reference : type of reference for synchronization ('signal','symbols') [default: 'signal']
+        - param.syncMode : use either the real part or the amplitude of the signal to syncronize [detault: 'amp']
+        - param.pulseType : type of pulse shaping filter. [default: 'rrc']
+        - param.rollOff : rolloff of RRC filter. [default: 0.01]
+        - param.nFilterTaps : number of filter coefficients. [default: 1024]
+        - param.constType : type of constellation [Default: 'pam']
+        - param.M : modulation order. [default: 4]
 
     Returns
     -------
@@ -61,8 +61,8 @@ def syncDataSequences(rx, tx, param):
     M = getattr(param, "M", 4)
     SpS = getattr(param, "SpS", 1)
     reference = getattr(param, "reference", "signal")
-    syncMode = getattr(param, "syncMode", "real")
-    pulseType = getattr(param, "pulseType", "rc")
+    syncMode = getattr(param, "syncMode", "amp")
+    pulseType = getattr(param, "pulseType", "rrc")
     rollOff = getattr(param, "rollOff", 0.01)
     nFilterTaps = getattr(param, "nFilterTaps", 1024)
     constType = getattr(param, "constType", "pam")
@@ -92,6 +92,7 @@ def syncDataSequences(rx, tx, param):
     if reference == "symbols":
         # Upsample transmitted signal
         tx = upsample(tx, SpS)
+       # tx = np.repeat(np.repeat(x, SpS, axis=0), up_x, axis=1)
 
     # find repetitions of the transmitted signal to match length of received signal
     repeats = np.ceil(rx.shape[0] / tx.shape[0])
