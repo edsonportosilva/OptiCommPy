@@ -22,3 +22,7 @@ Digital Signal Processing (DSP)
 .. automodule:: optic.dsp.clockRecovery
     :members:
     :noindex:
+
+.. automodule:: optic.dsp.synchronization
+    :members:
+    :noindex:
