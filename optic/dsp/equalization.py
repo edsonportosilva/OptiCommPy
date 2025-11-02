@@ -1212,7 +1212,7 @@ def dfe(x, dx, param):
         )
     else:
         yEq, f, b, mse = complexValuedDFECore(
-            x, dx, nTapsFF, nTapsFB, mu, nTrain, prec, constSymb
+            x, dx, nTapsFF, nTapsFB, SpS, mu, nTrain, prec, constSymb
         )
 
     return yEq, f, b, mse
