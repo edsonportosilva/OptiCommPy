@@ -1159,6 +1159,7 @@ def dfe(x, dx, param):
 
         - param.nTapsFF: number of feedforward taps [default: 5]
         - param.nTapsFB: number of feedback taps [default: 5]
+        - param.SpS: samples per symbol [default: 1]
         - param.mu: step size [default: 0.0001]
         - param.nTrain: number of training symbols [default: 1000]
         - param.prec: precision [default: np.float32]
@@ -1181,11 +1182,14 @@ def dfe(x, dx, param):
     """
     nTapsFF = getattr(param, "nTapsFF", 5)  # number of feedforward taps
     nTapsFB = getattr(param, "nTapsFB", 5)  # number of feedback taps
+    SpS = getattr(param, "SpS", 1)  # samples per symbol
     mu = getattr(param, "mu", 0.0001)  # step size
     nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
     prec = getattr(param, "prec", np.float32)  # precision
     M = getattr(param, "M", 4)  # modulation order
     constType = getattr(param, "constType", "pam")  # constellation type
+    f = getattr(param, "f", None)  # initial feedforward coeffs
+    b = getattr(param, "b", None)  # initial feedback coeffs
 
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
@@ -1194,9 +1198,17 @@ def dfe(x, dx, param):
     dx = dx.astype(prec)
     dx = dx.flatten()
 
+    # Initialize filters (center the main tap roughly in the middle of FF)
+    if f is None:
+        f = np.zeros(nTapsFF, dtype=prec)
+        f[0] = 1.0
+
+    if b is None:
+        b = np.zeros(nTapsFB, dtype=prec)
+
     if constType == "pam":
         yEq, f, b, mse = realValuedDFECore(
-            x, dx, nTapsFF, nTapsFB, mu, nTrain, prec, constSymb
+            x, dx, nTapsFF, nTapsFB, SpS, mu, nTrain, prec, constSymb, f, b
         )
     else:
         yEq, f, b, mse = complexValuedDFECore(
@@ -1212,10 +1224,13 @@ def realValuedDFECore(
     dx,
     nTapsFF=5,
     nTapsFB=5,
+    SpS=1,
     mu=0.0001,
     nTrain=1000,
     prec=np.float32,
     constSymb=None,
+    f = None,
+    b = None
 ):
     """
     Decision feedback equalizer (DFE) core implementation.
@@ -1230,6 +1245,8 @@ def realValuedDFECore(
         Number of feedforward taps
     nTapsFB : int
         Number of feedback taps
+    SpS : int
+        Samples per symbol
     mu : float
         Step size
     nTrain : int
@@ -1255,13 +1272,8 @@ def realValuedDFECore(
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
-    N = len(x)  # number of input samples
-
-    # Initialize filters (center the main tap roughly in the middle of FF)
-    f = np.zeros(nTapsFF, dtype=prec)
-    f[0] = 1.0
-    b = np.zeros(nTapsFB, dtype=prec)
-
+    L = len(x)  # number of input samples
+    N = int(L//SpS)  # number of input symbols
     constSymb = constSymb.astype(prec)
 
     # Buffers
@@ -1269,12 +1281,8 @@ def realValuedDFECore(
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
-
+    
     for k in range(N):
-        # Update FF buffer: newest sample at index 0
-        xbuf = np.roll(xbuf, -1)
-        xbuf[nTapsFF - 1] = x[k + nTapsFF - 1] if k + nTapsFF - 1 < N else 0.0
-
         # Compute output
         yEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
 
@@ -1298,6 +1306,19 @@ def realValuedDFECore(
             dbuf = np.roll(dbuf, 1)
             dbuf[0] = d_ref
 
+        # Update FF buffer:        
+        xbuf = np.roll(xbuf, -SpS)
+        firstSample = int(k * SpS + nTapsFF)
+        lastSample = int(firstSample + SpS)
+
+        # Fill the last SpS samples
+        if lastSample < L:
+            for i in range(SpS):
+                xbuf[-SpS + i] = x[firstSample + i]
+        else:
+            for i in range(SpS):
+                xbuf[-SpS + i] = 0.0
+
     return yEq, f, b, mse
 
 
@@ -1307,6 +1328,7 @@ def complexValuedDFECore(
     dx,
     nTapsFF=5,
     nTapsFB=5,
+    SpS=1,
     mu=0.0001,
     nTrain=1000,
     prec=np.complex64,
@@ -1325,6 +1347,8 @@ def complexValuedDFECore(
         Number of feedforward taps
     nTapsFB : int
         Number of feedback taps
+    SpS : int
+        Samples per symbol
     mu : float
         Step size
     nTrain : int
@@ -1348,7 +1372,8 @@ def complexValuedDFECore(
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
-    N = len(x)  # number of input samples
+    L = len(x)  # number of input samples
+    N = int(L//SpS)  # number of input samples
 
     # Initialize filters (center the main tap roughly in the middle of FF)
     f = np.zeros(nTapsFF, dtype=prec)
@@ -1361,11 +1386,7 @@ def complexValuedDFECore(
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
 
-    for k in range(N):
-        # Update FF buffer: newest sample at index 0
-        xbuf = np.roll(xbuf, -1)
-        xbuf[nTapsFF - 1] = x[k + nTapsFF - 1] if k + nTapsFF - 1 < N else 0.0 + 0j
-
+    for k in range(N):        
         # Compute output
         yEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
 
@@ -1388,6 +1409,19 @@ def complexValuedDFECore(
         if nTapsFB > 0:
             dbuf = np.roll(dbuf, 1)
             dbuf[0] = d_ref
+
+        # Update FF buffer:        
+        xbuf = np.roll(xbuf, -SpS)
+        firstSample = int(k * SpS + nTapsFF)
+        lastSample = int(firstSample + SpS)
+
+        # Fill the last SpS samples
+        if lastSample < L:
+            for i in range(SpS):
+                xbuf[-SpS + i] = x[firstSample + i]
+        else:
+            for i in range(SpS):
+                xbuf[-SpS + i] = 0.0 + 0j
 
     return yEq, f, b, mse
 
