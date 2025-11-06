@@ -1546,9 +1546,6 @@ def realValuedFFECore(
     xbuf = x[0:nTaps].astype(prec)  # past input samples
 
     for k in range(N):
-        # Update buffer: newest sample at index 0
-        # xbuf = x[k : k + nTaps]
-
         # Compute output
         yEq[k] = np.dot(f, xbuf)
 
@@ -1641,9 +1638,6 @@ def complexValuedFFECore(
     xbuf = x[0:nTaps].astype(prec)  # past input samples
 
     for k in range(N):
-        # # Update buffer: newest sample at index 0
-        # xbuf = x[k : k + nTaps]
-
         # Compute output
         yEq[k] = np.dot(f, xbuf)
 
@@ -1844,9 +1838,6 @@ def volterraCore(
     xbuf = x[0:nTaps].astype(prec)  # past input samples
 
     for k in range(N):
-        # Update buffer: newest sample at index 0
-        # xbuf = x[k : k + nTaps]
-
         # Compute output
         linearPart = np.dot(h1, xbuf)
         quadraticPart = 0.0
