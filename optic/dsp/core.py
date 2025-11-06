@@ -828,7 +828,8 @@ def movingAverage(x, N):
 
         # Calculate moving average using convolution
         h = np.ones(N) / N
-        ma = np.convolve(padded_x, h, "same")
+        # ma = np.convolve(padded_x, h, "same")
+        ma = signal.fftconvolve(padded_x, h, "same")
         y[:, indCol] = ma[startInd:endInd]
 
     if input1D:
