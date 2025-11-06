@@ -1441,6 +1441,7 @@ def ffe(x, dx, param):
 
         - param.nTaps: number of feedforward taps [default: 5]
         - param.mu: step size [default: 0.0001]
+        - param.SpS: samples per symbol [default: 1]
         - param.nTrain: number of training symbols [default: 1000]
         - param.prec: precision [default: np.float32]
         - param.M: modulation order [default: 4]
@@ -1460,6 +1461,7 @@ def ffe(x, dx, param):
     """
     nTaps = getattr(param, "nTaps", 5)  # number of feedforward taps
     mu = getattr(param, "mu", 0.0001)  # step size
+    SpS = getattr(param, "SpS", 1)  # samples per symbol
     nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
     prec = getattr(param, "prec", np.float32)  # precision
     M = getattr(param, "M", 4)  # modulation order
@@ -1475,9 +1477,11 @@ def ffe(x, dx, param):
     x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
     if constType == "pam":
-        yEq, f, mse = realValuedFFECore(x, dx, nTaps, mu, nTrain, prec, constSymb)
+        yEq, f, mse = realValuedFFECore(x, dx, nTaps, SpS, mu, nTrain, prec, constSymb)
     else:
-        yEq, f, mse = complexValuedFFECore(x, dx, nTaps, mu, nTrain, prec, constSymb)
+        yEq, f, mse = complexValuedFFECore(
+            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb
+        )
 
     return yEq, f, mse
 
@@ -1487,6 +1491,7 @@ def realValuedFFECore(
     x,
     dx,
     nTaps=5,
+    SpS=1,
     mu=0.0001,
     nTrain=1000,
     prec=np.float32,
@@ -1503,6 +1508,8 @@ def realValuedFFECore(
         Desired (reference) signal.
     nTaps : int
         Number of feedforward taps
+    SpS : int
+        Samples per symbol
     mu : float
         Step size
     nTrain : int
@@ -1524,7 +1531,8 @@ def realValuedFFECore(
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
 
     """
-    N = len(x) - nTaps + nTaps % 2  # number of input samples
+    L = len(x)  # number of input samples
+    N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
 
     # Initialize filter (center the main tap roughly in the middle)
     f = np.zeros(nTaps, dtype=prec)
@@ -1535,10 +1543,11 @@ def realValuedFFECore(
     # Buffer
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
+    xbuf = x[0:nTaps].astype(prec)  # past input samples
 
     for k in range(N):
         # Update buffer: newest sample at index 0
-        xbuf = x[k : k + nTaps]
+        # xbuf = x[k : k + nTaps]
 
         # Compute output
         yEq[k] = np.dot(f, xbuf)
@@ -1556,6 +1565,20 @@ def realValuedFFECore(
 
         # LMS update
         f += mu * ek * xbuf
+
+        # Update FF buffer:
+        xbuf = np.roll(xbuf, -SpS)
+        firstSample = int(k * SpS + nTaps)
+        lastSample = int(firstSample + SpS)
+
+        # Fill the last SpS samples
+        if lastSample < L:
+            for i in range(SpS):
+                xbuf[-SpS + i] = x[firstSample + i]
+        else:
+            for i in range(SpS):
+                xbuf[-SpS + i] = 0.0
+
     return yEq, f, mse
 
 
@@ -1564,6 +1587,7 @@ def complexValuedFFECore(
     x,
     dx,
     nTaps=5,
+    SpS=1,
     mu=0.0001,
     nTrain=1000,
     prec=np.complex64,
@@ -1580,6 +1604,8 @@ def complexValuedFFECore(
         Desired (reference) signal.
     nTaps : int
         Number of feedforward taps
+    SpS : int
+        Samples per symbol
     mu : float
         Step size
     nTrain : int
@@ -1600,7 +1626,8 @@ def complexValuedFFECore(
     ----------
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
     """
-    N = len(x) - nTaps + nTaps % 2  # number of input samples
+    L = len(x)  # number of input samples
+    N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
 
     # Initialize filter (center the main tap roughly in the middle)
     f = np.zeros(nTaps, dtype=prec)
@@ -1611,10 +1638,11 @@ def complexValuedFFECore(
     # Buffer
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
+    xbuf = x[0:nTaps].astype(prec)  # past input samples
 
     for k in range(N):
-        # Update buffer: newest sample at index 0
-        xbuf = x[k : k + nTaps]
+        # # Update buffer: newest sample at index 0
+        # xbuf = x[k : k + nTaps]
 
         # Compute output
         yEq[k] = np.dot(f, xbuf)
@@ -1632,6 +1660,20 @@ def complexValuedFFECore(
 
         # LMS update
         f += mu * ek * xbuf.conjugate()
+
+        # Update FF buffer:
+        xbuf = np.roll(xbuf, -SpS)
+        firstSample = int(k * SpS + nTaps)
+        lastSample = int(firstSample + SpS)
+
+        # Fill the last SpS samples
+        if lastSample < L:
+            for i in range(SpS):
+                xbuf[-SpS + i] = x[firstSample + i]
+        else:
+            for i in range(SpS):
+                xbuf[-SpS + i] = 0.0 + 0j
+
     return yEq, f, mse
 
 
@@ -1652,6 +1694,7 @@ def volterra(x, dx, param):
         - param.n2Taps: number of taps of quadratic part [default: 3]
         - param.n3Taps: number of taps of cubic part [default: 2]
         - param.h: initial filter coefficients [default: None]
+        - param.SpS: samples per symbol [default: 1]
         - param.mu: step size [default: 0.001]
         - param.nTrain: number of training symbols [default: 1000]
         - param.order: Volterra series order (2 for quadratic) [default: 2]
@@ -1675,6 +1718,7 @@ def volterra(x, dx, param):
     n2Taps = getattr(param, "n2Taps", 3)  # number of taps of quadratic part
     n3Taps = getattr(param, "n3Taps", 2)  # number of taps of cubic part
     h = getattr(param, "h", None)  # initial filter coeffs
+    SpS = getattr(param, "SpS", 1)  # samples per symbol
     mu = getattr(param, "mu", 0.001)  # step size
     nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
     order = getattr(param, "order", 2)  # Volterra series order
@@ -1711,7 +1755,7 @@ def volterra(x, dx, param):
     x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
     yEq, h1, h2, h3, mse = volterraCore(
-        x, dx, order, mu, nTrain, h1, h2, h3, prec, constSymb
+        x, dx, order, SpS, mu, nTrain, h1, h2, h3, prec, constSymb
     )
 
     h = [h1, h2, h3]
@@ -1726,6 +1770,7 @@ def volterraCore(
     x,
     dx,
     order=2,
+    SpS=1,
     mu=0.0001,
     nTrain=1000,
     h1=None,
@@ -1745,6 +1790,8 @@ def volterraCore(
         Desired (reference) signal.
     order : int
         Volterra series order (2 for quadratic, 3 for cubic)
+    SpS : int
+        Samples per symbol
     mu : float
         Step size
     nTrain : int
@@ -1781,21 +1828,24 @@ def volterraCore(
     n3Taps = h3.shape[0]
 
     nTaps = np.max(np.array([n1Taps, n2Taps, n3Taps]))
-
-    N = len(x) - nTaps + nTaps % 2  # number of input samples
+    L = len(x)  # number of input samples
+    N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
 
     constSymb = constSymb.astype(prec)
 
-    # Buffer
+    # initialize outputs
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
 
     t2 = int((n1Taps - n2Taps) // 2)
     t3 = int((n1Taps - n3Taps) // 2)
 
+    # Buffer
+    xbuf = x[0:nTaps].astype(prec)  # past input samples
+
     for k in range(N):
         # Update buffer: newest sample at index 0
-        xbuf = x[k : k + nTaps]
+        # xbuf = x[k : k + nTaps]
 
         # Compute output
         linearPart = np.dot(h1, xbuf)
@@ -1840,5 +1890,18 @@ def volterraCore(
                         h3[i, j, l] += (
                             mu / 2 * ek * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
                         )
+
+        # Update FF buffer:
+        xbuf = np.roll(xbuf, -SpS)
+        firstSample = int(k * SpS + nTaps)
+        lastSample = int(firstSample + SpS)
+
+        # Fill the last SpS samples
+        if lastSample < L:
+            for i in range(SpS):
+                xbuf[-SpS + i] = x[firstSample + i]
+        else:
+            for i in range(SpS):
+                xbuf[-SpS + i] = 0.0
 
     return yEq, h1, h2, h3, mse
