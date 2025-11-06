@@ -1229,8 +1229,8 @@ def realValuedDFECore(
     nTrain=1000,
     prec=np.float32,
     constSymb=None,
-    f = None,
-    b = None
+    f=None,
+    b=None,
 ):
     """
     Decision feedback equalizer (DFE) core implementation.
@@ -1273,7 +1273,7 @@ def realValuedDFECore(
 
     """
     L = len(x)  # number of input samples
-    N = int(L//SpS)  # number of input symbols
+    N = int(L // SpS)  # number of input symbols
     constSymb = constSymb.astype(prec)
 
     # Buffers
@@ -1281,7 +1281,7 @@ def realValuedDFECore(
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
-    
+
     for k in range(N):
         # Compute output
         yEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
@@ -1306,7 +1306,7 @@ def realValuedDFECore(
             dbuf = np.roll(dbuf, 1)
             dbuf[0] = d_ref
 
-        # Update FF buffer:        
+        # Update FF buffer:
         xbuf = np.roll(xbuf, -SpS)
         firstSample = int(k * SpS + nTapsFF)
         lastSample = int(firstSample + SpS)
@@ -1373,7 +1373,7 @@ def complexValuedDFECore(
 
     """
     L = len(x)  # number of input samples
-    N = int(L//SpS)  # number of input samples
+    N = int(L // SpS)  # number of input samples
 
     # Initialize filters (center the main tap roughly in the middle of FF)
     f = np.zeros(nTapsFF, dtype=prec)
@@ -1386,7 +1386,7 @@ def complexValuedDFECore(
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
 
-    for k in range(N):        
+    for k in range(N):
         # Compute output
         yEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
 
@@ -1410,7 +1410,7 @@ def complexValuedDFECore(
             dbuf = np.roll(dbuf, 1)
             dbuf[0] = d_ref
 
-        # Update FF buffer:        
+        # Update FF buffer:
         xbuf = np.roll(xbuf, -SpS)
         firstSample = int(k * SpS + nTapsFF)
         lastSample = int(firstSample + SpS)
@@ -1477,9 +1477,7 @@ def ffe(x, dx, param):
     if constType == "pam":
         yEq, f, mse = realValuedFFECore(x, dx, nTaps, mu, nTrain, prec, constSymb)
     else:
-        yEq, f, mse = complexValuedFFECore(
-            x, dx, nTaps, mu, nTrain, prec, constSymb
-        )
+        yEq, f, mse = complexValuedFFECore(x, dx, nTaps, mu, nTrain, prec, constSymb)
 
     return yEq, f, mse
 
@@ -1636,6 +1634,7 @@ def complexValuedFFECore(
         f += mu * ek * xbuf.conjugate()
     return yEq, f, mse
 
+
 def volterra(x, dx, param):
     """
     Decision-directed Volterra equalizer implementation up to 3rd order for SISO receivers..
@@ -1652,12 +1651,13 @@ def volterra(x, dx, param):
         - param.n1Taps: number of taps of linear part [default: 5]
         - param.n2Taps: number of taps of quadratic part [default: 3]
         - param.n3Taps: number of taps of cubic part [default: 2]
+        - param.h: initial filter coefficients [default: None]
         - param.mu: step size [default: 0.001]
         - param.nTrain: number of training symbols [default: 1000]
         - param.order: Volterra series order (2 for quadratic) [default: 2]
         - param.prec: precision [default: np.float32]
         - param.M: modulation order [default: 4]
-        - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']        
+        - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
 
     Returns
     -------
@@ -1674,6 +1674,7 @@ def volterra(x, dx, param):
     n1Taps = getattr(param, "n1Taps", 5)  # number of taps of linear part
     n2Taps = getattr(param, "n2Taps", 3)  # number of taps of quadratic part
     n3Taps = getattr(param, "n3Taps", 2)  # number of taps of cubic part
+    h = getattr(param, "h", None)  # initial filter coeffs
     mu = getattr(param, "mu", 0.001)  # step size
     nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
     order = getattr(param, "order", 2)  # Volterra series order
@@ -1684,8 +1685,20 @@ def volterra(x, dx, param):
     if n1Taps < n2Taps or n1Taps < n3Taps:
         logg.error("n1Taps must be greater than or equal to n2Taps and n3Taps.")
 
-    constSymb = grayMapping(M, constType).astype(prec)  # constellation    
-    constSymb = pnorm(constSymb)  # amplitude-normalize constellation   
+    if h is None:
+        # Initialize filters (center the main tap roughly in the middle)
+        h1 = np.zeros(n1Taps, dtype=prec)
+        h1[n1Taps // 2] = 1.0
+
+        h2 = np.zeros((n2Taps, n2Taps), dtype=prec)
+        h3 = np.zeros((n3Taps, n3Taps, n3Taps), dtype=prec)
+    else:
+        h1 = h[0]
+        h2 = h[1]
+        h3 = h[2]
+
+    constSymb = grayMapping(M, constType).astype(prec)  # constellation
+    constSymb = pnorm(constSymb)  # amplitude-normalize constellation
 
     x = x.astype(prec)
     dx = dx.astype(prec)
@@ -1693,30 +1706,31 @@ def volterra(x, dx, param):
 
     nTaps = max(n1Taps, n2Taps, n3Taps)
 
-    x = anorm(x)  
+    x = anorm(x)
 
     x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
     yEq, h1, h2, h3, mse = volterraCore(
-        x, dx, n1Taps, n2Taps, n3Taps, order, mu, nTrain, prec, constSymb
+        x, dx, order, mu, nTrain, h1, h2, h3, prec, constSymb
     )
 
     h = [h1, h2, h3]
 
     yEq = pnorm(yEq)
-    
+
     return yEq, h, mse
+
 
 @njit(fastmath=True)
 def volterraCore(
     x,
     dx,
-    n1Taps=7,
-    n2Taps=5,
-    n3Taps=3,
     order=2,
     mu=0.0001,
     nTrain=1000,
+    h1=None,
+    h2=None,
+    h3=None,
     prec=np.float32,
     constSymb=None,
 ):
@@ -1729,18 +1743,18 @@ def volterraCore(
         Input signal to be equalized.
     dx : np.array
         Desired (reference) signal.
-    n1Taps : int
-        Number of taps of linear part
-    n2Taps : int
-        Number of taps of quadratic part
-    n3Taps : int
-        Number of taps of cubic part
     order : int
         Volterra series order (2 for quadratic, 3 for cubic)
     mu : float
         Step size
     nTrain : int
         Number of training symbols
+    h1 : np.array
+        Initial linear filter coefficients.
+    h2 : np.array
+        Initial quadratic filter coefficients.
+    h3 : np.array
+        Initial cubic filter coefficients.
     prec : data type
         Precision
     constSymb : np.array
@@ -1762,25 +1776,22 @@ def volterraCore(
     [1] Diniz, P. R., da Silva, E. A. B., & Netto, S. L. (2010). Adaptive Filtering: Algorithms and Practical Implementation. Springer Science & Business Media.
 
     """
+    n1Taps = h1.shape[0]
+    n2Taps = h2.shape[0]
+    n3Taps = h3.shape[0]
+
     nTaps = np.max(np.array([n1Taps, n2Taps, n3Taps]))
 
     N = len(x) - nTaps + nTaps % 2  # number of input samples
 
-    # Initialize filters (center the main tap roughly in the middle)
-    h1 = np.zeros(n1Taps, dtype=prec)
-    h1[n1Taps // 2] = 1.0
-       
-    h2 = np.zeros((n2Taps, n2Taps), dtype=prec)
-    h3 = np.zeros((n3Taps, n3Taps, n3Taps), dtype=prec)            
-     
     constSymb = constSymb.astype(prec)
 
     # Buffer
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
 
-    t2 = int((n1Taps-n2Taps) //2)
-    t3 = int((n1Taps-n3Taps) //2)
+    t2 = int((n1Taps - n2Taps) // 2)
+    t3 = int((n1Taps - n3Taps) // 2)
 
     for k in range(N):
         # Update buffer: newest sample at index 0
@@ -1793,16 +1804,18 @@ def volterraCore(
 
         for i in range(n2Taps):
             for j in range(n2Taps):
-                quadraticPart += h2[i, j] * xbuf[t2+i] * xbuf[t2+j] 
+                quadraticPart += h2[i, j] * xbuf[t2 + i] * xbuf[t2 + j]
 
-        if order == 3:            
+        if order == 3:
             for i in range(n3Taps):
                 for j in range(n3Taps):
                     for l in range(n3Taps):
-                        cubicPart += h3[i, j, l] * xbuf[t3+i] * xbuf[t3+j] * xbuf[t3+l]
+                        cubicPart += (
+                            h3[i, j, l] * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
+                        )
 
         yEq[k] = linearPart + quadraticPart + cubicPart
-         
+
         # Reference for adaptation: training then decision-directed
         if k < nTrain:
             d_ref = dx[k]
@@ -1818,12 +1831,14 @@ def volterraCore(
         h1 += mu * ek * xbuf
         for i in range(n2Taps):
             for j in range(n2Taps):
-                h2[i, j] += mu/2 * ek * xbuf[t2+i] * xbuf[t2+j]
+                h2[i, j] += mu / 2 * ek * xbuf[t2 + i] * xbuf[t2 + j]
 
-        if order == 3:            
+        if order == 3:
             for i in range(n3Taps):
                 for j in range(n3Taps):
                     for l in range(n3Taps):
-                        h3[i, j, l] += mu/2 * ek * xbuf[t3+i] * xbuf[t3+j] * xbuf[t3+l]
-      
+                        h3[i, j, l] += (
+                            mu / 2 * ek * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
+                        )
+
     return yEq, h1, h2, h3, mse
