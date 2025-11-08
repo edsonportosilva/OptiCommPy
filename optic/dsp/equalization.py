@@ -1210,10 +1210,12 @@ def dfe(x, dx, param):
     # Initialize filters (center the main tap roughly in the middle of FF)
     if f is None:
         f = np.zeros(nTapsFF, dtype=prec)
-        f[0] = 1.0
+        f[nTapsFF//2] = 1.0
 
     if b is None:
         b = np.zeros(nTapsFB, dtype=prec)
+
+    x = np.pad(x, (nTapsFF // 2, nTapsFF // 2), "constant", constant_values=(0, 0))
 
     if constType == "pam":
         yEq, f, b, mse = realValuedDFECore(
@@ -1311,7 +1313,7 @@ def realValuedDFECore(
 
     """
     L = len(x)  # number of input samples
-    N = int(L // SpS)  # number of input symbols
+    N = int((L - nTapsFF + nTapsFF % 2) // SpS)  # number of input symbols
     
     # Buffers
     xbuf = x[0:nTapsFF].astype(prec)  # past input samples
@@ -1343,7 +1345,7 @@ def realValuedDFECore(
 
         # Update feedback buffer with the new decision
         if nTapsFB > 0:
-            dbuf = np.roll(dbuf, 1)
+            dbuf = np.roll(dbuf, 1)            
             dbuf[0] = d_ref
 
         # Update FF buffer:
@@ -1416,7 +1418,7 @@ def complexValuedDFECore(
 
     """
     L = len(x)  # number of input samples
-    N = int(L // SpS)  # number of input samples
+    N = int((L - nTapsFF + nTapsFF % 2) // SpS)  # number of input symbols
     
     # Buffers
     xbuf = x[0:nTapsFF].astype(prec)  # past input samples
