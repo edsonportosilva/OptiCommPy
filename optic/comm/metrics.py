@@ -153,6 +153,10 @@ def fastBERcalc(rx, tx, M, constType, px=None):
     constSymb = grayMapping(M, constType)
     Es = np.sum(np.abs(constSymb) ** 2 * px)
     
+    # make copies of inputs 
+    tx = tx.copy()
+    rx = rx.copy()
+
     # We want all the signal sequences to be disposed in columns:
     try:
         if rx.shape[1] > rx.shape[0]:
