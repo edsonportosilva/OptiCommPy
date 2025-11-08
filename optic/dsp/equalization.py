@@ -1165,6 +1165,9 @@ def dfe(x, dx, param):
         - param.prec: precision [default: np.float32]
         - param.M: modulation order [default: 4]
         - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
+        - param.f: initial feedforward coeffs [default: None]
+        - param.b: initial feedback coeffs [default: None]
+        - param.trainingMode: operation mode ('data-aided', 'fulltime') [default: 'data-aided']
 
     Returns
     -------
@@ -1190,6 +1193,7 @@ def dfe(x, dx, param):
     constType = getattr(param, "constType", "pam")  # constellation type
     f = getattr(param, "f", None)  # initial feedforward coeffs
     b = getattr(param, "b", None)  # initial feedback coeffs
+    trainingMode = getattr(param, "trainingMode", "data-aided")  # operation mode
 
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
@@ -1208,11 +1212,33 @@ def dfe(x, dx, param):
 
     if constType == "pam":
         yEq, f, b, mse = realValuedDFECore(
-            x, dx, nTapsFF, nTapsFB, SpS, mu, nTrain, prec, constSymb, f, b
+            x,
+            dx,
+            nTapsFF,
+            nTapsFB,
+            SpS,
+            mu,
+            nTrain,
+            prec,
+            constSymb,
+            f,
+            b,
+            trainingMode,
         )
     else:
         yEq, f, b, mse = complexValuedDFECore(
-            x, dx, nTapsFF, nTapsFB, SpS, mu, nTrain, prec, constSymb
+            x,
+            dx,
+            nTapsFF,
+            nTapsFB,
+            SpS,
+            mu,
+            nTrain,
+            prec,
+            constSymb,
+            f,
+            b,
+            trainingMode,
         )
 
     return yEq, f, b, mse
@@ -1231,6 +1257,7 @@ def realValuedDFECore(
     constSymb=None,
     f=None,
     b=None,
+    trainingMode="data-aided",
 ):
     """
     Decision feedback equalizer (DFE) core implementation.
@@ -1257,6 +1284,12 @@ def realValuedDFECore(
         Modulation order
     constType : str
         Constellation type ('pam', 'qam', etc.)
+    f : np.array
+        Initial feedforward coeffs
+    b : np.array
+        Initial feedback coeffs
+    trainingMode : str
+        Operation mode ('data-aided', 'fulltime')
 
     Returns
     -------
@@ -1297,9 +1330,12 @@ def realValuedDFECore(
         ek = d_ref - yEq[k]
         mse[k] = ek**2
 
-        # LMS updates
-        f += mu * ek * xbuf
-        b += mu * ek * dbuf
+        if (trainingMode == "data-aided" and k < nTrain) or (
+            trainingMode == "fulltime"
+        ):
+            # LMS updates
+            f += mu * ek * xbuf
+            b += mu * ek * dbuf
 
         # Update feedback buffer with the new decision
         if nTapsFB > 0:
@@ -1333,6 +1369,9 @@ def complexValuedDFECore(
     nTrain=1000,
     prec=np.complex64,
     constSymb=None,
+    f=None,
+    b=None,
+    trainingMode="data-aided",
 ):
     """
     Decision feedback equalizer (DFE) core implementation for complex-valued signals.
@@ -1401,9 +1440,12 @@ def complexValuedDFECore(
         ek = d_ref - yEq[k]
         mse[k] = np.abs(ek) ** 2
 
-        # LMS updates
-        f += mu * ek * xbuf.conjugate()
-        b += mu * ek * dbuf.conjugate()
+        if (trainingMode == "data-aided" and k < nTrain) or (
+            trainingMode == "fulltime"
+        ):
+            # LMS updates
+            f += mu * ek * xbuf.conjugate()
+            b += mu * ek * dbuf.conjugate()
 
         # Update feedback buffer with the new decision
         if nTapsFB > 0:
@@ -1446,6 +1488,8 @@ def ffe(x, dx, param):
         - param.prec: precision [default: np.float32]
         - param.M: modulation order [default: 4]
         - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
+        - param.f: initial feedforward coeffs [default: None]
+        - param.trainingMode: operation mode ('data-aided', 'fulltime') [default: 'data-aided']
 
     Returns
     -------
@@ -1466,6 +1510,8 @@ def ffe(x, dx, param):
     prec = getattr(param, "prec", np.float32)  # precision
     M = getattr(param, "M", 4)  # modulation order
     constType = getattr(param, "constType", "pam")  # constellation type
+    f = getattr(param, "f", None)  # initial feedforward coeffs
+    trainingMode = getattr(param, "trainingMode", "data-aided")  # operation mode
 
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
@@ -1476,11 +1522,18 @@ def ffe(x, dx, param):
 
     x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
+    if f is None:
+        # Initialize filter (center the main tap roughly in the middle)
+        f = np.zeros(nTaps, dtype=prec)
+        f[nTaps // 2] = 1.0
+
     if constType == "pam":
-        yEq, f, mse = realValuedFFECore(x, dx, nTaps, SpS, mu, nTrain, prec, constSymb)
+        yEq, f, mse = realValuedFFECore(
+            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode
+        )
     else:
         yEq, f, mse = complexValuedFFECore(
-            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb
+            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode
         )
 
     return yEq, f, mse
@@ -1496,6 +1549,8 @@ def realValuedFFECore(
     nTrain=1000,
     prec=np.float32,
     constSymb=None,
+    f=None,
+    trainingMode="data-aided",
 ):
     """
     Decision-directed feedforward equalizer (FFE) core implementation.
@@ -1518,6 +1573,10 @@ def realValuedFFECore(
         Precision
     constSymb : np.array
         Constellation symbols
+    f : np.array
+        Initial feedforward filter coefficients
+    trainingMode : str
+        Operation mode ('data-aided', 'fulltime')
 
     Returns
     -------
@@ -1533,10 +1592,6 @@ def realValuedFFECore(
     """
     L = len(x)  # number of input samples
     N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
-
-    # Initialize filter (center the main tap roughly in the middle)
-    f = np.zeros(nTaps, dtype=prec)
-    f[nTaps // 2] = 1.0
 
     constSymb = constSymb.astype(prec)
 
@@ -1560,8 +1615,11 @@ def realValuedFFECore(
         ek = d_ref - yEq[k]
         mse[k] = ek**2
 
-        # LMS update
-        f += mu * ek * xbuf
+        if (trainingMode == "data-aided" and k < nTrain) or (
+            trainingMode == "fulltime"
+        ):
+            # LMS update
+            f += mu * ek * xbuf
 
         # Update FF buffer:
         xbuf = np.roll(xbuf, -SpS)
@@ -1589,6 +1647,8 @@ def complexValuedFFECore(
     nTrain=1000,
     prec=np.complex64,
     constSymb=None,
+    f=None,
+    trainingMode="data-aided",
 ):
     """
     Decision-directed feedforward equalizer (FFE) core implementation for complex-valued signals.
@@ -1611,6 +1671,10 @@ def complexValuedFFECore(
         Precision
     constSymb : np.array
         Constellation symbols
+    f : np.array
+        Initial feedforward filter coefficients
+    trainingMode : str
+        Operation mode ('data-aided', 'fulltime')
 
     Returns
     -------
@@ -1625,10 +1689,6 @@ def complexValuedFFECore(
     """
     L = len(x)  # number of input samples
     N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
-
-    # Initialize filter (center the main tap roughly in the middle)
-    f = np.zeros(nTaps, dtype=prec)
-    f[nTaps // 2] = 1.0 + 0j
 
     constSymb = constSymb.astype(prec)
 
@@ -1652,8 +1712,11 @@ def complexValuedFFECore(
         ek = d_ref - yEq[k]
         mse[k] = np.abs(ek) ** 2
 
-        # LMS update
-        f += mu * ek * xbuf.conjugate()
+        if (trainingMode == "data-aided" and k < nTrain) or (
+            trainingMode == "fulltime"
+        ):
+            # LMS update
+            f += mu * ek * xbuf.conjugate()
 
         # Update FF buffer:
         xbuf = np.roll(xbuf, -SpS)
