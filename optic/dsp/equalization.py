@@ -1949,7 +1949,7 @@ def volterraCore(
             # Update quadratic coefficients
             for i in range(n2Taps):
                 for j in range(n2Taps):
-                    h2[i, j] += mu / 2 * ek * xbuf[t2 + i] * xbuf[t2 + j]
+                    h2[i, j] += mu/2 * ek * xbuf[t2 + i] * xbuf[t2 + j]
 
             # Update cubic coefficients
             if order == 3:
@@ -1957,7 +1957,7 @@ def volterraCore(
                     for j in range(n3Taps):
                         for l in range(n3Taps):
                             h3[i, j, l] += (
-                                mu / 6 * ek * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
+                                mu/7 * ek * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
                             )
 
         # Update FF buffer:
