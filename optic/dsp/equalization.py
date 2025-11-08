@@ -1197,7 +1197,12 @@ def dfe(x, dx, param):
 
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
-
+    
+    # Make copies to avoid modifying original arrays
+    x = x.copy()
+    dx = dx.copy()
+    
+    # Ensure correct data types
     x = x.astype(prec)
     dx = dx.astype(prec)
     dx = dx.flatten()
@@ -1307,8 +1312,7 @@ def realValuedDFECore(
     """
     L = len(x)  # number of input samples
     N = int(L // SpS)  # number of input symbols
-    constSymb = constSymb.astype(prec)
-
+    
     # Buffers
     xbuf = x[0:nTapsFF].astype(prec)  # past input samples
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
@@ -1413,12 +1417,7 @@ def complexValuedDFECore(
     """
     L = len(x)  # number of input samples
     N = int(L // SpS)  # number of input samples
-
-    # Initialize filters (center the main tap roughly in the middle of FF)
-    f = np.zeros(nTapsFF, dtype=prec)
-    f[0] = 1.0 + 0j
-    b = np.zeros(nTapsFB, dtype=prec)
-
+    
     # Buffers
     xbuf = x[0:nTapsFF].astype(prec)  # past input samples
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
@@ -1516,6 +1515,11 @@ def ffe(x, dx, param):
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
 
+    # Make copies to avoid modifying original arrays
+    x = x.copy()
+    dx = dx.copy()
+
+    # Ensure correct data types
     x = x.astype(prec)
     dx = dx.astype(prec)
     dx = dx.flatten()
@@ -1592,8 +1596,6 @@ def realValuedFFECore(
     """
     L = len(x)  # number of input samples
     N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
-
-    constSymb = constSymb.astype(prec)
 
     # Buffer
     yEq = np.zeros(N, dtype=prec)
@@ -1689,9 +1691,7 @@ def complexValuedFFECore(
     """
     L = len(x)  # number of input samples
     N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
-
-    constSymb = constSymb.astype(prec)
-
+    
     # Buffer
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
@@ -1750,7 +1750,7 @@ def volterra(x, dx, param):
         - param.n1Taps: number of taps of linear part [default: 5]
         - param.n2Taps: number of taps of quadratic part [default: 3]
         - param.n3Taps: number of taps of cubic part [default: 2]
-        - param.h: initial filter coefficients [default: None]
+        - param.h: list of initial filter coefficients [default: None]
         - param.SpS: samples per symbol [default: 1]
         - param.mu: step size [default: 0.001]
         - param.nTrain: number of training symbols [default: 1000]
@@ -1782,6 +1782,7 @@ def volterra(x, dx, param):
     prec = getattr(param, "prec", np.float32)  # precision
     M = getattr(param, "M", 4)  # modulation order
     constType = getattr(param, "constType", "pam")  # constellation type
+    trainingMode = getattr(param, "trainingMode", "data-aided")  # operation mode
 
     if n1Taps < n2Taps or n1Taps < n3Taps:
         logg.error("n1Taps must be greater than or equal to n2Taps and n3Taps.")
@@ -1801,6 +1802,11 @@ def volterra(x, dx, param):
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # amplitude-normalize constellation
 
+    # Make copies to avoid modifying original arrays
+    x = x.copy()
+    dx = dx.copy()
+
+    # Ensure correct data types
     x = x.astype(prec)
     dx = dx.astype(prec)
     dx = dx.flatten()
@@ -1812,7 +1818,7 @@ def volterra(x, dx, param):
     x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
     yEq, h1, h2, h3, mse = volterraCore(
-        x, dx, order, SpS, mu, nTrain, h1, h2, h3, prec, constSymb
+        x, dx, order, SpS, mu, nTrain, h1, h2, h3, prec, constSymb, trainingMode
     )
 
     h = [h1, h2, h3]
@@ -1835,6 +1841,7 @@ def volterraCore(
     h3=None,
     prec=np.float32,
     constSymb=None,
+    trainingMode="data-aided",
 ):
     """
     Decision-directed Volterra equalizer core implementation.
@@ -1863,6 +1870,8 @@ def volterraCore(
         Precision
     constSymb : np.array
         Constellation symbols
+    trainingMode : str
+        Operation mode ('data-aided', 'fulltime')
 
     Returns
     -------
@@ -1887,8 +1896,6 @@ def volterraCore(
     nTaps = np.max(np.array([n1Taps, n2Taps, n3Taps]))
     L = len(x)  # number of input samples
     N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
-
-    constSymb = constSymb.astype(prec)
 
     # initialize outputs
     yEq = np.zeros(N, dtype=prec)
@@ -1931,19 +1938,27 @@ def volterraCore(
         ek = d_ref - yEq[k]
         mse[k] = ek**2
 
-        # LMS updates
-        h1 += mu * ek * xbuf
-        for i in range(n2Taps):
-            for j in range(n2Taps):
-                h2[i, j] += mu / 2 * ek * xbuf[t2 + i] * xbuf[t2 + j]
+        if (trainingMode == "data-aided" and k < nTrain) or (
+            trainingMode == "fulltime"):
 
-        if order == 3:
-            for i in range(n3Taps):
-                for j in range(n3Taps):
-                    for l in range(n3Taps):
-                        h3[i, j, l] += (
-                            mu / 2 * ek * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
-                        )
+            # LMS updates
+
+            # Update linear coefficients
+            h1 += mu * ek * xbuf
+
+            # Update quadratic coefficients
+            for i in range(n2Taps):
+                for j in range(n2Taps):
+                    h2[i, j] += mu / 2 * ek * xbuf[t2 + i] * xbuf[t2 + j]
+
+            # Update cubic coefficients
+            if order == 3:
+                for i in range(n3Taps):
+                    for j in range(n3Taps):
+                        for l in range(n3Taps):
+                            h3[i, j, l] += (
+                                mu / 6 * ek * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
+                            )
 
         # Update FF buffer:
         xbuf = np.roll(xbuf, -SpS)
