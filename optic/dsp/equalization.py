@@ -1168,6 +1168,7 @@ def dfe(x, dx, param):
         - param.f: initial feedforward coeffs [default: None]
         - param.b: initial feedback coeffs [default: None]
         - param.trainingMode: operation mode ('data-aided', 'fulltime') [default: 'data-aided']
+        - param.preconvIters: number of pre-convergence iterations [default: 1]
 
     Returns
     -------
@@ -1194,6 +1195,7 @@ def dfe(x, dx, param):
     f = getattr(param, "f", None)  # initial feedforward coeffs
     b = getattr(param, "b", None)  # initial feedback coeffs
     trainingMode = getattr(param, "trainingMode", "data-aided")  # operation mode
+    preconvIters = getattr(param, "preconvIters", 1)  # pre-convergence iterations
 
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
@@ -1231,6 +1233,7 @@ def dfe(x, dx, param):
             f,
             b,
             trainingMode,
+            preconvIters
         )
     else:
         yEq, f, b, mse = complexValuedDFECore(
@@ -1246,6 +1249,7 @@ def dfe(x, dx, param):
             f,
             b,
             trainingMode,
+            preconvIters
         )
 
     return yEq, f, b, mse
@@ -1265,6 +1269,7 @@ def realValuedDFECore(
     f=None,
     b=None,
     trainingMode="data-aided",
+    preconvIters=1,
 ):
     """
     Decision feedback equalizer (DFE) core implementation.
@@ -1297,6 +1302,8 @@ def realValuedDFECore(
         Initial feedback coeffs
     trainingMode : str
         Operation mode ('data-aided', 'fulltime')
+    preconvIters : int
+        Number of pre-convergence iterations
 
     Returns
     -------
@@ -1320,8 +1327,10 @@ def realValuedDFECore(
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
-
-    for k in range(N):
+   
+    nIter = 1
+    k = 0
+    while k < N:
         # Compute output
         yEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
 
@@ -1360,6 +1369,12 @@ def realValuedDFECore(
         else:
             for i in range(SpS):
                 xbuf[-SpS + i] = 0.0
+        
+        if k == nTrain and nIter < preconvIters:
+            k = 0  # restart pre-convergence
+            nIter += 1
+        else:
+            k += 1
 
     return yEq, f, b, mse
 
@@ -1378,6 +1393,7 @@ def complexValuedDFECore(
     f=None,
     b=None,
     trainingMode="data-aided",
+    preconvIters=1,
 ):
     """
     Decision feedback equalizer (DFE) core implementation for complex-valued signals.
@@ -1402,6 +1418,8 @@ def complexValuedDFECore(
         Precision
     constSymb : np.array
         Constellation symbols
+    preconvIters : int
+        Number of pre-convergence iterations
 
     Returns
     -------
@@ -1425,8 +1443,10 @@ def complexValuedDFECore(
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
-
-    for k in range(N):
+    
+    nIter = 1
+    k = 0
+    while k < N:
         # Compute output
         yEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
 
@@ -1466,6 +1486,12 @@ def complexValuedDFECore(
             for i in range(SpS):
                 xbuf[-SpS + i] = 0.0 + 0j
 
+        if k == nTrain and nIter < preconvIters:
+            k = 0  # restart pre-convergence
+            nIter += 1
+        else:
+            k += 1
+
     return yEq, f, b, mse
 
 
@@ -1491,6 +1517,7 @@ def ffe(x, dx, param):
         - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
         - param.f: initial feedforward coeffs [default: None]
         - param.trainingMode: operation mode ('data-aided', 'fulltime') [default: 'data-aided']
+        - param.preconvIters: number of pre-convergence iterations [default: 1]
 
     Returns
     -------
@@ -1513,6 +1540,7 @@ def ffe(x, dx, param):
     constType = getattr(param, "constType", "pam")  # constellation type
     f = getattr(param, "f", None)  # initial feedforward coeffs
     trainingMode = getattr(param, "trainingMode", "data-aided")  # operation mode
+    preconvIters = getattr(param, "preconvIters", 1)  # pre-convergence iterations
 
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
@@ -1535,11 +1563,11 @@ def ffe(x, dx, param):
 
     if constType == "pam":
         yEq, f, mse = realValuedFFECore(
-            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode
+            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode, preconvIters
         )
     else:
         yEq, f, mse = complexValuedFFECore(
-            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode
+            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode, preconvIters
         )
 
     return yEq, f, mse
@@ -1557,6 +1585,7 @@ def realValuedFFECore(
     constSymb=None,
     f=None,
     trainingMode="data-aided",
+    preconvIters=1,
 ):
     """
     Decision-directed feedforward equalizer (FFE) core implementation.
@@ -1583,6 +1612,8 @@ def realValuedFFECore(
         Initial feedforward filter coefficients
     trainingMode : str
         Operation mode ('data-aided', 'fulltime')
+    preconvIters : int
+        Number of pre-convergence iterations
 
     Returns
     -------
@@ -1603,8 +1634,10 @@ def realValuedFFECore(
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
     xbuf = x[0:nTaps].astype(prec)  # past input samples
-
-    for k in range(N):
+    
+    nIter = 1
+    k = 0
+    while k < N:
         # Compute output
         yEq[k] = np.dot(f, xbuf)
 
@@ -1638,6 +1671,12 @@ def realValuedFFECore(
             for i in range(SpS):
                 xbuf[-SpS + i] = 0.0
 
+        if k == nTrain and nIter < preconvIters:
+            k = 0  # restart pre-convergence
+            nIter += 1
+        else:
+            k += 1
+
     return yEq, f, mse
 
 
@@ -1653,6 +1692,7 @@ def complexValuedFFECore(
     constSymb=None,
     f=None,
     trainingMode="data-aided",
+    preconvIters=1,
 ):
     """
     Decision-directed feedforward equalizer (FFE) core implementation for complex-valued signals.
@@ -1679,6 +1719,8 @@ def complexValuedFFECore(
         Initial feedforward filter coefficients
     trainingMode : str
         Operation mode ('data-aided', 'fulltime')
+    preconvIters : int
+        Number of pre-convergence iterations
 
     Returns
     -------
@@ -1698,8 +1740,10 @@ def complexValuedFFECore(
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
     xbuf = x[0:nTaps].astype(prec)  # past input samples
-
-    for k in range(N):
+    
+    nIter = 1
+    k = 0
+    while k < N:
         # Compute output
         yEq[k] = np.dot(f, xbuf)
 
@@ -1733,6 +1777,12 @@ def complexValuedFFECore(
             for i in range(SpS):
                 xbuf[-SpS + i] = 0.0 + 0j
 
+        if k == nTrain and nIter < preconvIters:
+            k = 0  # restart pre-convergence
+            nIter += 1
+        else:
+            k += 1
+
     return yEq, f, mse
 
 
@@ -1760,6 +1810,8 @@ def volterra(x, dx, param):
         - param.prec: precision [default: np.float32]
         - param.M: modulation order [default: 4]
         - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
+        - param.trainingMode: operation mode ('data-aided', 'fulltime') [default: 'data-aided']
+        - param.preconvIters: number of pre-convergence iterations [default: 1
 
     Returns
     -------
@@ -1785,6 +1837,7 @@ def volterra(x, dx, param):
     M = getattr(param, "M", 4)  # modulation order
     constType = getattr(param, "constType", "pam")  # constellation type
     trainingMode = getattr(param, "trainingMode", "data-aided")  # operation mode
+    preconvIters = getattr(param, "preconvIters", 1)  # pre-convergence iterations
 
     if n1Taps < n2Taps or n1Taps < n3Taps:
         logg.error("n1Taps must be greater than or equal to n2Taps and n3Taps.")
@@ -1820,7 +1873,7 @@ def volterra(x, dx, param):
     x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
     yEq, h1, h2, h3, mse = volterraCore(
-        x, dx, order, SpS, mu, nTrain, h1, h2, h3, prec, constSymb, trainingMode
+        x, dx, order, SpS, mu, nTrain, h1, h2, h3, prec, constSymb, trainingMode, preconvIters
     )
 
     h = [h1, h2, h3]
@@ -1844,6 +1897,7 @@ def volterraCore(
     prec=np.float32,
     constSymb=None,
     trainingMode="data-aided",
+    preconvIters=1,
 ):
     """
     Decision-directed Volterra equalizer core implementation.
@@ -1874,6 +1928,8 @@ def volterraCore(
         Constellation symbols
     trainingMode : str
         Operation mode ('data-aided', 'fulltime')
+    preconvIters : int
+        Number of pre-convergence iterations
 
     Returns
     -------
@@ -1908,8 +1964,10 @@ def volterraCore(
 
     # Buffer
     xbuf = x[0:nTaps].astype(prec)  # past input samples
-
-    for k in range(N):
+   
+    nIter = 1
+    k = 0
+    while k < N:
         # Compute output
         linearPart = np.dot(h1, xbuf)
         quadraticPart = 0.0
@@ -1974,5 +2032,11 @@ def volterraCore(
         else:
             for i in range(SpS):
                 xbuf[-SpS + i] = 0.0
+
+        if k == nTrain and nIter < preconvIters:
+            k = 0  # restart pre-convergence
+            nIter += 1
+        else:
+            k += 1
 
     return yEq, h1, h2, h3, mse
