@@ -981,9 +981,9 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
         logg.error("FFT size is smaller than filter length")
 
     if freqDomainFilter:
-        h = np.pad(fftshift(ifft(h)), (0, d - 1), mode="constant")
+        h = np.pad(fftshift(ifft(h)), (0, NFFT - K), mode="constant")
     else:
-        h = np.pad(h, (0, d - 1), mode="constant")
+        h = np.pad(h, (0, NFFT - K), mode="constant")
 
     H = fft(h)  # frequency response
 
