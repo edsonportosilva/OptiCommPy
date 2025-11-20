@@ -48,10 +48,12 @@ def cpr(Ei, param=None, symbTx=None):
 
         - param.alg: CPR algorithm to be used ['bps', 'bpsGPU', 'ddpll', or 'viterbi'] [default: 'bps'].
         - param.shapingFactor: shaping factor, for probabilistic shaped QAM with MB dististribution.[default: 0]
+        - param.constType: constellation type ['qam' or 'psk']. [default: 'qam']
+        - param.M: constellation order. [default: 4]
+        - param.returnPhases: whether to return the estimated phase shifts along with the output signal. [default: False]
 
         BPS params:
 
-        - param.M: constellation order. [default: 4]
         - param.N: length of BPS the moving average window. [default: 35]
         - param.B: number of BPS test phases. [default: 64]
 
