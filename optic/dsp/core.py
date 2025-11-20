@@ -995,7 +995,7 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
     padLen = numBlocks * d + discard - sigLen
 
     # pad signal with padLen zeros + D zeros (to compensate for filter delay)
-    x = np.pad(x, (D, padLen), mode="constant")
+    x = np.pad(x, (discard, padLen + D), mode="constant")
 
     # pre-allocate output
     y = np.zeros(numBlocks * d, dtype="complex")
