@@ -838,7 +838,7 @@ def movingAverage(x, N):
     return y
 
 
-def delaySignal(sig, delay, Fs=1, NFFT=None):
+def delaySignal(sig, delay, Fs=1, NFFT=1024):
     """
     Apply a time delay to a signal sampled at fs samples per second using FFT/IFFT algorithms.
 
@@ -969,53 +969,49 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
 
     """
     sigLen = len(x)  # length of the input signal
-    M = len(h)  # length of the filter impulse response
-    D = (M - 1) // 2  # filter delay
+    K = len(h)  # length of the filter impulse response
+    D = (K - 1) // 2  # filter delay
 
     if NFFT is None:
-        NFFT = 2 ** int(np.ceil(np.log2(M)))
+        NFFT = 2 ** int(np.ceil(np.log2(K)))
 
-    if NFFT >= M:
-        L = NFFT - M + 1  # block length required
+    if NFFT >= K:
+        d = NFFT - K + 1  # block length required
     else:
         logg.error("FFT size is smaller than filter length")
 
     if freqDomainFilter:
-        h = np.pad(fftshift(ifft(h)), (0, L - 1), mode="constant")
+        h = np.pad(fftshift(ifft(h)), (0, d - 1), mode="constant")
     else:
-        h = np.pad(h, (0, L - 1), mode="constant")
+        h = np.pad(h, (0, d - 1), mode="constant")
 
     H = fft(h)  # frequency response
 
-    discard = M - 1  # number of samples to be discarded after IFFT (overlap samples)
-    numBlocks = int(np.ceil(sigLen / L))  # total number of FFT blocks to be processed
-    padLen = (
-        numBlocks * L - sigLen
-    )  # pad length necessary to complete an integer number of blocks
+    discard = K - 1  # number of samples to be discarded after IFFT (overlap samples)
+    numBlocks = int(
+        np.ceil((sigLen + K - 1) / d)
+    )  # total number of FFT blocks to be processed
+
+    padLen = numBlocks * d + discard - sigLen
 
     # pad signal with padLen zeros + D zeros (to compensate for filter delay)
-    x = np.pad(x, (0, padLen + D), mode="constant")
+    x = np.pad(x, (D, padLen), mode="constant")
 
     # pre-allocate output
-    y = np.zeros(len(x), dtype="complex")
-
-    # overlap-and-save blockwise processing
-    x = np.pad(x, (M - 1, 0), mode="constant")
-
-    start_idx = 0
-    end_idx = NFFT
+    y = np.zeros(numBlocks * d, dtype="complex")
 
     for blk in range(numBlocks):
-        X = fft(x[start_idx:end_idx])
+        # extract block and compute FFT
+        X = fft(x[blk * d : blk * d + NFFT])
+        # frequency domain multiplication and IFFT
         y_blk = ifft(X * H)
-        y[blk * L : (blk + 1) * L] = y_blk[discard:]
-        start_idx += L
-        end_idx = start_idx + NFFT
+        # save valid part of the block
+        y[blk * d : (blk + 1) * d] = y_blk[discard:]
 
     if np.any(np.iscomplex(x)):
-        return y[D:-padLen]
+        return y[D : D + sigLen]
     else:
-        return y[D:-padLen].real
+        return y[D : D + sigLen].real
 
 
 @njit
