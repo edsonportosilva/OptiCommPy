@@ -149,6 +149,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
         - constType : str, constellation type [default: 'qam']
         - M : int, modulation order [default: 4]
         - prgsBar : bool, flag indicating whether to display progress bar [default: True]
+        - returnResults : bool, flag indicating whether to return all results [default: False]
         - prec: data type, precision of the computations [default: np.complex64]
 
     Returns
@@ -1199,11 +1200,11 @@ def dfe(x, dx, param):
 
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
-    
+
     # Make copies to avoid modifying original arrays
     x = x.copy()
     dx = dx.copy()
-    
+
     # Ensure correct data types
     x = x.astype(prec)
     dx = dx.astype(prec)
@@ -1212,7 +1213,7 @@ def dfe(x, dx, param):
     # Initialize filters (center the main tap roughly in the middle of FF)
     if f is None:
         f = np.zeros(nTapsFF, dtype=prec)
-        f[nTapsFF//2] = 1.0
+        f[nTapsFF // 2] = 1.0
 
     if b is None:
         b = np.zeros(nTapsFB, dtype=prec)
@@ -1233,7 +1234,7 @@ def dfe(x, dx, param):
             f,
             b,
             trainingMode,
-            preconvIters
+            preconvIters,
         )
     else:
         yEq, f, b, mse = complexValuedDFECore(
@@ -1249,7 +1250,7 @@ def dfe(x, dx, param):
             f,
             b,
             trainingMode,
-            preconvIters
+            preconvIters,
         )
 
     return yEq, f, b, mse
@@ -1321,13 +1322,13 @@ def realValuedDFECore(
     """
     L = len(x)  # number of input samples
     N = int((L - nTapsFF + nTapsFF % 2) // SpS)  # number of input symbols
-    
+
     # Buffers
     xbuf = x[0:nTapsFF].astype(prec)  # past input samples
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
-   
+
     nIter = 1
     k = 0
     while k < N:
@@ -1354,7 +1355,7 @@ def realValuedDFECore(
 
         # Update feedback buffer with the new decision
         if nTapsFB > 0:
-            dbuf = np.roll(dbuf, 1)            
+            dbuf = np.roll(dbuf, 1)
             dbuf[0] = d_ref
 
         # Update FF buffer:
@@ -1369,7 +1370,7 @@ def realValuedDFECore(
         else:
             for i in range(SpS):
                 xbuf[-SpS + i] = 0.0
-        
+
         if k == nTrain and nIter < preconvIters:
             k = 0  # restart pre-convergence
             nIter += 1
@@ -1437,13 +1438,13 @@ def complexValuedDFECore(
     """
     L = len(x)  # number of input samples
     N = int((L - nTapsFF + nTapsFF % 2) // SpS)  # number of input symbols
-    
+
     # Buffers
     xbuf = x[0:nTapsFF].astype(prec)  # past input samples
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
-    
+
     nIter = 1
     k = 0
     while k < N:
@@ -1563,11 +1564,31 @@ def ffe(x, dx, param):
 
     if constType == "pam":
         yEq, f, mse = realValuedFFECore(
-            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode, preconvIters
+            x,
+            dx,
+            nTaps,
+            SpS,
+            mu,
+            nTrain,
+            prec,
+            constSymb,
+            f,
+            trainingMode,
+            preconvIters,
         )
     else:
         yEq, f, mse = complexValuedFFECore(
-            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode, preconvIters
+            x,
+            dx,
+            nTaps,
+            SpS,
+            mu,
+            nTrain,
+            prec,
+            constSymb,
+            f,
+            trainingMode,
+            preconvIters,
         )
 
     return yEq, f, mse
@@ -1634,7 +1655,7 @@ def realValuedFFECore(
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
     xbuf = x[0:nTaps].astype(prec)  # past input samples
-    
+
     nIter = 1
     k = 0
     while k < N:
@@ -1735,12 +1756,12 @@ def complexValuedFFECore(
     """
     L = len(x)  # number of input samples
     N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
-    
+
     # Buffer
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
     xbuf = x[0:nTaps].astype(prec)  # past input samples
-    
+
     nIter = 1
     k = 0
     while k < N:
@@ -1873,7 +1894,19 @@ def volterra(x, dx, param):
     x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
     yEq, h1, h2, h3, mse = volterraCore(
-        x, dx, order, SpS, mu, nTrain, h1, h2, h3, prec, constSymb, trainingMode, preconvIters
+        x,
+        dx,
+        order,
+        SpS,
+        mu,
+        nTrain,
+        h1,
+        h2,
+        h3,
+        prec,
+        constSymb,
+        trainingMode,
+        preconvIters,
     )
 
     h = [h1, h2, h3]
@@ -1964,7 +1997,7 @@ def volterraCore(
 
     # Buffer
     xbuf = x[0:nTaps].astype(prec)  # past input samples
-   
+
     nIter = 1
     k = 0
     while k < N:
@@ -1999,7 +2032,8 @@ def volterraCore(
         mse[k] = ek**2
 
         if (trainingMode == "data-aided" and k < nTrain) or (
-            trainingMode == "fulltime"):
+            trainingMode == "fulltime"
+        ):
 
             # LMS updates
 
@@ -2009,7 +2043,7 @@ def volterraCore(
             # Update quadratic coefficients
             for i in range(n2Taps):
                 for j in range(n2Taps):
-                    h2[i, j] += mu/2 * ek * xbuf[t2 + i] * xbuf[t2 + j]
+                    h2[i, j] += mu / 2 * ek * xbuf[t2 + i] * xbuf[t2 + j]
 
             # Update cubic coefficients
             if order == 3:
@@ -2017,7 +2051,7 @@ def volterraCore(
                     for j in range(n3Taps):
                         for l in range(n3Taps):
                             h3[i, j, l] += (
-                                mu/7 * ek * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
+                                mu / 7 * ek * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
                             )
 
         # Update FF buffer:
