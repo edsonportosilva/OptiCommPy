@@ -229,7 +229,8 @@ def pbs(E, θ=0):
 
     """
     try:
-        assert E.shape[1] == 2, "E need to be a (N,2) or a (N,) np.array"
+        if E.shape[1] > 2:
+            logg.error("E need to be a (N,2) or a (N,) np.array")
     except IndexError:
         E = np.repeat(E, 2).reshape(-1, 2)
         E[:, 1] = 0
@@ -553,7 +554,7 @@ def pdmCoherentReceiver(Es, Elo, paramFE, paramPD=None):
     Es : np.array
         Input signal optical field.
     Elo : np.array
-        Input LO optical field.    
+        Input LO optical field.
     paramFE : parameter object (struct), optional
         Parameters of the optical frontend:
 
