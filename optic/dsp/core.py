@@ -37,8 +37,8 @@ import logging as logg
 
 import numpy as np
 from numba import njit, prange
-from numpy.fft import fft, fftfreq, fftshift, ifft
 from scipy import signal
+from scipy.fftpack import fft, fftfreq, fftshift, ifft
 
 from optic.utils import parameters
 
@@ -981,6 +981,7 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
         logg.error("FFT size is smaller than filter length")
 
     if freqDomainFilter:
+        # Assumes h is frequency response centered at DC
         h = np.pad(fftshift(ifft(h)), (0, NFFT - K), mode="constant")
     else:
         h = np.pad(h, (0, NFFT - K), mode="constant")
