@@ -24,7 +24,7 @@ from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
 from optic.comm.modulation import grayMapping
-from optic.dsp.core import blockwiseFFTConv, pnorm, anorm
+from optic.dsp.core import anorm, blockwiseFFTConv, pnorm
 from optic.models.channels import convergenceCondition, nlinPhaseRot
 
 # try:

@@ -11,18 +11,12 @@ Signal synchronization functions (:mod:`optic.dsp.synchronization`)
 
 """Functions for synchronization."""
 import logging as logg
+
 import numpy as np
 
-from optic.dsp.core import (
-    pnorm,
-    firFilter,
-    upsample,
-    resample,
-    symbolSync,
-    decimate,
-    pulseShape,
-)
 from optic.comm.modulation import detector, grayMapping
+from optic.dsp.core import (decimate, firFilter, pnorm, pulseShape, resample,
+                            symbolSync, upsample)
 from optic.utils import parameters
 
 

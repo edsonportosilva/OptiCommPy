@@ -16,7 +16,8 @@ import logging as logg
 
 import numpy as np
 from numba import njit
-from optic.comm.modulation import qamConst, pamConst, pskConst, apskConst
+
+from optic.comm.modulation import apskConst, pamConst, pskConst, qamConst
 
 
 def bitSource(param):

@@ -14,15 +14,16 @@ Perturbation models for fiber nonlinear interference (:mod:`optic.models.perturb
 """
 
 """Perturbation models for NLIN calculation."""
+import logging
+
 import numpy as np
-from scipy.special import gammaincc, comb
-from scipy.integrate import quad
-from scipy.constants import c as c_light
-from scipy.special import exp1
 from numba import njit, prange
+from scipy.constants import c as c_light
+from scipy.integrate import quad
+from scipy.special import comb, exp1, gammaincc
+
 from optic.dsp.core import pnorm
 from optic.utils import dBm2W, dotNumba
-import logging
 
 
 def calcPertCoeffMatrix(param):

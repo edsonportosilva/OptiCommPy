@@ -4,8 +4,9 @@ Test functions in optic.dsp.core module.
 
 """
 
-from optic.dsp.core import finddelay
 import numpy as np
+
+from optic.dsp.core import finddelay
 
 
 def test_finddelay_for_arrays_of_real_values():

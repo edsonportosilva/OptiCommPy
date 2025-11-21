@@ -27,17 +27,9 @@ import logging as logg
 import numpy as np
 import scipy.constants as const
 
-from optic.dsp.core import (
-    clockSamplingInterp,
-    gaussianComplexNoise,
-    lowPassFIR,
-    phaseNoise,
-    quantizer,
-    delaySignal,
-    iqMixing,
-    calcMZM,
-    calcPM,
-)
+from optic.dsp.core import (calcMZM, calcPM, clockSamplingInterp, delaySignal,
+                            gaussianComplexNoise, iqMixing, lowPassFIR,
+                            phaseNoise, quantizer)
 from optic.utils import dBm2W, parameters
 
 try:

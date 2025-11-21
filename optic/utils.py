@@ -18,8 +18,9 @@ General utilities (:mod:`optic.utils`)
 """
 
 """General utilities."""
-import numpy as np
 import copy
+
+import numpy as np
 from numba import njit
 from scipy.special import erfcinv
 
