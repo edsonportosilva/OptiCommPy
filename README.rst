@@ -16,7 +16,7 @@ components of fiber optic communication systems, for educational and research pu
      :width: 600px  
      :align: center
 
-|PyPI| |PyPI - Downloads| |Documentation Status| |DOI| |JOSS|
+|PyPI| |PyPI - Downloads| |Documentation Status| |DOI| |JOSS| |PyPI - All Downloads|
 
 Available features
 ------------------
@@ -122,6 +122,7 @@ Edson Porto da Silva, Adolfo Fernandes Herbster. "OptiCommPy: Open-source Simula
    :target: https://doi.org/10.5281/zenodo.11450597
 .. |JOSS| image:: https://joss.theoj.org/papers/10.21105/joss.06600/status.svg 
    :target: https://doi.org/10.21105/joss.06600
+.. |PyPI - All Downloads| image:: https://static.pepy.tech/personalized-badge/opticommpy?period=total&units=NONE&left_color=GRAY&right_color=GREEN&left_text=PyPI+Downloads
 
    
 
