@@ -565,6 +565,8 @@ def symbolSync(rx, tx, SpS, mode="amp"):
         Transmitted symbol sequence.
     SpS : int
         Samples per symbol of the received signal.
+    mode : string, optional
+        Synchronization mode: "amp" (amplitude) or "real" (real part). The default is "amp".
 
     Returns
     -------
@@ -588,7 +590,14 @@ def symbolSync(rx, tx, SpS, mode="amp"):
 
     nModes = rx.shape[1]
 
-    rx = rx[0::SpS, :]
+    #rx = rx[0::SpS, :]
+
+    # decimate received signal
+    paramDec = parameters()
+    paramDec.SpSin = SpS
+    paramDec.SpSout = 1
+
+    rx = decimate(rx, paramDec)
 
     # calculate time delay
     delay = np.zeros(nModes)
@@ -611,22 +620,35 @@ def symbolSync(rx, tx, SpS, mode="amp"):
     elif mode == "real":
         for n in range(nModes):
             for m in range(nModes):
-                c1 = np.max(
-                    np.abs(signal.correlate(np.real(tx[:, m]), np.real(rx[:, n])))
-                )
-                c2 = np.max(
-                    np.abs(signal.correlate(np.real(tx[:, m]), np.imag(rx[:, n])))
-                )
-                corrMatrix[m, n] = np.max([c1, c2])
+                crr = signal.correlate(np.real(tx[:, m]), np.real(rx[:, n]))
+                cir = signal.correlate(np.imag(tx[:, m]), np.real(rx[:, n]))
 
-                if c2 > c1:
-                    rot[m, n] = np.exp(-1j * np.pi / 4)
+                crr_peak = crr[np.argmax(np.abs(crr))]
+                cir_peak = cir[np.argmax(np.abs(cir))]
+
+                crr_peak_abs = np.abs(crr_peak)
+                cir_peak_abs = np.abs(cir_peak)
+
+                corrMatrix[m, n] = np.max([crr_peak_abs, cir_peak_abs])
+
+                # handle pi/2 rotations
+                if crr_peak_abs > cir_peak_abs:
+                    if crr_peak > 0:
+                        rot[m, n] = 1
+                    else:
+                        rot[m, n] = -1
+                else:
+                    if cir_peak > 0:
+                        rot[m, n] = -1j
+                    else:
+                        rot[m, n] = 1j                             
 
         swap = np.argmax(corrMatrix, axis=0)
         tx = tx[:, swap]
 
         for k in range(nModes):
-            delay[k] = finddelay(np.real(rot[k, swap[k]] * tx[:, k]), np.real(rx[:, k]))
+            tx[:, k] = rot[k, swap[k]] * tx[:, k]
+            delay[k] = finddelay(np.real(tx[:, k]), np.real(rx[:, k]))
 
     # compensate time delay
     for k in range(nModes):
