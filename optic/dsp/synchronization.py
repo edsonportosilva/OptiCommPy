@@ -111,7 +111,7 @@ def syncDataSequences(rx, tx, param):
 
     if reference == "symbols":
         nSymb = int(np.ceil(tx_.shape[0] // SpS) + 1)
-        symb = np.zeros((nSymb, tx_.shape[1]))
+        symb = np.zeros((nSymb, tx_.shape[1]), dtype=rx.dtype)
 
         for ind in range(tx_.shape[1]):
             outSymb = tx_[tx_[:, ind] != 0, ind]
