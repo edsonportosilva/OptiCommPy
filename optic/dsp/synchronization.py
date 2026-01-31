@@ -39,7 +39,7 @@ def syncDataSequences(rx, tx, param):
     param : optic.utils.parameters object, optional
         Parameters of the synchronization process.
 
-        - param.SpS : samples per symbol of the transmitted signal. [default: 1]
+        - param.SpS : samples per symbol of the transmitted reference signal. [default: 1]
         - param.reference : type of reference for synchronization ('signal','symbols') [default: 'signal']
         - param.syncMode : use either the real part or the amplitude of the signal to syncronize [detault: 'amp']
         - param.pulseType : type of pulse shaping filter. [default: 'rrc']
@@ -50,8 +50,10 @@ def syncDataSequences(rx, tx, param):
 
     Returns
     -------
-    np.array
-        Synchronized received signal.
+    tx_ : np.array
+        Synchronized transmitted signal.
+    symb : np.array
+        Detected transmitted symbols.
 
     Notes
     -----
@@ -92,8 +94,7 @@ def syncDataSequences(rx, tx, param):
     if reference == "symbols":
         # Upsample transmitted signal
         tx = upsample(tx, SpS)
-       # tx = np.repeat(np.repeat(x, SpS, axis=0), up_x, axis=1)
-
+       
     # find repetitions of the transmitted signal to match length of received signal
     repeats = np.ceil(rx.shape[0] / tx.shape[0])
     tx_ = np.tile(tx, (int(repeats), 1))
