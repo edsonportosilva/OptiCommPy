@@ -647,8 +647,20 @@ def symbolSync(rx, tx, SpS, mode="amp"):
         tx = tx[:, swap]
 
         for k in range(nModes):
+            # apply rotation
             tx[:, k] = rot[k, swap[k]] * tx[:, k]
+
+            # calculate delay
             delay[k] = finddelay(np.real(tx[:, k]), np.real(rx[:, k]))
+
+            # check if conjugation is needed
+            cii = signal.correlate(np.imag(tx[:, k]), np.imag(rx[:, k]))
+            cii_peak = cii[np.argmax(np.abs(cii))]
+
+            if cii_peak < 0:
+                tx[:, k] =  tx[:, k].conj()
+
+        
 
     # compensate time delay
     for k in range(nModes):
