@@ -149,6 +149,7 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
         - constType : str, constellation type [default: 'qam']
         - M : int, modulation order [default: 4]
         - prgsBar : bool, flag indicating whether to display progress bar [default: True]
+        - returnResults : bool, flag indicating whether to return all results [default: False]
         - prec: data type, precision of the computations [default: np.complex64]
 
     Returns
