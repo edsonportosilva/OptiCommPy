@@ -702,10 +702,10 @@ def finddelay(x, y):
 
     # Calculate the normalized cross-correlation in the frequency domain
     R = X * np.conj(Y)
-    R /= np.abs(R) + 1e-12
+    R /= np.abs(R) + 1e-12  # Avoid division by zero
 
-    corr = np.fft.ifft(R)
-    corr = np.fft.fftshift(corr)
+    corr = np.fft.ifft(R)  # Cross-correlation in the time domain
+    corr = np.fft.fftshift(corr)  # Shift zero lag to the center of the array
 
     # The lag corresponding to the maximum correlation gives the estimated delay
     lags = np.arange(-n // 2, n // 2)
