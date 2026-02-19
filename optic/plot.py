@@ -16,20 +16,21 @@ Customized functions for plotting and vizualization (:mod:`optic.plot`)
 """
 
 """Plot utilities."""
+import copy
+import warnings
+
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from matplotlib import cm
-from matplotlib.colors import ListedColormap
 import mpl_scatter_density
 import numpy as np
-import copy
+from matplotlib import cm
+from matplotlib.animation import FuncAnimation
+from matplotlib.colors import ListedColormap
 from scipy.interpolate import interp1d
 from scipy.ndimage.filters import gaussian_filter
 
-from optic.dsp.core import pnorm, signal_power
 from optic.comm.modulation import detector
+from optic.dsp.core import pnorm, signalPower
 from optic.utils import dB2lin
-import warnings
 
 warnings.filterwarnings("ignore", r"All-NaN (slice|axis) encountered")
 
@@ -81,7 +82,7 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
             x[0] = x[0].reshape(len(x[0]), 1)
 
         nSubPts = x[0].shape[1]
-        radius = R * np.sqrt(signal_power(x[0]))
+        radius = R * np.sqrt(signalPower(x[0]))
     else:
         x = pnorm(x)
         try:
@@ -90,7 +91,7 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
             x = x.reshape(len(x), 1)
 
         nSubPts = x.shape[1]
-        radius = R * np.sqrt(signal_power(x))
+        radius = R * np.sqrt(signalPower(x))
 
     if nSubPts > 1:
         if nSubPts < 5:
@@ -170,6 +171,7 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
             plt.ylim(-radius, radius)
 
     plt.show()
+    plt.pause(0.01) # Allow the plot to update 
 
     return fig, ax
 
@@ -191,7 +193,7 @@ def constHist(symb, ax, cmap="turbo", whiteb=True):
         axis of the plot.
 
     """
-    cmap = copy.copy(cm.get_cmap(cmap))
+    cmap = copy.copy(plt.get_cmap(cmap))
     if whiteb:
         cmap.set_under(alpha=0)
 
@@ -255,7 +257,7 @@ def plotColoredConst(
     The detected symbols are determined using a detector based on the provided input symbols, noise
     variance, detection rule, and prior probabilities (if available).
     """
-    cmap = copy.copy(cm.get_cmap(cmap))
+    cmap = copy.copy(plt.get_cmap(cmap))
 
     σ2 = 1 / dB2lin(SNR)
 
@@ -273,6 +275,7 @@ def plotColoredConst(
     ax.axis("square")
     ax.set_xlabel("In-Phase (I)")
     ax.set_ylabel("Quadrature (Q)")
+    plt.pause(0.01) # Allow the plot to update 
 
     return fig, ax
 
@@ -414,6 +417,10 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             plotlabel_ = f"{plotlabel} [imag]" if plotlabel else "[imag]"
         plt.figure()
         if ptype == "fancy":
+            nsymb = y.size // SpS
+            if nsymb < 500000:
+                y = np.tile(y, int(np.ceil(500000 / nsymb)))
+
             f = interp1d(np.arange(y.size), y, kind="cubic")
 
             Nup = 40 * SpS
@@ -443,9 +450,9 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
 
         elif ptype == "fast":
             y[x == n * SpS] = np.nan
-            y[x == 0] = np.nan
+            #y[x == 0] = np.nan
 
-            plt.plot(x / SpS, y, color="blue", alpha=0.8, label=plotlabel_)
+            plt.plot(x / SpS, y, color="blue", alpha=0.85, label=plotlabel_)
             plt.xlim(min(x / SpS), max(x / SpS))
 
             if plotlabel is not None:
@@ -456,6 +463,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
         plt.title(f"eye diagram {plotlabel_}")
         plt.grid(alpha=0.15)
         plt.show()
+        plt.pause(0.01) # Allow the plot to update 
 
     return None
 
@@ -488,31 +496,34 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
 
     """
     if fig is None:
-        fig = []
-    if label is None:
-        label = []
+        fig = []  
     if not fig:
         fig = plt.figure()
-
-    if not label:
-        label = " "
-
+  
     try:
         sig.shape[1]
     except IndexError:
         sig = sig.reshape(len(sig), 1)
 
     for indMode in range(sig.shape[1]):
+        if label is None:
+            labelString = None
+        else:
+            labelString = f"{label}: Mode {str(indMode)}"
+            
         plt.psd(
             sig[:, indMode],
             Fs=Fs,
             Fc=Fc,
             NFFT=NFFT,
             sides="twosided",
-            label=f"{label}: Mode {str(indMode)}",
+            label=labelString,
         )
-    plt.legend(loc="lower left")
+        
+    if label is not None:
+        plt.legend(loc="lower left")
     plt.xlim(Fc - Fs / 2, Fc + Fs / 2)
+    
 
     return fig, plt.gca()
 

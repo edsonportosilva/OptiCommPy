@@ -6,35 +6,41 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
 .. autosummary::
    :toctree: generated/
 
-   sigPow                 -- Calculate the average power of x
-   signal_power           -- Calculate the total average power of x
-   firFilter              -- Perform FIR filtering and compensate for filter delay
-   rrcFilterTaps          -- Generate Root-Raised Cosine (RRC) filter coefficients
-   rcFilterTaps           -- Generate Raised Cosine (RC) filter coefficients
-   pulseShape             -- Generate a pulse shaping filter
-   clockSamplingInterp    -- Interpolate signal to a given sampling rate
-   quantizer              -- Quantize the input signal using a uniform quantizer 
-   lowPassFIR             -- Calculate FIR coefficients of a lowpass filter
-   decimate               -- Decimate signal
-   resample               -- Signal resampling
-   upsample               -- Upsample a signal by inserting zeros between samples
-   symbolSync             -- Synchronizer delayed sequences of symbols
-   finddelay              -- Estimate the delay between sequences of symbols
-   pnorm                  -- Normalize the average power of each componennt of x
-   gaussianComplexNoise   -- Generate complex-valued circular Gaussian noise
-   gaussianNoise          -- Generate Gaussian noise
-   phaseNoise             -- Generate realization of a random-walk phase-noise process
-   movingAverage          -- Calculate the sliding window moving average
-   delaySignal            -- Apply a time delay to a signal
-   blockwiseFFTConv       -- Calculates convolutions in the frequency domain
+   sigPow                 -- Calculate the average power of x.
+   signalPower            -- Calculate the total average power of x.
+   firFilter              -- Perform FIR filtering and compensate for filter delay.
+   rrcFilterTaps          -- Generate Root-Raised Cosine (RRC) filter coefficients.
+   rcFilterTaps           -- Generate Raised Cosine (RC) filter coefficients.
+   pulseShape             -- Generate a pulse shaping filter.
+   clockSamplingInterp    -- Interpolate signal to a given sampling rate.
+   quantizer              -- Quantize the input signal using a uniform quantizer.
+   lowPassFIR             -- Calculate FIR coefficients of a lowpass filter.
+   decimate               -- Decimate signal.
+   resample               -- Signal resampling.
+   upsample               -- Upsample a signal by inserting zeros between samples.
+   symbolSync             -- Synchronizer delayed sequences of symbols.
+   finddelay              -- Estimate the delay between sequences of symbols.
+   pnorm                  -- Normalize the average power of each componennt of x.
+   gaussianComplexNoise   -- Generate complex-valued circular Gaussian noise.
+   gaussianNoise          -- Generate Gaussian noise.
+   phaseNoise             -- Generate realization of a random-walk phase-noise process.
+   movingAverage          -- Calculate the sliding window moving average.
+   delaySignal            -- Apply a time delay to a signal.
+   blockwiseFFTConv       -- Calculates convolutions in the frequency domain.
+   freqShift              -- Applies a frequency shift to a signal.
+   calcMZM                -- Fast function to be used in the Mach-Zehnder modulator (MZM) model.
+   calcPM                 -- Fast function to be used in the phase modulator (PM) model.
 """
 
 """Digital signal processing utilities."""
 import logging as logg
+
 import numpy as np
 from numba import njit, prange
+from numpy.fft import fft, fftfreq, fftshift, ifft
 from scipy import signal
-from numpy.fft import fft, ifft, fftfreq, fftshift
+
+from optic.utils import parameters
 
 
 @njit
@@ -56,7 +62,7 @@ def sigPow(x):
     return np.mean(np.abs(x) ** 2)
 
 
-def signal_power(x):
+def signalPower(x):
     """
     Calculate the total power of x.
 
@@ -98,15 +104,22 @@ def firFilter(h, x):
     """
     try:
         x.shape[1]
+        input1D = False
     except IndexError:
+        input1D = True
+        # If x is a 1D array, reshape it to a 2D array with one column
         x = x.reshape(len(x), 1)
+
     y = x.copy()
     nModes = x.shape[1]
 
     for n in range(nModes):
-        y[:, n] = np.convolve(x[:, n], h, mode="same")
-    if y.shape[1] == 1:
-        y = y[:, 0]
+        y[:, n] = signal.fftconvolve(x[:, n], h, mode="same")
+
+    if input1D:
+        # If the input is 1D, return it as a 1D array
+        y = y.flatten()
+
     return y
 
 
@@ -199,22 +212,25 @@ def rcFilterTaps(t, alpha, Ts):
     return coeffs
 
 
-def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
+def pulseShape(param):
     """
     Generate a pulse shaping filter.
 
     Parameters
     ----------
-    pulseType : string ('rect','nrz','rrc')
-        type of pulse shaping filter.
-    SpS : int, optional
-        Number of samples per symbol of input signal. The default is 2.
-    N : int, optional
-        Number of filter coefficients. The default is 1024.
-    alpha : float, optional
-        Rolloff of RRC filter. The default is 0.1.
-    Ts : float, optional
-        Symbol period in seconds. The default is 1.
+    param : core.parameter
+        Pulse shaping parameters:
+        - param.pulseType : string ('rect','nrz','rrc','rc', 'doubinary')
+            Type of pulse shaping filter. The default is 'rrc'.
+
+        - param.SpS : int, optional
+            Number of samples per symbol of input signal. The default is 2.
+
+        - param.nFilterTaps : int, optional
+            Number of filter coefficients. The default is 1024.
+
+        - param.rollOff : float, optional
+            Rolloff of RRC filter. The default is 0.1.
 
     Returns
     -------
@@ -222,31 +238,39 @@ def pulseShape(pulseType, SpS=2, N=1024, alpha=0.1, Ts=1):
         Array of filter coefficients (normalized).
 
     """
-    fa = (1 / Ts) * SpS
+    pulseType = getattr(param, "pulseType", "rrc")
+    SpS = getattr(param, "SpS", 2)
+    nFilterTaps = getattr(param, "nFilterTaps", 256)
+    rollOff = getattr(param, "rollOff", 0.1)
 
     if pulseType == "rect":
-        filterCoeffs = np.concatenate(
+        pulse = np.concatenate(
             (np.zeros(int(SpS / 2)), np.ones(SpS), np.zeros(int(SpS / 2)))
         )
     elif pulseType == "nrz":
         t = np.linspace(-2, 2, SpS)
         Te = 1
-        filterCoeffs = np.convolve(
+        pulse = np.convolve(
             np.ones(SpS),
             2 / (np.sqrt(np.pi) * Te) * np.exp(-(t**2) / Te),
             mode="full",
         )
     elif pulseType == "rrc":
-        t = np.linspace(-N // 2, N // 2, N) * (1 / fa)
-        filterCoeffs = rrcFilterTaps(t, alpha, Ts)
-
+        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
+        pulse = rrcFilterTaps(t, rollOff, 1)
     elif pulseType == "rc":
-        t = np.linspace(-N // 2, N // 2, N) * (1 / fa)
-        filterCoeffs = rcFilterTaps(t, alpha, Ts)
+        t = np.linspace(-nFilterTaps // 2, nFilterTaps // 2, nFilterTaps) * (1 / SpS)
+        pulse = rcFilterTaps(t, rollOff, 1)
+    elif pulseType == "duobinary":
+        t = np.linspace(
+            -nFilterTaps // 2 - SpS // 2, nFilterTaps // 2 + SpS // 2, nFilterTaps
+        ) * (1 / SpS)
+        pulse = np.sinc(t)
+        pulse += np.roll(pulse, SpS)
 
-    filterCoeffs = filterCoeffs / np.sqrt(np.sum(filterCoeffs**2))
+    pulse = pulse / np.sum(pulse)
 
-    return filterCoeffs
+    return pulse
 
 
 @njit(parallel=True)
@@ -282,8 +306,9 @@ def clockSamplingInterp(x, Fs_in, Fs_out, jitter_rms=0):
     tin = np.arange(0, x.shape[0]) * inTs
     tout = np.arange(0, x.shape[0] * inTs, outTs)
 
-    jitter = np.random.normal(0, jitter_rms, tout.shape)
-    tout += jitter
+    if jitter_rms > 0:
+        jitter = np.random.normal(0, jitter_rms, tout.shape)
+        tout += jitter
 
     y = np.zeros((len(tout), x.shape[1]), dtype=x.dtype)
 
@@ -366,6 +391,8 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
             * fu
             * np.exp(-(2 / np.log(2)) * (np.pi * fu * (n - d)) ** 2)
         )
+    h = h / np.sum(h)  # Normalize the filter coefficients
+
     return h
 
 
@@ -417,12 +444,11 @@ def decimate(Ei, param):
     ----------
     Ei : np.array
         Input signal.
-    param : core.parameter
-        Decimation parameters:
+    param : optic.utils.parameters object, optional
+        Parameters of the decimation process.
 
-        - param.SpS_in  : samples per symbol of the input signal.
-
-        - param.SpS_out : samples per symbol of the output signal.
+        - param.SpSin  : samples per symbol of the input signal.
+        - param.SpSout : samples per symbol of the output signal.
 
     Returns
     -------
@@ -434,12 +460,16 @@ def decimate(Ei, param):
     [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
 
     """
+    Ei = Ei.copy()
     try:
         Ei.shape[1]
+        input1D = False
     except IndexError:
+        input1D = True
+        # If Ei is a 1D array, reshape it to a 2D array
         Ei = Ei.reshape(len(Ei), 1)
 
-    decFactor = int(param.SpS_in / param.SpS_out)
+    decFactor = int(param.SpSin / param.SpSout)
 
     # simple timing recovery
     sampDelay = np.zeros(Ei.shape[1])
@@ -448,7 +478,8 @@ def decimate(Ei, param):
     # (maximum variance sampling time)
     for k in range(Ei.shape[1]):
         a = Ei[:, k].reshape(Ei.shape[0], 1)
-        varVector = np.var(a.reshape(-1, param.SpS_in), axis=0)
+        a = np.reshape(Ei[:, k], (Ei.shape[0], 1))
+        varVector = np.var(a.reshape(-1, param.SpSin), axis=0)
         sampDelay[k] = np.where(varVector == np.amax(varVector))[0][0]
     # downsampling
     Eo = Ei[::decFactor, :].copy()
@@ -456,24 +487,28 @@ def decimate(Ei, param):
     for k in range(Ei.shape[1]):
         Ei[:, k] = np.roll(Ei[:, k], -int(sampDelay[k]))
         Eo[:, k] = Ei[0::decFactor, k]
+
+    if input1D:
+        # If the output is 1D, return it as a 1D array
+        Eo = Eo.flatten()
+
     return Eo
 
 
 def resample(Ei, param):
     """
-    Resample signal to a given sampling rate.
+    Resample signal to a desired sampling rate.
 
     Parameters
     ----------
     Ei : np.array
         Input signal.
-    param : core.parameter
-        Resampling parameters:
-            - param.Rs      : symbol rate of the signal.
+    param : optic.utils.parameters object, optional
+        Parameters of the resampling process.
 
-            - param.SpS_in  : samples per symbol of the input signal.
-
-            - param.SpS_out : samples per symbol of the output signal.
+            - param.inFs : sampling rate of the input signal [default: 2].
+            - param.outFs : sampling rate of the output signal [default: 2].
+            - param.N : order of anti-aliasing filter [default: 501].
 
     Returns
     -------
@@ -485,30 +520,35 @@ def resample(Ei, param):
     [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
 
     """
+    # check input parameters
+    N = getattr(param, "N", 501)
+    inFs = getattr(param, "inFs", 2)
+    outFs = getattr(param, "outFs", 2)
+
     try:
         Ei.shape[1]
+        input1D = False
     except IndexError:
+        input1D = True
+        # If Ei is a 1D array, reshape it to a 2D array
         Ei = Ei.reshape(len(Ei), 1)
-    nModes = Ei.shape[1]
-    inFs = param.SpS_in * param.Rs
-    outFs = param.SpS_out * param.Rs
 
-    tin = np.arange(0, Ei.shape[0]) * (1 / inFs)
-    tout = np.arange(0, Ei.shape[0] * (1 / inFs), 1 / outFs)
-
-    Eo = np.zeros((len(tout), Ei.shape[1]), dtype="complex")
     # Anti-aliasing filters:
-    N = min(Ei.shape[0], 202)
-    # hi = lowPassFIR(inFs / 2, inFs, N, typeF="rect")
-    hi = lowPassFIR(outFs / 2, inFs, N, typeF="rect")
+    if outFs < inFs:
+        N_ = min(Ei.shape[0], N)
+        hi = lowPassFIR(outFs / 2, inFs, N_, typeF="rect")
+        Ei = firFilter(hi, Ei)
 
-    Ei = firFilter(hi, Ei)
+    Eo = clockSamplingInterp(Ei, inFs, outFs)
 
-    if nModes == 1:
-        Ei = Ei.reshape(len(Ei), 1)
-    for k in range(nModes):
-        Eo[:, k] = np.interp(tout, tin, Ei[:, k])
-    # Eo = firFilter(ho, Eo)
+    if outFs > inFs:
+        N_ = min(Eo.shape[0], N)
+        ho = lowPassFIR(inFs / 2, outFs, N_, typeF="rect")
+        Eo = firFilter(ho, Eo)
+
+    if input1D:
+        # If the output is 1D, return it as a 1D array
+        Eo = Eo.flatten()
 
     return Eo
 
@@ -524,7 +564,9 @@ def symbolSync(rx, tx, SpS, mode="amp"):
     tx : np.array
         Transmitted symbol sequence.
     SpS : int
-        Samples per symbol of input signals.
+        Samples per symbol of the received signal.
+    mode : string, optional
+        Synchronization mode: "amp" (amplitude) or "real" (real part). The default is "amp".
 
     Returns
     -------
@@ -532,9 +574,29 @@ def symbolSync(rx, tx, SpS, mode="amp"):
         Transmitted sequence synchronized to rx.
 
     """
+    try:
+        rx.shape[1]
+        input1D = False
+    except IndexError:
+        input1D = True
+        # If rx is a 1D array, reshape it to a 2D array
+        rx = rx.reshape(len(rx), 1)
+
+    try:
+        tx.shape[1]
+    except IndexError:
+        # If tx is a 1D array, reshape it to a 2D array
+        tx = tx.reshape(len(tx), 1)
+
     nModes = rx.shape[1]
 
-    rx = rx[0::SpS, :]
+    if SpS > 1:
+        # decimate received signal
+        paramDec = parameters()
+        paramDec.SpSin = SpS
+        paramDec.SpSout = 1
+
+        rx = decimate(rx, paramDec)
 
     # calculate time delay
     delay = np.zeros(nModes)
@@ -545,38 +607,75 @@ def symbolSync(rx, tx, SpS, mode="amp"):
     if mode == "amp":
         for n in range(nModes):
             for m in range(nModes):
-                corrMatrix[m, n] = np.max(
-                    np.abs(signal.correlate(np.abs(tx[:, m]), np.abs(rx[:, n])))
-                )
+                abs_tx = np.abs(tx[:, m])
+                abs_tx -= np.mean(abs_tx)
+
+                abs_rx = np.abs(rx[:, n])
+                abs_rx -= np.mean(abs_rx)
+                corrMatrix[m, n] = np.max(np.abs(signal.correlate(abs_tx, abs_rx)))
+
         swap = np.argmax(corrMatrix, axis=0)
 
         tx = tx[:, swap]
 
         for k in range(nModes):
-            delay[k] = finddelay(np.abs(tx[:, k]), np.abs(rx[:, k]))
+            abs_tx = np.abs(tx[:, k])
+            abs_tx -= np.mean(abs_tx)
+            abs_rx = np.abs(rx[:, k])
+            abs_rx -= np.mean(abs_rx)
+            delay[k] = finddelay(abs_tx, abs_rx)
+
     elif mode == "real":
         for n in range(nModes):
             for m in range(nModes):
-                c1 = np.max(
-                    np.abs(signal.correlate(np.real(tx[:, m]), np.real(rx[:, n])))
-                )
-                c2 = np.max(
-                    np.abs(signal.correlate(np.real(tx[:, m]), np.imag(rx[:, n])))
-                )
-                corrMatrix[m, n] = np.max([c1, c2])
+                crr = signal.correlate(np.real(tx[:, m]), np.real(rx[:, n]))
+                cir = signal.correlate(np.imag(tx[:, m]), np.real(rx[:, n]))
 
-                if c2 > c1:
-                    rot[m, n] = np.exp(-1j * np.pi / 4)
+                crr_peak = crr[np.argmax(np.abs(crr))]
+                cir_peak = cir[np.argmax(np.abs(cir))]
+
+                crr_peak_abs = np.abs(crr_peak)
+                cir_peak_abs = np.abs(cir_peak)
+
+                corrMatrix[m, n] = np.max([crr_peak_abs, cir_peak_abs])
+
+                # handle pi/2 rotations
+                if crr_peak_abs > cir_peak_abs:
+                    if crr_peak > 0:
+                        rot[m, n] = 1
+                    else:
+                        rot[m, n] = -1
+                else:
+                    if cir_peak > 0:
+                        rot[m, n] = -1j
+                    else:
+                        rot[m, n] = 1j
 
         swap = np.argmax(corrMatrix, axis=0)
         tx = tx[:, swap]
 
         for k in range(nModes):
-            delay[k] = finddelay(np.real(rot[k, swap[k]] * tx[:, k]), np.real(rx[:, k]))
+            # apply rotation
+            tx[:, k] = rot[k, swap[k]] * tx[:, k]
+
+            # calculate delay
+            delay[k] = finddelay(np.real(tx[:, k]), np.real(rx[:, k]))
+
+            # check if conjugation is needed
+            cii = signal.correlate(np.imag(tx[:, k]), np.imag(rx[:, k]))
+            cii_peak = cii[np.argmax(np.abs(cii))]
+
+            if cii_peak < 0:
+                tx[:, k] = tx[:, k].conj()
 
     # compensate time delay
     for k in range(nModes):
         tx[:, k] = np.roll(tx[:, k], -int(delay[k]))
+
+    if input1D:
+        # If the output is 1D, return it as a 1D array
+        tx = tx.flatten()
+
     return tx
 
 
@@ -597,7 +696,24 @@ def finddelay(x, y):
         Delay between x and y, in samples.
 
     """
-    return np.argmax(np.abs(signal.correlate(x, y))) - x.shape[0] + 1
+    n = len(x) + len(y)
+    X = np.fft.fft(x, n=n)
+    Y = np.fft.fft(y, n=n)
+
+    # Calculate the normalized cross-correlation in the frequency domain
+    R = X * np.conj(Y)
+    R /= np.abs(R) + 1e-12  # Avoid division by zero
+
+    corr = np.fft.ifft(R)  # Cross-correlation in the time domain
+    corr = np.fft.fftshift(corr)  # Shift zero lag to the center of the array
+
+    # The lag corresponding to the maximum correlation gives the estimated delay
+    lags = np.arange(-n // 2, n // 2)
+    delay = lags[np.argmax(np.abs(corr))]
+
+    return delay
+
+    # return np.argmax(np.abs(signal.correlate(x, y))) - x.shape[0] + 1
 
 
 @njit
@@ -620,7 +736,26 @@ def pnorm(x):
 
 
 @njit
-def gaussianComplexNoise(shapeOut, σ2=1.0):
+def anorm(x):
+    """
+    Normalize the amplitude of each componennt of x.
+
+    Parameters
+    ----------
+    x : np.array
+        Signal.
+
+    Returns
+    -------
+    np.array
+        Signal x with each component normalized in amplitude.
+
+    """
+    return x / np.max(np.abs(x))
+
+
+@njit
+def gaussianComplexNoise(shapeOut, σ2=1.0, seed=None):
     """
     Generate complex circular Gaussian noise.
 
@@ -630,19 +765,24 @@ def gaussianComplexNoise(shapeOut, σ2=1.0):
         Shape of np.array to be generated.
     σ2 : float, optional
         Variance of the noise (default is 1).
+    seed : int, optional
+        Seed for the random number generator.
 
     Returns
     -------
     noise : np.array
         Generated complex circular Gaussian noise.
     """
+    if seed is not None:
+        np.random.seed(seed)
+
     return np.random.normal(0, np.sqrt(σ2 / 2), shapeOut) + 1j * np.random.normal(
         0, np.sqrt(σ2 / 2), shapeOut
     )
 
 
 @njit
-def gaussianNoise(shapeOut, σ2=1.0):
+def gaussianNoise(shapeOut, σ2=1.0, seed=None):
     """
     Generate Gaussian noise.
 
@@ -652,17 +792,22 @@ def gaussianNoise(shapeOut, σ2=1.0):
         Shape of np.array to be generated.
     σ2 : float, optional
         Variance of the noise (default is 1).
+    seed : int, optional
+        Seed for the random number generator.
 
     Returns
     -------
     noise : np.array
         Generated Gaussian noise.
     """
+    if seed is not None:
+        np.random.seed(seed)
+
     return np.random.normal(0, np.sqrt(σ2), shapeOut)
 
 
 @njit
-def phaseNoise(lw, Nsamples, Ts):
+def phaseNoise(lw, Nsamples, Ts, seed=None):
     """
     Generate realization of a random-walk phase-noise process.
 
@@ -674,6 +819,8 @@ def phaseNoise(lw, Nsamples, Ts):
         number of samples to be draw.
     Ts : scalar
         sampling period.
+    seed : int, optional
+        Seed for the random number generator.
 
     Returns
     -------
@@ -685,6 +832,9 @@ def phaseNoise(lw, Nsamples, Ts):
     [1] M. Seimetz, High-Order Modulation for Optical Fiber Transmission. em Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
+    if seed is not None:
+        np.random.seed(seed)
+
     σ2 = 2 * np.pi * lw * Ts
     phi = np.zeros(Nsamples)
 
@@ -700,14 +850,14 @@ def movingAverage(x, N):
 
     Parameters
     ----------
-    x : numpy.np.array
+    x : np.array
         Input 2D array with shape (M, N), where M is the number of samples and N is the number of columns.
     N : int
         Size of the sliding window.
 
     Returns
     -------
-    numpy.np.array
+    np.array
         2D array containing the sliding window moving averages along each column.
 
     Notes
@@ -716,6 +866,13 @@ def movingAverage(x, N):
     of the moving average and the original signal.
 
     """
+    try:
+        x.shape[1]
+        input1D = False
+    except IndexError:
+        x = x.reshape(len(x), 1)
+        input1D = True
+
     nCol = x.shape[1]
     y = np.zeros(x.shape, dtype=x.dtype)
 
@@ -728,8 +885,12 @@ def movingAverage(x, N):
 
         # Calculate moving average using convolution
         h = np.ones(N) / N
-        ma = np.convolve(padded_x, h, "same")
+        # ma = np.convolve(padded_x, h, "same")
+        ma = signal.fftconvolve(padded_x, h, "same")
         y[:, indCol] = ma[startInd:endInd]
+
+    if input1D:
+        y = y.flatten()
 
     return y
 
@@ -740,7 +901,7 @@ def delaySignal(sig, delay, Fs=1, NFFT=None):
 
     Parameters
     ----------
-    sig : array_like
+    sig : ndarray
         The input signal.
     delay : float
         The time delay to apply to the signal (in seconds).
@@ -753,7 +914,7 @@ def delaySignal(sig, delay, Fs=1, NFFT=None):
 
     Returns
     -------
-    array_like
+    ndarray
         The delayed signal.
     """
     # Calculate the length of the signal
@@ -777,6 +938,62 @@ def delaySignal(sig, delay, Fs=1, NFFT=None):
     delayedSig = np.roll(delayedSig, -1)
 
     return delayedSig[:N]
+
+
+def iqMixing(sig, param):
+    """
+    Add IQ mixing to a signal.
+
+    Parameters
+    ----------
+    sig : ndarray
+        Input signal.
+    param : object, optional
+        Object containing parameters for IQ mixing.
+
+        ampImb : float, optional
+            Amplitude imbalance parameter in dB.
+            Default is 0.
+        phaseImb : float, optional
+            Phase imbalance parameter (in radians).
+            Default is 0.
+        timeSkew : float, optional
+            Skewness parameter for I component.
+            Default is 0.
+        Fs : float, optional
+            Sampling frequency.
+            Default is None.
+
+    Returns
+    -------
+    ndarray
+        IQ-mixed signal.
+    """
+    # check input parameters
+    ampImb = getattr(param, "ampImb", 0)
+    phaseImb = getattr(param, "phaseImb", 0)
+    timeSkew = getattr(param, "timeSkew", 0)
+    Fs = getattr(param, "Fs", None)
+
+    if Fs is None:
+        logg.error("Sampling frequency not provided.")
+
+    # IQ-imbalance
+    ampImb = 10 ** (ampImb / 20) - 1  # convert from dB to linear scale
+    k1 = (1 - ampImb) * np.exp(1j * phaseImb / 2) / 2 + (1 + ampImb) * np.exp(
+        -1j * phaseImb / 2
+    ) / 2
+    k2 = (1 - ampImb) * np.exp(-1j * phaseImb / 2) / 2 - (1 + ampImb) * np.exp(
+        1j * phaseImb / 2
+    ) / 2
+    sig_ = k1 * sig + k2 * np.conj(sig)
+
+    # IQ-skew
+    delay = timeSkew / 2
+    sI = delaySignal(np.real(sig_), -delay, Fs).real
+    sQ = delaySignal(np.imag(sig_), delay, Fs).real
+
+    return sI + 1j * sQ
 
 
 def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
@@ -856,3 +1073,77 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
         return y[D:-padLen]
     else:
         return y[D:-padLen].real
+
+
+@njit
+def freqShift(x, deltaF, Fs):
+    """
+    Frequency shift of a signal.
+
+    Parameters
+    ----------
+    x : np.array
+        Input signal.
+    deltaF : float
+        Frequency shift (Hz).
+    Fs : float
+        Sampling frequency (Hz).
+
+    Returns
+    -------
+    y : np.array
+        Frequency shifted signal.
+
+    """
+    t = np.arange(len(x)) * (1 / Fs)
+    y = x * np.exp(1j * 2 * np.pi * deltaF * t)
+
+    return y
+
+
+@njit
+def calcMZM(Ai, Vpi, u, Vb):
+    """
+    Fast function to calculate the Mach-Zehnder modulator (MZM) model.
+
+    Parameters
+    ----------
+    Ai : float
+        Amplitude of the input signal.
+    Vpi : float
+        Half-wave voltage of the MZM.
+    u : float
+        DC bias voltage.
+    Vb : float
+        Voltage applied to the MZM.
+
+    Returns
+    -------
+    float
+        Output signal after modulation.
+    """
+    return Ai * np.cos(0.5 / Vpi * (u + Vb) * np.pi)
+
+
+@njit
+def calcPM(Ai, Vpi, u):
+    """
+    Fast function to calculate the phase modulator (PM) model.
+
+    Parameters
+    ----------
+    Ai : float
+        Amplitude of the input signal.
+    Vpi : float
+        Half-wave voltage of the PM.
+    u : float
+        DC bias voltage.
+    Vb : float
+        Voltage applied to the PM.
+
+    Returns
+    -------
+    float
+        Output signal after modulation.
+    """
+    return Ai * np.exp(1j * (u / Vpi) * np.pi)

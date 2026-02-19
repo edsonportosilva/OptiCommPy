@@ -11,7 +11,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 
 </p>
 
-![PyPI](https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package) ![PyPI - Downloads](https://img.shields.io/pypi/dm/OptiCommPy) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11450597.svg)](https://doi.org/10.5281/zenodo.11450597) [![DOI](https://joss.theoj.org/papers/10.21105/joss.06600/status.svg)](https://doi.org/10.21105/joss.06600)
+![PyPI](https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package) ![PyPI - Downloads](https://img.shields.io/pypi/dm/OptiCommPy) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11450597.svg)](https://doi.org/10.5281/zenodo.11450597) [![DOI](https://joss.theoj.org/papers/10.21105/joss.06600/status.svg)](https://doi.org/10.21105/joss.06600)[![PyPI Downloads](https://static.pepy.tech/personalized-badge/opticommpy?period=total&units=NONE&left_color=GRAY&right_color=GREEN&left_text=PyPI+Downloads)](https://pepy.tech/projects/opticommpy)
 
 
 ## Available features
@@ -24,9 +24,10 @@ This repository is a Python-based framework to simulate systems, subsystems, and
   - *Matched filtering.*
   - *Clock recovery.*
   - *Electronic chromatic dispersion compensation (EDC)*.
-  - *Several NxN MIMO adaptive equalization algorithms*.
+  - *Several $`N\times N`$ MIMO adaptive equalization algorithms*.
   - *Carrier phase recovery algorithms.* 
-* For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the core DSP functions.  
+* Functions to implement forward error correction (FEC) encoders and decoders.
+* For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the code.  
 * Evaluate transmission performance with metrics such as:
   - *Bit-error-rate* (BER).
   - *Symbol-error-rate* (SER).
@@ -38,11 +39,20 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 
 ## How can I contribute?
 
-If you want to contribute to this project, implement the feature you want and send me a pull request. If you want to suggest new features or discuss anything related to OptiCommPy, please get in touch with me (edsonporto88@gmail.com).
+* If you want to contribute to this project:
+  - Create a new issue in the GitHub repository to discuss the feature you want to implement.
+  - Fork the repository and create a new branch.
+  - Make sure you have the latest version of the code.
+  - Check the conventions adopted in the code writing (e.g. naming conventions, docstrings, etc.).
+  - Remember to write an example of usage for the new feature you are implementing.
+  - After the process is finished, send a pull request. 
+
+* If you want to suggest or discuss anything related to OptiCommPy, please get in touch via e-mail
+(edsonporto88@gmail.com).
 
 ## Requirements/Dependencies
 
--  python>=3.2
+-  python>=3.10
 -  numpy>=1.24.4
 -  scipy>=1.13.0
 -  matplotlib>=3.7.0
@@ -53,6 +63,7 @@ If you want to contribute to this project, implement the feature you want and se
 -  sphinx-rtd-theme>=1.2.2
 -  nbsphinx>=0.9.3
 -  nbsphinx-link>=1.3.0
+-  prettytable>=3.16.0
 -  cupy-cuda12x >= 13.1.0 (optional, in case GPU processing is desired)
 
 ## Installation

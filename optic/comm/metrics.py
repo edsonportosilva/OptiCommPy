@@ -24,14 +24,14 @@ import logging as logg
 from collections import defaultdict
 
 import numpy as np
-from numba import njit, prange
-from scipy.special import erf
-from scipy.integrate import dblquad
 import scipy.constants as const
+from numba import njit, prange
+from scipy.integrate import dblquad
+from scipy.special import erf
 
+from optic.comm.modulation import demodulateGray, grayMapping, minEuclid
+from optic.dsp.core import pnorm, signalPower
 from optic.utils import dB2lin
-from optic.dsp.core import pnorm, signal_power
-from optic.comm.modulation import grayMapping, demodulateGray, minEuclid
 
 
 def bert(Irx, bitsTx=None, seed=123):
@@ -108,7 +108,7 @@ def bert(Irx, bitsTx=None, seed=123):
     return BER, Q
 
 
-def fastBERcalc(rx, tx, M, constType):
+def fastBERcalc(rx, tx, M, constType, px=None):
     """
     Monte Carlo BER/SER/SNR calculation.
 
@@ -122,6 +122,8 @@ def fastBERcalc(rx, tx, M, constType):
         Modulation order.
     constType : string
         Modulation type: 'qam', 'psk', 'pam' or 'ook'.
+    px : (M, 1) np.array
+        Prior symbol probabilities.
 
     Returns
     -------
@@ -140,9 +142,20 @@ def fastBERcalc(rx, tx, M, constType):
     if M != 2 and constType == "ook":
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
+
+    # constellation parameters
+    if px is None:
+        px = []
+    if len(px) == 0:  # if px is not defined
+        px = 1 / M * np.ones(M)  # assume uniform distribution
+
     # constellation parameters
     constSymb = grayMapping(M, constType)
-    Es = np.mean(np.abs(constSymb) ** 2)
+    Es = np.sum(np.abs(constSymb) ** 2 * px)
+    
+    # make copies of inputs 
+    tx = tx.copy()
+    rx = rx.copy()
 
     # We want all the signal sequences to be disposed in columns:
     try:
@@ -172,7 +185,7 @@ def fastBERcalc(rx, tx, M, constType):
 
         # estimate SNR of the received constellation
         SNR[k] = 10 * np.log10(
-            signal_power(tx[:, k]) / signal_power(rx[:, k] - tx[:, k])
+            signalPower(tx[:, k]) / signalPower(rx[:, k] - tx[:, k])
         )
     for k in range(nModes):
         brx = demodulateGray(np.sqrt(Es) * rx[:, k], M, constType)
@@ -481,8 +494,8 @@ def calcEVM(symb, M, constType, symbTx=None):
         Sequence of noisy symbols.
     M : int
         Constellation order.
-    constType : TYPE
-        DESCRIPTION.
+    constType : string
+        Modulation type: 'pam', 'qam' or 'psk'
     symbTx : np.array, optional
         Sequence of transmitted symbols (noiseless). The default is [].
 
@@ -700,7 +713,7 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
     [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
     """
     constSymb = grayMapping(M, constType)  # get constellation
-    Es = signal_power(constSymb)  # calculate average symbol energy
+    Es = signalPower(constSymb)  # calculate average symbol energy
     constSymb = constSymb / np.sqrt(Es)  # normalize average symbol energy
 
     σ = np.sqrt((1 / 2) * 1 / dB2lin(SNR))  # noise variance per dimension

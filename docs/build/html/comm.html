@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="English" >
+<html class="writer-html5" lang="English">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Digital Communications Utilities &mdash; OptiCommPy 0.6.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Digital Communications Utilities &mdash; OptiCommPy alpha 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -17,11 +19,11 @@
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="optic.comm.modulation.pamConst" href="generated/optic.comm.modulation.pamConst.html" />
+    <link rel="next" title="optic.comm.modulation.grayCode" href="generated/optic.comm.modulation.grayCode.html" />
     <link rel="prev" title="Simulation of coherent WDM transmission" href="test_WDM_transmission.html" /> 
 </head>
 
@@ -37,7 +39,7 @@
             OptiCommPy
           </a>
               <div class="version">
-                0.6
+                0.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -56,6 +58,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Digital Communications Utilities</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#digital-modulation-utilities-optic-comm-modulation">Digital modulation utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.modulation</span></code>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.grayCode.html">optic.comm.modulation.grayCode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.grayMapping.html">optic.comm.modulation.grayMapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.pamConst.html">optic.comm.modulation.pamConst</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.qamConst.html">optic.comm.modulation.qamConst</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.pskConst.html">optic.comm.modulation.pskConst</a></li>
@@ -77,6 +81,12 @@
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.theoryBER.html">optic.comm.metrics.theoryBER</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.theoryMI.html">optic.comm.metrics.theoryMI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.calcLinOSNR.html">optic.comm.metrics.calcLinOSNR</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sources-of-discrete-sequences-optic-comm-sources">Sources of discrete sequences (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.sources</span></code>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.sources.bitSource.html">optic.comm.sources.bitSource</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.sources.prbsGenerator.html">optic.comm.sources.prbsGenerator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.sources.symbolSource.html">optic.comm.sources.symbolSource</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ofdm-utilities-optic-comm-ofdm">OFDM utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.ofdm</span></code>)</a><ul>
@@ -125,10 +135,10 @@
 <h2>Digital modulation utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.modulation</span></code>)<a class="headerlink" href="#digital-modulation-utilities-optic-comm-modulation" title="Permalink to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.modulation.GrayCode.html#optic.comm.modulation.grayCode" title="optic.comm.modulation.grayCode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">grayCode</span></code></a>(n)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.modulation.grayCode.html#optic.comm.modulation.grayCode" title="optic.comm.modulation.grayCode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">grayCode</span></code></a>(n)</p></td>
 <td><p>Gray code generator.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.modulation.GrayMapping.html#optic.comm.modulation.grayMapping" title="optic.comm.modulation.grayMapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">grayMapping</span></code></a>(M, constType)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.modulation.grayMapping.html#optic.comm.modulation.grayMapping" title="optic.comm.modulation.grayMapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">grayMapping</span></code></a>(M, constType)</p></td>
 <td><p>Gray Mapping for digital modulations.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.modulation.pamConst.html#optic.comm.modulation.pamConst" title="optic.comm.modulation.pamConst"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pamConst</span></code></a>(M)</p></td>
@@ -414,7 +424,7 @@ complex plane.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.metrics.bert.html#optic.comm.metrics.bert" title="optic.comm.metrics.bert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bert</span></code></a>(Irx[, bitsTx, seed])</p></td>
 <td><p>Calculate Bit Error Rate (BER) and Q-factor for optical communication using On-Off Keying (OOK).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.metrics.fastBERcalc.html#optic.comm.metrics.fastBERcalc" title="optic.comm.metrics.fastBERcalc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fastBERcalc</span></code></a>(rx, tx, M, constType)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.metrics.fastBERcalc.html#optic.comm.metrics.fastBERcalc" title="optic.comm.metrics.fastBERcalc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fastBERcalc</span></code></a>(rx, tx, M, constType[, px])</p></td>
 <td><p>Monte Carlo BER/SER/SNR calculation.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.metrics.calcLLR.html#optic.comm.metrics.calcLLR" title="optic.comm.metrics.calcLLR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calcLLR</span></code></a>(rxSymb, σ2, constSymb, bitMap, px)</p></td>
@@ -507,7 +517,7 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>symb</strong> (<em>np.array</em>) -- Sequence of noisy symbols.</p></li>
 <li><p><strong>M</strong> (<em>int</em>) -- Constellation order.</p></li>
-<li><p><strong>constType</strong> (<em>TYPE</em>) -- DESCRIPTION.</p></li>
+<li><p><strong>constType</strong> (<em>string</em>) -- Modulation type: 'pam', 'qam' or 'psk'</p></li>
 <li><p><strong>symbTx</strong> (<em>np.array</em><em>, </em><em>optional</em>) -- Sequence of transmitted symbols (noiseless). The default is [].</p></li>
 </ul>
 </dd>
@@ -605,7 +615,7 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">fastBERcalc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">fastBERcalc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Monte Carlo BER/SER/SNR calculation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -614,6 +624,7 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <li><p><strong>tx</strong> (<em>np.array</em>) -- Transmitted symbol sequence.</p></li>
 <li><p><strong>M</strong> (<em>int</em>) -- Modulation order.</p></li>
 <li><p><strong>constType</strong> (<em>string</em>) -- Modulation type: 'qam', 'psk', 'pam' or 'ook'.</p></li>
+<li><p><strong>px</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) -- Prior symbol probabilities.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -699,6 +710,10 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <dd class="field-odd"><p>scalar</p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>The values of error probability obtained with this function are good approximations for moderate to high SNR regime (see [1]).
+All cases assume Gray mapped constellations. For low SNR values and high constellation cardinalities (Pb&gt;1e-1), the results
+should underestimate the real error probability.</p>
 <p class="rubric">References</p>
 <p>[1] Proakis, J. G., &amp; Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.</p>
 </dd></dl>
@@ -728,6 +743,105 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 </dl>
 <p class="rubric">References</p>
 <p>[1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.</p>
+</dd></dl>
+
+</section>
+<section id="sources-of-discrete-sequences-optic-comm-sources">
+<h2>Sources of discrete sequences (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.sources</span></code>)<a class="headerlink" href="#sources-of-discrete-sequences-optic-comm-sources" title="Permalink to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.sources.bitSource.html#optic.comm.sources.bitSource" title="optic.comm.sources.bitSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bitSource</span></code></a>(nbits[, mode, order, seed])</p></td>
+<td><p>Generate a sequence of bits of length <em class="xref py py-obj">nbits</em> either as a random bit sequence or a pseudo-random binary sequence (PRBS).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.sources.prbsGenerator.html#optic.comm.sources.prbsGenerator" title="optic.comm.sources.prbsGenerator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prbsGenerator</span></code></a>([order])</p></td>
+<td><p>Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.sources.symbolSource.html#optic.comm.sources.symbolSource" title="optic.comm.sources.symbolSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">symbolSource</span></code></a>(nSymbols[, M, constType, dist, ...])</p></td>
+<td><p>Generate a random symbol sequence of length nSymbols based on the specified modulation scheme and order.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">bitSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate a sequence of bits of length <em class="xref py py-obj">nbits</em> either as a random bit sequence
+or a pseudo-random binary sequence (PRBS).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nbits</strong> (<em>int</em>) -- The number of bits in the sequence.</p></li>
+<li><p><strong>mode</strong> (<em>{'random'</em><em>, </em><em>'prbs'}</em><em>, </em><em>optional</em>) -- The mode of the bit generation. If 'random', a sequence of random bits is generated.
+If 'prbs', a pseudo-random binary sequence (PRBS) is generated. Default is 'random'.</p></li>
+<li><p><strong>order</strong> (<em>int</em><em>, </em><em>optional</em>) -- The order of the PRBS generator. Only used if <em class="xref py py-obj">mode</em> is 'prbs'. If not specified, a
+default order of 23 is used.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) -- The seed for the random number generator. Only applicable when <em class="xref py py-obj">mode</em> is 'random'.
+If not provided, a random seed will be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bits</strong> -- An array of bits of length <em class="xref py py-obj">nbits</em>, either randomly generated or from a PRBS.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] Wikipedia, &quot;Pseudorandom binary sequence,&quot; <a class="reference external" href="https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence">https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence</a></p>
+<p>[2] Proakis, J. G., &amp; Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">prbsGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">23</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>order</strong> (<em>int</em>) -- The order of the PRBS sequence. Supported orders are 7, 9, 11, 13, 15, 23, 31.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bits</strong> -- A NumPy array of bits representing the PRBS sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] Wikipedia, &quot;Pseudorandom binary sequence,&quot; <a class="reference external" href="https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence">https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">symbolSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nSymbols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'qam'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uniform'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shapingFactor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate a random symbol sequence of length nSymbols based on the specified modulation scheme and order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nSymbols</strong> (<em>int</em>) -- Number of symbols to generate.</p></li>
+<li><p><strong>M</strong> (<em>int</em>) -- Modulation order. This defines the size of the constellation. Default is 4.</p></li>
+<li><p><strong>constType</strong> (<em>str</em><em>, </em><em>optional</em>) -- The type of modulation scheme. Supported types are 'qam', 'pam', 'psk', and
+'apsk'. Default is 'qam'.</p></li>
+<li><p><strong>dist</strong> (<em>str</em><em>, </em><em>optional</em>) -- The probability distribution to use for generating symbols. Can be 'uniform'
+or 'Maxwell-Boltzmann'. Default is 'uniform'.</p></li>
+<li><p><strong>shapingFactor</strong> (<em>float</em><em>, </em><em>optional</em>) -- The shaping factor used when the distribution is 'Maxwell-Boltzmann'. This
+controls the Gaussian shaping of the constellation points. Default is 0.0.</p></li>
+<li><p><strong>px</strong> (<em>array-like</em><em>, </em><em>optional</em>) -- Probability distribution of the constellation points. If <em class="xref py py-obj">None</em>, the distribution
+is determined by <em class="xref py py-obj">dist</em>. Default is <em class="xref py py-obj">None</em>.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) -- Seed for the random number generator to ensure reproducibility. Default is <em class="xref py py-obj">None</em>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>symbols</strong> -- A NumPy array of symbols randomly drawn from the specified constellation with the given probability distribution.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The function generates symbols from a specified modulation scheme and applies either a uniform or Maxwell-Boltzmann
+distribution to the constellation points. The Maxwell-Boltzmann distribution has its shape parametrized shaped by the
+<em class="xref py py-obj">shapingFactor</em>. Instead of using the default distributions, a custom probability distribution <em class="xref py py-obj">px</em> can be provided.</p>
+<p class="rubric">References</p>
+<p>[1] Junho Cho and Peter J. Winzer, &quot;Probabilistic Constellation Shaping for Optical Fiber Communications,&quot; J. Lightwave Technol. 37, 1590-1607 (2019)</p>
 </dd></dl>
 
 </section>
@@ -893,7 +1007,7 @@ its length by <em class="xref py py-obj">2*L</em>.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="test_WDM_transmission.html" class="btn btn-neutral float-left" title="Simulation of coherent WDM transmission" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="generated/optic.comm.modulation.pamConst.html" class="btn btn-neutral float-right" title="optic.comm.modulation.pamConst" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="generated/optic.comm.modulation.grayCode.html" class="btn btn-neutral float-right" title="optic.comm.modulation.grayCode" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

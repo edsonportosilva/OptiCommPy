@@ -11,7 +11,7 @@ MAINTAINER = "Edson Porto da Silva"
 MAINTAINER_EMAIL = "edsonporto88@gmail.com"
 URL = "https://github.com/edsonportosilva/OptiCommPy"
 LICENSE = "GPL-3.0 license"
-VERSION = "0.9.0"
+VERSION = "0.11.0"
 
 # This is a list of files to install, and where
 # (relative to the 'root' dir, where setup.py is)
@@ -43,7 +43,8 @@ setup(
         "mpl-scatter-density>=0.7.0",
         "sphinx-rtd-theme>=1.2.2",
         "nbsphinx>=0.9.3",
-        "nbsphinx-link>=1.3.0"
+        "nbsphinx-link>=1.3.0",
+        "prettytable>=3.16.0",
     ],
     #'package' package must contain files (see list above)
     # This dict maps the package name =to=> directories
@@ -64,5 +65,5 @@ setup(
         "Topic :: Scientific/Engineering",
         "Topic :: Software Development",
     ],
-    python_requires=">=3.2",
+    python_requires=">=3.10",
 )

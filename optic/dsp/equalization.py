@@ -6,9 +6,12 @@ DSP algorithms for equalization (:mod:`optic.dsp.equalization`)
 .. autosummary::
    :toctree: generated/
 
-   edc                 -- Electronic chromatic dispersion compensation (EDC)
-   mimoAdaptEqualizer  -- General N-by-N MIMO adaptive equalizer with several adaptive filtering algorithms available.
-   manakovDBP          -- Manakov SSF digital backpropagation (DBP) algorithm
+   edc                 -- Electronic chromatic dispersion compensation (EDC).
+   mimoAdaptEqualizer  -- General :math:`N \\times N` MIMO adaptive equalizer with several adaptive filtering algorithms available.
+   manakovDBP          -- Manakov SSF digital backpropagation (DBP) algorithm.
+   dfe                 -- Decision feedback adaptive equalizer (DFE) for SISO receivers.
+   ffe                 -- Decision-directed feedforward adaptive equalizer (FFE) for SISO receivers.
+   volterra            -- Decision-directed Volterra equalizer implementation up to 3rd order for SISO receivers.
 """
 
 """Functions for adaptive and static equalization."""
@@ -19,9 +22,10 @@ import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
-from optic.dsp.core import pnorm, blockwiseFFTConv
+
 from optic.comm.modulation import grayMapping
-from optic.models.channels import nlinPhaseRot, convergenceCondition
+from optic.dsp.core import blockwiseFFTConv, pnorm, anorm
+from optic.models.channels import convergenceCondition, nlinPhaseRot
 
 # try:
 #     from optic.dsp.coreGPU import blockwiseFFTConv
@@ -37,21 +41,15 @@ def edc(Ei, param):
     ----------
     Ei : np.array
         Input optical field.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the optical channel.
+    param : optic.utils.parameters object
+        Parameters of the optical channel.
 
         - param.L: total fiber length [km][default: 50 km]
-
         - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: sampling frequency [Hz] [default: []]
-
         - param.Rs: symbol rate [baud] [default: 32e9]
-
         - param.NfilterCoeffs: number of filter coefficients [default: []]
-
         - param.Nfft: FFT size [default: []]
 
     Returns
@@ -74,9 +72,11 @@ def edc(Ei, param):
 
     try:
         nModes = Ei.shape[1]
+        input1D = False
     except IndexError:
         nModes = 1
         Ei = Ei.reshape(Ei.size, nModes)
+        input1D = True
 
     # check input parameters
     L = getattr(param, "L", 50)
@@ -115,12 +115,16 @@ def edc(Ei, param):
             Ei[:, indMode], H, NFFT=Nfft, freqDomainFilter=True
         )
 
+    if input1D:
+        # If the input was 1D, return a 1D array
+        Eo = Eo.flatten()
+
     return Eo
 
 
 def mimoAdaptEqualizer(x, param=None, dx=None):
     """
-    N-by-N MIMO adaptive equalizer.
+    General :math:`N \\times N` MIMO adaptive equalizer with several adaptive filtering algorithms available.
 
     Parameters
     ----------
@@ -128,36 +132,25 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
         Input array.
     dx : np.array, optional
         Syncronized exact symbol sequence corresponding to the received input array x.
-    param : object, optional
+    param : optic.utils.parameters object, optional
         Parameter object containing the following attributes:
 
-        - numIter : int, number of pre-convergence iterations (default: 1)
-
-        - nTaps : int, number of filter taps (default: 15)
-
-        - mu : float or list of floats, step size parameter(s) (default: [1e-3])
-
-        - lambdaRLS : float, RLS forgetting factor (default: 0.99)
-
-        - SpS : int, samples per symbol (default: 2)
-
-        - H : np.array, coefficient matrix (default: [])
-
-        - L : int or list of ints, length of the output of the training section (default: [])
-
-        - Hiter : list, history of coefficient matrices (default: [])
-
-        - storeCoeff : bool, flag indicating whether to store coefficient matrices (default: False)
-
-        - runWL: bool, flag indicating whether to run the equalizer in the widely-linear mode. (default: False)
-
-        - alg : str or list of strs, specifying the equalizer algorithm(s) (default: ['nlms'])
-
-        - constType : str, constellation type (default: 'qam')
-
-        - M : int, modulation order (default: 4)
-
-        - prgsBar : bool, flag indicating whether to display progress bar (default: True)
+        - numIter : int, number of pre-convergence iterations [default: 1]
+        - nTaps : int, number of filter taps [default: 15]
+        - mu : float or list of floats, step size parameter(s) [default: [1e-3]]
+        - lambdaRLS : float, RLS forgetting factor [default: 0.99]
+        - SpS : int, samples per symbol [default: 2]
+        - H : np.array, coefficient matrix [default: []]
+        - L : int or list of ints, length of the output of the training section [default: []]
+        - Hiter : list, history of coefficient matrices [default: []]
+        - storeCoeff : bool, flag indicating whether to store coefficient matrices [default: False]
+        - runWL: bool, flag indicating whether to run the equalizer in the widely-linear mode [default: False]
+        - alg : str or list of strs, specifying the equalizer algorithm(s) [default: ['nlms']]
+        - constType : str, constellation type [default: 'qam']
+        - M : int, modulation order [default: 4]
+        - prgsBar : bool, flag indicating whether to display progress bar [default: True]
+        - returnResults : bool, flag indicating whether to return all results [default: False]
+        - prec: data type, precision of the computations [default: np.complex64]
 
     Returns
     -------
@@ -204,8 +197,10 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     alg = getattr(param, "alg", ["nlms"])
     constType = getattr(param, "constType", "qam")
     M = getattr(param, "M", 4)
+    shapingFactor = getattr(param, "shapingFactor", 0)
     prgsBar = getattr(param, "prgsBar", True)
     returnResults = getattr(param, "returnResults", False)
+    prec = getattr(param, "prec", np.complex64)
 
     # We want all the signal sequences to be disposed in columns:
     if not len(dx):
@@ -213,8 +208,10 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     try:
         if x.shape[1] > x.shape[0]:
             x = x.T
+        input1D = False
     except IndexError:
         x = x.reshape(len(x), 1)
+        input1D = True
     try:
         if dx.shape[1] > dx.shape[0]:
             dx = dx.T
@@ -222,15 +219,26 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
         dx = dx.reshape(len(dx), 1)
     nModes = int(x.shape[1])  # number of sinal modes (order of the MIMO equalizer)
 
+    dx = dx.astype(prec)
+    x = x.astype(prec)
+    mu = np.array(mu).astype(np.float32)
+    lambdaRLS = np.array([lambdaRLS]).astype(prec)[0]
+
     Lpad = int(np.floor(nTaps / 2))
-    zeroPad = np.zeros((Lpad, nModes), dtype="complex")
+    zeroPad = np.zeros((Lpad, nModes), dtype=prec)
     x = np.concatenate(
         (zeroPad, x, zeroPad)
     )  # pad start and end of the signal with zeros
 
     # Defining training parameters:
-    constSymb = grayMapping(M, constType)  # constellation
-    constSymb = pnorm(constSymb)  # normalized constellation symbols
+    constSymb = grayMapping(M, constType).astype(prec)  # constellation
+
+    # Calculate MB distribution
+    px = np.exp(-shapingFactor * np.abs(constSymb) ** 2)
+    px = px / np.sum(px)
+
+    # normalize reference constellation accouting for the probability mass function
+    constSymb /= np.sqrt(np.sum(np.abs(constSymb) ** 2 * px))
 
     totalNumSymb = int(np.fix((len(x) - nTaps) / SpS + 1))
 
@@ -239,20 +247,20 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
             totalNumSymb
         ]  # Length of the output (1 sample/symbol) of the training section
     if not H:  # if H is not defined
-        H = np.zeros((nModes**2, nTaps), dtype="complex")
+        H = np.zeros((nModes**2, nTaps), dtype=prec)
 
         for initH in range(nModes):  # initialize filters' taps
             H[initH + initH * nModes, int(np.floor(H.shape[1] / 2))] = (
-                1  # Central spike initialization
+                1 + 1j * 0  # Central spike initialization
             )
     if not H_:  # if H_ is not defined
-        H_ = np.zeros((nModes**2, nTaps), dtype="complex")
+        H_ = np.zeros((nModes**2, nTaps), dtype=prec)
 
     logg.info(f"Running adaptive equalizer...")
     # Equalizer training:
     if type(alg) == list:
-        yEq = np.zeros((totalNumSymb, x.shape[1]), dtype="complex")
-        errSq = np.zeros((totalNumSymb, x.shape[1])).T
+        yEq = np.zeros((totalNumSymb, x.shape[1]), dtype=prec)
+        errSq = np.zeros((totalNumSymb, x.shape[1]), dtype=prec).T
 
         nStart = 0
         for indstage, runAlg in enumerate(alg):
@@ -280,10 +288,11 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
                             runWL,
                             runAlg,
                             constSymb,
+                            prec,
                         )
                     )
                     logg.info(
-                        f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd])
+                        f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]).real
                     )
             else:
                 yEq[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
@@ -300,16 +309,23 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
                     runWL,
                     runAlg,
                     constSymb,
+                    prec,
                 )
-                logg.info(f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]))
+                logg.info(
+                    f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]).real
+                )
             nStart = nEnd
     else:
         for indIter in tqdm(range(numIter), disable=not (prgsBar)):
             logg.info(f"{alg}training iteration #%d", indIter)
             yEq, H, errSq, Hiter = coreAdaptEq(
-                x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb
+                x, dx, SpS, H, L, mu, nTaps, storeCoeff, alg, constSymb, prec
             )
-            logg.info(f"{alg}MSE = %.6f.", np.nanmean(errSq))
+            logg.info(f"{alg}MSE = %.6f.", np.nanmean(errSq).real)
+
+    if input1D:
+        # If the input was 1D, return a 1D array
+        yEq = yEq.flatten()
 
     if returnResults:
         if runWL:
@@ -320,9 +336,9 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
         return yEq
 
 
-@njit
+@njit(fastmath=True)
 def coreAdaptEq(
-    x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, alg, constSymb
+    x, dx, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, alg, constSymb, prec
 ):
     """
     Adaptive equalizer core processing function
@@ -355,6 +371,8 @@ def coreAdaptEq(
         Equalizer algorithm.
     constSymb : np.array
         Constellation symbols.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -376,32 +394,38 @@ def coreAdaptEq(
     indMode = np.arange(0, nModes)
 
     errSq = np.empty((nModes, L))
+    x = x.astype(prec)
+    H = H.astype(prec)
+    H_ = H_.astype(prec)
+
     yEq = x[:L].copy()
     yEq[:] = np.nan
-    outEq = np.array([[0 + 1j * 0]]).repeat(nModes).reshape(nModes, 1)
+    outEq = np.array([[0 + 1j * 0]]).repeat(nModes).reshape(nModes, 1).astype(prec)
 
     if storeCoeff:
         Hiter = (
             np.array([[0 + 1j * 0]])
             .repeat((nModes**2) * nTaps * L)
             .reshape(nModes**2, nTaps, L)
+            .astype(prec)
         )
     else:
         Hiter = (
             np.array([[0 + 1j * 0]])
             .repeat((nModes**2) * nTaps)
             .reshape(nModes**2, nTaps, 1)
+            .astype(prec)
         )
     if alg == "rls":
-        Sd = np.eye(nTaps, dtype=np.complex128)
+        Sd = np.eye(nTaps, dtype=prec)
         a = Sd.copy()
         for _ in range(nTaps - 1):
             Sd = np.concatenate((Sd, a))
     # Radii cma, rde
     Rcma = (
         np.mean(np.abs(constSymb) ** 4) / np.mean(np.abs(constSymb) ** 2)
-    ) * np.ones((1, nModes)) + 1j * 0
-    Rrde = np.unique(np.abs(constSymb))
+    ) * np.ones((1, nModes)).astype(prec)
+    Rrde = np.unique(np.abs(constSymb)).astype(prec)
 
     for ind in range(L):
         outEq[:] = 0
@@ -415,9 +439,8 @@ def coreAdaptEq(
                 H[indMode + N * nModes, :] @ inEq
             )  # add contribution from the Nth mode to the equalizer's output
             if runWL:
-                outEq += H_[indMode + N * nModes, :] @ np.conj(
-                    inEq
-                )  # add augmented contribution from the Nth mode to the equalizer's output
+                outEq += H_[indMode + N * nModes, :] @ inEq.conjugate()
+                # add augmented contribution from the Nth mode to the equalizer's output
 
         yEq[ind, :] = outEq.T
 
@@ -425,31 +448,31 @@ def coreAdaptEq(
         # algorithm and save squared error:
         if alg == "nlms":
             H, H_, errSq[:, ind] = nlmsUp(
-                x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL
+                x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL, prec
             )
         elif alg == "cma":
             H, H_, errSq[:, ind] = cmaUp(
-                x[indIn, :], Rcma, outEq, mu, H, H_, nModes, runWL
+                x[indIn, :], Rcma, outEq, mu, H, H_, nModes, runWL, prec
             )
         elif alg == "dd-lms":
             H, H_, errSq[:, ind] = ddlmsUp(
-                x[indIn, :], constSymb, outEq, mu, H, H_, nModes, runWL
+                x[indIn, :], constSymb, outEq, mu, H, H_, nModes, runWL, prec
             )
         elif alg == "rde":
             H, H_, errSq[:, ind] = rdeUp(
-                x[indIn, :], Rrde, outEq, mu, H, H_, nModes, runWL
+                x[indIn, :], Rrde, outEq, mu, H, H_, nModes, runWL, prec
             )
         elif alg == "da-rde":
             H, H_, errSq[:, ind] = dardeUp(
-                x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL
+                x[indIn, :], dx[ind, :], outEq, mu, H, H_, nModes, runWL, prec
             )
         elif alg == "rls":
             H, Sd, errSq[:, ind] = rlsUp(
-                x[indIn, :], dx[ind, :], outEq, lambdaRLS, H, Sd, nModes
+                x[indIn, :], dx[ind, :], outEq, lambdaRLS, H, Sd, nModes, prec
             )
         elif alg == "dd-rls":
             H, Sd, errSq[:, ind] = ddrlsUp(
-                x[indIn, :], constSymb, outEq, lambdaRLS, H, Sd, nModes
+                x[indIn, :], constSymb, outEq, lambdaRLS, H, Sd, nModes, prec
             )
         elif alg == "static":
             errSq[:, ind] = errSq[:, ind - 1]
@@ -465,8 +488,8 @@ def coreAdaptEq(
     return yEq, H, H_, errSq, Hiter
 
 
-@njit
-def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
+@njit(fastmath=True)
+def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the NLMS algorithm.
 
@@ -488,6 +511,8 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
         Number of modes.
     runWL: bool
         Run widely-linear mode.
+    prec: data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -502,7 +527,7 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
     indMode = np.arange(0, nModes)
     err = dx - outEq.T  # calculate output error for the NLMS algorithm
 
-    errDiag = np.diag(err[0])  # define diagonal matrix from error array
+    errDiag = np.diag(err[0]).astype(prec)  # define diagonal matrix from error array
 
     # update equalizer taps
     for N in range(nModes):
@@ -512,15 +537,15 @@ def nlmsUp(x, dx, outEq, mu, H, H_, nModes, runWL):
             inAdapt.repeat(nModes).reshape(len(x), -1).T
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
-            mu * errDiag @ np.conj(inAdaptPar)
+            mu * errDiag @ inAdaptPar.conjugate()
         )  # gradient descent update
         if runWL:
             H_[indUpdTaps, :] += mu * errDiag @ inAdaptPar  # gradient descent update
     return H, H_, np.abs(err) ** 2
 
 
-@njit
-def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
+@njit(fastmath=True)
+def rlsUp(x, dx, outEq, λ, H, Sd, nModes, prec):
     """
     Coefficient update with the RLS algorithm.
 
@@ -540,6 +565,8 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
         Inverse correlation matrix.
     nModes : int
         Number of modes.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -554,37 +581,43 @@ def rlsUp(x, dx, outEq, λ, H, Sd, nModes):
     nTaps = H.shape[1]
     indMode = np.arange(0, nModes)
     indTaps = np.arange(0, nTaps)
+    Sd = Sd.astype(prec)
 
     err = dx - outEq.T  # calculate output error for the NLMS algorithm
 
-    errDiag = np.diag(err[0])  # define diagonal matrix from error array
+    errDiag = np.diag(err[0]).astype(prec)  # define diagonal matrix from error array
 
     # update equalizer taps
+    Sd = Sd.astype(prec)
+
     for N in range(nModes):
         indUpdModes = indMode + N * nModes
         indUpdTaps = indTaps + N * nTaps
 
         Sd_ = Sd[indUpdTaps, :]
 
-        inAdapt = np.conj(x[:, N]).reshape(-1, 1)  # input samples
-        inAdaptPar = (
-            (inAdapt.T).repeat(nModes).reshape(len(x), -1).T
+        inAdapt = x[:, N].conjugate().reshape(-1, 1).astype(prec)  # input samples
+        inAdaptPar = ((inAdapt.T).repeat(nModes).reshape(len(x), -1).T).astype(
+            prec
         )  # expand input to parallelize tap adaptation
 
-        Sd_ = (1 / λ) * (
-            Sd_
-            - (Sd_ @ (inAdapt @ (np.conj(inAdapt).T)) @ Sd_)
-            / (λ + (np.conj(inAdapt).T) @ Sd_ @ inAdapt)
-        )
+        A = (Sd_ @ inAdapt).astype(prec)
+        B = (inAdapt.conjugate().astype(prec).T @ Sd_).astype(prec)
+        C = (inAdapt.conjugate().astype(prec).T @ A).astype(prec)
+        num = (A @ B).astype(prec)
 
-        H[indUpdModes, :] += errDiag @ (Sd_ @ inAdaptPar.T).T
+        Sd_ = ((1 / λ) * (Sd_ - num / (λ + C))).astype(prec)
+
+        Y = (Sd_ @ inAdaptPar.T).astype(prec).T
+
+        H[indUpdModes, :] += errDiag @ Y
 
         Sd[indUpdTaps, :] = Sd_
     return H, Sd, np.abs(err) ** 2
 
 
-@njit
-def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
+@njit(fastmath=True)
+def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the DD-LMS algorithm.
 
@@ -606,6 +639,8 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
         Number of modes.
     runWL: bool
         Run widely-linear mode.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -619,13 +654,15 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
     """
     indMode = np.arange(0, nModes)
     outEq = outEq.T
-    decided = np.zeros(outEq.shape, dtype=np.complex128)
+    decided = np.zeros(outEq.shape, dtype=prec)
+    x = x.astype(prec)
 
     for k in range(nModes):
         indSymb = np.argmin(np.abs(outEq[0, k] - constSymb))
         decided[0, k] = constSymb[indSymb]
     err = decided - outEq  # calculate output error for the DDLMS algorithm
 
+    err = err.astype(prec)
     errDiag = np.diag(err[0])  # define diagonal matrix from error array
 
     # update equalizer taps
@@ -636,15 +673,15 @@ def ddlmsUp(x, constSymb, outEq, mu, H, H_, nModes, runWL):
             inAdapt.repeat(nModes).reshape(len(x), -1).T
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
-            mu * errDiag @ np.conj(inAdaptPar)
+            mu * errDiag @ inAdaptPar.conjugate()
         )  # gradient descent update
         if runWL:
             H_[indUpdTaps, :] += mu * errDiag @ inAdaptPar  # gradient descent update
     return H, H_, np.abs(err) ** 2
 
 
-@njit
-def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
+@njit(fastmath=True)
+def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes, prec):
     """
     Coefficient update with the DD-RLS algorithm.
 
@@ -664,6 +701,8 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
         Inverse correlation matrix.
     nModes : int
         Number of modes.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -680,7 +719,7 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
     indTaps = np.arange(0, nTaps)
 
     outEq = outEq.T
-    decided = np.zeros(outEq.shape, dtype=np.complex128)
+    decided = np.zeros(outEq.shape, dtype=prec)
 
     for k in range(nModes):
         indSymb = np.argmin(np.abs(outEq[0, k] - constSymb))
@@ -690,31 +729,36 @@ def ddrlsUp(x, constSymb, outEq, λ, H, Sd, nModes):
     errDiag = np.diag(err[0])  # define diagonal matrix from error array
 
     # update equalizer taps
+    Sd = Sd.astype(prec)
+
     for N in range(nModes):
         indUpdModes = indMode + N * nModes
         indUpdTaps = indTaps + N * nTaps
 
         Sd_ = Sd[indUpdTaps, :]
 
-        inAdapt = np.conj(x[:, N]).reshape(-1, 1)  # input samples
-        inAdaptPar = (
-            (inAdapt.T).repeat(nModes).reshape(len(x), -1).T
+        inAdapt = x[:, N].conjugate().reshape(-1, 1).astype(prec)  # input samples
+        inAdaptPar = ((inAdapt.T).repeat(nModes).reshape(len(x), -1).T).astype(
+            prec
         )  # expand input to parallelize tap adaptation
 
-        Sd_ = (1 / λ) * (
-            Sd_
-            - (Sd_ @ (inAdapt @ (np.conj(inAdapt).T)) @ Sd_)
-            / (λ + (np.conj(inAdapt).T) @ Sd_ @ inAdapt)
-        )
+        A = (Sd_ @ inAdapt).astype(prec)
+        B = (inAdapt.conjugate().astype(prec).T @ Sd_).astype(prec)
+        C = (inAdapt.conjugate().astype(prec).T @ A).astype(prec)
+        num = (A @ B).astype(prec)
 
-        H[indUpdModes, :] += errDiag @ (Sd_ @ inAdaptPar.T).T
+        Sd_ = ((1 / λ) * (Sd_ - num / (λ + C))).astype(prec)
+
+        Y = (Sd_ @ inAdaptPar.T).astype(prec).T
+
+        H[indUpdModes, :] += errDiag @ Y
 
         Sd[indUpdTaps, :] = Sd_
     return H, Sd, np.abs(err) ** 2
 
 
-@njit
-def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
+@njit(fastmath=True)
+def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the CMA algorithm.
 
@@ -736,6 +780,8 @@ def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
         Number of modes.
     runWL: bool
         Run widely-linear mode.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -750,6 +796,7 @@ def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
     indMode = np.arange(0, nModes)
     outEq = outEq.T
     err = R - np.abs(outEq) ** 2  # calculate output error for the CMA algorithm
+    err = err.astype(prec)
 
     prodErrOut = np.diag(err[0]) @ np.diag(outEq[0])  # define diagonal matrix
 
@@ -761,15 +808,15 @@ def cmaUp(x, R, outEq, mu, H, H_, nModes, runWL):
             inAdapt.repeat(nModes).reshape(len(x), -1).T
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
-            mu * prodErrOut @ np.conj(inAdaptPar)
+            mu * prodErrOut @ inAdaptPar.conjugate()
         )  # gradient descent update
         if runWL:
             H_[indUpdTaps, :] += mu * prodErrOut @ inAdaptPar  # gradient descent update
     return H, H_, np.abs(err) ** 2
 
 
-@njit
-def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
+@njit(fastmath=True)
+def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the RDE algorithm.
 
@@ -791,6 +838,8 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
         Number of modes.
     runWL: bool
         Run widely-linear mode.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -804,7 +853,7 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
     """
     indMode = np.arange(0, nModes)
     outEq = outEq.T
-    decidedR = np.zeros(outEq.shape, dtype=np.complex128)
+    decidedR = np.zeros(outEq.shape, dtype=prec)
 
     # find closest constellation radius
     for k in range(nModes):
@@ -824,7 +873,7 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
             inAdapt.repeat(nModes).reshape(len(x), -1).T
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
-            mu * prodErrOut @ np.conj(inAdaptPar)
+            mu * prodErrOut @ inAdaptPar.conjugate()
         )  # gradient descent update
         if runWL:
             H_[indUpdTaps, :] += mu * prodErrOut @ inAdaptPar  # gradient descent update
@@ -832,8 +881,8 @@ def rdeUp(x, R, outEq, mu, H, H_, nModes, runWL):
     return H, H_, np.abs(err) ** 2
 
 
-@njit
-def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
+@njit(fastmath=True)
+def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL, prec):
     """
     Coefficient update with the data-aided RDE algorithm.
 
@@ -855,6 +904,8 @@ def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
         Number of modes.
     runWL: bool
         Run widely-linear mode.
+    prec : data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
@@ -868,7 +919,7 @@ def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
     """
     indMode = np.arange(0, nModes)
     outEq = outEq.T
-    decidedR = np.zeros(outEq.shape, dtype=np.complex128)
+    decidedR = np.zeros(outEq.shape, dtype=prec)
 
     # find exact constellation radius
     for k in range(nModes):
@@ -887,7 +938,7 @@ def dardeUp(x, dx, outEq, mu, H, H_, nModes, runWL):
             inAdapt.repeat(nModes).reshape(len(x), -1).T
         )  # expand input to parallelize tap adaptation
         H[indUpdTaps, :] += (
-            mu * prodErrOut @ np.conj(inAdaptPar)
+            mu * prodErrOut @ inAdaptPar.conjugate()
         )  # gradient descent update
         if runWL:
             H_[indUpdTaps, :] += mu * prodErrOut @ inAdaptPar  # gradient descent update
@@ -902,41 +953,25 @@ def manakovDBP(Ei, param):
     ----------
     Ei : np.array
         Input optical signal field.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the optical channel.
+    param : optic.utils.parameters object
+        Physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
-
         - param.Lspan: span length [km][default: 80 km]
-
         - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-
         - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-
         - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
         - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: simulation sampling frequency [samples/second][default: None]
-
         - param.prec: numerical precision [default: np.complex128]
-
         - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-
         - param.maxIter: max number of iter. in the trap. integration [default: 10]
-
         - param.tol: convergence tol. of the trap. integration.[default: 1e-5]
-
         - param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
-
         - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
-
         - param.prgsBar: display progress bar? bolean variable [default:True]
-
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
-
         - param.returnParameters: bool, return channel parameters [default: False]
 
 
@@ -1006,7 +1041,7 @@ def manakovDBP(Ei, param):
     # generate frequency axis
     Nfft = len(Ei)
     ω = 2 * np.pi * Fs * fftfreq(Nfft).astype(prec)
-  
+
     Ech_x = Ei[:, 0::2].T
     Ech_y = Ei[:, 1::2].T
 
@@ -1108,3 +1143,901 @@ def manakovDBP(Ei, param):
         Ech[:, 1::2] = Ech_y.T
 
     return (Ech, param) if returnParameters else Ech
+
+
+def dfe(x, dx, param):
+    """
+    Decision feedback adaptive equalizer (DFE) for SISO receivers.
+
+    Parameters
+    ----------
+    x : np.array
+        Input signal to be equalized.
+    dx : np.array
+        Desired (reference) signal.
+    param : optic.utils.parameters object
+        DFE parameters:
+
+        - param.nTapsFF: number of feedforward taps [default: 5]
+        - param.nTapsFB: number of feedback taps [default: 5]
+        - param.SpS: samples per symbol [default: 1]
+        - param.mu: step size [default: 0.0001]
+        - param.nTrain: number of training symbols [default: 1000]
+        - param.prec: precision [default: np.float32]
+        - param.M: modulation order [default: 4]
+        - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
+        - param.f: initial feedforward coeffs [default: None]
+        - param.b: initial feedback coeffs [default: None]
+        - param.trainingMode: operation mode ('data-aided', 'fulltime') [default: 'data-aided']
+        - param.preconvIters: number of pre-convergence iterations [default: 1]
+
+    Returns
+    -------
+    yEq : np.array
+        Equalized output signal.
+    f : np.array
+        Final feedforward filter coefficients.
+    b : np.array
+        Final feedback filter coefficients.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
+
+    """
+    nTapsFF = getattr(param, "nTapsFF", 5)  # number of feedforward taps
+    nTapsFB = getattr(param, "nTapsFB", 5)  # number of feedback taps
+    SpS = getattr(param, "SpS", 1)  # samples per symbol
+    mu = getattr(param, "mu", 0.0001)  # step size
+    nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
+    prec = getattr(param, "prec", np.float32)  # precision
+    M = getattr(param, "M", 4)  # modulation order
+    constType = getattr(param, "constType", "pam")  # constellation type
+    f = getattr(param, "f", None)  # initial feedforward coeffs
+    b = getattr(param, "b", None)  # initial feedback coeffs
+    trainingMode = getattr(param, "trainingMode", "data-aided")  # operation mode
+    preconvIters = getattr(param, "preconvIters", 1)  # pre-convergence iterations
+
+    constSymb = grayMapping(M, constType).astype(prec)  # constellation
+    constSymb = pnorm(constSymb)  # power-normalize constellation
+    
+    # Make copies to avoid modifying original arrays
+    x = x.copy()
+    dx = dx.copy()
+    
+    # Ensure correct data types
+    x = x.astype(prec)
+    dx = dx.astype(prec)
+    dx = dx.flatten()
+
+    # Initialize filters (center the main tap roughly in the middle of FF)
+    if f is None:
+        f = np.zeros(nTapsFF, dtype=prec)
+        f[nTapsFF//2] = 1.0
+
+    if b is None:
+        b = np.zeros(nTapsFB, dtype=prec)
+
+    x = np.pad(x, (nTapsFF // 2, nTapsFF // 2), "constant", constant_values=(0, 0))
+
+    if constType == "pam":
+        yEq, f, b, mse = realValuedDFECore(
+            x,
+            dx,
+            nTapsFF,
+            nTapsFB,
+            SpS,
+            mu,
+            nTrain,
+            prec,
+            constSymb,
+            f,
+            b,
+            trainingMode,
+            preconvIters
+        )
+    else:
+        yEq, f, b, mse = complexValuedDFECore(
+            x,
+            dx,
+            nTapsFF,
+            nTapsFB,
+            SpS,
+            mu,
+            nTrain,
+            prec,
+            constSymb,
+            f,
+            b,
+            trainingMode,
+            preconvIters
+        )
+
+    return yEq, f, b, mse
+
+
+@njit(fastmath=True)
+def realValuedDFECore(
+    x,
+    dx,
+    nTapsFF=5,
+    nTapsFB=5,
+    SpS=1,
+    mu=0.0001,
+    nTrain=1000,
+    prec=np.float32,
+    constSymb=None,
+    f=None,
+    b=None,
+    trainingMode="data-aided",
+    preconvIters=1,
+):
+    """
+    Decision feedback equalizer (DFE) core implementation.
+
+    Parameters
+    ----------
+    x : np.array
+        Input signal to be equalized.
+    dx : np.array
+        Desired (reference) signal.
+    nTapsFF : int
+        Number of feedforward taps
+    nTapsFB : int
+        Number of feedback taps
+    SpS : int
+        Samples per symbol
+    mu : float
+        Step size
+    nTrain : int
+        Number of training symbols
+    prec : data type
+        Precision
+    M : int
+        Modulation order
+    constType : str
+        Constellation type ('pam', 'qam', etc.)
+    f : np.array
+        Initial feedforward coeffs
+    b : np.array
+        Initial feedback coeffs
+    trainingMode : str
+        Operation mode ('data-aided', 'fulltime')
+    preconvIters : int
+        Number of pre-convergence iterations
+
+    Returns
+    -------
+    yEq : np.array
+        Equalized output signal.
+    f : np.array
+        Final feedforward filter coefficients.
+    b : np.array
+        Final feedback filter coefficients.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
+
+    """
+    L = len(x)  # number of input samples
+    N = int((L - nTapsFF + nTapsFF % 2) // SpS)  # number of input symbols
+    
+    # Buffers
+    xbuf = x[0:nTapsFF].astype(prec)  # past input samples
+    dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
+    yEq = np.zeros(N, dtype=prec)
+    mse = np.zeros(N, dtype=prec)
+   
+    nIter = 1
+    k = 0
+    while k < N:
+        # Compute output
+        yEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
+
+        # Reference for adaptation: training then decision-directed
+        if k < nTrain:
+            d_ref = dx[k]
+        else:
+            indSymb = np.argmin(np.abs(yEq[k] - constSymb))
+            d_ref = constSymb[indSymb]
+
+        # Error
+        ek = d_ref - yEq[k]
+        mse[k] = ek**2
+
+        if (trainingMode == "data-aided" and k < nTrain) or (
+            trainingMode == "fulltime"
+        ):
+            # LMS updates
+            f += mu * ek * xbuf
+            b += mu * ek * dbuf
+
+        # Update feedback buffer with the new decision
+        if nTapsFB > 0:
+            dbuf = np.roll(dbuf, 1)            
+            dbuf[0] = d_ref
+
+        # Update FF buffer:
+        xbuf = np.roll(xbuf, -SpS)
+        firstSample = int(k * SpS + nTapsFF)
+        lastSample = int(firstSample + SpS)
+
+        # Fill the last SpS samples
+        if lastSample < L:
+            for i in range(SpS):
+                xbuf[-SpS + i] = x[firstSample + i]
+        else:
+            for i in range(SpS):
+                xbuf[-SpS + i] = 0.0
+        
+        if k == nTrain and nIter < preconvIters:
+            k = 0  # restart pre-convergence
+            nIter += 1
+        else:
+            k += 1
+
+    return yEq, f, b, mse
+
+
+@njit(fastmath=True)
+def complexValuedDFECore(
+    x,
+    dx,
+    nTapsFF=5,
+    nTapsFB=5,
+    SpS=1,
+    mu=0.0001,
+    nTrain=1000,
+    prec=np.complex64,
+    constSymb=None,
+    f=None,
+    b=None,
+    trainingMode="data-aided",
+    preconvIters=1,
+):
+    """
+    Decision feedback equalizer (DFE) core implementation for complex-valued signals.
+
+    Parameters
+    ----------
+    x : np.array
+        Input signal to be equalized.
+    dx : np.array
+        Desired (reference) signal.
+    nTapsFF : int
+        Number of feedforward taps
+    nTapsFB : int
+        Number of feedback taps
+    SpS : int
+        Samples per symbol
+    mu : float
+        Step size
+    nTrain : int
+        Number of training symbols
+    prec : data type
+        Precision
+    constSymb : np.array
+        Constellation symbols
+    preconvIters : int
+        Number of pre-convergence iterations
+
+    Returns
+    -------
+    yEq : np.array
+        Equalized output signal.
+    f : np.array
+        Final feedforward filter coefficients.
+    b : np.array
+        Final feedback filter coefficients.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
+
+    """
+    L = len(x)  # number of input samples
+    N = int((L - nTapsFF + nTapsFF % 2) // SpS)  # number of input symbols
+    
+    # Buffers
+    xbuf = x[0:nTapsFF].astype(prec)  # past input samples
+    dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
+    yEq = np.zeros(N, dtype=prec)
+    mse = np.zeros(N, dtype=prec)
+    
+    nIter = 1
+    k = 0
+    while k < N:
+        # Compute output
+        yEq[k] = np.dot(f, xbuf) + np.dot(b, dbuf)
+
+        # Reference for adaptation: training then decision-directed
+        if k < nTrain:
+            d_ref = dx[k]
+        else:
+            indSymb = np.argmin(np.abs(yEq[k] - constSymb))
+            d_ref = constSymb[indSymb]
+
+        # Error
+        ek = d_ref - yEq[k]
+        mse[k] = np.abs(ek) ** 2
+
+        if (trainingMode == "data-aided" and k < nTrain) or (
+            trainingMode == "fulltime"
+        ):
+            # LMS updates
+            f += mu * ek * xbuf.conjugate()
+            b += mu * ek * dbuf.conjugate()
+
+        # Update feedback buffer with the new decision
+        if nTapsFB > 0:
+            dbuf = np.roll(dbuf, 1)
+            dbuf[0] = d_ref
+
+        # Update FF buffer:
+        xbuf = np.roll(xbuf, -SpS)
+        firstSample = int(k * SpS + nTapsFF)
+        lastSample = int(firstSample + SpS)
+
+        # Fill the last SpS samples
+        if lastSample < L:
+            for i in range(SpS):
+                xbuf[-SpS + i] = x[firstSample + i]
+        else:
+            for i in range(SpS):
+                xbuf[-SpS + i] = 0.0 + 0j
+
+        if k == nTrain and nIter < preconvIters:
+            k = 0  # restart pre-convergence
+            nIter += 1
+        else:
+            k += 1
+
+    return yEq, f, b, mse
+
+
+def ffe(x, dx, param):
+    """
+    Decision-directed feedforward adaptive equalizer (FFE) for SISO receivers.
+
+    Parameters
+    ----------
+    x : np.array
+        Input signal to be equalized.
+    dx : np.array
+        Desired (reference) signal.
+    param : optic.utils.parameters object
+        FFE parameters:
+
+        - param.nTaps: number of feedforward taps [default: 5]
+        - param.mu: step size [default: 0.0001]
+        - param.SpS: samples per symbol [default: 1]
+        - param.nTrain: number of training symbols [default: 1000]
+        - param.prec: precision [default: np.float32]
+        - param.M: modulation order [default: 4]
+        - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
+        - param.f: initial feedforward coeffs [default: None]
+        - param.trainingMode: operation mode ('data-aided', 'fulltime') [default: 'data-aided']
+        - param.preconvIters: number of pre-convergence iterations [default: 1]
+
+    Returns
+    -------
+    yEq : np.array
+        Equalized output signal.
+    f : np.array
+        Final feedforward filter coefficients.
+
+    References
+    ----------
+    [1] S. Haykin, "Adaptive Filter Theory," 5th ed., Pearson, 2013.
+
+    """
+    nTaps = getattr(param, "nTaps", 5)  # number of feedforward taps
+    mu = getattr(param, "mu", 0.0001)  # step size
+    SpS = getattr(param, "SpS", 1)  # samples per symbol
+    nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
+    prec = getattr(param, "prec", np.float32)  # precision
+    M = getattr(param, "M", 4)  # modulation order
+    constType = getattr(param, "constType", "pam")  # constellation type
+    f = getattr(param, "f", None)  # initial feedforward coeffs
+    trainingMode = getattr(param, "trainingMode", "data-aided")  # operation mode
+    preconvIters = getattr(param, "preconvIters", 1)  # pre-convergence iterations
+
+    constSymb = grayMapping(M, constType).astype(prec)  # constellation
+    constSymb = pnorm(constSymb)  # power-normalize constellation
+
+    # Make copies to avoid modifying original arrays
+    x = x.copy()
+    dx = dx.copy()
+
+    # Ensure correct data types
+    x = x.astype(prec)
+    dx = dx.astype(prec)
+    dx = dx.flatten()
+
+    x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
+
+    if f is None:
+        # Initialize filter (center the main tap roughly in the middle)
+        f = np.zeros(nTaps, dtype=prec)
+        f[nTaps // 2] = 1.0
+
+    if constType == "pam":
+        yEq, f, mse = realValuedFFECore(
+            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode, preconvIters
+        )
+    else:
+        yEq, f, mse = complexValuedFFECore(
+            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode, preconvIters
+        )
+
+    return yEq, f, mse
+
+
+@njit(fastmath=True)
+def realValuedFFECore(
+    x,
+    dx,
+    nTaps=5,
+    SpS=1,
+    mu=0.0001,
+    nTrain=1000,
+    prec=np.float32,
+    constSymb=None,
+    f=None,
+    trainingMode="data-aided",
+    preconvIters=1,
+):
+    """
+    Decision-directed feedforward equalizer (FFE) core implementation.
+
+    Parameters
+    ----------
+    x : np.array
+        Input signal to be equalized.
+    dx : np.array
+        Desired (reference) signal.
+    nTaps : int
+        Number of feedforward taps
+    SpS : int
+        Samples per symbol
+    mu : float
+        Step size
+    nTrain : int
+        Number of training symbols
+    prec : data type
+        Precision
+    constSymb : np.array
+        Constellation symbols
+    f : np.array
+        Initial feedforward filter coefficients
+    trainingMode : str
+        Operation mode ('data-aided', 'fulltime')
+    preconvIters : int
+        Number of pre-convergence iterations
+
+    Returns
+    -------
+    yEq : np.array
+        Equalized output signal.
+    f : np.array
+        Final feedforward filter coefficients.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
+
+    """
+    L = len(x)  # number of input samples
+    N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
+
+    # Buffer
+    yEq = np.zeros(N, dtype=prec)
+    mse = np.zeros(N, dtype=prec)
+    xbuf = x[0:nTaps].astype(prec)  # past input samples
+    
+    nIter = 1
+    k = 0
+    while k < N:
+        # Compute output
+        yEq[k] = np.dot(f, xbuf)
+
+        # Reference for adaptation: training then decision-directed
+        if k < nTrain:
+            d_ref = dx[k]
+        else:
+            indSymb = np.argmin(np.abs(yEq[k] - constSymb))
+            d_ref = constSymb[indSymb]
+
+        # Error
+        ek = d_ref - yEq[k]
+        mse[k] = ek**2
+
+        if (trainingMode == "data-aided" and k < nTrain) or (
+            trainingMode == "fulltime"
+        ):
+            # LMS update
+            f += mu * ek * xbuf
+
+        # Update FF buffer:
+        xbuf = np.roll(xbuf, -SpS)
+        firstSample = int(k * SpS + nTaps)
+        lastSample = int(firstSample + SpS)
+
+        # Fill the last SpS samples
+        if lastSample < L:
+            for i in range(SpS):
+                xbuf[-SpS + i] = x[firstSample + i]
+        else:
+            for i in range(SpS):
+                xbuf[-SpS + i] = 0.0
+
+        if k == nTrain and nIter < preconvIters:
+            k = 0  # restart pre-convergence
+            nIter += 1
+        else:
+            k += 1
+
+    return yEq, f, mse
+
+
+@njit(fastmath=True)
+def complexValuedFFECore(
+    x,
+    dx,
+    nTaps=5,
+    SpS=1,
+    mu=0.0001,
+    nTrain=1000,
+    prec=np.complex64,
+    constSymb=None,
+    f=None,
+    trainingMode="data-aided",
+    preconvIters=1,
+):
+    """
+    Decision-directed feedforward equalizer (FFE) core implementation for complex-valued signals.
+
+    Parameters
+    ----------
+    x : np.array
+        Input signal to be equalized.
+    dx : np.array
+        Desired (reference) signal.
+    nTaps : int
+        Number of feedforward taps
+    SpS : int
+        Samples per symbol
+    mu : float
+        Step size
+    nTrain : int
+        Number of training symbols
+    prec : data type
+        Precision
+    constSymb : np.array
+        Constellation symbols
+    f : np.array
+        Initial feedforward filter coefficients
+    trainingMode : str
+        Operation mode ('data-aided', 'fulltime')
+    preconvIters : int
+        Number of pre-convergence iterations
+
+    Returns
+    -------
+    yEq : np.array
+        Equalized output signal.
+    f : np.array
+        Final feedforward filter coefficients.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
+    """
+    L = len(x)  # number of input samples
+    N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
+    
+    # Buffer
+    yEq = np.zeros(N, dtype=prec)
+    mse = np.zeros(N, dtype=prec)
+    xbuf = x[0:nTaps].astype(prec)  # past input samples
+    
+    nIter = 1
+    k = 0
+    while k < N:
+        # Compute output
+        yEq[k] = np.dot(f, xbuf)
+
+        # Reference for adaptation: training then decision-directed
+        if k < nTrain:
+            d_ref = dx[k]
+        else:
+            indSymb = np.argmin(np.abs(yEq[k] - constSymb))
+            d_ref = constSymb[indSymb]
+
+        # Error
+        ek = d_ref - yEq[k]
+        mse[k] = np.abs(ek) ** 2
+
+        if (trainingMode == "data-aided" and k < nTrain) or (
+            trainingMode == "fulltime"
+        ):
+            # LMS update
+            f += mu * ek * xbuf.conjugate()
+
+        # Update FF buffer:
+        xbuf = np.roll(xbuf, -SpS)
+        firstSample = int(k * SpS + nTaps)
+        lastSample = int(firstSample + SpS)
+
+        # Fill the last SpS samples
+        if lastSample < L:
+            for i in range(SpS):
+                xbuf[-SpS + i] = x[firstSample + i]
+        else:
+            for i in range(SpS):
+                xbuf[-SpS + i] = 0.0 + 0j
+
+        if k == nTrain and nIter < preconvIters:
+            k = 0  # restart pre-convergence
+            nIter += 1
+        else:
+            k += 1
+
+    return yEq, f, mse
+
+
+def volterra(x, dx, param):
+    """
+    Decision-directed Volterra equalizer implementation up to 3rd order for SISO receivers..
+
+    Parameters
+    ----------
+    x : np.array
+        Input signal to be equalized.
+    dx : np.array
+        Desired (reference) signal.
+    param : optic.utils.parameters object
+        Volterra equalizer parameters:
+
+        - param.n1Taps: number of taps of linear part [default: 5]
+        - param.n2Taps: number of taps of quadratic part [default: 3]
+        - param.n3Taps: number of taps of cubic part [default: 2]
+        - param.h: list of initial filter coefficients [default: None]
+        - param.SpS: samples per symbol [default: 1]
+        - param.mu: step size [default: 0.001]
+        - param.nTrain: number of training symbols [default: 1000]
+        - param.order: Volterra series order (2 for quadratic) [default: 2]
+        - param.prec: precision [default: np.float32]
+        - param.M: modulation order [default: 4]
+        - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
+        - param.trainingMode: operation mode ('data-aided', 'fulltime') [default: 'data-aided']
+        - param.preconvIters: number of pre-convergence iterations [default: 1
+
+    Returns
+    -------
+    yEq : np.array
+        Equalized output signal.
+    h : list of np.array
+        Final Volterra filter coefficients [h1, h2, h3].
+
+    References
+    ----------
+    [1] Diniz, P. R., da Silva, E. A. B., & Netto, S. L. (2010). Adaptive Filtering: Algorithms and Practical Implementation. Springer Science & Business Media.
+
+    """
+    n1Taps = getattr(param, "n1Taps", 5)  # number of taps of linear part
+    n2Taps = getattr(param, "n2Taps", 3)  # number of taps of quadratic part
+    n3Taps = getattr(param, "n3Taps", 2)  # number of taps of cubic part
+    h = getattr(param, "h", None)  # initial filter coeffs
+    SpS = getattr(param, "SpS", 1)  # samples per symbol
+    mu = getattr(param, "mu", 0.001)  # step size
+    nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
+    order = getattr(param, "order", 2)  # Volterra series order
+    prec = getattr(param, "prec", np.float32)  # precision
+    M = getattr(param, "M", 4)  # modulation order
+    constType = getattr(param, "constType", "pam")  # constellation type
+    trainingMode = getattr(param, "trainingMode", "data-aided")  # operation mode
+    preconvIters = getattr(param, "preconvIters", 1)  # pre-convergence iterations
+
+    if n1Taps < n2Taps or n1Taps < n3Taps:
+        logg.error("n1Taps must be greater than or equal to n2Taps and n3Taps.")
+
+    if h is None:
+        # Initialize filters (center the main tap roughly in the middle)
+        h1 = np.zeros(n1Taps, dtype=prec)
+        h1[n1Taps // 2] = 1.0
+
+        h2 = np.zeros((n2Taps, n2Taps), dtype=prec)
+        h3 = np.zeros((n3Taps, n3Taps, n3Taps), dtype=prec)
+    else:
+        h1 = h[0]
+        h2 = h[1]
+        h3 = h[2]
+
+    constSymb = grayMapping(M, constType).astype(prec)  # constellation
+    constSymb = pnorm(constSymb)  # amplitude-normalize constellation
+
+    # Make copies to avoid modifying original arrays
+    x = x.copy()
+    dx = dx.copy()
+
+    # Ensure correct data types
+    x = x.astype(prec)
+    dx = dx.astype(prec)
+    dx = dx.flatten()
+
+    nTaps = max(n1Taps, n2Taps, n3Taps)
+
+    x = anorm(x)
+
+    x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
+
+    yEq, h1, h2, h3, mse = volterraCore(
+        x, dx, order, SpS, mu, nTrain, h1, h2, h3, prec, constSymb, trainingMode, preconvIters
+    )
+
+    h = [h1, h2, h3]
+
+    yEq = pnorm(yEq)
+
+    return yEq, h, mse
+
+
+@njit(fastmath=True)
+def volterraCore(
+    x,
+    dx,
+    order=2,
+    SpS=1,
+    mu=0.0001,
+    nTrain=1000,
+    h1=None,
+    h2=None,
+    h3=None,
+    prec=np.float32,
+    constSymb=None,
+    trainingMode="data-aided",
+    preconvIters=1,
+):
+    """
+    Decision-directed Volterra equalizer core implementation.
+
+    Parameters
+    ----------
+    x : np.array
+        Input signal to be equalized.
+    dx : np.array
+        Desired (reference) signal.
+    order : int
+        Volterra series order (2 for quadratic, 3 for cubic)
+    SpS : int
+        Samples per symbol
+    mu : float
+        Step size
+    nTrain : int
+        Number of training symbols
+    h1 : np.array
+        Initial linear filter coefficients.
+    h2 : np.array
+        Initial quadratic filter coefficients.
+    h3 : np.array
+        Initial cubic filter coefficients.
+    prec : data type
+        Precision
+    constSymb : np.array
+        Constellation symbols
+    trainingMode : str
+        Operation mode ('data-aided', 'fulltime')
+    preconvIters : int
+        Number of pre-convergence iterations
+
+    Returns
+    -------
+    yEq : np.array
+        Equalized output signal.
+    h1 : np.array
+        Final linear filter coefficients.
+    h2 : np.array
+        Final quadratic filter coefficients.
+    h3 : np.array
+        Final cubic filter coefficients.
+
+    References
+    ----------
+    [1] Diniz, P. R., da Silva, E. A. B., & Netto, S. L. (2010). Adaptive Filtering: Algorithms and Practical Implementation. Springer Science & Business Media.
+
+    """
+    n1Taps = h1.shape[0]
+    n2Taps = h2.shape[0]
+    n3Taps = h3.shape[0]
+
+    nTaps = np.max(np.array([n1Taps, n2Taps, n3Taps]))
+    L = len(x)  # number of input samples
+    N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
+
+    # initialize outputs
+    yEq = np.zeros(N, dtype=prec)
+    mse = np.zeros(N, dtype=prec)
+
+    t2 = int((n1Taps - n2Taps) // 2)
+    t3 = int((n1Taps - n3Taps) // 2)
+
+    # Buffer
+    xbuf = x[0:nTaps].astype(prec)  # past input samples
+   
+    nIter = 1
+    k = 0
+    while k < N:
+        # Compute output
+        linearPart = np.dot(h1, xbuf)
+        quadraticPart = 0.0
+        cubicPart = 0.0
+
+        for i in range(n2Taps):
+            for j in range(n2Taps):
+                quadraticPart += h2[i, j] * xbuf[t2 + i] * xbuf[t2 + j]
+
+        if order == 3:
+            for i in range(n3Taps):
+                for j in range(n3Taps):
+                    for l in range(n3Taps):
+                        cubicPart += (
+                            h3[i, j, l] * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
+                        )
+
+        yEq[k] = linearPart + quadraticPart + cubicPart
+
+        # Reference for adaptation: training then decision-directed
+        if k < nTrain:
+            d_ref = dx[k]
+        else:
+            indSymb = np.argmin(np.abs(yEq[k] - constSymb))
+            d_ref = constSymb[indSymb]
+
+        # Error
+        ek = d_ref - yEq[k]
+        mse[k] = ek**2
+
+        if (trainingMode == "data-aided" and k < nTrain) or (
+            trainingMode == "fulltime"):
+
+            # LMS updates
+
+            # Update linear coefficients
+            h1 += mu * ek * xbuf
+
+            # Update quadratic coefficients
+            for i in range(n2Taps):
+                for j in range(n2Taps):
+                    h2[i, j] += mu/2 * ek * xbuf[t2 + i] * xbuf[t2 + j]
+
+            # Update cubic coefficients
+            if order == 3:
+                for i in range(n3Taps):
+                    for j in range(n3Taps):
+                        for l in range(n3Taps):
+                            h3[i, j, l] += (
+                                mu/7 * ek * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
+                            )
+
+        # Update FF buffer:
+        xbuf = np.roll(xbuf, -SpS)
+        firstSample = int(k * SpS + nTaps)
+        lastSample = int(firstSample + SpS)
+
+        # Fill the last SpS samples
+        if lastSample < L:
+            for i in range(SpS):
+                xbuf[-SpS + i] = x[firstSample + i]
+        else:
+            for i in range(SpS):
+                xbuf[-SpS + i] = 0.0
+
+        if k == nTrain and nIter < preconvIters:
+            k = 0  # restart pre-convergence
+            nIter += 1
+        else:
+            k += 1
+
+    return yEq, h1, h2, h3, mse
