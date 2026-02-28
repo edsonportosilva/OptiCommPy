@@ -353,7 +353,7 @@ def quantizer(x, nBits=16, maxV=1, minV=-1):
     return y
 
 
-def lowPassFIR(fc, fa, N, typeF="rect"):
+def lowPassFIR(fc, fs, N, typeF="rect"):
     """
     Calculate FIR coefficients of a lowpass filter.
 
@@ -361,7 +361,7 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
     ----------
     fc : float
         Cutoff frequency.
-    fa : float
+    fs : float
         Sampling frequency.
     N : int
         Number of filter coefficients.
@@ -378,7 +378,7 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
     [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
 
     """
-    fu = fc / fa
+    fu = fc / fs
     d = (N - 1) / 2
     n = np.arange(0, N)
 
