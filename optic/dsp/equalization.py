@@ -1200,10 +1200,14 @@ def dfe(x, dx, param):
 
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
-    
+      
     # Make copies to avoid modifying original arrays
     x = x.copy()
     dx = dx.copy()
+
+    # normalize imput signal
+    x = pnorm(x)  # power-normalize input signal
+    dx = pnorm(dx)  # power-normalize desired signal
     
     # Ensure correct data types
     x = x.astype(prec)
@@ -1550,6 +1554,10 @@ def ffe(x, dx, param):
     x = x.copy()
     dx = dx.copy()
 
+    # normalize imput signal
+    x = pnorm(x)  # power-normalize input signal
+    dx = pnorm(dx)  # power-normalize desired signal
+
     # Ensure correct data types
     x = x.astype(prec)
     dx = dx.astype(prec)
@@ -1861,6 +1869,10 @@ def volterra(x, dx, param):
     # Make copies to avoid modifying original arrays
     x = x.copy()
     dx = dx.copy()
+
+    # normalize imput signal
+    x = pnorm(x)  # power-normalize input signal
+    dx = pnorm(dx)  # power-normalize desired signal
 
     # Ensure correct data types
     x = x.astype(prec)
