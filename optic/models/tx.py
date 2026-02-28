@@ -237,10 +237,14 @@ def pamTransmitter(param):
         - param.seed: seed for the random number generator [default: None].
         - param.nBits: total number of bits [default: 40000].
         - param.pulseType: pulse shape ['nrz', 'rrc'][default: 'rrc'].
-        - param.nFilterTaps: number of coefficients of the rrc filter [default: 4096].
+        - param.nFilterTaps: number of coefficients of the rrc filter [default: 4096].       
         - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
+        - param.mzmVpi: MZM Vpi [V][default: 3 V].
+        - param.mzmVb: MZM bias voltage [V][default: 1
+        - param.mzmScale: MZM modulation scale factor Vrf/Vpi [default: 0.25].
         - param.power: optical output power [dBm][default:-3 dBm].
         - param.nPolModes: number of polarization modes [default: 1].
+        - param.returnParam: whether to return the parameter object [default: False].
 
     Returns
     -------
