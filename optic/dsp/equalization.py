@@ -1179,6 +1179,11 @@ def dfe(x, dx, param):
         Final feedforward filter coefficients.
     b : np.array
         Final feedback filter coefficients.
+    
+    Notes
+    -----
+    - Training mode 'data-aided' uses the known training symbols for adaptation, while 'fulltime' continues to adapt using decision-directed mode even after the training phase.
+    - Pre-convergence iterations can help the algorithm to converge better by restarting the adaptation process after the initial training phase.
 
     References
     ----------
@@ -1318,7 +1323,7 @@ def realValuedDFECore(
         Final feedforward filter coefficients.
     b : np.array
         Final feedback filter coefficients.
-
+    
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
@@ -1530,6 +1535,11 @@ def ffe(x, dx, param):
         Equalized output signal.
     f : np.array
         Final feedforward filter coefficients.
+
+    Notes
+    -----
+    - Training mode 'data-aided' uses the known training symbols for adaptation, while 'fulltime' continues to adapt using decision-directed mode even after the training phase.
+    - Pre-convergence iterations can help the algorithm to converge better by restarting the adaptation process after the initial training phase.
 
     References
     ----------
@@ -1828,6 +1838,11 @@ def volterra(x, dx, param):
         Equalized output signal.
     h : list of np.array
         Final Volterra filter coefficients [h1, h2, h3].
+
+    Notes
+    -----
+    - Training mode 'data-aided' uses the known training symbols for adaptation, while 'fulltime' continues to adapt using decision-directed mode even after the training phase.
+    - Pre-convergence iterations can help the algorithm to converge better by restarting the adaptation process after the initial training phase.
 
     References
     ----------
