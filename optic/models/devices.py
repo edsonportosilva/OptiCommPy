@@ -32,6 +32,7 @@ from optic.dsp.core import (
     calcPM,
     clockSamplingInterp,
     delaySignal,
+    gaussianNoise,
     gaussianComplexNoise,
     iqMixing,
     lowPassFIR,
@@ -764,9 +765,9 @@ def adc(Ei, param):
     param : optic.utils.parameters object, optional
         Parameters of the ADC model.
 
-        - param.Fs_in  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
-        - param.Fs_out : sampling frequency of the output signal [samples/s][default: 1 sample/s]
-        - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [s][default: 0 s]
+        - param.inFs  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
+        - param.outFs : sampling frequency of the output signal [samples/s][default: 1 sample/s]
+        - param.jitter : jitter rms in seconds [s][default: 0 s]
         - param.nBits : number of bits used for quantization [default: 8 bits]
         - param.Vmax : maximum value for the ADC's full-scale range [V][default: 1V]
         - param.Vmin : minimum value for the ADC's full-scale range [V][default: -1V]
@@ -785,9 +786,9 @@ def adc(Ei, param):
     - If AAF is enabled, anti-aliasing filters will be applied to the input signal before resampling and to the output signal after quantization to mitigate aliasing effects.
     """
     # Check and set default values for input parameters
-    param.Fs_in = getattr(param, "Fs_in", 1)
-    param.Fs_out = getattr(param, "Fs_out", 1)
-    param.jitter_rms = getattr(param, "jitter_rms", 0)
+    param.inFs = getattr(param, "inFs", 1)
+    param.outFs = getattr(param, "outFs", 1)
+    param.jitter = getattr(param, "jitter", 0)
     param.nBits = getattr(param, "nBits", 8)
     param.ENOB = getattr(param, "ENOB", 8)
     param.Vmax = getattr(param, "Vmax", 1)
@@ -796,9 +797,9 @@ def adc(Ei, param):
     param.N = getattr(param, "N", 201)
 
     # Extract individual parameters for ease of use
-    Fs_in = param.Fs_in
-    Fs_out = param.Fs_out
-    jitter_rms = param.jitter_rms
+    inFs = param.inFs
+    outFs = param.outFs
+    jitter = param.jitter
     nBits = param.nBits
     Vmax = param.Vmax
     Vmin = param.Vmin
@@ -824,18 +825,15 @@ def adc(Ei, param):
     if AAF:
         # Anti-aliasing filters:
         Ntaps = min(Ei.shape[0], N)
-        hi = lowPassFIR(param.Fs_out / 2, param.Fs_in, Ntaps, typeF="rect")
-        ho = lowPassFIR(param.Fs_out / 2, param.Fs_out, Ntaps, typeF="rect")
-
+        hi = lowPassFIR(param.outFs / 2, param.inFs, Ntaps, typeF="rect")
+        ho = lowPassFIR(param.outFs / 2, param.outFs, Ntaps, typeF="rect")
         Ei = firFilter(hi, Ei)
 
     if np.iscomplexobj(Ei):
         # Signal interpolation to the ADC's sampling frequency
         Eo = clockSamplingInterp(
-            Ei.reshape(-1, nModes).real, Fs_in, Fs_out, jitter_rms
-        ) + 1j * clockSamplingInterp(
-            Ei.reshape(-1, nModes).imag, Fs_in, Fs_out, jitter_rms
-        )
+            Ei.reshape(-1, nModes).real, inFs, outFs, jitter
+        ) + 1j * clockSamplingInterp(Ei.reshape(-1, nModes).imag, inFs, outFs, jitter)
         # clipping to [Vmin, Vmax]
         Eo = np.clip(Eo, Vmin + 1j * Vmin, Vmax + 1j * Vmax)
 
@@ -845,7 +843,7 @@ def adc(Ei, param):
         )
     else:
         # Signal interpolation to the ADC's sampling frequency
-        Eo = clockSamplingInterp(Ei.reshape(-1, nModes), Fs_in, Fs_out, jitter_rms)
+        Eo = clockSamplingInterp(Ei.reshape(-1, nModes), inFs, outFs, jitter)
 
         # clipping to [Vmin, Vmax]
         Eo = np.clip(Eo, Vmin, Vmax)
@@ -859,17 +857,15 @@ def adc(Ei, param):
 
     # Add noise corresponding to the effective number of bits (ENOB) of the ADC
     if nBits > ENOB:
-        Pnq_ideal = (Vmax - Vmin) ** 2 / (12 * (2 ** (2 * nBits)))
-        Pnq_actual = (Vmax - Vmin) ** 2 / (12 * (2 ** (2 * ENOB)))
+        scale = Vmax - Vmin
+        Pnq_ideal = scale**2 / (12 * (2 ** (2 * nBits)))
+        Pnq_actual = scale**2 / (12 * (2 ** (2 * ENOB)))
         Pn_extra = Pnq_actual - Pnq_ideal
 
         if np.iscomplexobj(Eo):
-            noise = np.random.normal(0, np.sqrt(Pn_extra), Eo.shape)
-            +1j * np.random.normal(0, np.sqrt(Pn_extra), Eo.shape)
-            Eo += noise
+            Eo += gaussianComplexNoise(Eo.shape, 2 * Pn_extra)
         else:
-            noise = np.random.normal(0, np.sqrt(Pn_extra), Eo.shape)
-            Eo += noise
+            Eo += gaussianNoise(Eo.shape, Pn_extra)
 
     if Eo.shape[1] == 1:
         # If the output is a single column, return it as a 1D array
