@@ -27,9 +27,17 @@ import logging as logg
 import numpy as np
 import scipy.constants as const
 
-from optic.dsp.core import (calcMZM, calcPM, clockSamplingInterp, delaySignal,
-                            gaussianComplexNoise, iqMixing, lowPassFIR,
-                            phaseNoise, quantizer)
+from optic.dsp.core import (
+    calcMZM,
+    calcPM,
+    clockSamplingInterp,
+    delaySignal,
+    gaussianComplexNoise,
+    iqMixing,
+    lowPassFIR,
+    phaseNoise,
+    quantizer,
+)
 from optic.utils import dBm2W, parameters
 
 try:
@@ -770,12 +778,18 @@ def adc(Ei, param):
     Eo : ndarray
         Resampled and quantized signal.
 
+    Notes
+    -----
+    - The input signal will be clipped to the range [Vmin, Vmax] before quantization.
+    - If the effective number of bits (ENOB) is less than nBits, additional noise will be added to the output signal to model the reduced resolution of the ADC. The noise power is calculated based on the difference between the ideal quantization noise power (corresponding to nBits) and the actual quantization noise power (corresponding to ENOB).
+    - If AAF is enabled, anti-aliasing filters will be applied to the input signal before resampling and to the output signal after quantization to mitigate aliasing effects.
     """
     # Check and set default values for input parameters
     param.Fs_in = getattr(param, "Fs_in", 1)
     param.Fs_out = getattr(param, "Fs_out", 1)
     param.jitter_rms = getattr(param, "jitter_rms", 0)
     param.nBits = getattr(param, "nBits", 8)
+    param.ENOB = getattr(param, "ENOB", 8)
     param.Vmax = getattr(param, "Vmax", 1)
     param.Vmin = getattr(param, "Vmin", -1)
     param.AAF = getattr(param, "AAF", True)
@@ -790,6 +804,12 @@ def adc(Ei, param):
     Vmin = param.Vmin
     AAF = param.AAF
     N = param.N
+    ENOB = param.ENOB
+
+    if ENOB > nBits:
+        logg.warning(
+            "ENOB is greater than nBits. The effective number of bits (ENOB) should be less than or equal to the number of bits (nBits) for a consistent ADC model."
+        )
 
     # Reshape the input signal if needed to handle single-dimensional inputs
     try:
@@ -816,6 +836,8 @@ def adc(Ei, param):
         ) + 1j * clockSamplingInterp(
             Ei.reshape(-1, nModes).imag, Fs_in, Fs_out, jitter_rms
         )
+        # clipping to [Vmin, Vmax]
+        Eo = np.clip(Eo, Vmin + 1j * Vmin, Vmax + 1j * Vmax)
 
         # Uniform quantization of the signal according to the number of bits of the ADC
         Eo = quantizer(Eo.real, nBits, Vmax, Vmin) + 1j * quantizer(
@@ -825,12 +847,29 @@ def adc(Ei, param):
         # Signal interpolation to the ADC's sampling frequency
         Eo = clockSamplingInterp(Ei.reshape(-1, nModes), Fs_in, Fs_out, jitter_rms)
 
+        # clipping to [Vmin, Vmax]
+        Eo = np.clip(Eo, Vmin, Vmax)
+
         # Uniform quantization of the signal according to the number of bits of the ADC
         Eo = quantizer(Eo, nBits, Vmax, Vmin)
 
     # Apply anti-aliasing filters to the output if AAF is enabled
     if AAF:
         Eo = firFilter(ho, Eo)
+
+    # Add noise corresponding to the effective number of bits (ENOB) of the ADC
+    if nBits > ENOB:
+        Pnq_ideal = (Vmax - Vmin) ** 2 / (12 * (2 ** (2 * nBits)))
+        Pnq_actual = (Vmax - Vmin) ** 2 / (12 * (2 ** (2 * ENOB)))
+        Pn_extra = Pnq_actual - Pnq_ideal
+
+        if np.iscomplexobj(Eo):
+            noise = np.random.normal(0, np.sqrt(Pn_extra), Eo.shape)
+            +1j * np.random.normal(0, np.sqrt(Pn_extra), Eo.shape)
+            Eo += noise
+        else:
+            noise = np.random.normal(0, np.sqrt(Pn_extra), Eo.shape)
+            Eo += noise
 
     if Eo.shape[1] == 1:
         # If the output is a single column, return it as a 1D array
