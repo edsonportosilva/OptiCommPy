@@ -353,7 +353,7 @@ def quantizer(x, nBits=16, maxV=1, minV=-1):
     return y
 
 
-def lowPassFIR(fc, fa, N, typeF="rect"):
+def lowPassFIR(fc, fs, N, typeF="rect"):
     """
     Calculate FIR coefficients of a lowpass filter.
 
@@ -361,7 +361,7 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
     ----------
     fc : float
         Cutoff frequency.
-    fa : float
+    fs : float
         Sampling frequency.
     N : int
         Number of filter coefficients.
@@ -378,7 +378,7 @@ def lowPassFIR(fc, fa, N, typeF="rect"):
     [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
 
     """
-    fu = fc / fa
+    fu = fc / fs
     d = (N - 1) / 2
     n = np.arange(0, N)
 
@@ -565,6 +565,8 @@ def symbolSync(rx, tx, SpS, mode="amp"):
         Transmitted symbol sequence.
     SpS : int
         Samples per symbol of the received signal.
+    mode : string, optional
+        Synchronization mode: "amp" (amplitude) or "real" (real part). The default is "amp".
 
     Returns
     -------
@@ -588,7 +590,13 @@ def symbolSync(rx, tx, SpS, mode="amp"):
 
     nModes = rx.shape[1]
 
-    rx = rx[0::SpS, :]
+    if SpS > 1:
+        # decimate received signal
+        paramDec = parameters()
+        paramDec.SpSin = SpS
+        paramDec.SpSout = 1
+
+        rx = decimate(rx, paramDec)
 
     # calculate time delay
     delay = np.zeros(nModes)
@@ -599,34 +607,66 @@ def symbolSync(rx, tx, SpS, mode="amp"):
     if mode == "amp":
         for n in range(nModes):
             for m in range(nModes):
-                corrMatrix[m, n] = np.max(
-                    np.abs(signal.correlate(np.abs(tx[:, m]), np.abs(rx[:, n])))
-                )
+                abs_tx = np.abs(tx[:, m])
+                abs_tx -= np.mean(abs_tx)
+
+                abs_rx = np.abs(rx[:, n])
+                abs_rx -= np.mean(abs_rx)
+                corrMatrix[m, n] = np.max(np.abs(signal.correlate(abs_tx, abs_rx)))
+
         swap = np.argmax(corrMatrix, axis=0)
 
         tx = tx[:, swap]
 
         for k in range(nModes):
-            delay[k] = finddelay(np.abs(tx[:, k]), np.abs(rx[:, k]))
+            abs_tx = np.abs(tx[:, k])
+            abs_tx -= np.mean(abs_tx)
+            abs_rx = np.abs(rx[:, k])
+            abs_rx -= np.mean(abs_rx)
+            delay[k] = finddelay(abs_tx, abs_rx)
+
     elif mode == "real":
         for n in range(nModes):
             for m in range(nModes):
-                c1 = np.max(
-                    np.abs(signal.correlate(np.real(tx[:, m]), np.real(rx[:, n])))
-                )
-                c2 = np.max(
-                    np.abs(signal.correlate(np.real(tx[:, m]), np.imag(rx[:, n])))
-                )
-                corrMatrix[m, n] = np.max([c1, c2])
+                crr = signal.correlate(np.real(tx[:, m]), np.real(rx[:, n]))
+                cir = signal.correlate(np.imag(tx[:, m]), np.real(rx[:, n]))
 
-                if c2 > c1:
-                    rot[m, n] = np.exp(-1j * np.pi / 4)
+                crr_peak = crr[np.argmax(np.abs(crr))]
+                cir_peak = cir[np.argmax(np.abs(cir))]
+
+                crr_peak_abs = np.abs(crr_peak)
+                cir_peak_abs = np.abs(cir_peak)
+
+                corrMatrix[m, n] = np.max([crr_peak_abs, cir_peak_abs])
+
+                # handle pi/2 rotations
+                if crr_peak_abs > cir_peak_abs:
+                    if crr_peak > 0:
+                        rot[m, n] = 1
+                    else:
+                        rot[m, n] = -1
+                else:
+                    if cir_peak > 0:
+                        rot[m, n] = -1j
+                    else:
+                        rot[m, n] = 1j
 
         swap = np.argmax(corrMatrix, axis=0)
         tx = tx[:, swap]
 
         for k in range(nModes):
-            delay[k] = finddelay(np.real(rot[k, swap[k]] * tx[:, k]), np.real(rx[:, k]))
+            # apply rotation
+            tx[:, k] = rot[k, swap[k]] * tx[:, k]
+
+            # calculate delay
+            delay[k] = finddelay(np.real(tx[:, k]), np.real(rx[:, k]))
+
+            # check if conjugation is needed
+            cii = signal.correlate(np.imag(tx[:, k]), np.imag(rx[:, k]))
+            cii_peak = cii[np.argmax(np.abs(cii))]
+
+            if cii_peak < 0:
+                tx[:, k] = tx[:, k].conj()
 
     # compensate time delay
     for k in range(nModes):
@@ -656,7 +696,24 @@ def finddelay(x, y):
         Delay between x and y, in samples.
 
     """
-    return np.argmax(np.abs(signal.correlate(x, y))) - x.shape[0] + 1
+    n = len(x) + len(y)
+    X = np.fft.fft(x, n=n)
+    Y = np.fft.fft(y, n=n)
+
+    # Calculate the normalized cross-correlation in the frequency domain
+    R = X * np.conj(Y)
+    R /= np.abs(R) + 1e-12  # Avoid division by zero
+
+    corr = np.fft.ifft(R)  # Cross-correlation in the time domain
+    corr = np.fft.fftshift(corr)  # Shift zero lag to the center of the array
+
+    # The lag corresponding to the maximum correlation gives the estimated delay
+    lags = np.arange(-n // 2, n // 2)
+    delay = lags[np.argmax(np.abs(corr))]
+
+    return delay
+
+    # return np.argmax(np.abs(signal.correlate(x, y))) - x.shape[0] + 1
 
 
 @njit
