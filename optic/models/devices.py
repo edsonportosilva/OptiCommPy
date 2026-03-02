@@ -769,6 +769,7 @@ def adc(Ei, param):
         - param.outFs : sampling frequency of the output signal [samples/s][default: 1 sample/s]
         - param.jitter : jitter rms in seconds [s][default: 0 s]
         - param.nBits : number of bits used for quantization [default: 8 bits]
+        - param.ENOB : effective number of bits of the ADC [default: 8 bits]
         - param.Vmax : maximum value for the ADC's full-scale range [V][default: 1V]
         - param.Vmin : minimum value for the ADC's full-scale range [V][default: -1V]
         - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
