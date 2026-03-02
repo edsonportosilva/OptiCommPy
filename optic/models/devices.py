@@ -873,3 +873,106 @@ def adc(Ei, param):
         Eo = Eo.flatten()
 
     return Eo
+
+
+def dac(Ei, param):
+    """
+    Digital-to-analog converter (DAC) model.
+
+    Parameters
+    ----------
+    Ei : ndarray
+        Input signal.
+    param : optic.utils.parameters object, optional
+        Parameters of the DAC model.
+
+        - param.inFs  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
+        - param.outFs : sampling frequency of the output signal [samples/s][default: 1 sample/s]
+        - param.nBits : number of bits used for quantization [default: 8 bits]
+        - param.ENOB : effective number of bits of the DAC [default: 8 bits]
+        - param.Vpp  : peak-to-peak voltage of the DAC's output signal [V][default: 2 V]
+        - param.AIF : flag indicating whether to use anti-imaging filters [default: True]
+        - param.N : number of taps of the anti-imaging filters [default: 201]
+
+    Returns
+    -------
+    Eo : ndarray
+        Resampled and quantized signal.
+
+    Notes
+    -----
+    - The input signal will be clipped to the range [Vmin, Vmax] before quantization.
+    - If AIF is enabled, anti-imaging filters will be applied to the output signal after quantization to mitigate imaging effects.
+    """
+    # Check and set default values for input parameters
+    param.inFs = getattr(param, "inFs", 1)
+    param.outFs = getattr(param, "outFs", 1)
+    param.nBits = getattr(param, "nBits", 8)
+    param.ENOB = getattr(param, "ENOB", 8)
+    param.Vpp = getattr(param, "Vpp", 2)
+    param.AIF = getattr(param, "AIF", True)
+    param.N = getattr(param, "N", 201)
+
+    # Extract individual parameters for ease of use
+    inFs = param.inFs
+    outFs = param.outFs
+    nBits = param.nBits
+    Vpp = param.Vpp
+    AIF = param.AIF
+    N = param.N
+    ENOB = param.ENOB
+
+    # Reshape the input signal if needed to handle single-dimensional inputs
+    try:
+        Ei.shape[1]
+    except IndexError:
+        Ei = Ei.reshape(len(Ei), 1)
+
+    nModes = Ei.shape[1]
+
+    if np.iscomplexobj(Ei):
+        # Uniform quantization of the signal according to the number of bits of the DAC
+        Vmax = np.max([np.max(Ei.real), np.max(Ei.imag)])
+        Vmin = np.min([np.min(Ei.real), np.min(Ei.imag)])
+        Eo = quantizer(Ei.real, nBits, Vmax, Vmin) + 1j * quantizer(
+            Ei.imag, nBits, Vmax, Vmin
+        )
+
+        # Signal interpolation to the DAC's sampling frequency
+        Eo = clockSamplingInterp(
+            Eo.reshape(-1, nModes).real, inFs, outFs
+        ) + 1j * clockSamplingInterp(Eo.reshape(-1, nModes).imag, inFs, outFs)
+    else:
+        Vmax = np.max(Ei)
+        Vmin = np.min(Ei)
+        # Uniform quantization of the signal according to the number of bits of the DAC
+        Eo = quantizer(Ei.reshape(-1, nModes), nBits, Vmax, Vmin)
+
+        # Signal interpolation to the DAC's sampling frequency
+        Eo = clockSamplingInterp(Eo.reshape(-1, nModes), inFs, outFs)
+
+    # Apply anti-imaging filters to the output if AIF is enabled
+    if AIF:
+        ho = lowPassFIR(param.outFs / 2, param.outFs, min(Eo.shape[0], N), typeF="rect")
+        Eo = firFilter(ho, Eo)
+
+    # Add noise to the output signal based on the effective number of bits (ENOB)
+    if nBits > ENOB:
+        scale = Vmax - Vmin
+        Pnq_ideal = scale**2 / (12 * (2 ** (2 * nBits)))
+        Pnq_actual = scale**2 / (12 * (2 ** (2 * ENOB)))
+        Pn_extra = Pnq_actual - Pnq_ideal
+
+        if np.iscomplexobj(Eo):
+            Eo += gaussianComplexNoise(Eo.shape, 2 * Pn_extra)
+        else:
+            Eo += gaussianNoise(Eo.shape, Pn_extra)
+
+    Eo = Eo * (
+        Vpp / (Vmax - Vmin)
+    )  # Scale the output signal to the DAC's specified peak-to-peak voltage
+
+    if Eo.shape[1] == 1:
+        # If the output is a single column, return it as a 1D array
+        Eo = Eo.flatten()
+    return Eo
