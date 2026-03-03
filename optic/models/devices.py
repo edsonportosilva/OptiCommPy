@@ -810,7 +810,7 @@ def adc(Ei, param):
 
     if ENOB > nBits:
         logg.warning(
-            "ENOB is greater than nBits. The effective number of bits (ENOB) should be less than or equal to the number of bits (nBits) for a consistent ADC model."
+            "ADC ENOB is greater than ADC nBits. The effective number of bits (ENOB) should be less than or equal to the number of bits (nBits) for a consistent ADC model."
         )
 
     # Reshape the input signal if needed to handle single-dimensional inputs
@@ -922,6 +922,11 @@ def dac(Ei, param):
     Vpp = param.Vpp
     AIF = param.AIF
     N = param.N
+
+    if ENOB > nBits:
+        logg.warning(
+            "DAC ENOB is greater than DAC nBits. The effective number of bits (ENOB) should be less than or equal to the number of bits (nBits) for a consistent ADC model."
+        )
 
     # Reshape the input signal if needed to handle single-dimensional inputs
     try:
