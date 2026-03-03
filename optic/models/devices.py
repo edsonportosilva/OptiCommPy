@@ -833,18 +833,19 @@ def adc(Ei, param):
     if np.iscomplexobj(Ei):
         # Signal interpolation to the ADC's sampling frequency
         Eo = clockSamplingInterp(
-            Ei.reshape(-1, nModes).real, inFs, outFs, jitter
-        ) + 1j * clockSamplingInterp(Ei.reshape(-1, nModes).imag, inFs, outFs, jitter)
+            np.real(Ei), inFs, outFs, jitter
+        ) + 1j * clockSamplingInterp(np.imag(Ei), inFs, outFs, jitter)
+
         # clipping to [Vmin, Vmax]
         Eo = np.clip(Eo, Vmin + 1j * Vmin, Vmax + 1j * Vmax)
 
         # Uniform quantization of the signal according to the number of bits of the ADC
-        Eo = quantizer(Eo.real, nBits, Vmax, Vmin) + 1j * quantizer(
-            Eo.imag, nBits, Vmax, Vmin
+        Eo = quantizer(np.real(Eo), nBits, Vmax, Vmin) + 1j * quantizer(
+            np.imag(Eo), nBits, Vmax, Vmin
         )
     else:
         # Signal interpolation to the ADC's sampling frequency
-        Eo = clockSamplingInterp(Ei.reshape(-1, nModes), inFs, outFs, jitter)
+        Eo = clockSamplingInterp(Ei, inFs, outFs, jitter)
 
         # clipping to [Vmin, Vmax]
         Eo = np.clip(Eo, Vmin, Vmax)
@@ -890,6 +891,7 @@ def dac(Ei, param):
         - param.outFs : sampling frequency of the output signal [samples/s][default: 1 sample/s]
         - param.nBits : number of bits used for quantization [default: 8 bits]
         - param.ENOB : effective number of bits of the DAC [default: 8 bits]
+        - param.jitter : jitter rms in seconds [s][default: 0 s]
         - param.Vpp  : peak-to-peak voltage of the DAC's output signal [V][default: 2 V]
         - param.AIF : flag indicating whether to use anti-imaging filters [default: True]
         - param.N : number of taps of the anti-imaging filters [default: 201]
@@ -909,6 +911,7 @@ def dac(Ei, param):
     param.outFs = getattr(param, "outFs", 1)
     param.nBits = getattr(param, "nBits", 8)
     param.ENOB = getattr(param, "ENOB", 8)
+    param.jitter = getattr(param, "jitter", 0)
     param.Vpp = getattr(param, "Vpp", 2)
     param.AIF = getattr(param, "AIF", True)
     param.N = getattr(param, "N", 201)
@@ -917,10 +920,11 @@ def dac(Ei, param):
     inFs = param.inFs
     outFs = param.outFs
     nBits = param.nBits
+    ENOB = param.ENOB
+    jitter = param.jitter
     Vpp = param.Vpp
     AIF = param.AIF
     N = param.N
-    ENOB = param.ENOB
 
     # Reshape the input signal if needed to handle single-dimensional inputs
     try:
@@ -934,22 +938,24 @@ def dac(Ei, param):
         # Uniform quantization of the signal according to the number of bits of the DAC
         Vmax = np.max([np.max(Ei.real), np.max(Ei.imag)])
         Vmin = np.min([np.min(Ei.real), np.min(Ei.imag)])
-        Eo = quantizer(Ei.real, nBits, Vmax, Vmin) + 1j * quantizer(
-            Ei.imag, nBits, Vmax, Vmin
+
+        Eo = quantizer(np.real(Ei), nBits, Vmax, Vmin) + 1j * quantizer(
+            np.imag(Ei), nBits, Vmax, Vmin
         )
 
         # Signal interpolation to the DAC's sampling frequency
         Eo = clockSamplingInterp(
-            Eo.reshape(-1, nModes).real, inFs, outFs
-        ) + 1j * clockSamplingInterp(Eo.reshape(-1, nModes).imag, inFs, outFs)
+            np.real(Eo), inFs, outFs, jitter
+        ) + 1j * clockSamplingInterp(np.imag(Eo), inFs, outFs, jitter)
     else:
         Vmax = np.max(Ei)
         Vmin = np.min(Ei)
+
         # Uniform quantization of the signal according to the number of bits of the DAC
-        Eo = quantizer(Ei.reshape(-1, nModes), nBits, Vmax, Vmin)
+        Eo = quantizer(Ei, nBits, Vmax, Vmin)
 
         # Signal interpolation to the DAC's sampling frequency
-        Eo = clockSamplingInterp(Eo.reshape(-1, nModes), inFs, outFs)
+        Eo = clockSamplingInterp(Eo, inFs, outFs, jitter)
 
     # Apply anti-imaging filters to the output if AIF is enabled
     if AIF:
