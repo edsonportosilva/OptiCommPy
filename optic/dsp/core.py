@@ -274,7 +274,7 @@ def pulseShape(param):
 
 
 @njit(parallel=True)
-def clockSamplingInterp(x, Fs_in, Fs_out, jitter_rms=0):
+def clockSamplingInterp(x, inFs, outFs, jitter=0):
     """
     Interpolate signal to a given sampling rate.
 
@@ -283,14 +283,14 @@ def clockSamplingInterp(x, Fs_in, Fs_out, jitter_rms=0):
     x : np.array
         Input signal.
 
-    Fs_in : float
+    inFs : float
         Sampling frequency of the input signal.
 
-    Fs_out : float
+    outFs : float
         Sampling frequency of the output signal.
 
-    jitter_rms : float
-        Standard deviation of the time jitter. Default is 0.
+    jitter : float
+        Standard deviation of the time jitter (jitter rms). Default is 0.
 
     Returns
     -------
@@ -300,15 +300,15 @@ def clockSamplingInterp(x, Fs_in, Fs_out, jitter_rms=0):
     """
     nModes = x.shape[1]
 
-    inTs = 1 / Fs_in
-    outTs = 1 / Fs_out
+    inTs = 1 / inFs
+    outTs = 1 / outFs
 
     tin = np.arange(0, x.shape[0]) * inTs
     tout = np.arange(0, x.shape[0] * inTs, outTs)
 
-    if jitter_rms > 0:
-        jitter = np.random.normal(0, jitter_rms, tout.shape)
-        tout += jitter
+    if jitter > 0:
+        dt = np.random.normal(0, jitter, tout.shape)
+        tout += dt
 
     y = np.zeros((len(tout), x.shape[1]), dtype=x.dtype)
 
