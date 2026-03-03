@@ -819,9 +819,6 @@ def adc(Ei, param):
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
 
-    # Get the number of modes (columns) in the input signal
-    nModes = Ei.shape[1]
-
     # Apply anti-aliasing filters if AAF is enabled
     if AAF:
         # Anti-aliasing filters:
@@ -931,8 +928,6 @@ def dac(Ei, param):
         Ei.shape[1]
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
-
-    nModes = Ei.shape[1]
 
     if np.iscomplexobj(Ei):
         # Uniform quantization of the signal according to the number of bits of the DAC
