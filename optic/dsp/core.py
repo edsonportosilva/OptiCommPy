@@ -42,6 +42,8 @@ from scipy.fftpack import fft, fftfreq, fftshift, ifft
 
 from optic.utils import parameters
 
+import matplotlib.pyplot as plt
+
 
 @njit
 def sigPow(x):
@@ -696,24 +698,10 @@ def finddelay(x, y):
         Delay between x and y, in samples.
 
     """
-    n = len(x) + len(y)
-    X = np.fft.fft(x, n=n)
-    Y = np.fft.fft(y, n=n)
-
-    # Calculate the normalized cross-correlation in the frequency domain
-    R = X * np.conj(Y)
-    R /= np.abs(R) + 1e-12  # Avoid division by zero
-
-    corr = np.fft.ifft(R)  # Cross-correlation in the time domain
-    corr = np.fft.fftshift(corr)  # Shift zero lag to the center of the array
-
-    # The lag corresponding to the maximum correlation gives the estimated delay
-    lags = np.arange(-n // 2, n // 2)
-    delay = lags[np.argmax(np.abs(corr))]
+    xcorr = np.abs(signal.correlate(x, y))
+    delay = np.argmax(xcorr) - x.shape[0] + 1
 
     return delay
-
-    # return np.argmax(np.abs(signal.correlate(x, y))) - x.shape[0] + 1
 
 
 @njit
@@ -1030,7 +1018,7 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
     D = (K - 1) // 2  # filter delay
 
     if NFFT is None:
-        NFFT = 2 ** int(np.ceil(np.log2(K)))
+        NFFT = 2 ** int(np.ceil(np.log2(np.max([sigLen, K]))))
 
     if NFFT >= K:
         d = NFFT - K + 1  # block length required
