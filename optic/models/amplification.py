@@ -106,6 +106,17 @@ def get_spectrum(
         Sampling frequency in Hz.
     Fc : scalar, optional
         Central optical frequency. The default is 193.1e12.
+    xunits : str, optional
+        Units for the frequency axis: 'm' for wavelength in meters or 'Hz' for
+        frequency in Hz. The default is 'm'.
+    yunits : str, optional
+        Units for the power spectral density: 'dBm' or linear. The default is 'dBm'.
+    window : callable, optional
+        Windowing function applied before computing the spectrum.
+        The default is mlab.window_none.
+    sides : str, optional
+        Specifies which sides of the spectrum to return: 'twosided' or
+        'onesided'. The default is 'twosided'.
 
     Returns
     -------

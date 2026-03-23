@@ -1020,7 +1020,7 @@ def summarizeAlistFolder(folderPath):
 
     Parameters
     ----------
-    path : str
+    folderPath : str
         Path to the folder containing ALIST files.
 
     """

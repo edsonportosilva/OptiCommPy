@@ -95,6 +95,9 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False, prec=None):
     freqDomainFilter : bool, optional
         If True, `h` is assumed to be the frequency response of the filter.
         If False, the FFT of `h` will be computed. Default is False.
+    prec : cp.dtype, optional
+        Numerical precision (CuPy dtype) for the computation. If None, the
+        precision is inferred from the input array `x`. Default is None.
 
     Returns
     -------

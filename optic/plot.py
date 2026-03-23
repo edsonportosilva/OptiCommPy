@@ -186,6 +186,11 @@ def constHist(symb, ax, cmap="turbo", whiteb=True):
         Complex-valued constellation symbols.
     ax : axis object handle
         axis of the plot.
+    cmap : str, optional
+        Colormap name. The default is "turbo".
+    whiteb : bool, optional
+        If True, set values below the minimum to transparent (white background).
+        The default is True.
 
     Returns
     -------
