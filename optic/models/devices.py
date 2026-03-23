@@ -288,7 +288,7 @@ def photodiode(E, param=None):
         - param.Id: dark current [A][default: 5e-9 A]
         - param.Ipd_sat: saturation value of the photocurrent [A][default: 5e-3 A]
         - param.RL: impedance load [Ω] [default: 50Ω]
-        - param.B bandwidth [Hz][default: 30e9 Hz]
+        - param.B: bandwidth [Hz][default: 30e9 Hz]
         - param.Fs: sampling frequency [Hz] [default: None]
         - param.fType: frequency response type [default: 'rect']
         - param.N: number of the frequency resp. filter taps. [default: 255]
@@ -402,7 +402,7 @@ def balancedPD(E1, E2, param=None):
         - param.Tc: temperature [°C][default: 25°C].
         - param.Id: dark current [A][default: 5e-9 A].
         - param.RL: impedance load [Ω] [default: 50Ω].
-        - param.B bandwidth [Hz][default: 30e9 Hz].
+        - param.B: bandwidth [Hz][default: 30e9 Hz].
         - param.Fs: sampling frequency [Hz] [default: 60e9 Hz].
         - param.fType: frequency response type [default: 'rect'].
         - param.N: number of the frequency resp. filter taps. [default: 255].

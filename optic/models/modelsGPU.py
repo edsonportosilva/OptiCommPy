@@ -68,6 +68,8 @@ def edfa(Ei, param):
         - param.NF : EDFA noise figure in dB [default: 4.5 dB].
         - param.Fc : central optical frequency [default: 193.1e12 Hz].
         - param.Fs : sampling frequency in samples/second [default: None].
+        - param.prec : numerical precision [default: cp.complex128].
+        - param.seed : seed for the random number generator [default: None].
 
     Returns
     -------
@@ -136,6 +138,7 @@ def ssfm(Ei, param):
         - param.NF: edfa noise figure [dB] [default: 4.5 dB]
         - param.seed: seed for the random number generator [default: None].
         - param.prgsBar: display progress bar? bolean variable [default:True]
+        - param.saveSpanN: specify the span indexes to be outputted [default: [last span]]
         - param.returnParameters: bool, return channel parameters [default: False]
 
     Returns

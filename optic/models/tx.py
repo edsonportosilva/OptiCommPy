@@ -63,6 +63,7 @@ def simpleWDMTx(param):
         - param.laserLinewidth: laser linewidth [Hz][default: 100 kHz].
         - param.wdmGridSpacing: frequency spacing of the WDM grid [Hz][default: 40e9 Hz].
         - param.nPolModes: number of polarization modes [default: 1].
+        - param.prgsBar: display progress bar? [default: True].
 
     Returns
     -------

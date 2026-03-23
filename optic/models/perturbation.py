@@ -526,7 +526,10 @@ def perturbationNLIN(Ein, param):
         - param.Rs : symbol rate [baud] [default: 32e9 baud]
         - param.powerWeightN : power-weighting order [default: 10]
         - param.matrixOrder : nonlinear memory matrix order [default: 25]
-        - mode : 'AM' for standard perturbation calculation or 'AMR' for reduced complexity calculation [default: 'AM']
+        - param.mode : 'AM' for standard perturbation calculation or 'AMR' for reduced complexity calculation [default: 'AM']
+        - param.Pin : launch power per channel [dBm] [default: 0 dBm]
+        - param.coeffTol : threshold for ignoring small perturbation coefficients [dB] [default: -20 dB]
+        - param.prec : numerical precision [default: np.complex128]
 
     Returns
     -------
