@@ -1302,10 +1302,8 @@ def realValuedDFECore(
         Number of training symbols
     prec : data type
         Precision
-    M : int
-        Modulation order
-    constType : str
-        Constellation type ('pam', 'qam', etc.)
+    constSymb : np.array
+        Array of constellation symbols used for symbol decisions.
     f : np.array
         Initial feedforward coeffs
     b : np.array
@@ -1428,6 +1426,12 @@ def complexValuedDFECore(
         Precision
     constSymb : np.array
         Constellation symbols
+    f : np.array
+        Initial feedforward filter coefficients.
+    b : np.array
+        Initial feedback filter coefficients.
+    trainingMode : str
+        Operation mode ('data-aided', 'fulltime')
     preconvIters : int
         Number of pre-convergence iterations
 

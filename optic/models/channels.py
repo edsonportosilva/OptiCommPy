@@ -117,8 +117,6 @@ def ssfm(Ei, param=None):
     ----------
     Ei : np.array
         Input optical signal field.
-    Fs : scalar
-        Sampling frequency in Hz.
     param : optic.utils.parameters object
         Physical/simulation parameters of the optical channel.
 
@@ -133,6 +131,7 @@ def ssfm(Ei, param=None):
         - param.prec: numerical precision [default: np.complex128]
         - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
         - param.NF: edfa noise figure [dB] [default: 4.5 dB]
+        - param.seed: seed for the random number generator [default: None]
         - param.prgsBar: display progress bar? bolean variable [default:True]
         - param.returnParameters: bool, return channel parameters [default: False]
 
@@ -258,8 +257,6 @@ def manakovSSF(Ei, param):
     ----------
     Ei : np.array
         Input optical signal field.
-    Fs : scalar
-        Sampling frequency in Hz.
     param : optic.utils.parameters object
         Physical/simulation parameters of the optical channel.
 
@@ -280,6 +277,7 @@ def manakovSSF(Ei, param):
         - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
         - param.prgsBar: display progress bar? bolean variable [default:True]
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
+        - param.seed: seed for the random number generator [default: None]
         - param.returnParameters: bool, return channel parameters [default: False]
 
     Returns
@@ -537,6 +535,8 @@ def awgn(sig, snr, Fs=1, B=1, complexNoise=True, seed=None):
         Signal bandwidth, defined as the length of the frequency interval [-B/2, B/2]. The default is 1.
     complexNoise : bool
         Generate complex-valued noise. The default is True.
+    seed : int or None, optional
+        Seed for the random number generator. The default is None.
 
     Returns
     -------

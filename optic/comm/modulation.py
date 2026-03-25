@@ -205,6 +205,9 @@ def apskConst(M, m1=None, phaseOffset=None):
         Constellation order.
     m1 : int
         Number of bits used to index the radii of the constellation.
+    phaseOffset : float, optional
+        Phase offset applied to each ring of the constellation [rad].
+        The default is pi / symbolsPerRing.
 
     Returns
     -------
@@ -575,8 +578,10 @@ def llr2bitProb(llr, prec=np.float32):
 
     Parameters
     ----------
-    llrs : 1D numpy array
+    llr : 2D numpy array
         Log-likelihood ratios (LLRs) of bits.
+    prec : numpy dtype, optional
+        Numerical precision for the output array. The default is np.float32.
 
     Returns
     -------

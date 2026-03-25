@@ -355,7 +355,7 @@ def monteCarloMI(rx, tx, M, constType, px=None):
         Modulation order.
     constType : string
         Modulation type: 'qam' or 'psk'
-    pX : (M, 1) np.array
+    px : (M, 1) np.array
         p.m.f. of the constellation symbols. The default is [].
 
     Returns
