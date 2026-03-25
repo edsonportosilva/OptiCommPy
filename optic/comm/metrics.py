@@ -11,13 +11,12 @@ Metrics for signal and performance characterization (:mod:`optic.comm.metrics`)
    calcLLR                  -- LLR calculation (circular AGWN channel)
    monteCarloGMI            -- Monte Carlo based generalized mutual information (GMI) estimation
    monteCarloMI             -- Monte Carlo based mutual information (MI) estimation
-   Qfunc                    -- Calculate function Q(x)
+   Qfunc                    -- Calculate function :math:`Q(x)`
    calcEVM                  -- Calculate error vector magnitude (EVM) metrics
    theoryBER                -- Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel
    theoryMI                 -- Calculate mutual information for the DCMC AWGN channel
    calcLinOSNR              -- Calculate the OSNR evolution in a multi-span fiber transmission system
 """
-
 
 """Metrics for signal and performance characterization."""
 import logging as logg
@@ -152,8 +151,8 @@ def fastBERcalc(rx, tx, M, constType, px=None):
     # constellation parameters
     constSymb = grayMapping(M, constType)
     Es = np.sum(np.abs(constSymb) ** 2 * px)
-    
-    # make copies of inputs 
+
+    # make copies of inputs
     tx = tx.copy()
     rx = rx.copy()
 
@@ -184,9 +183,7 @@ def fastBERcalc(rx, tx, M, constType, px=None):
         tx[:, k] = pnorm(tx[:, k])
 
         # estimate SNR of the received constellation
-        SNR[k] = 10 * np.log10(
-            signalPower(tx[:, k]) / signalPower(rx[:, k] - tx[:, k])
-        )
+        SNR[k] = 10 * np.log10(signalPower(tx[:, k]) / signalPower(rx[:, k] - tx[:, k]))
     for k in range(nModes):
         brx = demodulateGray(np.sqrt(Es) * rx[:, k], M, constType)
         btx = demodulateGray(np.sqrt(Es) * tx[:, k], M, constType)
@@ -264,7 +261,7 @@ def monteCarloGMI(rx, tx, M, constType, px=None):
         Generalized mutual information values.
     NGMI : np.array
         Normalized mutual information.
-    
+
     References
     ----------
     [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
@@ -475,7 +472,7 @@ def Qfunc(x):
     -------
     scalar
         value of Q(x).
-    
+
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
@@ -573,13 +570,13 @@ def theoryBER(M, EbN0, constType):
     Notes
     -----
     The values of error probability obtained with this function are good approximations for moderate to high SNR regime (see [1]).
-    All cases assume Gray mapped constellations. For low SNR values and high constellation cardinalities (Pb>1e-1), the results 
+    All cases assume Gray mapped constellations. For low SNR values and high constellation cardinalities (:math:`P_b`>1e-1), the results
     should underestimate the real error probability.
 
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
-   
+
     """
     EbN0lin = 10 ** (EbN0 / 10)
     k = np.log2(M)
@@ -604,7 +601,7 @@ def theoryBER(M, EbN0, constType):
 @njit
 def condEntropy(yI, yQ, const, pX, ind, σ):
     """
-    Calculate conditional entropy H(X|Y=y)
+    Calculate conditional entropy :math:`H(X|Y=y)` for the DCMC AWGN channel.
 
     Parameters
     ----------
@@ -622,7 +619,7 @@ def condEntropy(yI, yQ, const, pX, ind, σ):
     Returns
     -------
     float
-        conditional entropy H(X|Y=y).
+        conditional entropy :math:`H(X|Y=y)` for the DCMC AWGN channel.
 
     References
     ----------
@@ -707,7 +704,7 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
     -------
     float
         Mutual information for the given parameters.
-    
+
     References
     ----------
     [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
@@ -729,13 +726,14 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
         for i, x in enumerate(constSymb):
             key = round(abs(x) / 1e-14) * 1e-14
             groups[key].append(i)
-       
+
         for key, indices in groups.items():
             # Choose a representative index for the group
             rep_index = indices[0]
-            # Number of elements sharing the same |constSymb|  
-            count = len(indices)     
-            MI -= dblquad(
+            # Number of elements sharing the same |constSymb|
+            count = len(indices)
+            MI -= (
+                dblquad(
                     condEntropy,
                     -lim,
                     lim,
@@ -743,7 +741,9 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
                     lim,
                     args=(constSymb, pX, rep_index, σ),
                     epsabs=tol,
-                )[0] * count
+                )[0]
+                * count
+            )
 
     else:
         for ind in range(len(constSymb)):
@@ -798,11 +798,7 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
         / Ls
         * Leffa
         / np.arcsinh(
-            (np.pi**2 / 2)
-            * np.abs(β2)
-            * Leffa
-            * (Nch**2) ** (2 * Rs / Δf)
-            * Rs**2
+            (np.pi**2 / 2) * np.abs(β2) * Leffa * (Nch**2) ** (2 * Rs / Δf) * Rs**2
         )
     )
     # epsilon = 0.1

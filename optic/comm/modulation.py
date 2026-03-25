@@ -214,6 +214,11 @@ def apskConst(M, m1=None, phaseOffset=None):
     const : np.array
         APSK constellation
 
+    Notes
+    -----
+    symbols per ring is determined by :math:`m_2 = log_2(M) - m_1`, where :math:`m_1` is the number of bits used to index the rings.
+    If :math:`m_1` is not provided, it is set based on M according to references [1] and [2].
+
     References
     ----------
     [1] Z. Liu, et al "APSK Constellation with Gray Mapping," IEEE Communications Letters, vol. 15, no. 12, pp. 1271-1273, 2011.
