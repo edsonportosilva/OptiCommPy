@@ -50,6 +50,8 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 * If you want to suggest or discuss anything related to OptiCommPy, please get in touch via e-mail
 (edsonporto88@gmail.com).
 
+[![Sponsor](https://img.shields.io/badge/Sponsor-❤️-pink?logo=github)](https://github.com/sponsors//edsonportosilva)
+
 ## Requirements/Dependencies
 
 -  python>=3.10

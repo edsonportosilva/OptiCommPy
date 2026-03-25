@@ -92,8 +92,6 @@ def firFilter(h, x):
         Coefficients of the FIR filter (impulse response, symmetric).
     x : np.array
         Input signal.
-    prec: cp.dtype
-        Size of the complex representation.
 
     Returns
     -------
@@ -1122,9 +1120,7 @@ def calcPM(Ai, Vpi, u):
     Vpi : float
         Half-wave voltage of the PM.
     u : float
-        DC bias voltage.
-    Vb : float
-        Voltage applied to the PM.
+        Driving voltage applied to the PM.
 
     Returns
     -------
