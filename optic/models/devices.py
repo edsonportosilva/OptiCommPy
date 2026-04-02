@@ -1,7 +1,7 @@
 """
-=======================================================================
+===============================================================
 Models for optoelectronic devices (:mod:`optic.models.devices`)
-=======================================================================
+===============================================================
 
 .. autosummary::
    :toctree: generated/
@@ -19,6 +19,7 @@ Models for optoelectronic devices (:mod:`optic.models.devices`)
    edfa                  -- Simple EDFA model (gain + AWGN noise).
    basicLaserModel       -- Laser model with Maxwellian random walk phase noise and RIN.
    adc                   -- Analog-to-digital converter (ADC) model.
+   dac                   -- Digital-to-analog converter (DAC) model.
 """
 
 """Basic physical models for optical/electronic devices."""
