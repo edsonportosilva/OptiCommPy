@@ -1132,3 +1132,62 @@ def hammingCode(m, extended=False):
 
     return H_ext
 
+def chaseDecoder(llrs, param):
+    """
+    Decode a received codeword using the Chase decoding algorithm.
+
+    Parameters
+    ----------
+    llrs : ndarray of shape (n,)
+        Log-likelihood ratios (LLRs) for each bit of the received codeword.
+    param : object
+        Object containing the following attributes:
+
+        - H : ndarray of shape (m, n)
+            Binary parity-check matrix of the code.
+        - t : int
+            Number of least reliable bits to consider for flipping (Chase parameter).
+    
+    Returns
+    -------
+    decodedBits : ndarray of shape (n,)
+        Decoded binary codeword after applying the Chase decoding algorithm.
+    """
+    H = getattr(param, "H", None)
+    t = getattr(param, "t", 2)
+
+    if H is None:
+        logg.error("H is None. Please provide a valid parity-check matrix.")
+        return None
+
+    n = H.shape[1]
+    m = H.shape[0]
+
+    # Step 1: Initial hard decision
+    hard_decision = (llrs < 0).astype(np.uint8)
+
+    # Step 2: Compute syndrome
+    syndrome = np.mod(H @ hard_decision, 2)
+
+    if np.all(syndrome == 0):
+        return hard_decision  # Already a valid codeword
+
+    # Step 3: Identify least reliable bits
+    reliabilities = np.abs(llrs)
+    least_reliable_indices = np.argsort(reliabilities)[:t]
+
+    # Step 4: Generate candidate codewords by flipping combinations of least reliable bits   
+
+    candidates = []
+    for r in range(1, t + 1):
+        for indices in combinations(least_reliable_indices, r):
+            candidate = hard_decision.copy()
+            candidate[list(indices)] ^= 1  # Flip the selected bits
+            candidates.append(candidate)
+
+    # Step 5: Check candidates against parity-check equations
+    for candidate in candidates:
+        if np.all(np.mod(H @ candidate, 2) == 0):
+            return candidate  # Found a valid codeword
+
+    return hard_decision  # Return original hard decision if no valid candidate found
