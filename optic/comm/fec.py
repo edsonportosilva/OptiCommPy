@@ -35,6 +35,7 @@ from numba import njit, prange
 from numba.typed import List
 from prettytable import PrettyTable
 from scipy.sparse import coo_matrix, csc_matrix, csr_matrix
+from itertools import combinations
 
 
 def par2gen(H):
@@ -1053,3 +1054,81 @@ def summarizeAlistFolder(folderPath):
                 print(f"Failed to parse {filename}: {e}")
 
     print(table)
+
+
+def hammingCode(m, extended=False):
+    """
+    Generate the parity-check matrix H for a Hamming code with m check bits .
+
+    Parameters
+    ----------
+    m : int
+        Number of check bits.
+
+    extended : bool, optional
+        If True, generate the parity-check matrix for the extended Hamming code (default is False).
+
+    Returns
+    -------
+    H : ndarray of shape (m, n)
+        Parity-check matrix for the Hamming code, where m = n - k and k is the number of message bits.
+
+    Notes
+    -----
+    - For standard Hamming codes, the code parameters are :math:`n = 2^m - 1` and :math:`k = n - m`.
+    - For extended Hamming codes, the code parameters are :math:`n = 2^m` and :math:`k = n - m - 1`.
+
+    References
+    ----------
+    [1] R. W. Hamming, "Error detecting and error correcting codes," Bell System Technical Journal, vol. 29, no. 2, pp. 147-160, April 1950.
+
+    [2] S. Lin and D. J. Costello, "Error Control Coding: Fundamentals and Applications," 2nd Edition, Pearson, 2004.
+    """
+
+    if m < 1:
+        raise ValueError("m must be a positive integer.")
+    
+    # For standard Hamming codes, n = 2^m - 1 and k = n - m.
+    # For extended Hamming codes, n = 2^m and k = n - m - 1.
+    
+    if extended:
+        # Calculate n
+        n = 2**m 
+        m = int(np.log2(n))
+        if 2**m != n:
+            raise ValueError("For extended Hamming, n must be 2^m.")
+        n_std = 2**m - 1
+    else:
+        # Calculate n
+        n = 2**m - 1
+        m = int(np.log2(n + 1))
+        if 2**m - 1 != n:
+            raise ValueError("For standard Hamming, n must be 2^m - 1.")
+        n_std = n
+
+    # Build standard H matrix (m x (2^m - 1))
+    H_std = np.zeros((m, n_std), dtype=np.int8)
+
+    for col in range(1, n_std + 1):
+        binary = np.array(list(np.binary_repr(col, width=m)), dtype=np.int8)
+        H_std[:, col - 1] = binary[::-1]  # LSB at top (common convention)
+
+    if not extended:
+        return H_std
+
+    # Build extended version
+    # Add one column (for global parity bit)
+    H_ext = np.zeros((m + 1, n), dtype=np.int8)
+
+    # Copy original H
+    H_ext[:m, :n_std] = H_std
+
+    # Last row: all ones (including parity bit)
+    H_ext[m, :] = 1
+
+    # Last column (parity bit column): zeros except last row
+    H_ext[:m, n_std] = 0
+    H_ext[m, n_std] = 1
+
+    return H_ext
+
