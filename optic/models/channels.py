@@ -8,10 +8,9 @@ Models for fiber optic channels (:mod:`optic.models.channels`)
 
    linearFiberChannel   -- Linear optical fiber channel model.
    ssfm                 -- Nonlinear fiber optic channel model based on the NLSE equation.
-   manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.   
-   awgn                 -- AWGN channel model.   
+   manakovSSF           -- Nonlinear fiber optic channel model based on the Manakov equation.
+   awgn                 -- AWGN channel model.
 """
-
 
 """Basic physical models for optical channels."""
 import logging as logg
@@ -36,19 +35,14 @@ def linearFiberChannel(Ei, param):
     ----------
     Ei : np.array
         Input optical field.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the optical channel.
+    param : optic.utils.parameters object
+        Physical/simulation parameters of the optical channel.
 
         - param.L: total fiber length [km][default: 50 km]
-
         - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-
-        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
+        - param.D: chromatic dispersion parameter [ps/nm/km][default: 17 ps/nm/km]
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: sampling frequency [Hz] [default: None]
-
         - param.returnParameters: bool, return channel parameters [default: False]
 
     Returns
@@ -71,7 +65,7 @@ def linearFiberChannel(Ei, param):
     # check input parameters
     param.L = getattr(param, "L", 50)
     param.alpha = getattr(param, "alpha", 0.2)
-    param.D = getattr(param, "D", 16)
+    param.D = getattr(param, "D", 17)
     param.Fc = getattr(param, "Fc", 193.1e12)
     param.returnParameters = getattr(param, "returnParameters", False)
 
@@ -94,20 +88,24 @@ def linearFiberChannel(Ei, param):
 
     try:
         Nmodes = Ei.shape[1]
+        input1D = False
     except IndexError:
         Nmodes = 1
         Ei = Ei.reshape(Ei.size, Nmodes)
+        input1D = True
 
     ω = np.tile(ω, (1, Nmodes))
-    Eo = ifft(
-        fft(Ei, axis=0) * np.exp(-α / 2 * L + 1j * (β2 / 2) * (ω**2) * L), axis=0
-    )
+    Eo = ifft(fft(Ei, axis=0) * np.exp(-α / 2 * L + 1j * (β2 / 2) * (ω**2) * L), axis=0)
 
     if Nmodes == 1:
         Eo = Eo.reshape(
             Eo.size,
         )
-
+    
+    if input1D:
+        # If the input was 1D, return a 1D array
+        Eo = Eo.flatten()
+        
     return (Eo, param) if returnParameters else Eo
 
 
@@ -119,47 +117,34 @@ def ssfm(Ei, param=None):
     ----------
     Ei : np.array
         Input optical signal field.
-    Fs : scalar
-        Sampling frequency in Hz.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the optical channel.
+    param : optic.utils.parameters object
+        Physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
-
         - param.Lspan: span length [km][default: 80 km]
-
         - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-
         - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-
         - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
         - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: simulation sampling frequency [samples/second][default: None]
-
         - param.prec: numerical precision [default: np.complex128]
-
         - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-
         - param.NF: edfa noise figure [dB] [default: 4.5 dB]
-
+        - param.seed: seed for the random number generator [default: None]
         - param.prgsBar: display progress bar? bolean variable [default:True]
-
         - param.returnParameters: bool, return channel parameters [default: False]
 
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
-  
+
     References
     ----------
-    [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013. 
+    [1] G. P. Agrawal, Nonlinear Fiber Optics, Elsevier Science, 2013.
 
     [2] O. V. Sinkin, R. Holzlöhner, J. Zweck, e C. R. Menyuk, “Optimization of the split-step Fourier method in modeling optical-fiber communications systems”, Journal of Lightwave Technology, vol. 21, nº 1, p. 61–68, jan. 2003, doi: 10.1109/JLT.2003.808628.
 
@@ -180,6 +165,7 @@ def ssfm(Ei, param=None):
     param.prec = getattr(param, "prec", np.complex128)
     param.amp = getattr(param, "amp", "edfa")
     param.NF = getattr(param, "NF", 4.5)
+    param.seed = getattr(param, "seed", None)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.returnParameters = getattr(param, "returnParameters", False)
 
@@ -193,6 +179,7 @@ def ssfm(Ei, param=None):
     prec = param.prec
     amp = param.amp
     NF = param.NF
+    seed = param.seed
     prgsBar = param.prgsBar
     returnParameters = param.returnParameters
 
@@ -209,6 +196,7 @@ def ssfm(Ei, param=None):
     paramAmp.NF = NF
     paramAmp.Fc = Fc
     paramAmp.Fs = Fs
+    paramAmp.seed = seed
 
     # generate frequency axis
     Nfft = len(Ei)
@@ -269,52 +257,34 @@ def manakovSSF(Ei, param):
     ----------
     Ei : np.array
         Input optical signal field.
-    Fs : scalar
-        Sampling frequency in Hz.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the optical channel.
+    param : optic.utils.parameters object
+        Physical/simulation parameters of the optical channel.
 
         - param.Ltotal: total fiber length [km][default: 400 km]
-
         - param.Lspan: span length [km][default: 80 km]
-
         - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-
         - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-
         - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-
         - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-
         - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-
         - param.Fs: simulation sampling frequency [samples/second][default: None]
-
         - param.prec: numerical precision [default: np.complex128]
-
         - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-
         - param.NF: edfa noise figure [dB] [default: 4.5 dB]
-
         - param.maxIter: max number of iter. in the trap. integration [default: 10]
-
         - param.tol: convergence tol. of the trap. integration.[default: 1e-5]
-
         - param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
-
         - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
-
         - param.prgsBar: display progress bar? bolean variable [default:True]
-
         - param.saveSpanN: specify the span indexes to be outputted [default:[]]
-
+        - param.seed: seed for the random number generator [default: None]
         - param.returnParameters: bool, return channel parameters [default: False]
 
     Returns
     -------
     Ech : np.array
         Optical signal after nonlinear propagation.
-    param : parameter object  (struct)
+    param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
 
     References
@@ -346,6 +316,7 @@ def manakovSSF(Ei, param):
     param.tol = getattr(param, "tol", 1e-5)
     param.nlprMethod = getattr(param, "nlprMethod", True)
     param.maxNlinPhaseRot = getattr(param, "maxNlinPhaseRot", 2e-2)
+    param.seed = getattr(param, "seed", None)
     param.prgsBar = getattr(param, "prgsBar", True)
     param.saveSpanN = getattr(param, "saveSpanN", [param.Ltotal // param.Lspan])
     param.returnParameters = getattr(param, "returnParameters", False)
@@ -366,6 +337,7 @@ def manakovSSF(Ei, param):
     saveSpanN = param.saveSpanN
     nlprMethod = param.nlprMethod
     maxNlinPhaseRot = param.maxNlinPhaseRot
+    seed = param.seed
     returnParameters = param.returnParameters
 
     # channel parameters
@@ -381,6 +353,7 @@ def manakovSSF(Ei, param):
     paramAmp.NF = NF
     paramAmp.Fc = Fc
     paramAmp.Fs = Fs
+    paramAmp.seed = seed
 
     # generate frequency axis
     Nfft = len(Ei)
@@ -494,6 +467,7 @@ def manakovSSF(Ei, param):
     else:
         return Ech
 
+
 @njit
 def nlinPhaseRot(Ex, Ey, Pch, γ):
     """
@@ -545,7 +519,7 @@ def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
     )
 
 
-def awgn(sig, snr, Fs=1, B=1, complexNoise=True):
+def awgn(sig, snr, Fs=1, B=1, complexNoise=True, seed=None):
     """
     Implement a basic AWGN channel model.
 
@@ -561,6 +535,8 @@ def awgn(sig, snr, Fs=1, B=1, complexNoise=True):
         Signal bandwidth, defined as the length of the frequency interval [-B/2, B/2]. The default is 1.
     complexNoise : bool
         Generate complex-valued noise. The default is True.
+    seed : int or None, optional
+        Seed for the random number generator. The default is None.
 
     Returns
     -------
@@ -577,8 +553,8 @@ def awgn(sig, snr, Fs=1, B=1, complexNoise=True):
     σ2 = (Fs / B) * noiseVar
 
     if complexNoise:
-        noise = gaussianComplexNoise(sig.shape, σ2)
+        noise = gaussianComplexNoise(sig.shape, σ2, seed)
     else:
-        noise = gaussianNoise(sig.shape, σ2)
+        noise = gaussianNoise(sig.shape, σ2, seed)
 
     return sig + noise

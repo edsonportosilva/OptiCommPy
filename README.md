@@ -11,7 +11,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 
 </p>
 
-![PyPI](https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package) ![PyPI - Downloads](https://img.shields.io/pypi/dm/OptiCommPy) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11450597.svg)](https://doi.org/10.5281/zenodo.11450597) [![DOI](https://joss.theoj.org/papers/10.21105/joss.06600/status.svg)](https://doi.org/10.21105/joss.06600)
+![PyPI](https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package) ![PyPI - Downloads](https://img.shields.io/pypi/dm/OptiCommPy) [![Documentation Status](https://readthedocs.org/projects/opticommpy/badge/?version=latest)](https://opticommpy.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11450597.svg)](https://doi.org/10.5281/zenodo.11450597) [![DOI](https://joss.theoj.org/papers/10.21105/joss.06600/status.svg)](https://doi.org/10.21105/joss.06600)[![PyPI Downloads](https://static.pepy.tech/personalized-badge/opticommpy?period=total&units=NONE&left_color=GRAY&right_color=GREEN&left_text=PyPI+Downloads)](https://pepy.tech/projects/opticommpy)
 
 
 ## Available features
@@ -24,7 +24,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
   - *Matched filtering.*
   - *Clock recovery.*
   - *Electronic chromatic dispersion compensation (EDC)*.
-  - *Several NxN MIMO adaptive equalization algorithms*.
+  - *Several $`N\times N`$ MIMO adaptive equalization algorithms*.
   - *Carrier phase recovery algorithms.* 
 * Functions to implement forward error correction (FEC) encoders and decoders.
 * For most of the cases, [Numba](https://numba.pydata.org/) is used to speed up the code.  
@@ -50,9 +50,11 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 * If you want to suggest or discuss anything related to OptiCommPy, please get in touch via e-mail
 (edsonporto88@gmail.com).
 
+[![Sponsor](https://img.shields.io/badge/Sponsor-❤️-pink?logo=github)](https://github.com/sponsors//edsonportosilva)
+
 ## Requirements/Dependencies
 
--  python>=3.2
+-  python>=3.10
 -  numpy>=1.24.4
 -  scipy>=1.13.0
 -  matplotlib>=3.7.0

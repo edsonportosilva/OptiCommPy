@@ -5,6 +5,7 @@ import logging as logg
 import cupy as cp
 import numpy as np
 from cupy.fft import fft, fftshift, ifft
+from cupyx.scipy import signal
 
 
 def checkGPU():
@@ -47,7 +48,9 @@ def firFilter(h, x, prec=None):
     """
     try:
         x.shape[1]
+        input1D = False
     except IndexError:
+        input1D = True
         x = x.reshape(len(x), 1)
     nModes = x.shape[1]
 
@@ -65,11 +68,13 @@ def firFilter(h, x, prec=None):
     y_ = x_.copy()
 
     for n in range(nModes):
-        y_[:, n] = cp.convolve(x_[:, n], h_, mode="same")
+        y_[:, n] = signal.fftconvolve(x_[:, n], h_, mode="same")
     y = cp.asnumpy(y_)
 
-    if y.shape[1] == 1:
-        y = y[:, 0]
+    if input1D:
+        # If the input was 1D, return a 1D array
+        y = y.flatten()
+
     return y
 
 
@@ -90,6 +95,9 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False, prec=None):
     freqDomainFilter : bool, optional
         If True, `h` is assumed to be the frequency response of the filter.
         If False, the FFT of `h` will be computed. Default is False.
+    prec : cp.dtype, optional
+        Numerical precision (CuPy dtype) for the computation. If None, the
+        precision is inferred from the input array `x`. Default is None.
 
     Returns
     -------
@@ -115,51 +123,48 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False, prec=None):
         h_ = cp.asarray(h).astype(prec)
 
     sigLen = len(x)  # length of the input signal
-    M = len(h)  # length of the filter impulse response
-    D = (M - 1) // 2  # filter delay
+    K = len(h)  # length of the filter impulse response
+    D = (K - 1) // 2  # filter delay
 
     if NFFT is None:
-        NFFT = 2 ** int(cp.ceil(np.log2(M)))
+        NFFT = 2 ** int(np.ceil(np.log2(K)))
 
-    if NFFT >= M:
-        L = NFFT - M + 1  # block length required
+    if NFFT >= K:
+        d = NFFT - K + 1  # block length required
     else:
         logg.error("FFT size is smaller than filter length")
 
     if freqDomainFilter:
         h_ = cp.pad(
-            fftshift(ifft(h_)), (0, L - 1), mode="constant", constant_values=0 + 0j
+            fftshift(ifft(h_)), (0, NFFT - K), mode="constant", constant_values=0 + 0j
         )
     else:
-        h_ = cp.pad(h_, (0, L - 1), mode="constant", constant_values=0 + 0j)
+        h_ = cp.pad(h_, (0, NFFT - K), mode="constant", constant_values=0 + 0j)
 
     H = fft(h_)  # frequency response
 
-    discard = M - 1  # number of samples to be discarded after IFFT (overlap samples)
-    numBlocks = int(cp.ceil(sigLen / L))  # total number of FFT blocks to be processed
+    discard = K - 1  # number of samples to be discarded after IFFT (overlap samples)
+    numBlocks = int(
+        np.ceil((sigLen + K - 1) / d)
+    )  # total number of FFT blocks to be processed
     padLen = (
-        numBlocks * L - sigLen
+        numBlocks * d - sigLen
     )  # pad length necessary to complete an integer number of blocks
 
     # pad signal with padLen zeros + D zeros (to compensate for filter delay)
-    x_ = cp.pad(x_, (0, padLen + D), mode="constant", constant_values=0 + 0j)
+    x_ = cp.pad(x_, (discard, padLen + D), mode="constant", constant_values=0 + 0j)
 
     # pre-allocate output
-    y = cp.zeros(len(x_), dtype="complex")
-
-    # overlap-and-save blockwise processing
-    x_ = cp.pad(x_, (M - 1, 0), mode="constant", constant_values=0 + 0j)
-
-    start_idx = 0
-    end_idx = NFFT
+    y = cp.zeros(numBlocks * d, dtype="complex")
 
     for blk in range(numBlocks):
-        X = fft(x_[start_idx:end_idx])
+        # extract block and compute FFT
+        X = fft(x_[blk * d : blk * d + NFFT])
+        # frequency domain multiplication and IFFT
         y_blk = ifft(X * H)
-        y[blk * L : (blk + 1) * L] = y_blk[discard:]
-        start_idx += L
-        end_idx = start_idx + NFFT
+        # save valid part of the block
+        y[blk * d : (blk + 1) * d] = y_blk[discard:]
 
     y = cp.asnumpy(y)
 
-    return y[D:-padLen]
+    return y[D : D + sigLen]

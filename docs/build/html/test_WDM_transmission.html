@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="English" >
+<html class="writer-html5" lang="English">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulation of coherent WDM transmission &mdash; OptiCommPy 0.6.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/nbsphinx-code-cells.css" type="text/css" />
+  <title>Simulation of coherent WDM transmission &mdash; OptiCommPy alpha 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -18,7 +20,7 @@
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -40,7 +42,7 @@
             OptiCommPy
           </a>
               <div class="version">
-                0.6
+                0.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -67,7 +69,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#Downsampling-to-2-samples/symbol-and-re-synchronization-with-transmitted-sequences">Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Power-normalization">Power normalization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Adaptive-equalization">Adaptive equalization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Carrier-phase-recovery">Carrier phase recovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Carrier-frequency-offset-and-phase-recovery">Carrier frequency offset and phase recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Evaluate-transmission-metrics">Evaluate transmission metrics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#References">References</a></li>
 </ul>
@@ -112,19 +114,19 @@
 <section id="Simulation-of-coherent-WDM-transmission">
 <h1>Simulation of coherent WDM transmission<a class="headerlink" href="#Simulation-of-coherent-WDM-transmission" title="Permalink to this heading"></a></h1>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="s1">&#39;google.colab&#39;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">get_ipython</span><span class="p">()):</span>
-    <span class="o">!</span> git clone -b main https://github.com/edsonportosilva/OptiCommPy
+    <span class="o">!</span><span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>https://github.com/edsonportosilva/OptiCommPy
     <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">chdir</span> <span class="k">as</span> <span class="n">cd</span>
     <span class="n">cd</span><span class="p">(</span><span class="s1">&#39;/content/OptiCommPy/&#39;</span><span class="p">)</span>
-    <span class="o">!</span> pip install .
+    <span class="o">!</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -153,7 +155,7 @@
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.core.display</span> <span class="kn">import</span> <span class="n">HTML</span>
@@ -172,7 +174,7 @@
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -185,7 +187,7 @@
 </style></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figsize</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -193,7 +195,7 @@
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
@@ -234,19 +236,19 @@ utilized in this setup are characterized by linewidths of 100 kHz, with each mod
 <td><p>Pulse shaping filter</p></td>
 <td><p>'rrc'</p></td>
 </tr>
-<tr class="row-even"><td><p>Ntaps</p></td>
+<tr class="row-even"><td><p>nPulseTaps</p></td>
 <td><p>Number of pulse shaping filter coefficients</p></td>
 <td><p>4096</p></td>
 </tr>
-<tr class="row-odd"><td><p>alphaRRC</p></td>
+<tr class="row-odd"><td><p>pulseRollOff</p></td>
 <td><p>RRC rolloff</p></td>
 <td><p>0.01</p></td>
 </tr>
-<tr class="row-even"><td><p>Pch_dBm</p></td>
+<tr class="row-even"><td><p>powerPerChannel</p></td>
 <td><p>Power per WDM channel [dBm]</p></td>
 <td><p>-2</p></td>
 </tr>
-<tr class="row-odd"><td><p>Nch</p></td>
+<tr class="row-odd"><td><p>nChannels</p></td>
 <td><p>Number of WDM channels</p></td>
 <td><p>11</p></td>
 </tr>
@@ -254,19 +256,19 @@ utilized in this setup are characterized by linewidths of 100 kHz, with each mod
 <td><p>Central frequency of the WDM spectrum [Hz]</p></td>
 <td><p>193.1e12</p></td>
 </tr>
-<tr class="row-odd"><td><p>lw</p></td>
+<tr class="row-odd"><td><p>laserLinewidth</p></td>
 <td><p>Laser linewidth [Hz]</p></td>
 <td><p>100e3</p></td>
 </tr>
-<tr class="row-even"><td><p>freqSpac</p></td>
+<tr class="row-even"><td><p>wdmGridSpacing</p></td>
 <td><p>WDM grid spacing [Hz]</p></td>
 <td><p>37.5e9</p></td>
 </tr>
-<tr class="row-odd"><td><p>Nmodes</p></td>
+<tr class="row-odd"><td><p>nPolModes</p></td>
 <td><p>Number of polarization modes</p></td>
 <td><p>2</p></td>
 </tr>
-<tr class="row-even"><td><p>Nbits</p></td>
+<tr class="row-even"><td><p>nBits</p></td>
 <td><p>Total number of bits per polarization</p></td>
 <td><p>400000</p></td>
 </tr>
@@ -276,24 +278,24 @@ utilized in this setup are characterized by linewidths of 100 kHz, with each mod
 to 400000 bits transmitted per polarization per WDM carrier.</p>
 <p><strong>Polarization multiplexed WDM signal generation</strong></p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Transmitter parameters:</span>
 <span class="n">paramTx</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">M</span>   <span class="o">=</span> <span class="mi">16</span>           <span class="c1"># order of the modulation format</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">Rs</span>  <span class="o">=</span> <span class="mf">32e9</span>         <span class="c1"># symbol rate [baud]</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span> <span class="o">=</span> <span class="mi">16</span>           <span class="c1"># samples per symbol</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">pulse</span> <span class="o">=</span> <span class="s1">&#39;rrc&#39;</span>      <span class="c1"># pulse shaping filter</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">Ntaps</span> <span class="o">=</span> <span class="mi">4096</span>     <span class="c1"># number of pulse shaping filter coefficients</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">alphaRRC</span> <span class="o">=</span> <span class="mf">0.01</span>    <span class="c1"># RRC rolloff</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">Pch_dBm</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>        <span class="c1"># power per WDM channel [dBm]</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">Nch</span>     <span class="o">=</span> <span class="mi">11</span>       <span class="c1"># number of WDM channels</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">Fc</span>      <span class="o">=</span> <span class="mf">193.1e12</span> <span class="c1"># central optical frequency of the WDM spectrum</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">lw</span>      <span class="o">=</span> <span class="mf">100e3</span>    <span class="c1"># laser linewidth in Hz</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">freqSpac</span> <span class="o">=</span> <span class="mf">37.5e9</span>  <span class="c1"># WDM grid spacing</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">Nmodes</span> <span class="o">=</span> <span class="mi">2</span>         <span class="c1"># number of signal modes [2 for polarization multiplexed signals]</span>
-<span class="n">paramTx</span><span class="o">.</span><span class="n">Nbits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">)</span><span class="o">*</span><span class="mf">1e5</span><span class="p">)</span> <span class="c1"># total number of bits per polarization</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">M</span>   <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># order of the modulation format</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">Rs</span>  <span class="o">=</span> <span class="mf">32e9</span> <span class="c1"># symbol rate [baud]</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># samples per symbol</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">pulse</span> <span class="o">=</span> <span class="s1">&#39;rrc&#39;</span> <span class="c1"># pulse shaping filter</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">nPulseTaps</span> <span class="o">=</span> <span class="mi">4096</span> <span class="c1"># number of pulse shaping filter coefficients</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">pulseRollOff</span> <span class="o">=</span> <span class="mf">0.01</span> <span class="c1"># RRC rolloff</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">powerPerChannel</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="c1"># power per WDM channel [dBm]</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">nChannels</span> <span class="o">=</span> <span class="mi">11</span> <span class="c1"># number of WDM channels</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">Fc</span> <span class="o">=</span> <span class="mf">193.1e12</span> <span class="c1"># central optical frequency of the WDM spectrum</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">laserLinewidth</span> <span class="o">=</span> <span class="mf">100e3</span> <span class="c1"># laser linewidth in Hz</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">wdmGridSpacing</span> <span class="o">=</span> <span class="mf">37.5e9</span> <span class="c1"># WDM grid spacing</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">nPolModes</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># number of signal modes [2 for polarization multiplexed signals]</span>
+<span class="n">paramTx</span><span class="o">.</span><span class="n">nBits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">)</span><span class="o">*</span><span class="mf">1e5</span><span class="p">)</span> <span class="c1"># total number of bits per polarization</span>
 
 <span class="c1"># generate WDM signal</span>
 <span class="n">sigWDM_Tx</span><span class="p">,</span> <span class="n">symbTx_</span><span class="p">,</span> <span class="n">paramTx</span> <span class="o">=</span> <span class="n">simpleWDMTx</span><span class="p">(</span><span class="n">paramTx</span><span class="p">)</span>
@@ -304,7 +306,7 @@ to 400000 bits transmitted per polarization per WDM carrier.</p>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "322e60ffcb1445169d6b5ea5276ba64f", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "3aef565890d544819090d3358e93a275", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -487,7 +489,7 @@ simple calculation steps, involving time and frequency domain representations of
 </tbody>
 </table>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># optical channel parameters</span>
@@ -504,7 +506,6 @@ simple calculation steps, involving time and frequency domain representations of
 <span class="n">paramCh</span><span class="o">.</span><span class="n">nlprMethod</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># use adaptive step-size based o maximum nonlinear phase-shift</span>
 <span class="n">paramCh</span><span class="o">.</span><span class="n">maxNlinPhaseRot</span> <span class="o">=</span> <span class="mf">2e-2</span> <span class="c1"># maximum nonlinear phase-shift per step</span>
 <span class="n">paramCh</span><span class="o">.</span><span class="n">prgsBar</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1"># show progress bar</span>
-<span class="c1">#paramCh.saveSpanN = [1, 5, 9, 14]</span>
 <span class="n">paramCh</span><span class="o">.</span><span class="n">Fs</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">Rs</span><span class="o">*</span><span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span> <span class="c1"># sampling rate</span>
 
 <span class="c1"># nonlinear signal propagation</span>
@@ -512,15 +513,23 @@ simple calculation steps, involving time and frequency domain representations of
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Running Manakov SSF model on GPU...
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "b5ea1796392a46b1a22146263b2db209", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "0b24a0dfd05a419b8b9570154200de54", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <p><strong>Optical WDM spectrum before and after transmission</strong></p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># plot psd</span>
@@ -547,17 +556,17 @@ simple calculation steps, involving time and frequency domain representations of
 <section id="Optical-coherent-receiver">
 <h3>Optical coherent receiver<a class="headerlink" href="#Optical-coherent-receiver" title="Permalink to this heading"></a></h3>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Receiver</span>
 
 <span class="c1"># parameters</span>
-<span class="n">chIndex</span>  <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">paramTx</span><span class="o">.</span><span class="n">Nch</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>      <span class="c1"># index of the channel to be demodulated</span>
+<span class="n">chIndex</span>  <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">paramTx</span><span class="o">.</span><span class="n">nChannels</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>      <span class="c1"># index of the channel to be demodulated</span>
 
 <span class="n">Fc</span> <span class="o">=</span> <span class="n">paramCh</span><span class="o">.</span><span class="n">Fc</span>
 <span class="n">Ts</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">Fs</span>
-<span class="n">freqGrid</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">freqGrid</span>
+<span class="n">freqGrid</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">wdmFreqGrid</span>
 <span class="n">π</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
 <span class="n">t</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sigWDM</span><span class="p">))</span><span class="o">*</span><span class="n">Ts</span>
 
@@ -622,7 +631,7 @@ Local oscillator P: 10.00 dBm, lw: 100.00 kHz, FO: 150.00 MHz
 <section id="Matched-filtering-and-CD-compensation">
 <h3>Matched filtering and CD compensation<a class="headerlink" href="#Matched-filtering-and-CD-compensation" title="Permalink to this heading"></a></h3>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Rx filtering</span>
@@ -631,7 +640,7 @@ Local oscillator P: 10.00 dBm, lw: 100.00 kHz, FO: 150.00 MHz
 <span class="k">if</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">pulse</span> <span class="o">==</span> <span class="s1">&#39;nrz&#39;</span><span class="p">:</span>
     <span class="n">pulse</span> <span class="o">=</span> <span class="n">pulseShape</span><span class="p">(</span><span class="s1">&#39;nrz&#39;</span><span class="p">,</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span><span class="p">)</span>
 <span class="k">elif</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">pulse</span> <span class="o">==</span> <span class="s1">&#39;rrc&#39;</span><span class="p">:</span>
-    <span class="n">pulse</span> <span class="o">=</span> <span class="n">pulseShape</span><span class="p">(</span><span class="s1">&#39;rrc&#39;</span><span class="p">,</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">paramTx</span><span class="o">.</span><span class="n">Ntaps</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">paramTx</span><span class="o">.</span><span class="n">alphaRRC</span><span class="p">,</span> <span class="n">Ts</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="n">paramTx</span><span class="o">.</span><span class="n">Rs</span><span class="p">)</span>
+    <span class="n">pulse</span> <span class="o">=</span> <span class="n">pulseShape</span><span class="p">(</span><span class="s1">&#39;rrc&#39;</span><span class="p">,</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">SpS</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">paramTx</span><span class="o">.</span><span class="n">nPulseTaps</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">paramTx</span><span class="o">.</span><span class="n">pulseRollOff</span><span class="p">,</span> <span class="n">Ts</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="n">paramTx</span><span class="o">.</span><span class="n">Rs</span><span class="p">)</span>
 
 <span class="n">pulse</span> <span class="o">=</span> <span class="n">pnorm</span><span class="p">(</span><span class="n">pulse</span><span class="p">)</span>
 <span class="n">sigRx</span> <span class="o">=</span> <span class="n">firFilter</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="n">sigRx</span><span class="p">)</span>
@@ -660,18 +669,26 @@ Local oscillator P: 10.00 dBm, lw: 100.00 kHz, FO: 150.00 MHz
 <img alt="_images/test_WDM_transmission_20_0.png" src="_images/test_WDM_transmission_20_0.png" />
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Running CD compensation...
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/test_WDM_transmission_20_1.png" src="_images/test_WDM_transmission_20_1.png" />
+<img alt="_images/test_WDM_transmission_20_2.png" src="_images/test_WDM_transmission_20_2.png" />
 </div>
 </div>
 </section>
 <section id="Downsampling-to-2-samples/symbol-and-re-synchronization-with-transmitted-sequences">
 <h3>Downsampling to 2 samples/symbol and re-synchronization with transmitted sequences<a class="headerlink" href="#Downsampling-to-2-samples/symbol-and-re-synchronization-with-transmitted-sequences" title="Permalink to this heading"></a></h3>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># decimation</span>
@@ -688,7 +705,7 @@ Local oscillator P: 10.00 dBm, lw: 100.00 kHz, FO: 150.00 MHz
 <section id="Power-normalization">
 <h3>Power normalization<a class="headerlink" href="#Power-normalization" title="Permalink to this heading"></a></h3>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">pnorm</span><span class="p">(</span><span class="n">sigRx</span><span class="p">)</span>
@@ -700,7 +717,7 @@ Local oscillator P: 10.00 dBm, lw: 100.00 kHz, FO: 150.00 MHz
 <section id="Adaptive-equalization">
 <h3>Adaptive equalization<a class="headerlink" href="#Adaptive-equalization" title="Permalink to this heading"></a></h3>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># adaptive equalization parameters</span>
@@ -710,6 +727,7 @@ Local oscillator P: 10.00 dBm, lw: 100.00 kHz, FO: 150.00 MHz
 <span class="n">paramEq</span><span class="o">.</span><span class="n">numIter</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">paramEq</span><span class="o">.</span><span class="n">storeCoeff</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">paramEq</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span>
+<span class="n">paramEq</span><span class="o">.</span><span class="n">shapingFactor</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">shapingFactor</span>
 <span class="n">paramEq</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mf">0.2</span><span class="o">*</span><span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.8</span><span class="o">*</span><span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
 <span class="n">paramEq</span><span class="o">.</span><span class="n">prgsBar</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -733,19 +751,20 @@ Local oscillator P: 10.00 dBm, lw: 100.00 kHz, FO: 150.00 MHz
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
+Running adaptive equalizer...
 da-rde - training stage #0
 da-rde pre-convergence training iteration #0
-da-rde MSE = 0.020055.
+da-rde MSE = 0.018236.
 da-rde pre-convergence training iteration #1
-da-rde MSE = 0.017908.
+da-rde MSE = 0.016204.
 da-rde pre-convergence training iteration #2
-da-rde MSE = 0.017852.
+da-rde MSE = 0.016154.
 da-rde pre-convergence training iteration #3
-da-rde MSE = 0.017813.
+da-rde MSE = 0.016119.
 da-rde pre-convergence training iteration #4
-da-rde MSE = 0.017786.
+da-rde MSE = 0.016094.
 rde - training stage #1
-rde MSE = 0.012695.
+rde MSE = 0.012705.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -756,15 +775,17 @@ rde MSE = 0.012695.
 </div>
 </div>
 </section>
-<section id="Carrier-phase-recovery">
-<h3>Carrier phase recovery<a class="headerlink" href="#Carrier-phase-recovery" title="Permalink to this heading"></a></h3>
+<section id="Carrier-frequency-offset-and-phase-recovery">
+<h3>Carrier frequency offset and phase recovery<a class="headerlink" href="#Carrier-frequency-offset-and-phase-recovery" title="Permalink to this heading"></a></h3>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">paramCPR</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
 <span class="n">paramCPR</span><span class="o">.</span><span class="n">alg</span> <span class="o">=</span> <span class="s1">&#39;bps&#39;</span>
 <span class="n">paramCPR</span><span class="o">.</span><span class="n">M</span>   <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span>
+<span class="n">paramCPR</span><span class="o">.</span><span class="n">constType</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">constType</span>
+<span class="n">paramCPR</span><span class="o">.</span><span class="n">shapingFactor</span> <span class="o">=</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">shapingFactor</span>
 <span class="n">paramCPR</span><span class="o">.</span><span class="n">N</span>   <span class="o">=</span> <span class="mi">75</span>
 <span class="n">paramCPR</span><span class="o">.</span><span class="n">B</span>   <span class="o">=</span> <span class="mi">64</span>
 
@@ -777,18 +798,27 @@ rde MSE = 0.012695.
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Running frequency offset compensation...
+Running BPS carrier phase recovery...
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/test_WDM_transmission_28_0.png" src="_images/test_WDM_transmission_28_0.png" />
+<img alt="_images/test_WDM_transmission_28_1.png" src="_images/test_WDM_transmission_28_1.png" />
 </div>
 </div>
 </section>
 <section id="Evaluate-transmission-metrics">
 <h3>Evaluate transmission metrics<a class="headerlink" href="#Evaluate-transmission-metrics" title="Permalink to this heading"></a></h3>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">discard</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">discard</span><span class="p">)</span>
@@ -811,9 +841,9 @@ rde MSE = 0.012695.
         <span class="n">y_CPR</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pnorm</span><span class="p">(</span><span class="n">rot1</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rot1</span><span class="p">))]</span><span class="o">*</span><span class="n">y_CPR</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
 
 
-<span class="n">BER</span><span class="p">,</span> <span class="n">SER</span><span class="p">,</span> <span class="n">SNR</span> <span class="o">=</span> <span class="n">fastBERcalc</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;qam&#39;</span><span class="p">)</span>
-<span class="n">GMI</span><span class="p">,</span> <span class="n">NGMI</span> <span class="o">=</span> <span class="n">monteCarloGMI</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;qam&#39;</span><span class="p">)</span>
-<span class="n">MI</span>       <span class="o">=</span> <span class="n">monteCarloMI</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;qam&#39;</span><span class="p">)</span>
+<span class="n">BER</span><span class="p">,</span> <span class="n">SER</span><span class="p">,</span> <span class="n">SNR</span> <span class="o">=</span> <span class="n">fastBERcalc</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;qam&#39;</span><span class="p">,</span><span class="n">px</span><span class="o">=</span><span class="n">paramTx</span><span class="o">.</span><span class="n">pmf</span><span class="p">)</span>
+<span class="n">GMI</span><span class="p">,</span> <span class="n">NGMI</span> <span class="o">=</span> <span class="n">monteCarloGMI</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;qam&#39;</span><span class="p">,</span><span class="n">px</span><span class="o">=</span><span class="n">paramTx</span><span class="o">.</span><span class="n">pmf</span><span class="p">)</span>
+<span class="n">MI</span>       <span class="o">=</span> <span class="n">monteCarloMI</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;qam&#39;</span><span class="p">,</span><span class="n">px</span><span class="o">=</span><span class="n">paramTx</span><span class="o">.</span><span class="n">pmf</span><span class="p">)</span>
 <span class="n">EVM</span>      <span class="o">=</span> <span class="n">calcEVM</span><span class="p">(</span><span class="n">y_CPR</span><span class="p">[</span><span class="n">ind</span><span class="p">,:],</span> <span class="n">paramTx</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="s1">&#39;qam&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="n">ind</span><span class="p">,:])</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;      pol.X      pol.Y      &#39;</span><span class="p">)</span>
@@ -833,9 +863,9 @@ rde MSE = 0.012695.
 <div class="output_area docutils container">
 <div class="highlight"><pre>
       pol.X      pol.Y
- SER: 0.00e+00,  1.11e-05
- BER: 0.00e+00,  2.78e-06
- SNR: 21.62 dB,  21.59 dB
+ SER: 0.00e+00,  0.00e+00
+ BER: 0.00e+00,  0.00e+00
+ SNR: 21.62 dB,  21.61 dB
  EVM: 0.69 %,    0.69 %
   MI: 4.00 bits, 4.00 bits
  GMI: 4.00 bits, 4.00 bits
@@ -848,14 +878,6 @@ NGMI: 1.00,      1.00
 <p>[1] D. Marcuse, C. R. Menyuk, e P. K. A. Wai, “Application of the Manakov-PMD equation to studies of signal propagation in optical fibers with randomly varying birefringence”, Journal of Lightwave Technology, vol. 15, nº 9, p. 1735–1745, 1997, doi: 10.1109/50.622902.</p>
 <p>[2] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.</p>
 <p>[3] K. Kikuchi, “Fundamentals of Coherent Optical Fiber Communications”, J. Lightwave Technol., JLT, vol. 34, nº 1, p. 157–179, jan. 2016.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
-</pre></div>
-</div>
-</div>
 <script type="application/vnd.jupyter.widget-state+json">
 {"0cec9d9b71ba45018460f4942672e73b": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "0d0d223577654c0980520ed48c4866a7": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "FloatProgressModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "FloatProgressModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "ProgressView", "bar_style": "success", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_b70bb6363ff64ccbb7087900ef892eb5", "max": 14, "min": 0, "orientation": "horizontal", "style": "IPY_MODEL_d4247b94ef5c4a439cd4af9458125fc2", "value": 14}}, "0ef4e5276a4344638674b547b859a129": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "305e5dc45df947c4b3640746643c4a26": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HBoxModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HBoxModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HBoxView", "box_style": "", "children": ["IPY_MODEL_b07e3d1c0eee407ba3a2b6b3498edb61", "IPY_MODEL_e0f8d22f269246b9b4ed8c6c7e61aeae", "IPY_MODEL_5b6ae8306e70477580b6203d44e33a38"], "layout": "IPY_MODEL_0ef4e5276a4344638674b547b859a129"}}, "32ef48a5dd1d4a2cb94e5409dd572d74": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "5773596ed660451aac75b1f0b2a052e5": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "596d425cdf7f4a0697238e3664c5195f": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "DescriptionStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "DescriptionStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "description_width": ""}}, "5b6ae8306e70477580b6203d44e33a38": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HTMLModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HTMLView", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_5773596ed660451aac75b1f0b2a052e5", "placeholder": "\u200b", "style": "IPY_MODEL_f6e0856c07ed4069940d749b31c5d6d5", "value": " 5/5 [00:29&lt;00:00,  2.62s/it]"}}, "6a786005faa04fd8b7c5e69dc70df06a": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "7b1b87f7b77049a691df25723928eef3": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "92a22dde2b5e4ab882f824d5dff0d377": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HTMLModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HTMLView", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_6a786005faa04fd8b7c5e69dc70df06a", "placeholder": "\u200b", "style": "IPY_MODEL_994d17059a9b47f0b2ed3654712fb0c3", "value": " 14/14 [00:57&lt;00:00,  3.82s/it]"}}, "994d17059a9b47f0b2ed3654712fb0c3": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "DescriptionStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "DescriptionStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "description_width": ""}}, "9eef6ad9e86b4434b244d76fb90653b2": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "b07e3d1c0eee407ba3a2b6b3498edb61": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HTMLModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HTMLView", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_0cec9d9b71ba45018460f4942672e73b", "placeholder": "\u200b", "style": "IPY_MODEL_596d425cdf7f4a0697238e3664c5195f", "value": "100%"}}, "b70bb6363ff64ccbb7087900ef892eb5": {"model_module": "@jupyter-widgets/base", "model_module_version": "1.2.0", "model_name": "LayoutModel", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "1.2.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "overflow_x": null, "overflow_y": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "c5a9e5d034e64b00b295e93140f51e72": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "DescriptionStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "DescriptionStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "description_width": ""}}, "d4247b94ef5c4a439cd4af9458125fc2": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "ProgressStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "ProgressStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "bar_color": null, "description_width": ""}}, "d751e4cdab95433f8fabdaebf41d630a": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "ProgressStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "ProgressStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "bar_color": null, "description_width": ""}}, "d7ec57b1b19d4660a0548563dd43f97c": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HBoxModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HBoxModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HBoxView", "box_style": "", "children": ["IPY_MODEL_f973387453444cc4b5fbec8658506a3a", "IPY_MODEL_0d0d223577654c0980520ed48c4866a7", "IPY_MODEL_92a22dde2b5e4ab882f824d5dff0d377"], "layout": "IPY_MODEL_7b1b87f7b77049a691df25723928eef3"}}, "e0f8d22f269246b9b4ed8c6c7e61aeae": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "FloatProgressModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "FloatProgressModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "ProgressView", "bar_style": "success", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_9eef6ad9e86b4434b244d76fb90653b2", "max": 5, "min": 0, "orientation": "horizontal", "style": "IPY_MODEL_d751e4cdab95433f8fabdaebf41d630a", "value": 5}}, "f6e0856c07ed4069940d749b31c5d6d5": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "DescriptionStyleModel", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "DescriptionStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "1.2.0", "_view_name": "StyleView", "description_width": ""}}, "f973387453444cc4b5fbec8658506a3a": {"model_module": "@jupyter-widgets/controls", "model_module_version": "1.5.0", "model_name": "HTMLModel", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "1.5.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "1.5.0", "_view_name": "HTMLView", "description": "", "description_tooltip": null, "layout": "IPY_MODEL_32ef48a5dd1d4a2cb94e5409dd572d74", "placeholder": "\u200b", "style": "IPY_MODEL_c5a9e5d034e64b00b295e93140f51e72", "value": "100%"}}}
 </script></section>

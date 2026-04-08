@@ -1,7 +1,11 @@
 import unittest
+
 import numpy as np
+
+from optic.comm.modulation import (demap, demodulateGray, grayCode,
+                                   grayMapping, minEuclid, modulateGray)
 from optic.utils import bitarray2dec, dec2bitarray
-from optic.comm.modulation import grayCode, grayMapping, minEuclid, demap, modulateGray, demodulateGray
+
 
 class TestModulationFunctions(unittest.TestCase):
     def test_GrayCode(self):

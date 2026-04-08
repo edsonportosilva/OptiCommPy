@@ -11,13 +11,12 @@ Metrics for signal and performance characterization (:mod:`optic.comm.metrics`)
    calcLLR                  -- LLR calculation (circular AGWN channel)
    monteCarloGMI            -- Monte Carlo based generalized mutual information (GMI) estimation
    monteCarloMI             -- Monte Carlo based mutual information (MI) estimation
-   Qfunc                    -- Calculate function Q(x)
+   Qfunc                    -- Calculate function :math:`Q(x)`
    calcEVM                  -- Calculate error vector magnitude (EVM) metrics
    theoryBER                -- Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel
    theoryMI                 -- Calculate mutual information for the DCMC AWGN channel
    calcLinOSNR              -- Calculate the OSNR evolution in a multi-span fiber transmission system
 """
-
 
 """Metrics for signal and performance characterization."""
 import logging as logg
@@ -30,7 +29,7 @@ from scipy.integrate import dblquad
 from scipy.special import erf
 
 from optic.comm.modulation import demodulateGray, grayMapping, minEuclid
-from optic.dsp.core import pnorm, signal_power
+from optic.dsp.core import pnorm, signalPower
 from optic.utils import dB2lin
 
 
@@ -108,7 +107,7 @@ def bert(Irx, bitsTx=None, seed=123):
     return BER, Q
 
 
-def fastBERcalc(rx, tx, M, constType):
+def fastBERcalc(rx, tx, M, constType, px=None):
     """
     Monte Carlo BER/SER/SNR calculation.
 
@@ -122,6 +121,8 @@ def fastBERcalc(rx, tx, M, constType):
         Modulation order.
     constType : string
         Modulation type: 'qam', 'psk', 'pam' or 'ook'.
+    px : (M, 1) np.array
+        Prior symbol probabilities.
 
     Returns
     -------
@@ -140,9 +141,20 @@ def fastBERcalc(rx, tx, M, constType):
     if M != 2 and constType == "ook":
         logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
+
+    # constellation parameters
+    if px is None:
+        px = []
+    if len(px) == 0:  # if px is not defined
+        px = 1 / M * np.ones(M)  # assume uniform distribution
+
     # constellation parameters
     constSymb = grayMapping(M, constType)
-    Es = np.mean(np.abs(constSymb) ** 2)
+    Es = np.sum(np.abs(constSymb) ** 2 * px)
+
+    # make copies of inputs
+    tx = tx.copy()
+    rx = rx.copy()
 
     # We want all the signal sequences to be disposed in columns:
     try:
@@ -171,9 +183,7 @@ def fastBERcalc(rx, tx, M, constType):
         tx[:, k] = pnorm(tx[:, k])
 
         # estimate SNR of the received constellation
-        SNR[k] = 10 * np.log10(
-            signal_power(tx[:, k]) / signal_power(rx[:, k] - tx[:, k])
-        )
+        SNR[k] = 10 * np.log10(signalPower(tx[:, k]) / signalPower(rx[:, k] - tx[:, k]))
     for k in range(nModes):
         brx = demodulateGray(np.sqrt(Es) * rx[:, k], M, constType)
         btx = demodulateGray(np.sqrt(Es) * tx[:, k], M, constType)
@@ -251,7 +261,7 @@ def monteCarloGMI(rx, tx, M, constType, px=None):
         Generalized mutual information values.
     NGMI : np.array
         Normalized mutual information.
-    
+
     References
     ----------
     [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
@@ -342,7 +352,7 @@ def monteCarloMI(rx, tx, M, constType, px=None):
         Modulation order.
     constType : string
         Modulation type: 'qam' or 'psk'
-    pX : (M, 1) np.array
+    px : (M, 1) np.array
         p.m.f. of the constellation symbols. The default is [].
 
     Returns
@@ -462,7 +472,7 @@ def Qfunc(x):
     -------
     scalar
         value of Q(x).
-    
+
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
@@ -481,8 +491,8 @@ def calcEVM(symb, M, constType, symbTx=None):
         Sequence of noisy symbols.
     M : int
         Constellation order.
-    constType : TYPE
-        DESCRIPTION.
+    constType : string
+        Modulation type: 'pam', 'qam' or 'psk'
     symbTx : np.array, optional
         Sequence of transmitted symbols (noiseless). The default is [].
 
@@ -560,13 +570,13 @@ def theoryBER(M, EbN0, constType):
     Notes
     -----
     The values of error probability obtained with this function are good approximations for moderate to high SNR regime (see [1]).
-    All cases assume Gray mapped constellations. For low SNR values and high constellation cardinalities (Pb>1e-1), the results 
+    All cases assume Gray mapped constellations. For low SNR values and high constellation cardinalities (:math:`P_b`>1e-1), the results
     should underestimate the real error probability.
 
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
-   
+
     """
     EbN0lin = 10 ** (EbN0 / 10)
     k = np.log2(M)
@@ -591,7 +601,7 @@ def theoryBER(M, EbN0, constType):
 @njit
 def condEntropy(yI, yQ, const, pX, ind, σ):
     """
-    Calculate conditional entropy H(X|Y=y)
+    Calculate conditional entropy :math:`H(X|Y=y)` for the DCMC AWGN channel.
 
     Parameters
     ----------
@@ -609,7 +619,7 @@ def condEntropy(yI, yQ, const, pX, ind, σ):
     Returns
     -------
     float
-        conditional entropy H(X|Y=y).
+        conditional entropy :math:`H(X|Y=y)` for the DCMC AWGN channel.
 
     References
     ----------
@@ -694,13 +704,13 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
     -------
     float
         Mutual information for the given parameters.
-    
+
     References
     ----------
     [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
     """
     constSymb = grayMapping(M, constType)  # get constellation
-    Es = signal_power(constSymb)  # calculate average symbol energy
+    Es = signalPower(constSymb)  # calculate average symbol energy
     constSymb = constSymb / np.sqrt(Es)  # normalize average symbol energy
 
     σ = np.sqrt((1 / 2) * 1 / dB2lin(SNR))  # noise variance per dimension
@@ -716,13 +726,14 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
         for i, x in enumerate(constSymb):
             key = round(abs(x) / 1e-14) * 1e-14
             groups[key].append(i)
-       
+
         for key, indices in groups.items():
             # Choose a representative index for the group
             rep_index = indices[0]
-            # Number of elements sharing the same |constSymb|  
-            count = len(indices)     
-            MI -= dblquad(
+            # Number of elements sharing the same |constSymb|
+            count = len(indices)
+            MI -= (
+                dblquad(
                     condEntropy,
                     -lim,
                     lim,
@@ -730,7 +741,9 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
                     lim,
                     args=(constSymb, pX, rep_index, σ),
                     epsabs=tol,
-                )[0] * count
+                )[0]
+                * count
+            )
 
     else:
         for ind in range(len(constSymb)):
@@ -785,11 +798,7 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
         / Ls
         * Leffa
         / np.arcsinh(
-            (np.pi**2 / 2)
-            * np.abs(β2)
-            * Leffa
-            * (Nch**2) ** (2 * Rs / Δf)
-            * Rs**2
+            (np.pi**2 / 2) * np.abs(β2) * Leffa * (Nch**2) ** (2 * Rs / Δf) * Rs**2
         )
     )
     # epsilon = 0.1

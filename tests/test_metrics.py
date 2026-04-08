@@ -1,21 +1,15 @@
 import unittest
+
 import numpy as np
+
+from optic.comm.metrics import (ASE_NyquistWDM, GN_Model_NyquistWDM,
+                                GNmodel_OSNR, Qfunc, calcEVM, calcLinOSNR,
+                                calcLLR, fastBERcalc, monteCarloGMI,
+                                monteCarloMI, theoryBER)
+from optic.comm.modulation import modulateGray
 from optic.dsp.core import pnorm
 from optic.models.channels import awgn
-from optic.comm.modulation import modulateGray
-from optic.comm.metrics import (
-    fastBERcalc,
-    calcLLR,
-    monteCarloGMI,
-    monteCarloMI,
-    Qfunc,
-    calcEVM,
-    theoryBER,
-    calcLinOSNR,
-    GN_Model_NyquistWDM,
-    ASE_NyquistWDM,
-    GNmodel_OSNR,
-)
+
 
 class TestCommunicationMetrics(unittest.TestCase):
     

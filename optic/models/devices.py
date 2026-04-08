@@ -1,24 +1,25 @@
 """
-=======================================================================
+===============================================================
 Models for optoelectronic devices (:mod:`optic.models.devices`)
-=======================================================================
+===============================================================
 
 .. autosummary::
    :toctree: generated/
 
-   pm                    -- Optical phase modulator
-   mzm                   -- Optical Mach-Zhender modulator
-   iqm                   -- Optical In-Phase/Quadrature Modulator (IQM)
-   pbs                   -- Polarization beam splitter (PBS)
-   hybrid_2x4_90deg      -- Optical 2 x 4 90° hybrid
-   voa                   -- Variable optical attenuator (VOA)
-   photodiode            -- Pin photodiode
-   balancedPD            -- Balanced photodiode pair
-   coherentReceiver      -- Optical coherent receiver (single polarization)
-   pdmCoherentReceiver   -- Optical polarization-multiplexed coherent receiver
-   edfa                  -- Simple EDFA model (gain + AWGN noise)
-   basicLaserModel       -- Laser model with Maxwellian random walk phase noise and RIN
-   adc                   -- Analog-to-digital converter (ADC) model
+   pm                    -- Optical phase modulator.
+   mzm                   -- Optical Mach-Zhender modulator.
+   iqm                   -- Optical In-Phase/Quadrature Modulator (IQM).
+   pbs                   -- Polarization beam splitter (PBS).
+   opticalHybrid2x4      -- Optical hybrid 2 x 4 90°.
+   voa                   -- Variable optical attenuator (VOA).
+   photodiode            -- Pin photodiode.
+   balancedPD            -- Balanced photodiode pair.
+   coherentReceiver      -- Optical coherent receiver (single polarization).
+   pdmCoherentReceiver   -- Optical polarization-multiplexed coherent receiver.
+   edfa                  -- Simple EDFA model (gain + AWGN noise).
+   basicLaserModel       -- Laser model with Maxwellian random walk phase noise and RIN.
+   adc                   -- Analog-to-digital converter (ADC) model.
+   dac                   -- Digital-to-analog converter (DAC) model.
 """
 
 """Basic physical models for optical/electronic devices."""
@@ -27,12 +28,23 @@ import logging as logg
 import numpy as np
 import scipy.constants as const
 
-from optic.dsp.core import (clockSamplingInterp, gaussianComplexNoise,
-                            lowPassFIR, phaseNoise, quantizer)
+from optic.dsp.core import (
+    calcMZM,
+    calcPM,
+    clockSamplingInterp,
+    delaySignal,
+    gaussianNoise,
+    gaussianComplexNoise,
+    iqMixing,
+    lowPassFIR,
+    phaseNoise,
+    quantizer,
+)
 from optic.utils import dBm2W, parameters
 
 try:
     from optic.dsp.coreGPU import checkGPU
+
     if checkGPU():
         from optic.dsp.coreGPU import firFilter
     else:
@@ -76,8 +88,7 @@ def pm(Ai, u, Vπ):
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
-    π = np.pi
-    return Ai * np.exp(1j * (u / Vπ) * π)
+    return calcPM(Ai, Vπ, u)
 
 
 def mzm(Ai, u, param=None):
@@ -90,11 +101,10 @@ def mzm(Ai, u, param=None):
         Amplitude of the optical field at the input of the MZM.
     u : np.array
         Electrical driving signal.
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the mzm.
+    param : optic.utils.parameters object, optional
+        Parameters of the MZM model.
 
         - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
-
         - param.Vb: MZM's bias voltage [V][default: -1 V]
 
     Returns
@@ -129,8 +139,7 @@ def mzm(Ai, u, param=None):
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
-    π = np.pi
-    return Ai * np.cos(0.5 / Vpi * (u + Vb) * π)
+    return calcMZM(Ai, Vpi, u, Vb)
 
 
 def iqm(Ai, u, param=None):
@@ -143,15 +152,12 @@ def iqm(Ai, u, param=None):
         Amplitude of the optical field at the input of the IQM.
     u : complex-valued np.array
         Modulator's driving signal (complex-valued baseband).
-    param : parameter object  (struct)
-        Object with physical/simulation parameters of the mzm.
+    param : optic.utils.parameters object, optional
+        Parameters of the MZM models.
 
         - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
-
         - param.VbI: I-MZM's bias voltage [V][default: -2 V]
-
         - param.VbQ: Q-MZM's bias voltage [V][default: -2 V]
-
         - param.Vphi: PM bias voltage [V][default: 1 V]
 
     Returns
@@ -225,7 +231,8 @@ def pbs(E, θ=0):
 
     """
     try:
-        assert E.shape[1] == 2, "E need to be a (N,2) or a (N,) np.array"
+        if E.shape[1] > 2:
+            logg.error("E need to be a (N,2) or a (N,) np.array")
     except IndexError:
         E = np.repeat(E, 2).reshape(-1, 2)
         E[:, 1] = 0
@@ -239,6 +246,7 @@ def pbs(E, θ=0):
 
     return Ex, Ey
 
+
 def voa(E, A=0):
     """
     Variable optical attenuator (VOA).
@@ -248,7 +256,7 @@ def voa(E, A=0):
     E : np.array
         Input optical field.
     A : float
-        attenuation [dB][default: 0 dB]    
+        attenuation [dB][default: 0 dB]
 
     Returns
     -------
@@ -259,10 +267,11 @@ def voa(E, A=0):
     ----------
     [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
 
-    """   
+    """
     assert A >= 0, "Attenuation should be a positive scalar"
 
     return E * 10 ** (-A / 20)
+
 
 def photodiode(E, param=None):
     """
@@ -272,36 +281,24 @@ def photodiode(E, param=None):
     ----------
     E : np.array
         Input optical field.
-    param : parameter object (struct), optional
-        Parameters of the photodiode.
+    param : optic.utils.parameters object, optional
+        Parameters of the photodiode model.
 
         - param.R: photodiode responsivity [A/W][default: 1 A/W]
-
         - param.Tc: temperature [°C][default: 25°C]
-
         - param.Id: dark current [A][default: 5e-9 A]
-
         - param.Ipd_sat: saturation value of the photocurrent [A][default: 5e-3 A]
-
         - param.RL: impedance load [Ω] [default: 50Ω]
-
-        - param.B bandwidth [Hz][default: 30e9 Hz]
-
+        - param.B: bandwidth [Hz][default: 30e9 Hz]
         - param.Fs: sampling frequency [Hz] [default: None]
-
         - param.fType: frequency response type [default: 'rect']
-
-        - param.N: number of the frequency resp. filter taps. [default: 256]
-
-        - param.ideal: consider ideal photodiode (i.e. $i_{pd} = R|E|^2$) [default: False]
-
+        - param.N: number of the frequency resp. filter taps. [default: 255]
+        - param.ideal: consider ideal photodiode (i.e. :math:`i_{pd}(t) = R|E(t)|^2`) [default: False]
         - param.shotNoise: add shot noise to photocurrent. [default: True]
-
         - param.thermalNoise: add thermal noise to photocurrent. [default: True]
-
         - param.currentSaturation: consider photocurrent saturation. [default: False]
-
         - param.bandwidthLimitation: consider bandwidth limitation. [default: True]
+        - param.seed: seed for the random number generator [default: None]
 
     Returns
     -------
@@ -314,7 +311,7 @@ def photodiode(E, param=None):
 
     """
     if param is None:
-        param = []
+        param = parameters()
     kB = const.value("Boltzmann constant")
     q = const.value("elementary charge")
 
@@ -325,8 +322,9 @@ def photodiode(E, param=None):
     RL = getattr(param, "RL", 50)
     B = getattr(param, "B", 30e9)
     Ipd_sat = getattr(param, "Ipd_sat", 5e-3)
-    N = getattr(param, "N", 256)
+    N = getattr(param, "N", 255)
     fType = getattr(param, "fType", "rect")
+    seed = getattr(param, "seed", None)
     ideal = getattr(param, "ideal", False)
     shotNoise = getattr(param, "shotNoise", True)
     thermalNoise = getattr(param, "thermalNoise", True)
@@ -335,7 +333,26 @@ def photodiode(E, param=None):
 
     assert R > 0, "PD responsivity should be a positive scalar"
 
-    ipd = R * E * np.conj(E)  # ideal photocurrent
+    try:
+        nModes = E.shape[1]
+    except IndexError:
+        nModes = 1
+
+    if nModes > 1:
+        ipd = R * np.sum(
+            np.abs(E) ** 2, axis=1
+        )  # ideal photocurrent with two or more modes
+    else:
+        ipd = R * E * np.conj(E)  # ideal photocurrent
+
+    if N % 2 == 0:
+        N += 1  # make sure N is odd
+        logg.warning(
+            "Number of filter taps (N) was even, incrementing by one to make it odd."
+        )
+
+    if seed is not None:
+        np.random.seed(seed)  # set seed for reproducibility
 
     if not (ideal):
         try:
@@ -347,18 +364,18 @@ def photodiode(E, param=None):
 
         if currentSaturation:
             ipd[ipd > Ipd_sat] = Ipd_sat  # saturation of the photocurrent
-        
+
         if shotNoise:
             # shot noise
             σ2_s = 2 * q * (ipd + Id) * B  # shot noise variance
-            Is = np.sqrt(Fs * (σ2_s / (2 * B))) * np.random.normal(0, 1, ipd.size)
+            Is = np.sqrt(Fs * (σ2_s / (2 * B))) * np.random.normal(0, 1, ipd.shape)
             # add shot noise to photocurrent
             ipd += Is
         if thermalNoise:
             # thermal noise
             T = Tc + 273.15  # temperature in Kelvin
             σ2_T = 4 * kB * T * B / RL  # thermal noise variance
-            It = np.sqrt(Fs * (σ2_T / (2 * B))) * np.random.normal(0, 1, ipd.size)
+            It = np.sqrt(Fs * (σ2_T / (2 * B))) * np.random.normal(0, 1, ipd.shape)
             # add thermal noise to photocurrent
             ipd += It
         if bandwidthLimitation:
@@ -371,7 +388,7 @@ def photodiode(E, param=None):
 
 def balancedPD(E1, E2, param=None):
     """
-    Balanced photodiode (BPD).
+    Balanced photodiode pair (BPD).
 
     Parameters
     ----------
@@ -379,18 +396,19 @@ def balancedPD(E1, E2, param=None):
         Input optical field.
     E2 : np.array
         Input optical field.
-    param : parameter object (struct), optional
-        Parameters of the photodiodes.
+    param : optic.utils.parameters object, optional
+        Parameters of the photodiode models.
 
-        - param.R: photodiode responsivity [A/W][default: 1 A/W]
-        - param.Tc: temperature [°C][default: 25°C]
-        - param.Id: dark current [A][default: 5e-9 A]
-        - param.RL: impedance load [Ω] [default: 50Ω]
-        - param.B bandwidth [Hz][default: 30e9 Hz]
-        - param.Fs: sampling frequency [Hz] [default: 60e9 Hz]
-        - param.fType: frequency response type [default: 'rect']
-        - param.N: number of the frequency resp. filter taps. [default: 8001]
-        - param.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True]
+        - param.R: photodiode responsivity [A/W][default: 1 A/W].
+        - param.Tc: temperature [°C][default: 25°C].
+        - param.Id: dark current [A][default: 5e-9 A].
+        - param.RL: impedance load [Ω] [default: 50Ω].
+        - param.B: bandwidth [Hz][default: 30e9 Hz].
+        - param.Fs: sampling frequency [Hz] [default: 60e9 Hz].
+        - param.fType: frequency response type [default: 'rect'].
+        - param.N: number of the frequency resp. filter taps. [default: 255].
+        - param.ideal: ideal PD?(i.e. no noise, no frequency resp.) [default: True].
+        - param.seed: seed for the random number generator [default: None].
 
     Returns
     -------
@@ -405,14 +423,32 @@ def balancedPD(E1, E2, param=None):
     """
     assert E1.shape == E2.shape, "E1 and E2 need to have the same shape"
 
-    i1 = photodiode(E1, param)
-    i2 = photodiode(E2, param)
+    # check if input parameters are provided
+    if param is None:
+        paramPD1 = None
+        paramPD2 = None
+    else:
+        # duplicate PD parameters:
+        paramPD1 = param.copy()
+        paramPD2 = param.copy()
+
+        # check for seed in parameters
+        if hasattr(paramPD1, "seed"):
+            # in case the seed is provided, make sure to use different seeds for each photodiode
+            if paramPD1.seed is not None:
+                paramPD2.seed = (
+                    paramPD1.seed + 1
+                )  # to ensure different seeds for each photodiode
+
+    i1 = photodiode(E1, paramPD1)
+    i2 = photodiode(E2, paramPD2)
+
     return i1 - i2
 
 
-def hybrid_2x4_90deg(Es, Elo):
+def opticalHybrid2x4(Es, Elo):
     """
-    Optical 2 x 4 90° hybrid.
+    Optical hybrid 2 x 4 90°.
 
     Parameters
     ----------
@@ -451,7 +487,7 @@ def hybrid_2x4_90deg(Es, Elo):
     return T @ Ei
 
 
-def coherentReceiver(Es, Elo, param=None):
+def coherentReceiver(Es, Elo, paramFE=None, paramPD=None):
     """
     Single polarization coherent optical front-end.
 
@@ -461,8 +497,16 @@ def coherentReceiver(Es, Elo, param=None):
         Input signal optical field.
     Elo : np.array
         Input LO optical field.
-    param : parameter object (struct), optional
-        Parameters of the photodiodes.
+    paramFE : parameter object (struct), optional
+        Parameters of the optical frontend:
+
+            - paramFE.Fs : simulation sampling frequency [samples/s].
+            - paramFE.phaseImb: phase imbalance of the I/Q [rad].
+            - paramFE.ampImb: amplitude imbalance of the I/Q [dB].
+            - paramFE.timeSkew: delay of the I of the I/Q [s].
+
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiodes
 
     Returns
     -------
@@ -479,17 +523,31 @@ def coherentReceiver(Es, Elo, param=None):
     assert Elo.shape == (len(Elo),), "Elo need to have a (N,) shape"
     assert Es.shape == Elo.shape, "Es and Elo need to have the same (N,) shape"
 
-    # optical 2 x 4 90° hybrid
-    Eo = hybrid_2x4_90deg(Es, Elo)
+    try:
+        Fs = paramFE.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
+
+    if paramPD is None:
+        paramPD = parameters()
+        paramPD.Fs = Fs
+
+    # optical hybrid 2 x 4 90°
+    Eo = opticalHybrid2x4(Es, Elo)
 
     # balanced photodetection
-    sI = balancedPD(Eo[1, :], Eo[0, :], param)
-    sQ = balancedPD(Eo[2, :], Eo[3, :], param)
+    sI = balancedPD(Eo[1, :], Eo[0, :], paramPD)
+    sQ = balancedPD(Eo[2, :], Eo[3, :], paramPD)
 
-    return sI + 1j * sQ
+    s = sI + 1j * sQ
+
+    # add receiver front-end impairments
+    s = iqMixing(s, paramFE)
+
+    return s
 
 
-def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
+def pdmCoherentReceiver(Es, Elo, paramFE, paramPD=None):
     """
     Polarization multiplexed coherent optical front-end.
 
@@ -499,10 +557,24 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
         Input signal optical field.
     Elo : np.array
         Input LO optical field.
-    θsig : scalar, optional
-        Input polarization rotation angle in rad. The default is 0.
-    param : parameter object (struct), optional
-        Parameters of the photodiodes.
+    paramFE : parameter object (struct), optional
+        Parameters of the optical frontend:
+
+            - paramFE.Fs : simulation sampling frequency [samples/s].
+            - paramFE.polRotation : input polarization rotation angle [rad].
+            - paramFE.pdl : polarization dependent loss [dB]. If > 0, loss is on X polarization. If < 0, loss is on Y polarization.
+            - paramFE.polDelay : polarization delay [s]. If > 0, delay is on X polarization. If < 0, delay is on Y polarization.
+            - paramFE.polX.phaseImb: phase imbalance of the I/Q of the X polarization [rad].
+            - paramFE.polX.ampImb: amplitude imbalance of the I/Q of the X polarization [dB].
+            - paramFE.polX.skewI: delay of the I of the X polarization [s].
+            - paramFE.polX.skewQ: delay of the Q of the X polarization [s].
+            - paramFE.polY.phaseImb: phase imbalance of the I/Q of the Y polarization [rad].
+            - paramFE.polY.ampImb: amplitude imbalance of the I/Q of the Y polarization [dB].
+            - paramFE.polY.skewI: delay of the I of the Y polarization [s].
+            - paramFE.polY.skewQ: delay of the Q of the Y polarization [s].
+
+    paramPD : parameter object (struct), optional
+        Parameters of the photodiodes (see photodiode model documentation)
 
     Returns
     -------
@@ -517,11 +589,46 @@ def pdmCoherentReceiver(Es, Elo, θsig=0, param=None):
     """
     assert len(Es) == len(Elo), "Es and Elo need to have the same length"
 
-    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
-    Esx, Esy = pbs(Es, θ=θsig)  # split signal into two orth. polarizations
+    try:
+        Fs = paramFE.Fs
+    except AttributeError:
+        logg.error("Simulation sampling frequency (Fs) not provided.")
 
-    Sx = coherentReceiver(Esx, Elox, param)  # coherent detection of pol.X
-    Sy = coherentReceiver(Esy, Eloy, param)  # coherent detection of pol.Y
+    # define frontend parameters for the X polarization:
+    paramX = parameters()
+    paramX.Fs = Fs
+    paramX.phaseImb = getattr(paramFE, "phaseImbX", 0)
+    paramX.ampImb = getattr(paramFE, "ampImbX", 0)
+    paramX.timeSkew = getattr(paramFE, "timeSkewX", 0)
+
+    # define frontend parameters for the Y polarization:
+    paramY = parameters()
+    paramY.Fs = Fs
+    paramY.phaseImb = getattr(paramFE, "phaseImbY", 0)
+    paramY.ampImb = getattr(paramFE, "ampImbY", 0)
+    paramY.timeSkew = getattr(paramFE, "timeSkewY", 0)
+
+    if paramPD is None:
+        paramPD = parameters()
+        paramPD.Fs = Fs
+
+    polRotation = getattr(paramFE, "polRotation", 0)
+    pdl = getattr(paramFE, "pdl", 0)
+    polDelay = getattr(paramFE, "polDelay", 0)
+
+    Elox, Eloy = pbs(Elo, θ=np.pi / 4)  # split LO into two orth. polarizations
+    Esx, Esy = pbs(Es, θ=polRotation)  # split signal into two orth. polarizations
+
+    if polDelay != 0:
+        Esx = delaySignal(Esx, -polDelay / 2, Fs)  # apply delay to polarization X
+        Esy = delaySignal(Esy, polDelay / 2, Fs)  # apply delay to polarization Y
+
+    if pdl != 0:
+        Esx = 10 ** (-(pdl / 2) / 20) * Esx  # apply PDL to pol.X
+        Esy = 10 ** ((pdl / 2) / 20) * Esy  # apply PDL to pol.Y
+
+    Sx = coherentReceiver(Esx, Elox, paramX, paramPD)  # coherent detection of pol.X
+    Sy = coherentReceiver(Esy, Eloy, paramY, paramPD)  # coherent detection of pol.Y
 
     return np.array([Sx, Sy]).T
 
@@ -534,13 +641,14 @@ def edfa(Ei, param=None):
     ----------
     Ei : np.array
         Input signal field.
-    param : parameter object (struct), optional
-        Parameters of the edfa.
+    param : optic.utils.parameters object, optional
+        Parameters of the EDFA model.
 
         - param.G : amplifier gain [dB][default: 20 dB]
         - param.NF : EDFA noise figure [dB][default: 4.5 dB]
         - param.Fc : central optical frequency [Hz][default: 193.1 THz]
         - param.Fs : sampling frequency in [samples/s]
+        - param.seed : random seed for noise generation [default: None]
 
     Returns
     -------
@@ -561,6 +669,7 @@ def edfa(Ei, param=None):
     G = getattr(param, "G", 20)
     NF = getattr(param, "NF", 4.5)
     Fc = getattr(param, "Fc", 193.1e12)
+    seed = getattr(param, "seed", None)
 
     assert G > 0, "EDFA gain should be a positive scalar"
     assert NF >= 3, "The minimal EDFA noise figure is 3 dB"
@@ -577,7 +686,7 @@ def edfa(Ei, param=None):
     N_ase = (G_lin - 1) * nsp * const.h * Fc
     p_noise = N_ase * Fs
 
-    noise = gaussianComplexNoise(Ei.shape, p_noise)
+    noise = gaussianComplexNoise(Ei.shape, p_noise, seed)
 
     return Ei * np.sqrt(G_lin) + noise
 
@@ -588,14 +697,16 @@ def basicLaserModel(param=None):
 
     Parameters
     ----------
-    param : parameter object (struct), optional
-        Parameters of the laser.
+    param : optic.utils.parameters object, optional
+        Parameters of the laser model.
 
         - param.P: laser power [dBm] [default: 10 dBm]
         - param.lw: laser linewidth [Hz] [default: 1 kHz]
         - param.RIN_var: variance of the RIN noise [default: 1e-20]
         - param.Fs: sampling rate [samples/s]
         - param.Ns: number of signal samples [default: 1e3]
+        - param.seed: random seed for noise generation [default: None]
+        - param.freqShift: frequency shift with respect to the central simulation frequency [Hz] [default: 0 Hz]
 
     Returns
     -------
@@ -616,17 +727,32 @@ def basicLaserModel(param=None):
     lw = getattr(param, "lw", 1e3)  # Linewidth in Hz
     RIN_var = getattr(param, "RIN_var", 1e-20)  # RIN variance
     Ns = getattr(param, "Ns", 1000)  # Number of samples of the signal
+    seed = getattr(param, "seed", None)  # Seed for the random number generator
+    freqShift = getattr(
+        param, "freqShift", 0
+    )  # Frequency shift with respect to the central simulation frequency
 
-    t = np.arange(0, Ns) * 1 / Fs
+    if seed is None:
+        seedPN = None
+        seedRIN = None
+    else:
+        seedPN = seed
+        seedRIN = seed + 73  # to ensure different seeds for phase noise and RIN
 
     # Simulate Maxwellian random walk phase noise
-    pn = phaseNoise(lw, Ns, 1 / Fs)
+    pn = phaseNoise(lw, Ns, 1 / Fs, seedPN)
 
     # Simulate relative intensity noise  (RIN)[todo:check correct model]
-    deltaP = gaussianComplexNoise(pn.shape, RIN_var)
+    deltaP = gaussianComplexNoise(pn.shape, RIN_var, seedRIN)
+
+    # Apply frequency shift if required
+    if freqShift != 0:
+        fo = 2 * np.pi * freqShift * np.arange(Ns) / Fs
+    else:
+        fo = 0
 
     # Return optical signal
-    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * pn)
+    return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * (fo + pn))
 
 
 def adc(Ei, param):
@@ -637,42 +763,56 @@ def adc(Ei, param):
     ----------
     Ei : ndarray
         Input signal.
-    param : core.parameter
-        Resampling parameters:
-            - param.Fs_in  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
-            - param.Fs_out : sampling frequency of the output signal [samples/s][default: 1 sample/s]
-            - param.jitter_rms : root mean square (RMS) value of the jitter in seconds [s][default: 0 s]
-            - param.nBits : number of bits used for quantization [default: 8 bits]
-            - param.Vmax : maximum value for the ADC's full-scale range [V][default: 1V]
-            - param.Vmin : minimum value for the ADC's full-scale range [V][default: -1V]
-            - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
-            - param.N : number of taps of the anti-aliasing filters [default: 201]
+    param : optic.utils.parameters object, optional
+        Parameters of the ADC model.
+
+        - param.inFs  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
+        - param.outFs : sampling frequency of the output signal [samples/s][default: 1 sample/s]
+        - param.jitter : jitter rms in seconds [s][default: 0 s]
+        - param.nBits : number of bits used for quantization [default: 8 bits]
+        - param.ENOB : effective number of bits of the ADC [default: 8 bits]
+        - param.Vmax : maximum value for the ADC's full-scale range [V][default: 1V]
+        - param.Vmin : minimum value for the ADC's full-scale range [V][default: -1V]
+        - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
+        - param.N : number of taps of the anti-aliasing filters [default: 201]
 
     Returns
     -------
     Eo : ndarray
         Resampled and quantized signal.
 
+    Notes
+    -----
+    - The input signal will be clipped to the range [Vmin, Vmax] before quantization.
+    - If the effective number of bits (ENOB) is less than nBits, additional noise will be added to the output signal to model the reduced resolution of the ADC. The noise power is calculated based on the difference between the ideal quantization noise power (corresponding to nBits) and the actual quantization noise power (corresponding to ENOB).
+    - If AAF is enabled, anti-aliasing filters will be applied to the input signal before resampling and to the output signal after quantization to mitigate aliasing effects.
     """
     # Check and set default values for input parameters
-    param.Fs_in = getattr(param, "Fs_in", 1)
-    param.Fs_out = getattr(param, "Fs_out", 1)
-    param.jitter_rms = getattr(param, "jitter_rms", 0)
+    param.inFs = getattr(param, "inFs", 1)
+    param.outFs = getattr(param, "outFs", 1)
+    param.jitter = getattr(param, "jitter", 0)
     param.nBits = getattr(param, "nBits", 8)
+    param.ENOB = getattr(param, "ENOB", 8)
     param.Vmax = getattr(param, "Vmax", 1)
     param.Vmin = getattr(param, "Vmin", -1)
     param.AAF = getattr(param, "AAF", True)
     param.N = getattr(param, "N", 201)
 
     # Extract individual parameters for ease of use
-    Fs_in = param.Fs_in
-    Fs_out = param.Fs_out
-    jitter_rms = param.jitter_rms
+    inFs = param.inFs
+    outFs = param.outFs
+    jitter = param.jitter
     nBits = param.nBits
     Vmax = param.Vmax
     Vmin = param.Vmin
     AAF = param.AAF
     N = param.N
+    ENOB = param.ENOB
+
+    if ENOB > nBits:
+        logg.warning(
+            "ADC ENOB is greater than ADC nBits. The effective number of bits (ENOB) should be less than or equal to the number of bits (nBits) for a consistent ADC model."
+        )
 
     # Reshape the input signal if needed to handle single-dimensional inputs
     try:
@@ -680,33 +820,33 @@ def adc(Ei, param):
     except IndexError:
         Ei = Ei.reshape(len(Ei), 1)
 
-    # Get the number of modes (columns) in the input signal
-    nModes = Ei.shape[1]
-
     # Apply anti-aliasing filters if AAF is enabled
     if AAF:
         # Anti-aliasing filters:
         Ntaps = min(Ei.shape[0], N)
-        hi = lowPassFIR(param.Fs_out / 2, param.Fs_in, Ntaps, typeF="rect")
-        ho = lowPassFIR(param.Fs_out / 2, param.Fs_out, Ntaps, typeF="rect")
-
+        hi = lowPassFIR(param.outFs / 2, param.inFs, Ntaps, typeF="rect")
+        ho = lowPassFIR(param.outFs / 2, param.outFs, Ntaps, typeF="rect")
         Ei = firFilter(hi, Ei)
 
     if np.iscomplexobj(Ei):
         # Signal interpolation to the ADC's sampling frequency
         Eo = clockSamplingInterp(
-            Ei.reshape(-1, nModes).real, Fs_in, Fs_out, jitter_rms
-        ) + 1j * clockSamplingInterp(
-            Ei.reshape(-1, nModes).imag, Fs_in, Fs_out, jitter_rms
-        )
+            np.real(Ei), inFs, outFs, jitter
+        ) + 1j * clockSamplingInterp(np.imag(Ei), inFs, outFs, jitter)
+
+        # clipping to [Vmin, Vmax]
+        Eo = np.clip(Eo, Vmin + 1j * Vmin, Vmax + 1j * Vmax)
 
         # Uniform quantization of the signal according to the number of bits of the ADC
-        Eo = quantizer(Eo.real, nBits, Vmax, Vmin) + 1j * quantizer(
-            Eo.imag, nBits, Vmax, Vmin
+        Eo = quantizer(np.real(Eo), nBits, Vmax, Vmin) + 1j * quantizer(
+            np.imag(Eo), nBits, Vmax, Vmin
         )
     else:
         # Signal interpolation to the ADC's sampling frequency
-        Eo = clockSamplingInterp(Ei.reshape(-1, nModes), Fs_in, Fs_out, jitter_rms)
+        Eo = clockSamplingInterp(Ei, inFs, outFs, jitter)
+
+        # clipping to [Vmin, Vmax]
+        Eo = np.clip(Eo, Vmin, Vmax)
 
         # Uniform quantization of the signal according to the number of bits of the ADC
         Eo = quantizer(Eo, nBits, Vmax, Vmin)
@@ -715,4 +855,131 @@ def adc(Ei, param):
     if AAF:
         Eo = firFilter(ho, Eo)
 
+    # Add noise corresponding to the effective number of bits (ENOB) of the ADC
+    if nBits > ENOB:
+        scale = Vmax - Vmin
+        Pnq_ideal = scale**2 / (12 * (2 ** (2 * nBits)))
+        Pnq_actual = scale**2 / (12 * (2 ** (2 * ENOB)))
+        Pn_extra = Pnq_actual - Pnq_ideal
+
+        if np.iscomplexobj(Eo):
+            Eo += gaussianComplexNoise(Eo.shape, 2 * Pn_extra)
+        else:
+            Eo += gaussianNoise(Eo.shape, Pn_extra)
+
+    if Eo.shape[1] == 1:
+        # If the output is a single column, return it as a 1D array
+        Eo = Eo.flatten()
+
+    return Eo
+
+
+def dac(Ei, param):
+    """
+    Digital-to-analog converter (DAC) model.
+
+    Parameters
+    ----------
+    Ei : ndarray
+        Input signal.
+    param : optic.utils.parameters object, optional
+        Parameters of the DAC model.
+
+        - param.inFs  : sampling frequency of the input signal [samples/s][default: 1 sample/s]
+        - param.outFs : sampling frequency of the output signal [samples/s][default: 1 sample/s]
+        - param.nBits : number of bits used for quantization [default: 8 bits]
+        - param.ENOB : effective number of bits of the DAC [default: 8 bits]
+        - param.jitter : jitter rms in seconds [s][default: 0 s]
+        - param.Vpp  : peak-to-peak voltage of the DAC's output signal [V][default: 2 V]
+        - param.AIF : flag indicating whether to use anti-imaging filters [default: True]
+        - param.N : number of taps of the anti-imaging filters [default: 201]
+
+    Returns
+    -------
+    Eo : ndarray
+        Resampled and quantized signal.
+
+    Notes
+    -----
+    - The input signal will be clipped to the range [Vmin, Vmax] before quantization.
+    - If AIF is enabled, anti-imaging filters will be applied to the output signal after quantization to mitigate imaging effects.
+    """
+    # Check and set default values for input parameters
+    param.inFs = getattr(param, "inFs", 1)
+    param.outFs = getattr(param, "outFs", 1)
+    param.nBits = getattr(param, "nBits", 8)
+    param.ENOB = getattr(param, "ENOB", 8)
+    param.jitter = getattr(param, "jitter", 0)
+    param.Vpp = getattr(param, "Vpp", 2)
+    param.AIF = getattr(param, "AIF", True)
+    param.N = getattr(param, "N", 201)
+
+    # Extract individual parameters for ease of use
+    inFs = param.inFs
+    outFs = param.outFs
+    nBits = param.nBits
+    ENOB = param.ENOB
+    jitter = param.jitter
+    Vpp = param.Vpp
+    AIF = param.AIF
+    N = param.N
+
+    if ENOB > nBits:
+        logg.warning(
+            "DAC ENOB is greater than DAC nBits. The effective number of bits (ENOB) should be less than or equal to the number of bits (nBits) for a consistent ADC model."
+        )
+
+    # Reshape the input signal if needed to handle single-dimensional inputs
+    try:
+        Ei.shape[1]
+    except IndexError:
+        Ei = Ei.reshape(len(Ei), 1)
+
+    if np.iscomplexobj(Ei):
+        # Uniform quantization of the signal according to the number of bits of the DAC
+        Vmax = np.max([np.max(Ei.real), np.max(Ei.imag)])
+        Vmin = np.min([np.min(Ei.real), np.min(Ei.imag)])
+
+        Eo = quantizer(np.real(Ei), nBits, Vmax, Vmin) + 1j * quantizer(
+            np.imag(Ei), nBits, Vmax, Vmin
+        )
+
+        # Signal interpolation to the DAC's sampling frequency
+        Eo = clockSamplingInterp(
+            np.real(Eo), inFs, outFs, jitter
+        ) + 1j * clockSamplingInterp(np.imag(Eo), inFs, outFs, jitter)
+    else:
+        Vmax = np.max(Ei)
+        Vmin = np.min(Ei)
+
+        # Uniform quantization of the signal according to the number of bits of the DAC
+        Eo = quantizer(Ei, nBits, Vmax, Vmin)
+
+        # Signal interpolation to the DAC's sampling frequency
+        Eo = clockSamplingInterp(Eo, inFs, outFs, jitter)
+
+    # Apply anti-imaging filters to the output if AIF is enabled
+    if AIF:
+        ho = lowPassFIR(param.outFs / 2, param.outFs, min(Eo.shape[0], N), typeF="rect")
+        Eo = firFilter(ho, Eo)
+
+    # Add noise to the output signal based on the effective number of bits (ENOB)
+    if nBits > ENOB:
+        scale = Vmax - Vmin
+        Pnq_ideal = scale**2 / (12 * (2 ** (2 * nBits)))
+        Pnq_actual = scale**2 / (12 * (2 ** (2 * ENOB)))
+        Pn_extra = Pnq_actual - Pnq_ideal
+
+        if np.iscomplexobj(Eo):
+            Eo += gaussianComplexNoise(Eo.shape, 2 * Pn_extra)
+        else:
+            Eo += gaussianNoise(Eo.shape, Pn_extra)
+
+    Eo = Eo * (
+        Vpp / (Vmax - Vmin)
+    )  # Scale the output signal to the DAC's specified peak-to-peak voltage
+
+    if Eo.shape[1] == 1:
+        # If the output is a single column, return it as a 1D array
+        Eo = Eo.flatten()
     return Eo

@@ -23,3 +23,8 @@ Physical Models
     :members:
     :noindex:
 
+.. automodule:: optic.models.perturbation
+    :members:
+    :noindex:
+    
+

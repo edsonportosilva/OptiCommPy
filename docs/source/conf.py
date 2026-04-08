@@ -9,7 +9,7 @@
 project = 'OptiCommPy'
 copyright = '2023, Edson P. da Silva, Adolfo F. Herbster'
 author = 'Edson P. da Silva, Adolfo F. Herbster, Carlos D. F. da Silva, Joaquin Matres'
-release = '0.6.0'
+release = '0.9.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -51,9 +51,9 @@ master_doc = 'index'
 # built documents.
 #
 # The short X.Y version.
-version = '0.6'
+version = '0.9'
 # The full version, including alpha/beta/rc tags.
-release = '0.6.0'
+release = 'alpha 0.9.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

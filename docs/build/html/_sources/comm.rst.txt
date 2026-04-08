@@ -11,6 +11,11 @@ Digital Communications Utilities
     :exclude-members: minR, condEntropy, GNmodel_OSNR, ASE_NyquistWDM, GN_Model_NyquistWDM
     :noindex:
 
+.. automodule:: optic.comm.sources
+    :members:    
+    :noindex:
+
 .. automodule:: optic.comm.ofdm
     :members:
     :noindex:
+
