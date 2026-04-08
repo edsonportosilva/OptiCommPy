@@ -1176,8 +1176,7 @@ def chaseDecoder(llrs, param):
     reliabilities = np.abs(llrs)
     least_reliable_indices = np.argsort(reliabilities)[:t]
 
-    # Step 4: Generate candidate codewords by flipping combinations of least reliable bits   
-
+    # Step 4: Generate candidate codewords by flipping combinations of least reliable bits
     candidates = []
     for r in range(1, t + 1):
         for indices in combinations(least_reliable_indices, r):
