@@ -44,18 +44,18 @@ def par2gen(H):
 
     Parameters
     ----------
-    H : ndarray of shape (n - k, n)
+    H : np.array of shape (n - k, n)
         Parity-check matrix with entries in {0, 1}.
 
     Returns
     -------
-    G : ndarray of shape (k, n)
+    G : np.array of shape (k, n)
         Systematic generator matrix corresponding to the input parity-check matrix H.
         The form of G is :math:`[I_k | P]`, where :math:`I_k` is the identity matrix and :math:`P` is a binary matrix.
-    colSwaps : ndarray of shape (n,)
+    colSwaps : np.array of shape (n,)
         Indices representing the column permutations applied to H to obtain Hm.
         These permutations are required to match the systematic form used in G.
-    Hm : ndarray of shape (n - k, n)
+    Hm : np.array of shape (n - k, n)
         The modified parity-check matrix after Gaussian elimination and column reordering.
         This matrix has the identity portion on the right-hand side, corresponding to
         a standard systematic form :math:`[P^T | I_{n-k}]`.
@@ -104,12 +104,12 @@ def gaussElim(M):
 
     Parameters
     ----------
-    M : ndarray of uint8
+    M : np.array of uint8
         Input binary matrix (dense, 2D). All operations are over GF(2).
 
     Returns
     -------
-    matrix : ndarray of uint8
+    matrix : np.array of uint8
         Matrix in row echelon form (mod 2).
     """
     rowCount, columnCount = M.shape
@@ -154,7 +154,7 @@ def encodeLDPC(bits, param):
 
     Parameters
     ----------
-    bits : ndarray of shape (k, N)
+    bits : np.array of shape (k, N)
         Binary input sequences to be encoded. Each column is a bit sequence of length :math:`k` bits.
     param : object
         Object containing the following attributes:
@@ -162,25 +162,25 @@ def encodeLDPC(bits, param):
         - mode : str
             Mode of operation ('DVBS2', 'IEEE_802.11nD2', or 'AR4JA').
 
-        - H : ndarray of shape (n - k, n)
+        - H : np.array of shape (n - k, n)
             Binary parity-check matrix :math:`H`.
 
-        - G : ndarray of shape (k, n), optional
+        - G : np.array of shape (k, n), optional
             Binary generator matrix :math:`G`.
 
         - systematic : bool, optional
             If True, the generator matrix is assumed to be in systematic form. If False,
             the generator matrix is treated as a general linear transformation (default is True).
 
-        - P1 : ndarray of shape (m, k), optional
+        - P1 : np.array of shape (m, k), optional
             Matrix used for encoding in triangular mode.
 
-        - P2 : ndarray of shape (m, k), optional
+        - P2 : np.array of shape (m, k), optional
             Matrix used for encoding in triangular mode.
 
     Returns
     -------
-    codewords : ndarray of shape (n, N)
+    codewords : np.array of shape (n, N)
         Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding
         to the respective input bit sequence.
 
@@ -266,14 +266,14 @@ def encodeDVBS2(bits, A):
 
     Parameters
     ----------
-    bits : ndarray of shape (k, N)
+    bits : np.array of shape (k, N)
         Binary input sequences to be encoded. Each column represents a bit sequence of length :math:`k`.
-    A : ndarray of shape (m, k)
+    A : np.array of shape (m, k)
         Matrix corresponding to the first :math:`k` columns of the parity-check matrix :math:`H`.
 
     Returns
     -------
-    codewords : ndarray of shape (n, N)
+    codewords : np.array of shape (n, N)
         Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding
         to the respective input bit sequence.
     """
@@ -314,9 +314,9 @@ def encoder(G, bits, systematic=True):
 
     Parameters
     ----------
-    G : ndarray of shape (k, n)
+    G : np.array of shape (k, n)
         Binary generator matrix.
-    bits : ndarray of shape (k, N)
+    bits : np.array of shape (k, N)
         Binary input sequences to encode. Each column is a bit sequence of length :math:`k`.
     systematic : bool, optional
         If True, the generator matrix is assumed to be in systematic form. If False, the
@@ -324,7 +324,7 @@ def encoder(G, bits, systematic=True):
 
     Returns
     -------
-    codewords : ndarray of shape (n, N)
+    codewords : np.array of shape (n, N)
         Encoded binary codewords. Each column corresponds to a codeword of length :math:`n` resulting
         from applying the generator matrix to the respective input bit sequence.
     """
@@ -359,12 +359,12 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
 
     Parameters
     ----------
-    llrs : ndarray of shape (n, numCodewords)
+    llrs : np.array of shape (n, numCodewords)
         Array of log-likelihood ratios (LLRs) for each bit of the received codeword.
-    checkNodes : list of ndarray
+    checkNodes : list of np.array
         List of length :math:`m`, where each element is a 1D array containing the indices
         of variable nodes (bits) involved in the corresponding check node (parity-check equation).
-    varNodes : list of ndarray
+    varNodes : list of np.array
         List of length :math:`n`, where each element is a 1D array containing the indices
         of check nodes that the corresponding variable node participates in.
     maxIter : int
@@ -374,11 +374,11 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
 
     Returns
     -------
-    finalLLR : ndarray of shape (n,)
+    finalLLR : np.array of shape (n,)
         Updated log-likelihood ratios after message passing.
     numIter : int
         Number of iterations executed until decoding converged or reached `maxIter`.
-    frameDecodingFail : ndarray of shape (numCodewords,)
+    frameDecodingFail : np.array of shape (numCodewords,)
         Array indicating whether decoding was successful (0) or failed (1) for each codeword.
         A value of 0 indicates successful decoding, while 1 indicates failure.
 
@@ -461,12 +461,12 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
 
     Parameters
     ----------
-    llrs : ndarray of shape (n, numCodewords)
+    llrs : np.array of shape (n, numCodewords)
         Log-likelihood ratios (LLRs) of the received codeword bits.
-    checkNodes : list of ndarray
+    checkNodes : list of np.array
         List of length :math:`m`, where each entry contains the indices of variable nodes
         connected to the corresponding check node.
-    varNodes : list of ndarray
+    varNodes : list of np.array
         List of length :math:`n`, where each entry contains the indices of check nodes
         connected to the corresponding variable node.
     maxIter : int
@@ -476,11 +476,11 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
 
     Returns
     -------
-    finalLLR : ndarray of shape (n,)
+    finalLLR : np.array of shape (n,)
         Updated LLR values for the decoded codeword after the final iteration.
     numIter : int
         Number of iterations performed before successful decoding or reaching `maxIter`.
-    frameDecodingFail : ndarray of shape (numCodewords,)
+    frameDecodingFail : np.array of shape (numCodewords,)
         Array indicating whether decoding was successful (0) or failed (1) for each codeword.
         A value of 0 indicates successful decoding, while 1 indicates failure.
 
@@ -559,13 +559,13 @@ def decodeLDPC(llrs, param):
 
     Parameters
     ----------
-    llrs : ndarray of shape (n, numCodewords)
+    llrs : np.array of shape (n, numCodewords)
         Array of log-likelihood ratios (LLRs) for each bit of the received codewords.
         Codewords are assumed to be disposed in columns.
     param : object
         Object containing the following attributes:
 
-        - H : ndarray of shape (m, n)
+        - H : np.array of shape (m, n)
             Sparse binary parity-check matrix of the LDPC code.
 
         - maxIter : int
@@ -579,9 +579,9 @@ def decodeLDPC(llrs, param):
 
     Returns
     -------
-    decodedBits : ndarray of shape (n, numCodewords)
+    decodedBits : np.array of shape (n, numCodewords)
         Array of decoded bits for each codeword.
-    outputLLRs : ndarray of shape (n, numCodewords)
+    outputLLRs : np.array of shape (n, numCodewords)
         Array of updated log-likelihood ratios (LLRs) after decoding.
     """
     # check input parameters
@@ -643,7 +643,7 @@ def writeAlist(H, filename):
 
     Parameters
     ----------
-    H : ndarray of shape (m, n)
+    H : np.array of shape (m, n)
         Binary parity-check matrix.
     filename : str
         Name of the ALIST file to be written.
@@ -698,7 +698,7 @@ def readAlist(filename):
 
     Returns
     -------
-    H : ndarray of shape (m, n)
+    H : np.array of shape (m, n)
         Reconstructed binary parity-check matrix.
     """
     with open(filename, "r") as f:
@@ -724,12 +724,12 @@ def inverseMatrixGF2(A):
 
     Parameters
     ----------
-    A : ndarray of shape (n, n), dtype=np.uint8
+    A : np.array of shape (n, n), dtype=np.uint8
         Binary square matrix.
 
     Returns
     -------
-    Ainv : ndarray of shape (n, n), dtype=np.uint8
+    Ainv : np.array of shape (n, n), dtype=np.uint8
         Inverse of A over GF(2), if invertible. If not invertible, returns the identity matrix.
     success : bool
         True if A is invertible, False otherwise.
@@ -776,16 +776,16 @@ def triangularize(H):
 
     Parameters
     ----------
-    H : ndarray of shape (m, n), dtype=np.uint8
+    H : np.array of shape (m, n), dtype=np.uint8
         Binary parity-check matrix :math:`H`.
 
     Returns
     -------
-    triangH : ndarray of shape (m, n), dtype=np.uint8
+    triangH : np.array of shape (m, n), dtype=np.uint8
         Triangularized matrix.
-    rowPerm : ndarray of shape (m,), dtype=np.int32
+    rowPerm : np.array of shape (m,), dtype=np.int32
         Row permutation indices.
-    colPerm : ndarray of shape (n,), dtype=np.int32
+    colPerm : np.array of shape (n,), dtype=np.int32
         Column permutation indices.
 
     References
@@ -837,16 +837,16 @@ def triangP1P2(H):
 
     Parameters
     ----------
-    H : ndarray of shape (m, n)
+    H : np.array of shape (m, n)
         Binary parity-check matrix. It is used to derive the matrices P1 and P2.
 
     Returns
     -------
-    P1 : ndarray of shape (m1, k)
+    P1 : np.array of shape (m1, k)
         First parity matrix.
-    P2 : ndarray of shape (m2, k)
+    P2 : np.array of shape (m2, k)
         Second parity matrix.
-    triangH : ndarray of shape (m, n)
+    triangH : np.array of shape (m, n)
         Triangularized H matrix.
 
     References
@@ -902,16 +902,16 @@ def encodeTriang(bits, P1, P2):
 
     Parameters
     ----------
-    bits : ndarray of shape (k, N)
+    bits : np.array of shape (k, N)
         Binary input sequences. Each column is a bit sequence to be encoded.
-    P1 : ndarray of shape (m1, k)
+    P1 : np.array of shape (m1, k)
         First parity matrix.
-    P2 : ndarray of shape (m2, k)
+    P2 : np.array of shape (m2, k)
         Second parity matrix.
 
     Returns
     -------
-    codewords : ndarray of shape (k + m1 + m2, N)
+    codewords : np.array of shape (k + m1 + m2, N)
         Encoded codewords, one per column.
 
     References
@@ -957,7 +957,7 @@ def plotBinaryMatrix(H):
 
     Parameters
     ----------
-    H : ndarray of shape (m, n)
+    H : np.array of shape (m, n)
         Binary matrix.
     """
     H = np.asarray(H)
@@ -1056,7 +1056,7 @@ def summarizeAlistFolder(folderPath):
     print(table)
 
 
-def hammingCode(m, extended=False):
+def hammingParityCheckMatrix(m, extended=False):
     """
     Generate the parity-check matrix H for a Hamming code with m check bits .
 
@@ -1070,7 +1070,7 @@ def hammingCode(m, extended=False):
 
     Returns
     -------
-    H : ndarray of shape (m, n)
+    H : np.array of shape (m, n)
         Parity-check matrix for the Hamming code, where m = n - k and k is the number of message bits.
 
     Notes
@@ -1132,25 +1132,70 @@ def hammingCode(m, extended=False):
 
     return H_ext
 
+def encodeHamming(bits, param):
+    """
+    Encode binary sequences using a Hamming code with m check bits.
+
+    Parameters
+    ----------
+    bits : np.array of shape (k, N)
+        Binary input sequences to encode. Each column is a bit sequence of length :math:`k`.
+    param : object
+        Object containing the following attributes:
+
+        - m : int
+            Number of check bits for the Hamming code.
+        - extended : bool, optional
+            If True, use the extended Hamming code (default is False).
+
+    Returns
+    -------
+    codewords : np.array of shape (n, N)
+        Encoded binary codewords. Each column corresponds to a codeword of length :math:`n` resulting
+        from applying the Hamming encoding to the respective input bit sequence.
+
+    References
+    ----------
+    [1] R. W. Hamming, "Error detecting and error correcting codes," Bell System Technical Journal, vol. 29, no. 2, pp. 147-160, April 1950.
+
+    [2] S. Lin and D. J. Costello, "Error Control Coding: Fundamentals and Applications," 2nd Edition, Pearson, 2004.
+    """
+
+    m = getattr(param, "m", 3)
+    extended = getattr(param, "extended", False)
+
+    # Generate parity-check matrix and corresponding systematic generator matrix
+    H = hammingParityCheckMatrix(m, extended)
+    G, _, Hm = par2gen(H)
+    param.H = Hm
+
+    k = G.shape[0]
+   
+    if bits.shape[0] != k:
+        logg.error(f"Input bits have {bits.shape[0]} rows, but expected {k} for m={m} and extended={extended}.")
+        return None
+    else:
+        return encoder(G, bits)
+
 def chaseDecoder(llrs, param):
     """
     Decode a received codeword using the Chase decoding algorithm.
 
     Parameters
     ----------
-    llrs : ndarray of shape (n,)
+    llrs : np.array of shape (n,)
         Log-likelihood ratios (LLRs) for each bit of the received codeword.
     param : object
         Object containing the following attributes:
 
-        - H : ndarray of shape (m, n)
+        - H : np.array of shape (m, n)
             Binary parity-check matrix of the code.
         - t : int
             Number of least reliable bits to consider for flipping (Chase parameter).
     
     Returns
     -------
-    decodedBits : ndarray of shape (n,)
+    decodedBits : np.array of shape (n,)
         Decoded binary codeword after applying the Chase decoding algorithm.
     """
     H = getattr(param, "H", None)
