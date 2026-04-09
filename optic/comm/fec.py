@@ -962,7 +962,7 @@ def plotBinaryMatrix(H):
     """
     H = np.asarray(H)
     rows, cols = np.where(H == 1)
-    plt.scatter(cols, rows, s=0.05, color="blue")  # s controls dot size
+    plt.scatter(cols, rows, s=10/H.shape[0], color="blue")  # s controls dot size
     plt.gca().invert_yaxis()
     plt.xlabel("Column indexes")
     plt.ylabel("Row indexes")
