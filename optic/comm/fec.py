@@ -1134,7 +1134,7 @@ def hammingParityCheckMatrix(m, extended=False):
 
 def encodeHamming(bits, param):
     """
-    Encode binary sequences using a Hamming code with m check bits.
+    Encode binary sequences using a Hamming code.
 
     Parameters
     ----------
