@@ -1168,7 +1168,9 @@ def encodeHamming(bits, param):
     # Generate parity-check matrix and corresponding systematic generator matrix
     H = hammingParityCheckMatrix(m, extended)
     G, _, Hm = par2gen(H)
-    param.H = Hm
+    param.H = csr_matrix(Hm)
+    param.n = H.shape[1]
+    param.R = (H.shape[1] - H.shape[0]) / H.shape[1]
 
     k = G.shape[0]
    
