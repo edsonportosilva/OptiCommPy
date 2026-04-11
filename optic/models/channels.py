@@ -519,7 +519,7 @@ def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
     )
 
 
-def awgn(sig, snr, Fs=1, B=1, complexNoise=True, seed=None):
+def awgn(sig, param):
     """
     Implement a basic AWGN channel model.
 
@@ -527,16 +527,15 @@ def awgn(sig, snr, Fs=1, B=1, complexNoise=True, seed=None):
     ----------
     sig : np.array
         Input signal.
-    snr : scalar
-        Signal-to-noise ratio in dB.
-    Fs : real scalar
-        Sampling frequency. The default is 1.
-    B : real scalar
-        Signal bandwidth, defined as the length of the frequency interval [-B/2, B/2]. The default is 1.
-    complexNoise : bool
-        Generate complex-valued noise. The default is True.
-    seed : int or None, optional
-        Seed for the random number generator. The default is None.
+        
+    param : optic.utils.parameters object
+        Physical/simulation parameters of the AWGN channel.
+
+            - param.snr: signal-to-noise ratio [dB][default: 20 dB]
+            - param.Fs: simulation sampling frequency [samples/second][default: 1]
+            - param.B: signal bandwidth [Hz][default: 1]
+            - param.complexNoise: boolean variable, add complex noise? [default: True]
+            - param.seed: seed for the random number generator [default: None]
 
     Returns
     -------
@@ -548,6 +547,12 @@ def awgn(sig, snr, Fs=1, B=1, complexNoise=True, seed=None):
     [1] P. Massoud Salehi e J. Proakis, Digital Communications. McGraw-Hill Education, 2007.
 
     """
+    snr = getattr(param, "snr", 20)
+    Fs = getattr(param, "Fs", 1)
+    B = getattr(param, "B", 1)
+    complexNoise = getattr(param, "complexNoise", True)
+    seed = getattr(param, "seed", None)
+
     snr_lin = 10 ** (snr / 10)
     noiseVar = sigPow(sig) / snr_lin
     σ2 = (Fs / B) * noiseVar
