@@ -389,62 +389,118 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
 
     [2] T. J. Richardson and R. L. Urbanke, "The capacity of low-density parity-check codes under message-passing decoding," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 599-618, Feb 2001.
     """
-    m, n = len(checkNodes), len(varNodes)
-    msgVtoC = np.zeros((m, n), dtype=prec)
-    msgCtoV = np.zeros((m, n), dtype=prec)
+    m = len(checkNodes)
+    n = len(varNodes)
+
+    # Graph structure pre-computation for edge-based message storage
+
+    # Offsets for check nodes
+    check_offsets = np.zeros(m + 1, dtype=np.int32)
+    for c in range(m):
+        check_offsets[c + 1] = check_offsets[c] + len(checkNodes[c])
+
+    E = check_offsets[m]  # Total number of edges in the graph
+
+    # Offsets for variable nodes
+    var_offsets = np.zeros(n + 1, dtype=np.int32)
+    for v in range(n):
+        var_offsets[v + 1] = var_offsets[v] + len(varNodes[v])
+
+    # Cross-mapping: maps each variable node connection to the global edge array
+    var_edge_indices = np.zeros(E, dtype=np.int32)
+    var_current_counts = np.zeros(n, dtype=np.int32)
+
+    for c in range(m):
+        for c_idx in range(len(checkNodes[c])):
+            v = checkNodes[c][c_idx]
+            edge_id = check_offsets[c] + c_idx
+
+            pos = var_offsets[v] + var_current_counts[v]
+            var_edge_indices[pos] = edge_id
+            var_current_counts[v] += 1
+
+    # Memory allocation
+    msgVtoC = np.zeros(E, dtype=prec)
+    msgCtoV = np.zeros(E, dtype=prec)
     llrs = llrs.astype(prec)
 
     numCodewords = llrs.shape[1]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
     lastIter = np.zeros((numCodewords,), dtype=np.uint32)
+    decodedBits = np.zeros(n, dtype=np.uint8)
+    parity_checks = np.zeros(m, dtype=np.uint8)
 
+    # Main belief propagation decoding loop
     for indCw in range(numCodewords):
-        decodedBits = np.zeros(n, dtype=np.uint8)
+        decodedBits[:] = 0
         llr = llrs[:, indCw]
+
         # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
-            for check in varNodes[var]:
-                msgVtoC[check, var] = llr[var]
+            for v_idx in range(var_offsets[var], var_offsets[var + 1]):
+                edge_id = var_edge_indices[v_idx]
+                msgVtoC[edge_id] = llr[var]
 
         for indIter in range(maxIter):
-            # Check-to-variable update
+            # --- Check-to-variable update ---
             for check in prange(m):
-                for var_idx in range(len(checkNodes[check])):
-                    var = checkNodes[check][var_idx]
+                start_idx = check_offsets[check]
+                end_idx = check_offsets[check + 1]
+
+                for e1 in range(start_idx, end_idx):
                     product = 1.0
-                    for neighbor_idx in range(len(checkNodes[check])):
-                        neighbor = checkNodes[check][neighbor_idx]
-                        if neighbor != var:
-                            product *= np.tanh(msgVtoC[check, neighbor] / 2)
+                    for e2 in range(start_idx, end_idx):
+                        if e1 != e2:
+                            product *= np.tanh(msgVtoC[e2] / 2.0)
                     product = min(0.999999, max(-0.999999, product))  # clip
-                    msgCtoV[check, var] = 2 * np.arctanh(product)
+                    msgCtoV[e1] = 2.0 * np.arctanh(product)
 
-            # Variable-to-check update
+            # --- Variable-to-check update ---
             for var in prange(n):
-                for check_idx in range(len(varNodes[var])):
-                    check = varNodes[var][check_idx]
-                    sumMsg = llr[var]
-                    for neighbor_idx in range(len(varNodes[var])):
-                        neighbor = varNodes[var][neighbor_idx]
-                        if neighbor != check:
-                            sumMsg += msgCtoV[neighbor, var]
-                    msgVtoC[check, var] = sumMsg
+                start_idx = var_offsets[var]
+                end_idx = var_offsets[var + 1]
 
-            # Final LLR computation
+                sumMsg = llr[var]
+                for v_idx in range(start_idx, end_idx):
+                    edge_id = var_edge_indices[v_idx]
+                    sumMsg += msgCtoV[edge_id]
+
+                for v_idx in range(start_idx, end_idx):
+                    edge_id = var_edge_indices[v_idx]
+                    # Subtract intrinsic message to pass only extrinsic value
+                    msgVtoC[edge_id] = sumMsg - msgCtoV[edge_id]
+
+            # --- Final LLR computation ---
             for var in prange(n):
-                finalLLR[var, indCw] = llr[var]
-                for check in varNodes[var]:
-                    finalLLR[var, indCw] += msgCtoV[check, var]
-                    decodedBits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
+                temp_llr = llr[var]
+                start_idx = var_offsets[var]
+                end_idx = var_offsets[var + 1]
 
-            # Check parity conditions
-            parity_checks = np.zeros(m, dtype=np.uint8)
+                for v_idx in range(start_idx, end_idx):
+                    edge_id = var_edge_indices[v_idx]
+                    temp_llr += msgCtoV[edge_id]
+
+                finalLLR[var, indCw] = temp_llr
+                # Mathematical simplification equivalent to (-np.sign(x) + 1) // 2
+                decodedBits[var] = 1 if temp_llr < 0 else 0
+
+            # --- Check parity conditions ---
             for indParity in prange(m):
-                for check in checkNodes[indParity]:
-                    parity_checks[indParity] ^= decodedBits[check]  # accumulate XORs
+                parity_val = 0
+                for c_idx in range(len(checkNodes[indParity])):
+                    v = checkNodes[indParity][c_idx]
+                    parity_val ^= decodedBits[v]
+                parity_checks[indParity] = parity_val
 
-            if np.sum(parity_checks) == 0:
+            # Check for decoding failures
+            fail = False
+            for indParity in range(m):
+                if parity_checks[indParity] != 0:
+                    fail = True
+                    break
+
+            if not fail:
                 frameDecodingFail[indCw] = 0
                 lastIter[indCw] = indIter
                 break
@@ -459,6 +515,7 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
 def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     """
     Performs belief propagation decoding using the Min-Sum Algorithm (MSA) for multiple codewords.
+    Optimized to use sparse edge-based message passing and O(d_c) check node updates.
 
     Parameters
     ----------
@@ -489,61 +546,140 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     ----------
     [1] M. P. C. Fossorier, M. Mihaljevic and H. Imai, "Reduced complexity iterative decoding of low-density parity check codes based on belief propagation," IEEE Transactions on Communications, vol. 47, no. 5, pp. 673-680, May 1999
     """
-    m, n = len(checkNodes), len(varNodes)
-    msgVtoC = np.zeros((m, n), dtype=prec)
-    msgCtoV = np.zeros((m, n), dtype=prec)
+    m = len(checkNodes)
+    n = len(varNodes)
+
+    # Graph structure pre-computation for edge-based message passing
+
+    # Offsets for check nodes
+    check_offsets = np.zeros(m + 1, dtype=np.int32)
+    for c in range(m):
+        check_offsets[c + 1] = check_offsets[c] + len(checkNodes[c])
+
+    E = check_offsets[m]  # Total number of edges in the graph
+
+    # Offsets for variable nodes
+    var_offsets = np.zeros(n + 1, dtype=np.int32)
+    for v in range(n):
+        var_offsets[v + 1] = var_offsets[v] + len(varNodes[v])
+
+    # Cross-mapping: maps each variable node connection to the global edge array
+    var_edge_indices = np.zeros(E, dtype=np.int32)
+    var_current_counts = np.zeros(n, dtype=np.int32)
+
+    for c in range(m):
+        for c_idx in range(len(checkNodes[c])):
+            v = checkNodes[c][c_idx]
+            edge_id = check_offsets[c] + c_idx
+
+            pos = var_offsets[v] + var_current_counts[v]
+            var_edge_indices[pos] = edge_id
+            var_current_counts[v] += 1
+
+    # Memory allocation
+    msgVtoC = np.zeros(E, dtype=prec)
+    msgCtoV = np.zeros(E, dtype=prec)
     llrs = llrs.astype(prec)
 
     numCodewords = llrs.shape[1]
     finalLLR = np.zeros((n, numCodewords), dtype=prec)
     frameDecodingFail = np.ones((numCodewords,), dtype=np.int8)
     lastIter = np.zeros((numCodewords,), dtype=np.uint32)
+    decodedBits = np.zeros(n, dtype=np.uint8)
+    parity_checks = np.zeros(m, dtype=np.uint8)
 
+    # Main belief propagation decoding loop
     for indCw in range(numCodewords):
-        decodedBits = np.zeros(n, dtype=np.uint8)
+        decodedBits[:] = 0
         llr = llrs[:, indCw]
 
         # Initialize variable-to-check messages with input LLRs
         for var in prange(n):
-            for check in varNodes[var]:
-                msgVtoC[check, var] = llr[var]
+            for v_idx in range(var_offsets[var], var_offsets[var + 1]):
+                edge_id = var_edge_indices[v_idx]
+                msgVtoC[edge_id] = llr[var]
 
         for indIter in range(maxIter):
-            # Check-to-variable update (Min-Sum)
+            # Check-to-variable update
             for check in prange(m):
-                for var in checkNodes[check]:
-                    signProduct = 1
-                    min_abs = np.inf
-                    for neighbor in checkNodes[check]:
-                        if neighbor != var:
-                            val = msgVtoC[check, neighbor]
-                            signProduct *= np.sign(val)
-                            min_abs = min(min_abs, abs(val))
-                    msgCtoV[check, var] = signProduct * min_abs
+                start_idx = check_offsets[check]
+                end_idx = check_offsets[check + 1]
+
+                # Forward pass: Find first minimum, second minimum, and total sign
+                min1 = np.inf
+                min2 = np.inf
+                min1_idx = -1
+                sign_prod = 1
+
+                for e in range(start_idx, end_idx):
+                    val = msgVtoC[e]
+                    abs_val = abs(val)
+                    # Use custom sign logic to prevent np.sign(0) == 0 issues
+                    sign_val = 1 if val >= 0 else -1
+                    sign_prod *= sign_val
+
+                    if abs_val < min1:
+                        min2 = min1
+                        min1 = abs_val
+                        min1_idx = e
+                    elif abs_val < min2:
+                        min2 = abs_val
+
+                # Backward pass: Assign outgoing messages
+                for e in range(start_idx, end_idx):
+                    val = msgVtoC[e]
+                    sign_val = 1 if val >= 0 else -1
+                    msg_sign = sign_prod * sign_val  # Recovers sign without division
+
+                    # If this edge provided the global min, its extrinsic min is the second min
+                    msg_mag = min2 if e == min1_idx else min1
+                    msgCtoV[e] = msg_sign * msg_mag
 
             # Variable-to-check update
             for var in prange(n):
-                for check in varNodes[var]:
-                    sumMsg = llr[var]
-                    for neighbor in varNodes[var]:
-                        if neighbor != check:
-                            sumMsg += msgCtoV[neighbor, var]
-                    msgVtoC[check, var] = sumMsg
+                start_idx = var_offsets[var]
+                end_idx = var_offsets[var + 1]
 
-            # Final LLR and decision
+                # Total sum including intrinsic LLR
+                sumMsg = llr[var]
+                for v_idx in range(start_idx, end_idx):
+                    edge_id = var_edge_indices[v_idx]
+                    sumMsg += msgCtoV[edge_id]
+
+                # Subtract intrinsic message to pass only extrinsic value
+                for v_idx in range(start_idx, end_idx):
+                    edge_id = var_edge_indices[v_idx]
+                    msgVtoC[edge_id] = sumMsg - msgCtoV[edge_id]
+
+            # Final LLR computation
             for var in prange(n):
-                finalLLR[var, indCw] = llr[var]
-                for check in varNodes[var]:
-                    finalLLR[var, indCw] += msgCtoV[check, var]
-                decodedBits[var] = (-np.sign(finalLLR[var, indCw]) + 1) // 2
+                temp_llr = llr[var]
+                start_idx = var_offsets[var]
+                end_idx = var_offsets[var + 1]
+
+                for v_idx in range(start_idx, end_idx):
+                    edge_id = var_edge_indices[v_idx]
+                    temp_llr += msgCtoV[edge_id]
+
+                finalLLR[var, indCw] = temp_llr
+                decodedBits[var] = 1 if temp_llr < 0 else 0
 
             # Check parity conditions
-            parity_checks = np.zeros(m, dtype=np.uint8)
             for indParity in prange(m):
-                for check in checkNodes[indParity]:
-                    parity_checks[indParity] ^= decodedBits[check]  # accumulate XORs
+                parity_val = 0
+                for c_idx in range(len(checkNodes[indParity])):
+                    v = checkNodes[indParity][c_idx]
+                    parity_val ^= decodedBits[v]
+                parity_checks[indParity] = parity_val
 
-            if np.sum(parity_checks) == 0:
+            # Check for decoding failures
+            fail = False
+            for indParity in range(m):
+                if parity_checks[indParity] != 0:
+                    fail = True
+                    break
+
+            if not fail:
                 frameDecodingFail[indCw] = 0
                 lastIter[indCw] = indIter
                 break
@@ -963,7 +1099,7 @@ def plotBinaryMatrix(H):
     """
     H = np.asarray(H)
     rows, cols = np.where(H == 1)
-    plt.scatter(cols, rows, s=10/H.shape[0], color="blue")  # s controls dot size
+    plt.scatter(cols, rows, s=10 / H.shape[0], color="blue")  # s controls dot size
     plt.gca().invert_yaxis()
     plt.xlabel("Column indexes")
     plt.ylabel("Row indexes")
@@ -1088,13 +1224,13 @@ def hammingParityCheckMatrix(m, extended=False):
 
     if m < 1:
         raise ValueError("m must be a positive integer.")
-    
+
     # For standard Hamming codes, n = 2^m - 1 and k = n - m.
     # For extended Hamming codes, n = 2^m and k = n - m - 1.
-    
+
     if extended:
         # Calculate n
-        n = 2**m 
+        n = 2**m
         m = int(np.log2(n))
         if 2**m != n:
             raise ValueError("For extended Hamming, n must be 2^m.")
@@ -1132,6 +1268,7 @@ def hammingParityCheckMatrix(m, extended=False):
     H_ext[m, n_std] = 1
 
     return H_ext
+
 
 def encodeHamming(bits, param):
     """
@@ -1173,17 +1310,20 @@ def encodeHamming(bits, param):
     param.R = (H.shape[1] - H.shape[0]) / H.shape[1]
 
     k = G.shape[0]
-   
+
     if bits.shape[0] != k:
-        logg.error(f"Input bits have {bits.shape[0]} rows, but expected {k} for m={m} and extended={extended}.")
+        logg.error(
+            f"Input bits have {bits.shape[0]} rows, but expected {k} for m={m} and extended={extended}."
+        )
         return None
     else:
         return encoder(G, bits)
 
-# TODO: Implement Chase decoding algorithm for Hamming codes (or more generally for linear block codes). 
-# This algorithm can be used to improve error correction performance by considering multiple candidate codewords 
-# generated by flipping the least reliable bits. The implementation would involve generating candidate codewords 
-# based on the input LLRs, checking them against the parity-check equations, and selecting the most likely valid 
+
+# TODO: Implement Chase decoding algorithm for Hamming codes (or more generally for linear block codes).
+# This algorithm can be used to improve error correction performance by considering multiple candidate codewords
+# generated by flipping the least reliable bits. The implementation would involve generating candidate codewords
+# based on the input LLRs, checking them against the parity-check equations, and selecting the most likely valid
 # codeword as the output.
 #
 # def chaseDecoder(llrs, param):
@@ -1201,7 +1341,7 @@ def encodeHamming(bits, param):
 #             Binary parity-check matrix of the code.
 #         - t : int
 #             Number of least reliable bits to consider for flipping (Chase parameter).
-    
+
 #     Returns
 #     -------
 #     decodedBits : np.array of shape (n,)
