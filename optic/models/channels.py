@@ -101,11 +101,11 @@ def linearFiberChannel(Ei, param):
         Eo = Eo.reshape(
             Eo.size,
         )
-    
+
     if input1D:
         # If the input was 1D, return a 1D array
         Eo = Eo.flatten()
-        
+
     return (Eo, param) if returnParameters else Eo
 
 
@@ -527,7 +527,7 @@ def awgn(sig, param):
     ----------
     sig : np.array
         Input signal.
-        
+
     param : optic.utils.parameters object
         Physical/simulation parameters of the AWGN channel.
 
@@ -560,6 +560,6 @@ def awgn(sig, param):
     if complexNoise:
         noise = gaussianComplexNoise(sig.shape, σ2, seed)
     else:
-        noise = gaussianNoise(sig.shape, σ2, seed)
+        noise = gaussianNoise(sig.shape, σ2 / 2, seed)
 
     return sig + noise
