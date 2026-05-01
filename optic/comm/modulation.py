@@ -101,7 +101,11 @@ def grayMapping(M, constType):
         const = apskConst(M)
 
     const = const.reshape(M, 1)
-    const_ = np.zeros((M, 2), dtype=complex)
+
+    if constType in ["pam", "ook"]:
+        const_ = np.zeros((M, 2), dtype=np.float32)
+    else:
+        const_ = np.zeros((M, 2), dtype=np.complex64)
 
     for ind in range(M):
         const_[ind, 0] = const[ind, 0]  # complex constellation symbol
@@ -111,8 +115,6 @@ def grayMapping(M, constType):
     const = const_[const_[:, 1].real.argsort()]
     const = const[:, 0]
 
-    if constType in ["pam", "ook"]:
-        const = const.real
     return const
 
 
