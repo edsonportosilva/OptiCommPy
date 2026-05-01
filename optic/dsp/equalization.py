@@ -1179,7 +1179,7 @@ def dfe(x, dx, param):
         Final feedforward filter coefficients.
     b : np.array
         Final feedback filter coefficients.
-    
+
     Notes
     -----
     - Training mode 'data-aided' uses the known training symbols for adaptation, while 'fulltime' continues to adapt using decision-directed mode even after the training phase.
@@ -1195,7 +1195,7 @@ def dfe(x, dx, param):
     SpS = getattr(param, "SpS", 1)  # samples per symbol
     mu = getattr(param, "mu", 0.0001)  # step size
     nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
-    prec = getattr(param, "prec", np.float32)  # precision
+    prec = getattr(param, "prec", None)  # precision
     M = getattr(param, "M", 4)  # modulation order
     constType = getattr(param, "constType", "pam")  # constellation type
     f = getattr(param, "f", None)  # initial feedforward coeffs
@@ -1203,9 +1203,12 @@ def dfe(x, dx, param):
     trainingMode = getattr(param, "trainingMode", "data-aided")  # operation mode
     preconvIters = getattr(param, "preconvIters", 1)  # pre-convergence iterations
 
+    if prec is None:
+        prec = x.dtype  # infer precision from input signal if not provided
+
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
-      
+
     # Make copies to avoid modifying original arrays
     x = x.copy()
     dx = dx.copy()
@@ -1213,7 +1216,7 @@ def dfe(x, dx, param):
     # normalize imput signal
     x = pnorm(x)  # power-normalize input signal
     dx = pnorm(dx)  # power-normalize desired signal
-    
+
     # Ensure correct data types
     x = x.astype(prec)
     dx = dx.astype(prec)
@@ -1222,7 +1225,7 @@ def dfe(x, dx, param):
     # Initialize filters (center the main tap roughly in the middle of FF)
     if f is None:
         f = np.zeros(nTapsFF, dtype=prec)
-        f[nTapsFF//2] = 1.0
+        f[nTapsFF // 2] = 1.0
 
     if b is None:
         b = np.zeros(nTapsFB, dtype=prec)
@@ -1243,7 +1246,7 @@ def dfe(x, dx, param):
             f,
             b,
             trainingMode,
-            preconvIters
+            preconvIters,
         )
     else:
         yEq, f, b, mse = complexValuedDFECore(
@@ -1259,7 +1262,7 @@ def dfe(x, dx, param):
             f,
             b,
             trainingMode,
-            preconvIters
+            preconvIters,
         )
 
     return yEq, f, b, mse
@@ -1321,7 +1324,7 @@ def realValuedDFECore(
         Final feedforward filter coefficients.
     b : np.array
         Final feedback filter coefficients.
-    
+
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. (2008). Digital Communications (5th Edition). McGraw-Hill Education.
@@ -1329,13 +1332,13 @@ def realValuedDFECore(
     """
     L = len(x)  # number of input samples
     N = int((L - nTapsFF + nTapsFF % 2) // SpS)  # number of input symbols
-    
+
     # Buffers
     xbuf = x[0:nTapsFF].astype(prec)  # past input samples
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
-   
+
     nIter = 1
     k = 0
     while k < N:
@@ -1362,7 +1365,7 @@ def realValuedDFECore(
 
         # Update feedback buffer with the new decision
         if nTapsFB > 0:
-            dbuf = np.roll(dbuf, 1)            
+            dbuf = np.roll(dbuf, 1)
             dbuf[0] = d_ref
 
         # Update FF buffer:
@@ -1377,7 +1380,7 @@ def realValuedDFECore(
         else:
             for i in range(SpS):
                 xbuf[-SpS + i] = 0.0
-        
+
         if k == nTrain and nIter < preconvIters:
             k = 0  # restart pre-convergence
             nIter += 1
@@ -1451,13 +1454,13 @@ def complexValuedDFECore(
     """
     L = len(x)  # number of input samples
     N = int((L - nTapsFF + nTapsFF % 2) // SpS)  # number of input symbols
-    
+
     # Buffers
     xbuf = x[0:nTapsFF].astype(prec)  # past input samples
     dbuf = np.zeros(nTapsFB, dtype=prec)  # past decisions
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
-    
+
     nIter = 1
     k = 0
     while k < N:
@@ -1498,7 +1501,7 @@ def complexValuedDFECore(
                 xbuf[-SpS + i] = x[firstSample + i]
         else:
             for i in range(SpS):
-                xbuf[-SpS + i] = 0.0 + 0j
+                xbuf[-SpS + i] = 0.0 + 0.0 * 1j
 
         if k == nTrain and nIter < preconvIters:
             k = 0  # restart pre-convergence
@@ -1554,12 +1557,15 @@ def ffe(x, dx, param):
     mu = getattr(param, "mu", 0.0001)  # step size
     SpS = getattr(param, "SpS", 1)  # samples per symbol
     nTrain = getattr(param, "nTrain", 1000)  # number of training symbols
-    prec = getattr(param, "prec", np.float32)  # precision
+    prec = getattr(param, "prec", None)  # precision
     M = getattr(param, "M", 4)  # modulation order
     constType = getattr(param, "constType", "pam")  # constellation type
     f = getattr(param, "f", None)  # initial feedforward coeffs
     trainingMode = getattr(param, "trainingMode", "data-aided")  # operation mode
     preconvIters = getattr(param, "preconvIters", 1)  # pre-convergence iterations
+
+    if prec is None:
+        prec = x.dtype  # infer precision from input signal if not provided
 
     constSymb = grayMapping(M, constType).astype(prec)  # constellation
     constSymb = pnorm(constSymb)  # power-normalize constellation
@@ -1586,11 +1592,31 @@ def ffe(x, dx, param):
 
     if constType == "pam":
         yEq, f, mse = realValuedFFECore(
-            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode, preconvIters
+            x,
+            dx,
+            nTaps,
+            SpS,
+            mu,
+            nTrain,
+            prec,
+            constSymb,
+            f,
+            trainingMode,
+            preconvIters,
         )
     else:
         yEq, f, mse = complexValuedFFECore(
-            x, dx, nTaps, SpS, mu, nTrain, prec, constSymb, f, trainingMode, preconvIters
+            x,
+            dx,
+            nTaps,
+            SpS,
+            mu,
+            nTrain,
+            prec,
+            constSymb,
+            f,
+            trainingMode,
+            preconvIters,
         )
 
     return yEq, f, mse
@@ -1657,7 +1683,7 @@ def realValuedFFECore(
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
     xbuf = x[0:nTaps].astype(prec)  # past input samples
-    
+
     nIter = 1
     k = 0
     while k < N:
@@ -1758,12 +1784,12 @@ def complexValuedFFECore(
     """
     L = len(x)  # number of input samples
     N = int((L - nTaps + nTaps % 2) // SpS)  # number of input symbols
-    
+
     # Buffer
     yEq = np.zeros(N, dtype=prec)
     mse = np.zeros(N, dtype=prec)
     xbuf = x[0:nTaps].astype(prec)  # past input samples
-    
+
     nIter = 1
     k = 0
     while k < N:
@@ -1798,7 +1824,7 @@ def complexValuedFFECore(
                 xbuf[-SpS + i] = x[firstSample + i]
         else:
             for i in range(SpS):
-                xbuf[-SpS + i] = 0.0 + 0j
+                xbuf[-SpS + i] = 0.0 + 0.0 * 1j
 
         if k == nTrain and nIter < preconvIters:
             k = 0  # restart pre-convergence
@@ -1905,7 +1931,19 @@ def volterra(x, dx, param):
     x = np.pad(x, (nTaps // 2, nTaps // 2), "constant", constant_values=(0, 0))
 
     yEq, h1, h2, h3, mse = volterraCore(
-        x, dx, order, SpS, mu, nTrain, h1, h2, h3, prec, constSymb, trainingMode, preconvIters
+        x,
+        dx,
+        order,
+        SpS,
+        mu,
+        nTrain,
+        h1,
+        h2,
+        h3,
+        prec,
+        constSymb,
+        trainingMode,
+        preconvIters,
     )
 
     h = [h1, h2, h3]
@@ -1996,7 +2034,7 @@ def volterraCore(
 
     # Buffer
     xbuf = x[0:nTaps].astype(prec)  # past input samples
-   
+
     nIter = 1
     k = 0
     while k < N:
@@ -2031,7 +2069,8 @@ def volterraCore(
         mse[k] = ek**2
 
         if (trainingMode == "data-aided" and k < nTrain) or (
-            trainingMode == "fulltime"):
+            trainingMode == "fulltime"
+        ):
 
             # LMS updates
 
@@ -2041,7 +2080,7 @@ def volterraCore(
             # Update quadratic coefficients
             for i in range(n2Taps):
                 for j in range(n2Taps):
-                    h2[i, j] += mu/2 * ek * xbuf[t2 + i] * xbuf[t2 + j]
+                    h2[i, j] += mu / 2 * ek * xbuf[t2 + i] * xbuf[t2 + j]
 
             # Update cubic coefficients
             if order == 3:
@@ -2049,7 +2088,7 @@ def volterraCore(
                     for j in range(n3Taps):
                         for l in range(n3Taps):
                             h3[i, j, l] += (
-                                mu/7 * ek * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
+                                mu / 7 * ek * xbuf[t3 + i] * xbuf[t3 + j] * xbuf[t3 + l]
                             )
 
         # Update FF buffer:
