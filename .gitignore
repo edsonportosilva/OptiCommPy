@@ -14,3 +14,4 @@ optic/.vscode/settings.json
 /.ipynb_checkpoints
 /examples/.ipynb_checkpoints
 /examples/.pylint.d
+/optic/dsp/__pycache__
