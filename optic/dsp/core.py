@@ -6,30 +6,33 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
 .. autosummary::
    :toctree: generated/
 
-   sigPow                 -- Calculate the average power of x.
-   signalPower            -- Calculate the total average power of x.
-   firFilter              -- Perform FIR filtering and compensate for filter delay.
-   rrcFilterTaps          -- Generate Root-Raised Cosine (RRC) filter coefficients.
-   rcFilterTaps           -- Generate Raised Cosine (RC) filter coefficients.
-   pulseShape             -- Generate a pulse shaping filter.
-   clockSamplingInterp    -- Interpolate signal to a given sampling rate.
-   quantizer              -- Quantize the input signal using a uniform quantizer.
-   lowPassFIR             -- Calculate FIR coefficients of a lowpass filter.
-   decimate               -- Decimate signal.
-   resample               -- Signal resampling.
-   upsample               -- Upsample a signal by inserting zeros between samples.
-   symbolSync             -- Synchronizer delayed sequences of symbols.
-   finddelay              -- Estimate the delay between sequences of symbols.
-   pnorm                  -- Normalize the average power of each componennt of x.
-   gaussianComplexNoise   -- Generate complex-valued circular Gaussian noise.
-   gaussianNoise          -- Generate Gaussian noise.
-   phaseNoise             -- Generate realization of a random-walk phase-noise process.
-   movingAverage          -- Calculate the sliding window moving average.
-   delaySignal            -- Apply a time delay to a signal.
-   blockwiseFFTConv       -- Calculates convolutions in the frequency domain.
-   freqShift              -- Applies a frequency shift to a signal.
-   calcMZM                -- Fast function to be used in the Mach-Zehnder modulator (MZM) model.
-   calcPM                 -- Fast function to be used in the phase modulator (PM) model.
+   sigPow                  -- Calculate the average power of x.
+   signalPower             -- Calculate the total average power of x.
+   firFilter               -- Perform FIR filtering and compensate for filter delay.
+   rrcFilterTaps           -- Generate Root-Raised Cosine (RRC) filter coefficients.
+   rcFilterTaps            -- Generate Raised Cosine (RC) filter coefficients.
+   pulseShape              -- Generate a pulse shaping filter.
+   clockSamplingInterp     -- Interpolate signal to a given sampling rate.
+   quantizer               -- Quantize the input signal using a uniform quantizer.
+   lowPassFIR              -- Calculate FIR coefficients of a lowpass filter.
+   decimate                -- Decimate signal.
+   resample                -- Signal resampling.
+   upsample                -- Upsample a signal by inserting zeros between samples.
+   symbolSync              -- Synchronizer delayed sequences of symbols.
+   finddelay               -- Estimate the delay between sequences of symbols.
+   pnorm                   -- Normalize the average power of each componennt of x.
+   gaussianComplexNoise    -- Generate complex-valued circular Gaussian noise.
+   gaussianNoise           -- Generate Gaussian noise.
+   phaseNoise              -- Generate realization of a random-walk phase-noise process.
+   movingAverage           -- Calculate the sliding window moving average.
+   delaySignal             -- Apply a time delay to a signal.
+   blockwiseFFTConv        -- Calculates convolutions in the frequency domain.
+   freqShift               -- Applies a frequency shift to a signal.
+   calcMZM                 -- Fast function to be used in the Mach-Zehnder modulator (MZM) model.
+   calcPM                  -- Fast function to be used in the phase modulator (PM) model.
+   levinson                -- Solve the Toeplitz system of equations using the Levinson-Durbin algorithm.
+   autocorr                -- Estimate the autocorrelation coefficients of a signal.
+   estimateWhiteningFilter -- Estimate the coefficients of a whitening filter using the autocorrelation method.
 """
 
 """Digital signal processing utilities."""
@@ -1128,3 +1131,117 @@ def calcPM(Ai, Vpi, u):
         Output signal after modulation.
     """
     return Ai * np.exp(1j * (u / Vpi) * np.pi)
+
+
+@njit(fastmath=True, cache=True)
+def levinson(r, nTaps):
+    """
+    Levinson-Durbin algorithm
+
+    Parameters
+    ----------
+    r : array-like
+        Autocorrelation coefficients of the signal, where r[0] is the zero-lag autocorrelation and r[k] is the autocorrelation at lag k.
+    nTaps : int
+        The order of the whitening filter (number of coefficients to estimate).
+    Returns
+    -------
+    a : np.ndarray
+        The coefficients of the whitening filter of length nTaps, where a[0] is
+        the leading coefficient (usually 1) and a[1], a[2], ..., a[nTaps-1] are the estimated filter coefficients.
+
+    Notes
+    -----
+    The Levinson-Durbin algorithm is an efficient method for solving the Toeplitz system of equations that arises in linear prediction and filter design.
+    The resulting coefficients can be used to design a whitening filter that decorrelates the input signal.
+
+    References
+    ----------
+    [1] Levinson, N., The Wiener RMS error criterion in filter design. Journal of Mathematics and Physics, 25(1-4), 261-278, 1947.
+
+    [2] Durbin, J., The fitting of time-series models. Review of the International Statistical Institute, 28(3), 233-244, 1960.
+    """
+    a = np.zeros(nTaps, dtype=r.dtype)
+    e = r[0]
+    a[0] = 1.0
+
+    for i in range(1, nTaps):
+        acc = 0
+        for j in range(1, i):
+            acc += a[j] * r[i - j]
+
+        k = -(r[i] + acc) / e
+
+        a_new = a.copy()
+        for j in range(1, i):
+            a_new[j] += k * np.conj(a[i - j])
+
+        a_new[i] = k
+        a = a_new
+        e *= 1 - np.abs(k) ** 2
+
+    return a
+
+
+@njit(fastmath=True, cache=True)
+def autocorr(x, nTaps):
+    """
+    Estimate the autocorrelation coefficients of a signal x up to lag nTaps-1.
+
+    Parameters
+    ----------
+    x : array-like
+        The input signal for which to estimate the autocorrelation coefficients.
+    nTaps : int
+        The number of autocorrelation coefficients to estimate (lags from 0 to nTaps-1).
+    Returns
+    -------
+    r : np.ndarray
+        An array of length nTaps containing the estimated autocorrelation coefficients, where r[k] is the autocorrelation at lag k.
+
+    Notes
+    -----
+    The autocorrelation coefficients are estimated using the unbiased estimator, which normalizes the sum of products by the number of terms that contribute to each lag. This provides a more accurate estimate of the autocorrelation, especially for larger lags.
+
+    References
+    ----------
+
+    [1] Gallager, R. G., Introduction to Random Signals and Applied Kalman Filtering. John Wiley & Sons, 2010.
+    """
+    N = len(x)
+    r = np.zeros(nTaps)
+
+    for k in range(nTaps):
+        for n in range(k, N):
+            r[k] += x[n] * np.conj(x[n - k])
+
+        r[k] /= N - k
+
+    return r
+
+
+@njit(cache=True)
+def estimateWhiteningFilter(x, nTaps):
+    """
+    Estimate the coefficients of a whitening filter of order nTaps using the Levinson-Durbin algorithm.
+
+    Parameters
+    ----------
+    x : array-like
+        The input signal from which to estimate the autocorrelation.
+    nTaps : int
+        The order of the whitening filter (number of coefficients).
+    Returns
+    -------
+    w : np.ndarray
+        The coefficients of the whitening filter of length nTaps, where w[0] is the leading coefficient (usually 1).
+
+    References
+    ----------
+    [1] Levinson, N., The Wiener RMS error criterion in filter design. Journal of Mathematics and Physics, 25(1-4), 261-278, 1947.
+
+    [2] Durbin, J., The fitting of time-series models. Review of the International Statistical Institute, 28(3), 233-244, 1960.
+    """
+    r = autocorr(x, nTaps)
+    w = levinson(r, nTaps)
+    return w
