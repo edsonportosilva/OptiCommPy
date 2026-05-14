@@ -93,7 +93,7 @@ def pm(Ai, u, Vπ):
 
 def mzm(Ai, u, param=None):
     """
-    Optical Mach-Zehnder Modulator (MZM).
+    Optical Mach-Zhender Modulator (MZM).
 
     Parameters
     ----------
@@ -106,6 +106,7 @@ def mzm(Ai, u, param=None):
 
         - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
         - param.Vb: MZM's bias voltage [V][default: -1 V]
+        - param.ER: MZM extinction ratio [dB][default: 60 dB]
 
     Returns
     -------
@@ -125,6 +126,7 @@ def mzm(Ai, u, param=None):
     # check input parameters
     Vpi = getattr(param, "Vpi", 2)
     Vb = getattr(param, "Vb", -1)
+    ER = getattr(param, "ER", 60)  # extinction ratio in dB
 
     try:
         u.shape
@@ -139,7 +141,7 @@ def mzm(Ai, u, param=None):
     except AttributeError:
         Ai = Ai * np.ones(u.shape)
 
-    return calcMZM(Ai, Vpi, u, Vb)
+    return calcMZM(Ai, Vpi, u, Vb, ER)
 
 
 def iqm(Ai, u, param=None):
