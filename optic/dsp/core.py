@@ -1088,7 +1088,7 @@ def freqShift(x, deltaF, Fs):
 
 
 @njit
-def calcMZM(Ai, Vpi, u, Vb):
+def calcMZM(Ai, Vpi, u, Vb, ER):
     """
     Fast function to calculate the Mach-Zehnder modulator (MZM) model.
 
@@ -1102,13 +1102,20 @@ def calcMZM(Ai, Vpi, u, Vb):
         DC bias voltage.
     Vb : float
         Voltage applied to the MZM.
+    ER : float
+        Extinction ratio of the MZM (in dB).
 
     Returns
     -------
     float
         Output signal after modulation.
     """
-    return Ai * np.cos(0.5 / Vpi * (u + Vb) * np.pi)
+    # convert extinction ratio from dB to linear scale
+    erLin = 10 ** (-ER / 10)
+    gamma = (erLin - 1) / (erLin + 1)
+    Eo = calcPM(Ai/2, Vpi, (u - Vb)/2) + gamma * calcPM(Ai/2, Vpi, -(u - Vb)/2)
+
+    return -1 * Eo
 
 
 @njit
