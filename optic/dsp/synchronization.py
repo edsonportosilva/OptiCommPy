@@ -29,12 +29,12 @@ def syncDataSequences(rx, tx, param):
     rx : np.array
         Received signal.
     tx : np.array
-        Transmitted reference signal.
+        Reference signal (or symbols).
     param : optic.utils.parameters object, optional
         Parameters of the synchronization process.
 
-        - param.SpS : samples per symbol of the transmitted reference signal. [default: 1]
-        - param.reference : type of reference for synchronization ('signal','symbols') [default: 'signal']
+        - param.SpS : samples per symbol of the received signal. [default: 1]
+        - param.reference : type of reference used for synchronization ('signal','symbols') [default: 'signal']
         - param.syncMode : use either the real part or the amplitude of the signal to syncronize [detault: 'amp']
         - param.pulseType : type of pulse shaping filter. [default: 'rrc']
         - param.rollOff : rolloff of RRC filter. [default: 0.01]
@@ -51,10 +51,11 @@ def syncDataSequences(rx, tx, param):
 
     Notes
     -----
-    Signals x and y must have the same number of columns (modes).
+        - Signals rx and tx must have the same number of columns (modes).
 
-    """
-    M = getattr(param, "M", 4)
+        - If param.reference is set to 'signal', rx and tx should be sampled at the same rate.
+
+    """   
     SpS = getattr(param, "SpS", 1)
     reference = getattr(param, "reference", "signal")
     syncMode = getattr(param, "syncMode", "amp")
@@ -62,6 +63,7 @@ def syncDataSequences(rx, tx, param):
     rollOff = getattr(param, "rollOff", 0.01)
     nFilterTaps = getattr(param, "nFilterTaps", 1024)
     constType = getattr(param, "constType", "pam")
+    M = getattr(param, "M", 4)
 
     # generate pulse shaping filter
     paramPS = parameters()
@@ -88,8 +90,9 @@ def syncDataSequences(rx, tx, param):
     if reference == "symbols":
         # Upsample transmitted signal
         tx = upsample(tx, SpS)
-       
-    # find repetitions of the transmitted signal to match length of received signal
+    else:
+        logg.warning("Reference type is set to 'signal'. rx and tx should be sampled at the same rate.")
+    # find repetitions of the transmitted signal to match length of received signal"
     repeats = np.ceil(rx.shape[0] / tx.shape[0])
     tx_ = np.tile(tx, (int(repeats), 1))
 
