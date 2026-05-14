@@ -630,7 +630,7 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
             if np.abs(errorAutoCrtl) > param_edfa.tolCtrl:
                 logg.info("EDFA SM: control loop %2d" % (tryCtrlLoop + 1))
                 logg.info("Convergence: %5.3f dB" % (errorAutoCrtl))
-                logg.info("Pump for.: %5.2f mW\n" % (1e3 * pumpPmpFor))
+                logg.info("Pump for.: %5.2f mW\n" % (1e3 * pumpPmpFor[0]))
             tryCtrlLoop = tryCtrlLoop + 1
             if tryCtrlLoop == MaxTry:
                 logg.info(
