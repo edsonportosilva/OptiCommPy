@@ -244,6 +244,7 @@ def pamTransmitter(param):
         - param.mzmVpi: MZM Vpi [V][default: 3 V].
         - param.mzmVb: MZM bias voltage [V][default: 1
         - param.mzmScale: MZM modulation scale factor Vrf/Vpi [default: 0.25].
+        - param.mzmER: MZM extinction ratio [dB][default: 80 dB].
         - param.power: optical output power [dBm][default:-3 dBm].
         - param.nPolModes: number of polarization modes [default: 1].
         - param.returnParam: whether to return the parameter object [default: False].
@@ -271,6 +272,7 @@ def pamTransmitter(param):
     param.pulseRollOff = getattr(param, "pulseRollOff", 0.01)
     param.mzmVpi = getattr(param, "mzmVpi", 3)
     param.mzmVb = getattr(param, "mzmVb", 1.5)
+    param.mzmER = getattr(param, "mzmER", 80)
     param.mzmScale = getattr(param, "mzmScale", 0.25)
     param.nPolModes = getattr(param, "nPolModes", 1)
     param.power = getattr(param, "power", -3)
@@ -295,14 +297,15 @@ def pamTransmitter(param):
     paramMZM = parameters()
     paramMZM.Vpi = param.mzmVpi
     paramMZM.Vb = -param.mzmVb
+    paramMZM.ER = param.mzmER
 
     # allocate array
     sigTxo = np.zeros(
         ((param.nBits * param.SpS) // int(np.log2(param.M)), param.nPolModes),
-        dtype=np.float64,
+        dtype=np.complex128,
     )
     symbTx = np.zeros(
-        ((param.nBits) // int(np.log2(param.M)), param.nPolModes), dtype=np.float64
+        ((param.nBits) // int(np.log2(param.M)), param.nPolModes), dtype=np.complex128
     )
 
     for indMode in range(param.nPolModes):
