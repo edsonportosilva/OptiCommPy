@@ -305,7 +305,7 @@ def pamTransmitter(param):
         dtype=np.complex128,
     )
     symbTx = np.zeros(
-        ((param.nBits) // int(np.log2(param.M)), param.nPolModes), dtype=np.complex128
+        ((param.nBits) // int(np.log2(param.M)), param.nPolModes), dtype=np.float64
     )
 
     for indMode in range(param.nPolModes):
