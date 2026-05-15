@@ -203,10 +203,15 @@ def iqm(Ai, u, param=None):
     paramQ = parameters()
     paramQ.Vpi = Vpi
     paramQ.Vb = VbQ
+    
+    # Calculate MZMs outputs
+    EoI = mzm(Ai / np.sqrt(2), u.real, paramI)
+    EoQ = mzm(Ai / np.sqrt(2), u.imag, paramQ)
+    
+    # Combine I and Q branches with the PM rotation to get the IQM output
+    Eo = EoI + pm(EoQ, Vphi * np.ones(u.shape), Vpi)
 
-    return mzm(Ai / np.sqrt(2), u.real, paramI) + pm(
-        mzm(Ai / np.sqrt(2), u.imag, paramQ), Vphi * np.ones(u.shape), Vpi
-    )
+    return Eo
 
 
 def pbs(E, θ=0):
