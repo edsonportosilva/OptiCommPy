@@ -1099,9 +1099,9 @@ def calcMZM(Ai, Vpi, u, Vb, ER):
     Vpi : float
         Half-wave voltage of the MZM.
     u : float
-        DC bias voltage.
+        RF voltage applied to the MZM.
     Vb : float
-        Voltage applied to the MZM.
+        DC bias voltage.
     ER : float
         Extinction ratio of the MZM (in dB).
 
@@ -1109,13 +1109,20 @@ def calcMZM(Ai, Vpi, u, Vb, ER):
     -------
     float
         Output signal after modulation.
+
+    Rereferences
+    ------------
+
+    [1] Y. Yamaguchi, et al, "Precise Optical Modulation Using Extinction-Ratio and Chirp Tunable Single-Drive Mach–Zehnder Modulator," Journal of Lightwave Technology, vol. 35, no. 21, pp. 4781-4788, 1 Nov.1, 2017,
     """
     # convert extinction ratio from dB to linear scale
-    erLin = 10 ** (-ER / 10)
-    gamma = (erLin - 1) / (erLin + 1)
-    Eo = calcPM(Ai/2, Vpi, (u - Vb)/2) + gamma * calcPM(Ai/2, Vpi, -(u - Vb)/2)
+    erLin = 10 ** (-ER / 10)   
+    gamma = 2*np.sqrt(erLin) / (erLin + 1)
 
-    return -1 * Eo
+    Eo = np.sqrt(1 + gamma) * calcPM(Ai/2, Vpi, (u + Vb)/2) \
+        + np.sqrt(1 - gamma) * calcPM(Ai/2, Vpi, -(u + Vb)/2)
+
+    return Eo
 
 
 @njit
