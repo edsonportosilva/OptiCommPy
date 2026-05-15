@@ -242,7 +242,7 @@ def pamTransmitter(param):
         - param.nFilterTaps: number of coefficients of the rrc filter [default: 4096].       
         - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
         - param.mzmVpi: MZM Vpi [V][default: 3 V].
-        - param.mzmVb: MZM bias voltage [V][default: 1
+        - param.mzmVb: MZM bias voltage [V][default: -1.5 V].
         - param.mzmScale: MZM modulation scale factor Vrf/Vpi [default: 0.25].
         - param.mzmER: MZM extinction ratio [dB][default: 80 dB].
         - param.power: optical output power [dBm][default:-3 dBm].
