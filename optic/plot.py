@@ -6,7 +6,7 @@ Customized functions for plotting and vizualization (:mod:`optic.plot`)
 .. autosummary::
    :toctree: generated/
 
-   pconst                     -- Generate custom constellation plots      
+   pconst                     -- Generate custom constellation plots
    constHist                  -- Generate histogram for constellation plots
    plotColoredConst           -- Colored constellation scatter plot
    plotDecisionBoundaries     -- Plot decision boundaries of the detector
@@ -171,7 +171,7 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
             plt.ylim(-radius, radius)
 
     plt.show()
-    plt.pause(0.01) # Allow the plot to update 
+    plt.pause(0.01)  # Allow the plot to update
 
     return fig, ax
 
@@ -280,7 +280,7 @@ def plotColoredConst(
     ax.axis("square")
     ax.set_xlabel("In-Phase (I)")
     ax.set_ylabel("Quadrature (Q)")
-    plt.pause(0.01) # Allow the plot to update 
+    plt.pause(0.01)  # Allow the plot to update
 
     return fig, ax
 
@@ -377,7 +377,7 @@ def plotDecisionBoundaries(
     return fig, ax
 
 
-def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
+def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel="", dpi=None):
     """
     Plot the eye diagram of a modulated signal waveform.
 
@@ -394,58 +394,59 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
     ptype : str, optional
         Type of eye diagram. Can be 'fast' or 'fancy'. Defaults to 'fast'.
     plotlabel : str, optional
-        Label for the plot legend. Defaults to None.
-
-    Returns
-    -------
-    None
+        Label for the plot legend. Defaults to "".
+    dpi : int, optional
+        Dots per inch for the figure. If None, the default matplotlib DPI is used. Defaults to None.
     """
-    sig = sigIn.copy()
+    # Ensure plotlabel is a string and format it
+    baseLabel = plotlabel.strip() if plotlabel else ""
 
-    if not plotlabel:
-        plotlabel = " "
+    # Slice early and cast to float (necessary for np.nan insertion later)
+    sig = np.array(sigIn[:Nsamples], dtype=np.float32)
 
-    if np.iscomplex(sig).any():
-        d = 1
-        plotlabel_ = f"{plotlabel} [real]" if plotlabel else "[real]"
+    # Consolidate the signals we need to plot into a simple iterable
+    signals2Plot = []
+    if np.iscomplexobj(sigIn):
+        signals2Plot.append((sig.real, f"{baseLabel} [real]".strip()))
+        signals2Plot.append((sig.imag, f"{baseLabel} [imag]".strip()))
     else:
-        d = 0
-        plotlabel_ = plotlabel
+        signals2Plot.append((sig.real, baseLabel))
 
-    for ind in range(d + 1):
-        if ind == 0:
-            y = sig[:Nsamples].real
-            x = np.arange(0, y.size, 1) % (n * SpS)
+    # Initialize a list to store our plot handles
+    figList = []
+    axesList = []
+
+    for y, label in signals2Plot:
+        if dpi is not None:
+            fig, ax = plt.subplots(dpi=dpi)
         else:
-            y = sig[:Nsamples].imag
+            fig, ax = plt.subplots()
 
-            plotlabel_ = f"{plotlabel} [imag]" if plotlabel else "[imag]"
-        plt.figure()
+        axesList.append(ax)
+        figList.append(fig)
         if ptype == "fancy":
             nsymb = y.size // SpS
+
+            # Tile signal to ensure high enough density for the histogram
             if nsymb < 500000:
                 y = np.tile(y, int(np.ceil(500000 / nsymb)))
 
             f = interp1d(np.arange(y.size), y, kind="cubic")
 
-            Nup = 40 * SpS
-            tnew = np.arange(y.size) * (1 / Nup)
-            y_ = f(tnew)
+            Nup = int(1024 // SpS)  # Upsampling factor for interpolation
+            tnew = np.arange(y.size) / Nup
+            yInterp = f(tnew)
 
-            taxis = (np.arange(y.size) % (n * SpS * Nup)) * (1 / Nup)
-            imRange = np.array(
-                [
-                    [min(taxis), max(taxis)],
-                    [min(y) - 0.1 * np.mean(np.abs(y)), 1.1 * max(y)],
-                ]
-            )
+            taxis = (np.arange(y.size) % (n * SpS * Nup)) / Nup
 
-            H, xedges, yedges = np.histogram2d(taxis, y_, bins=350, range=imRange)
+            yMin, yMax = np.min(y), np.max(y)
+            yMargin = 0.1 * np.mean(np.abs(y))
+            imRange = [[np.min(taxis), np.max(taxis)], [yMin - yMargin, 1.1 * yMax]]
 
-            H = H.T
-            H = gaussian_filter(H, sigma=1.0)
+            H, _, yedges = np.histogram2d(taxis, yInterp, bins=350, range=imRange)
+            H = gaussian_filter(H.T, sigma=1.0)
 
-            plt.imshow(
+            ax.imshow(
                 H,
                 cmap="turbo",
                 origin="lower",
@@ -454,23 +455,44 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             )
 
         elif ptype == "fast":
-            y[x == n * SpS] = np.nan
-            #y[x == 0] = np.nan
 
-            plt.plot(x / SpS, y, color="blue", alpha=0.85, label=plotlabel_)
-            plt.xlim(min(x / SpS), max(x / SpS))
+            f = interp1d(np.arange(y.size), y.copy(), kind="cubic")
 
-            if plotlabel is not None:
-                plt.legend(loc="upper left")
+            Nup = int(2048 // SpS)  # Upsampling factor for interpolation
+            tnew = np.arange(y.size) / Nup
+            yInterp = f(tnew)
 
-        plt.xlabel("symbol period (Ts)")
-        plt.ylabel("amplitude")
-        plt.title(f"eye diagram {plotlabel_}")
-        plt.grid(alpha=0.15)
-        plt.show()
-        plt.pause(0.01) # Allow the plot to update 
+            x = np.arange(yInterp.size) % (n * SpS * Nup) / Nup
+            yPlot = yInterp
 
-    return None
+            # Find wraparound points to insert NaNs, breaking the plot lines so they don't streak across
+            wrap_indices = np.where(np.diff(x) < 0)[0]
+            yPlot[wrap_indices] = np.nan
+            xPlot = x / SpS
+
+            ax.plot(
+                xPlot,
+                yPlot,
+                color="blue",
+                linewidth=0.5,
+                alpha=0.85,
+                label=label if label else None,
+            )
+            ax.set_xlim(np.min(xPlot), np.max(xPlot))
+
+            if label:
+                ax.legend(loc="upper left")
+        else:
+            raise ValueError("ptype must be either 'fast' or 'fancy'")
+
+        ax.set_xlabel("Symbol period ($T_s$)")
+        ax.set_ylabel("Amplitude")
+        ax.set_title(f"Eye Diagram {label}".strip())
+        ax.grid(alpha=0.15)
+        plt.show(block=False)
+        plt.pause(0.01)  # Allow the plot to update
+
+    return figList, axesList
 
 
 def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
@@ -501,10 +523,10 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
 
     """
     if fig is None:
-        fig = []  
+        fig = []
     if not fig:
         fig = plt.figure()
-  
+
     try:
         sig.shape[1]
     except IndexError:
@@ -515,7 +537,7 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
             labelString = None
         else:
             labelString = f"{label}: Mode {str(indMode)}"
-            
+
         plt.psd(
             sig[:, indMode],
             Fs=Fs,
@@ -524,11 +546,10 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
             sides="twosided",
             label=labelString,
         )
-        
+
     if label is not None:
         plt.legend(loc="lower left")
     plt.xlim(Fc - Fs / 2, Fc + Fs / 2)
-    
 
     return fig, plt.gca()
 
