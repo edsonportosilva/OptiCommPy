@@ -444,15 +444,15 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel="", dpi=None):
             yMargin = 0.1 * np.mean(np.abs(yPlot))
             imRange = [[np.min(xPlot), np.max(xPlot)], [yMin - yMargin, 1.1 * yMax]]
 
-            H, _, yedges = np.histogram2d(xPlot, yPlot, bins=350, range=imRange)
+            H, _, yEdges = np.histogram2d(xPlot, yPlot, bins=350, range=imRange)
             H = gaussian_filter(H.T, sigma=1.0)
-
+            
             ax.imshow(
                 H,
                 cmap="turbo",
                 origin="lower",
                 aspect="auto",
-                extent=[0, n, yedges[0], yedges[-1]],
+                extent=[0, n, yEdges[0], yEdges[-1]],
             )
 
         elif ptype == "fast":            
