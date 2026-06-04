@@ -424,26 +424,27 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel="", dpi=None):
 
         axesList.append(ax)
         figList.append(fig)
-        if ptype == "fancy":
-            nsymb = y.size // SpS
 
+        # upsampling and interpolation for smoother eye diagram
+        f = interp1d(np.arange(y.size), y, kind="cubic")
+
+        Nup = int(1024 // SpS)  # Upsampling factor for interpolation
+        tnew = np.arange(y.size) / Nup
+        yPlot = f(tnew)
+        xPlot = (np.arange(y.size) % (n * SpS * Nup)) / (Nup * SpS)
+
+        if ptype == "fancy":
+            nsymb = yPlot.size // SpS
             # Tile signal to ensure high enough density for the histogram
             if nsymb < 500000:
-                y = np.tile(y, int(np.ceil(500000 / nsymb)))
+                yPlot = np.tile(yPlot, int(np.ceil(500000 / nsymb)))
+                xPlot = np.tile(xPlot, int(np.ceil(500000 / nsymb)))
+            
+            yMin, yMax = np.min(yPlot), np.max(yPlot)
+            yMargin = 0.1 * np.mean(np.abs(yPlot))
+            imRange = [[np.min(xPlot), np.max(xPlot)], [yMin - yMargin, 1.1 * yMax]]
 
-            f = interp1d(np.arange(y.size), y, kind="cubic")
-
-            Nup = int(1024 // SpS)  # Upsampling factor for interpolation
-            tnew = np.arange(y.size) / Nup
-            yInterp = f(tnew)
-
-            taxis = (np.arange(y.size) % (n * SpS * Nup)) / Nup
-
-            yMin, yMax = np.min(y), np.max(y)
-            yMargin = 0.1 * np.mean(np.abs(y))
-            imRange = [[np.min(taxis), np.max(taxis)], [yMin - yMargin, 1.1 * yMax]]
-
-            H, _, yedges = np.histogram2d(taxis, yInterp, bins=350, range=imRange)
+            H, _, yedges = np.histogram2d(xPlot, yPlot, bins=350, range=imRange)
             H = gaussian_filter(H.T, sigma=1.0)
 
             ax.imshow(
@@ -454,22 +455,11 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel="", dpi=None):
                 extent=[0, n, yedges[0], yedges[-1]],
             )
 
-        elif ptype == "fast":
-
-            f = interp1d(np.arange(y.size), y.copy(), kind="cubic")
-
-            Nup = int(2048 // SpS)  # Upsampling factor for interpolation
-            tnew = np.arange(y.size) / Nup
-            yInterp = f(tnew)
-
-            x = np.arange(yInterp.size) % (n * SpS * Nup) / Nup
-            yPlot = yInterp
-
+        elif ptype == "fast":            
             # Find wraparound points to insert NaNs, breaking the plot lines so they don't streak across
-            wrap_indices = np.where(np.diff(x) < 0)[0]
+            wrap_indices = np.where(np.diff(xPlot) < 0)[0]
             yPlot[wrap_indices] = np.nan
-            xPlot = x / SpS
-
+            
             ax.plot(
                 xPlot,
                 yPlot,
@@ -487,7 +477,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel="", dpi=None):
 
         ax.set_xlabel("Symbol period ($T_s$)")
         ax.set_ylabel("Amplitude")
-        ax.set_title(f"Eye Diagram {label}".strip())
+        ax.set_title(f"{label}".strip())
         ax.grid(alpha=0.15)
         plt.show(block=False)
         plt.pause(0.01)  # Allow the plot to update
