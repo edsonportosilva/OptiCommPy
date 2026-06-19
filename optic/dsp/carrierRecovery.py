@@ -51,6 +51,7 @@ def cpr(Ei, param=None, symbTx=None):
         - param.constType: constellation type ['qam' or 'psk']. [default: 'qam']
         - param.M: constellation order. [default: 4]
         - param.returnPhases: whether to return the estimated phase shifts along with the output signal. [default: False]
+        - param.runFOE: whether to run the Mth-power frequency offset estimation and compensation before CPR. [default: True]
 
         BPS params:
 
@@ -104,6 +105,7 @@ def cpr(Ei, param=None, symbTx=None):
     tau2 = getattr(param, "tau2", 1 / (2 * np.pi * 10e6))
     Ts = getattr(param, "Ts", 1 / 32e9)
     pilotInd = getattr(param, "pilotInd", np.array([len(Ei) + 1]))
+    runFOE = getattr(param, "runFOE", True)
     returnPhases = getattr(param, "returnPhases", False)
 
     try:
@@ -120,10 +122,11 @@ def cpr(Ei, param=None, symbTx=None):
     constSymb /= np.sqrt(np.sum(np.abs(constSymb) ** 2 * px))
 
     # 4th power frequency offset estimation/compensation
-    logg.info(f"Running frequency offset compensation...")
-    Ei, fo = fourthPowerFOE(Ei, 1 / Ts, M)
-    Ei = pnorm(Ei)
-    logg.info(f"Estimated frequency offset (MHz): {np.round(fo/1e6, 3)}")
+    if runFOE:
+        logg.info(f"Running frequency offset compensation...")
+        Ei, fo = fourthPowerFOE(Ei, 1 / Ts, M)
+        Ei = pnorm(Ei)
+        logg.info(f"Estimated frequency offset (MHz): {np.round(fo/1e6, 3)}")
 
     if alg == "ddpll":
         logg.info(f"Running DDPLL carrier phase recovery...")
@@ -140,10 +143,11 @@ def cpr(Ei, param=None, symbTx=None):
             phaseEst = bps(Ei, N // 2, constSymb, B)
     elif alg == "viterbi":
         logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")        
-        if constType != "psk":
-            phaseEst = viterbi(Ei, N) 
+        if constType in ["psk", "apsk"]:
+            phaseEst = viterbi(Ei, N, M) + np.pi/4            
         else:
-            phaseEst = viterbi(Ei, N, M) + np.pi/4
+            phaseEst = viterbi(Ei, N) 
+            
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
     phaseEst = np.unwrap(4 * phaseEst, axis=0) / 4
