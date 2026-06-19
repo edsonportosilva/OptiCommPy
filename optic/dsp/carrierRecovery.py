@@ -121,7 +121,7 @@ def cpr(Ei, param=None, symbTx=None):
 
     # 4th power frequency offset estimation/compensation
     logg.info(f"Running frequency offset compensation...")
-    Ei, fo = fourthPowerFOE(Ei, 1 / Ts)
+    Ei, fo = fourthPowerFOE(Ei, 1 / Ts, M)
     Ei = pnorm(Ei)
     logg.info(f"Estimated frequency offset (MHz): {np.round(fo/1e6, 3)}")
 
@@ -320,7 +320,7 @@ def viterbi(Ei, N=35, M=4):
     )
 
 
-def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
+def fourthPowerFOE(Ei, Fs, M=4, plotSpec=False):  # sourcery skip: extract-method
     """
     Estimate the frequency offset (FO) with the 4th-power method.
 
@@ -330,6 +330,8 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
         Input signal.
     Fs : float
         Sampling frequency.
+    M : int, optional
+        M-th power order. Default is 4.
     plotSpec : bool, optional
         Whether to plot the spectrum. Default is False.
 
@@ -353,9 +355,9 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
     t = np.arange(0, Eo.shape[0]) * 1 / Fs
     fo = np.zeros(nModes)
     for n in range(nModes):
-        f4 = 10 * np.log10(np.abs(fftshift(fft(Ei[:, n] ** 4))))
+        f4 = 10 * np.log10(np.abs(fftshift(fft(Ei[:, n] ** M))))
         indFO = np.argmax(f4)
-        fo[n] = f[indFO] / 4
+        fo[n] = f[indFO] / M
         Eo[:, n] = Ei[:, n] * np.exp(-1j * 2 * np.pi * fo[n] * t)
 
     if plotSpec:
@@ -365,8 +367,8 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
 
 def plotSpectrum(f, f4, indFO):
     plt.figure()
-    plt.plot(f, f4, label="$|FFT(s[k]^4)|[dB]$")
-    plt.plot(f[indFO], f4[indFO], "x", label="$4f_o$")
+    plt.plot(f, f4, label="$|FFT(s[k]^" + str(M) + ")|[dB]$")
+    plt.plot(f[indFO], f4[indFO], "x", label="$" + str(M) + "f_o$")
     plt.legend()
     plt.xlim(min(f), max(f))
     plt.grid()
