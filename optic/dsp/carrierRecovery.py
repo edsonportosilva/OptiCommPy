@@ -124,7 +124,10 @@ def cpr(Ei, param=None, symbTx=None):
     # 4th power frequency offset estimation/compensation
     if runFOE:
         logg.info(f"Running frequency offset compensation...")
-        Ei, fo = fourthPowerFOE(Ei, 1 / Ts, M)
+        if constType in ["psk", "apsk"]:
+            Ei, fo = fourthPowerFOE(Ei, 1 / Ts, M)
+        else:
+            Ei, fo = fourthPowerFOE(Ei, 1 / Ts, 4)
         Ei = pnorm(Ei)
         logg.info(f"Estimated frequency offset (MHz): {np.round(fo/1e6, 3)}")
 
