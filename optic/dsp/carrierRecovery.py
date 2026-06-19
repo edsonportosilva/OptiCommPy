@@ -141,9 +141,9 @@ def cpr(Ei, param=None, symbTx=None):
     elif alg == "viterbi":
         logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")        
         if constType != "psk":
-            phaseEst = viterbi(Ei, N)
+            phaseEst = viterbi(Ei, N) 
         else:
-            phaseEst = viterbi(Ei, N, M)
+            phaseEst = viterbi(Ei, N, M) + np.pi/4
     else:
         raise ValueError("CPR algorithm incorrectly specified.")
     phaseEst = np.unwrap(4 * phaseEst, axis=0) / 4
