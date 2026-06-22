@@ -371,11 +371,11 @@ def fourthPowerFOE(Ei, Fs, M=4, plotSpec=False):  # sourcery skip: extract-metho
         Eo[:, n] = Ei[:, n] * np.exp(-1j * 2 * np.pi * fo[n] * t)
 
     if plotSpec:
-        plotSpectrum(f, f4, indFO)
+        plotSpectrum(f, f4, indFO, M)
     return Eo, fo
 
 
-def plotSpectrum(f, f4, indFO):
+def plotSpectrum(f, f4, indFO, M=4):
     plt.figure()
     plt.plot(f, f4, label="$|FFT(s[k]^" + str(M) + ")|[dB]$")
     plt.plot(f[indFO], f4[indFO], "x", label="$" + str(M) + "f_o$")
