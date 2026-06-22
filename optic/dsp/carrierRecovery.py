@@ -329,7 +329,7 @@ def viterbi(Ei, N=35, M=4):
     )
 
 
-def fourthPowerFOE(Ei, Fs, M=4, plotSpec=False):  # sourcery skip: extract-method
+def fourthPowerFOE(Ei, Fs, M=4):
     """
     Estimate the frequency offset (FO) with the 4th-power method.
 
@@ -340,9 +340,7 @@ def fourthPowerFOE(Ei, Fs, M=4, plotSpec=False):  # sourcery skip: extract-metho
     Fs : float
         Sampling frequency.
     M : int, optional
-        M-th power order. Default is 4.
-    plotSpec : bool, optional
-        Whether to plot the spectrum. Default is False.
+        M-th power order. Default is 4.  
 
     Returns
     -------
@@ -369,15 +367,4 @@ def fourthPowerFOE(Ei, Fs, M=4, plotSpec=False):  # sourcery skip: extract-metho
         fo[n] = f[indFO] / M
         Eo[:, n] = Ei[:, n] * np.exp(-1j * 2 * np.pi * fo[n] * t)
 
-    if plotSpec:
-        plotSpectrum(f, f4, indFO, M)
     return Eo, fo
-
-
-def plotSpectrum(f, f4, indFO, M=4):
-    plt.figure()
-    plt.plot(f, f4, label="$|FFT(s[k]^" + str(M) + ")|[dB]$")
-    plt.plot(f[indFO], f4[indFO], "x", label="$" + str(M) + "f_o$")
-    plt.legend()
-    plt.xlim(min(f), max(f))
-    plt.grid()
