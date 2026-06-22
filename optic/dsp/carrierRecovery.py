@@ -146,13 +146,12 @@ def cpr(Ei, param=None, symbTx=None):
             phaseEst = bps(Ei, N // 2, constSymb, B)
     elif alg == "viterbi":
         logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")        
-        if constType in ["psk", "apsk"]:
+        if constType in ["psk"]:
             phaseEst = viterbi(Ei, N, M) + np.pi/4            
         else:
-            phaseEst = viterbi(Ei, N) 
-            
+            phaseEst = viterbi(Ei, N)            
     else:
-        raise ValueError("CPR algorithm incorrectly specified.")
+        logg.error("CPR algorithm incorrectly specified.")
     phaseEst = np.unwrap(4 * phaseEst, axis=0) / 4
 
     discard = (
