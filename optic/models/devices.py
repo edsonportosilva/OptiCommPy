@@ -161,6 +161,8 @@ def iqm(Ai, u, param=None):
         - param.VbI: I-MZM's bias voltage [V][default: -2 V]
         - param.VbQ: Q-MZM's bias voltage [V][default: -2 V]
         - param.Vphi: PM bias voltage [V][default: 1 V]
+        - param.ERI: I-MZM extinction ratio [dB][default: 60 dB]
+        - param.ERQ: Q-MZM extinction ratio [dB][default: 60 dB]
 
     Returns
     -------
@@ -180,6 +182,8 @@ def iqm(Ai, u, param=None):
     VbI = getattr(param, "VbI", -2)
     VbQ = getattr(param, "VbQ", -2)
     Vphi = getattr(param, "Vphi", 1)
+    ERI = getattr(param, "ERI", 60)
+    ERQ = getattr(param, "ERQ", 60)
 
     try:
         u.shape
@@ -198,11 +202,13 @@ def iqm(Ai, u, param=None):
     paramI = parameters()
     paramI.Vpi = Vpi
     paramI.Vb = VbI
+    paramI.ER = ERI
 
     # define parameters for the Q-MZM:
     paramQ = parameters()
     paramQ.Vpi = Vpi
     paramQ.Vb = VbQ
+    paramQ.ER = ERQ
     
     # Calculate MZMs outputs
     EoI = mzm(Ai / np.sqrt(2), u.real, paramI)
