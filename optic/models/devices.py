@@ -545,12 +545,23 @@ def coherentReceiver(Es, Elo, paramFE=None, paramPD=None):
         paramPD = parameters()
         paramPD.Fs = Fs
 
+    paramPDxPol = paramPD.copy()
+    paramPDyPol = paramPD.copy()
+    
+    try:
+        seed = paramPD.seed    
+        # make sure to use different seeds for each balanced pair of photodiodes
+        paramPDxPol.seed = seed 
+        paramPDyPol.seed = seed + 7
+    except AttributeError:
+        pass
+
     # optical hybrid 2 x 4 90°
     Eo = opticalHybrid2x4(Es, Elo)
 
     # balanced photodetection
-    sI = balancedPD(Eo[1, :], Eo[0, :], paramPD)
-    sQ = balancedPD(Eo[2, :], Eo[3, :], paramPD)
+    sI = balancedPD(Eo[1, :], Eo[0, :], paramPDxPol)
+    sQ = balancedPD(Eo[2, :], Eo[3, :], paramPDyPol)
 
     s = sI + 1j * sQ
 
