@@ -545,14 +545,14 @@ def coherentReceiver(Es, Elo, paramFE=None, paramPD=None):
         paramPD = parameters()
         paramPD.Fs = Fs
 
-    paramPDxPol = paramPD.copy()
-    paramPDyPol = paramPD.copy()
+    paramPDchI = paramPD.copy()
+    paramPDchQ = paramPD.copy()
     
     try:
         seed = paramPD.seed    
         # make sure to use different seeds for each balanced pair of photodiodes
-        paramPDxPol.seed = seed 
-        paramPDyPol.seed = seed + 7
+        paramPDchI.seed = seed 
+        paramPDchQ.seed = seed + 7
     except AttributeError:
         pass
 
@@ -560,8 +560,8 @@ def coherentReceiver(Es, Elo, paramFE=None, paramPD=None):
     Eo = opticalHybrid2x4(Es, Elo)
 
     # balanced photodetection
-    sI = balancedPD(Eo[1, :], Eo[0, :], paramPDxPol)
-    sQ = balancedPD(Eo[2, :], Eo[3, :], paramPDyPol)
+    sI = balancedPD(Eo[1, :], Eo[0, :], paramPDchI)
+    sQ = balancedPD(Eo[2, :], Eo[3, :], paramPDchQ)
 
     s = sI + 1j * sQ
 
@@ -636,6 +636,17 @@ def pdmCoherentReceiver(Es, Elo, paramFE, paramPD=None):
         paramPD = parameters()
         paramPD.Fs = Fs
 
+    paramPDxPol = paramPD.copy()
+    paramPDyPol = paramPD.copy()
+
+    try:
+        seed = paramPD.seed    
+        # make sure to use different seeds for each polarization    
+        paramPDxPol.seed = seed 
+        paramPDyPol.seed = seed + 3
+    except AttributeError:
+        pass
+
     polRotation = getattr(paramFE, "polRotation", 0)
     pdl = getattr(paramFE, "pdl", 0)
     polDelay = getattr(paramFE, "polDelay", 0)
@@ -651,8 +662,8 @@ def pdmCoherentReceiver(Es, Elo, paramFE, paramPD=None):
         Esx = 10 ** (-(pdl / 2) / 20) * Esx  # apply PDL to pol.X
         Esy = 10 ** ((pdl / 2) / 20) * Esy  # apply PDL to pol.Y
 
-    Sx = coherentReceiver(Esx, Elox, paramX, paramPD)  # coherent detection of pol.X
-    Sy = coherentReceiver(Esy, Eloy, paramY, paramPD)  # coherent detection of pol.Y
+    Sx = coherentReceiver(Esx, Elox, paramX, paramPDxPol)  # coherent detection of pol.X
+    Sy = coherentReceiver(Esy, Eloy, paramY, paramPDyPol)  # coherent detection of pol.Y
 
     return np.array([Sx, Sy]).T
 
