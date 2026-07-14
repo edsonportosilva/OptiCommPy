@@ -16,7 +16,6 @@ DSP algorithms for carrier phase and frequency recovery (:mod:`optic.dsp.carrier
 
 import logging as logg
 
-import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
 from numpy.fft import fft, fftfreq, fftshift
