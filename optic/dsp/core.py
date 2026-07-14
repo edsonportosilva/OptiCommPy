@@ -221,19 +221,13 @@ def pulseShape(param):
 
     Parameters
     ----------
-    param : core.parameter
-        Pulse shaping parameters:
-        - param.pulseType : string ('rect','nrz','rrc','rc', 'doubinary')
-            Type of pulse shaping filter. The default is 'rrc'.
+    param : optic.utils.parameters object, optional
+        Parameters of the pulse shaping filter:
 
-        - param.SpS : int, optional
-            Number of samples per symbol of input signal. The default is 2.
-
-        - param.nFilterTaps : int, optional
-            Number of filter coefficients. The default is 1024.
-
-        - param.rollOff : float, optional
-            Rolloff of RRC filter. The default is 0.1.
+        - param.pulseType: Type of pulse shaping filter ('rect','nrz','rrc','rc', 'doubinary'). [default: 'rrc']
+        - param.SpS: Number of samples per symbol of input signal.[default: 2]
+        - param.nFilterTaps: Number of filter coefficients. [default: 256]
+        - param.rollOff: Rolloff of RRC/RC filters. [default: 0.1]
 
     Returns
     -------
@@ -271,7 +265,7 @@ def pulseShape(param):
         pulse = np.sinc(t)
         pulse += np.roll(pulse, SpS)
 
-    pulse = pulse / np.sum(pulse)
+    pulse = pulse / np.sum(pulse) # Normalize the filter coefficients
 
     return pulse
 
@@ -890,7 +884,7 @@ def delaySignal(sig, delay, Fs=1, NFFT=1024):
 
     Parameters
     ----------
-    sig : ndarray
+    sig : np.array
         The input signal.
     delay : float
         The time delay to apply to the signal (in seconds).
@@ -903,7 +897,7 @@ def delaySignal(sig, delay, Fs=1, NFFT=1024):
 
     Returns
     -------
-    ndarray
+    np.array
         The delayed signal.
     """
     # Calculate the length of the signal
@@ -935,27 +929,19 @@ def iqMixing(sig, param):
 
     Parameters
     ----------
-    sig : ndarray
+    sig : np.array
         Input signal.
-    param : object, optional
-        Object containing parameters for IQ mixing.
+    param : optic.utils.parameters object
+        Parameters of IQ mixing.
 
-        ampImb : float, optional
-            Amplitude imbalance parameter in dB.
-            Default is 0.
-        phaseImb : float, optional
-            Phase imbalance parameter (in radians).
-            Default is 0.
-        timeSkew : float, optional
-            Skewness parameter for I component.
-            Default is 0.
-        Fs : float, optional
-            Sampling frequency.
-            Default is None.
+        param.ampImb: Amplitude imbalance parameter in dB.[default: 0 dB]
+        param.phaseImb: Phase imbalance parameter (in radians).[default: 0 rad]
+        param.timeSkew: delay between I and Q components. [default: 0 s]
+        param.Fs: simulation sampling frequency. [default: None]            
 
     Returns
     -------
-    ndarray
+    np.array
         IQ-mixed signal.
     """
     # check input parameters
@@ -991,9 +977,9 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
 
     Parameters
     ----------
-    x : ndarray
+    x : np.array
         Input signal.
-    h : ndarray
+    h : np.array
         Filter impulse response.
     NFFT : int, optional
         FFT size to be used. Must be greater than the length of the filter.
@@ -1005,7 +991,7 @@ def blockwiseFFTConv(x, h, NFFT=None, freqDomainFilter=False):
 
     Returns
     -------
-    y : ndarray
+    y : np.array
         The filtered output signal.
 
     Raises
@@ -1160,7 +1146,7 @@ def levinson(r, nTaps):
         The order of the whitening filter (number of coefficients to estimate).
     Returns
     -------
-    a : np.ndarray
+    a : np.np.array
         The coefficients of the whitening filter of length nTaps, where a[0] is
         the leading coefficient (usually 1) and a[1], a[2], ..., a[nTaps-1] are the estimated filter coefficients.
 
@@ -1210,7 +1196,7 @@ def autocorr(x, nTaps):
         The number of autocorrelation coefficients to estimate (lags from 0 to nTaps-1).
     Returns
     -------
-    r : np.ndarray
+    r : np.array
         An array of length nTaps containing the estimated autocorrelation coefficients, where r[k] is the autocorrelation at lag k.
 
     Notes
@@ -1247,7 +1233,7 @@ def estimateWhiteningFilter(x, nTaps):
         The order of the whitening filter (number of coefficients).
     Returns
     -------
-    w : np.ndarray
+    w : np.array
         The coefficients of the whitening filter of length nTaps, where w[0] is the leading coefficient (usually 1).
 
     References
