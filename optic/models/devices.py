@@ -790,13 +790,13 @@ def basicLaserModel(param=None):
     return np.sqrt(dBm2W(P) + deltaP) * np.exp(1j * (fo + pn))
 
 
-def adc(Ei, param):
+def adc(sigIn, param):
     """
     Analog-to-digital converter (ADC) model.
 
     Parameters
     ----------
-    Ei : np.array
+    sigIn : np.array
         Input signal.
     param : optic.utils.parameters object, optional
         Parameters of the ADC model.
@@ -813,7 +813,7 @@ def adc(Ei, param):
 
     Returns
     -------
-    Eo : np.array
+    sigOut : np.array
         Resampled and quantized signal.
 
     Notes
@@ -851,44 +851,44 @@ def adc(Ei, param):
 
     # Reshape the input signal if needed to handle single-dimensional inputs
     try:
-        Ei.shape[1]
+        sigIn.shape[1]
     except IndexError:
-        Ei = Ei.reshape(len(Ei), 1)
+        sigIn = sigIn.reshape(len(sigIn), 1)
 
     # Apply anti-aliasing filters if AAF is enabled
     if AAF:
         # Anti-aliasing filters:
-        Ntaps = min(Ei.shape[0], N)
+        Ntaps = min(sigIn.shape[0], N)
         hi = lowPassFIR(outFs / 2, inFs, Ntaps, typeF="rect")
         ho = lowPassFIR(outFs / 2, outFs, Ntaps, typeF="rect")
-        Ei = firFilter(hi, Ei)
+        sigIn = firFilter(hi, sigIn)
 
-    if np.iscomplexobj(Ei):
+    if np.iscomplexobj(sigIn):
         # Signal interpolation to the ADC's sampling frequency
-        Eo = clockSamplingInterp(
-            np.real(Ei), inFs, outFs, jitter
-        ) + 1j * clockSamplingInterp(np.imag(Ei), inFs, outFs, jitter)
+        sigOut = clockSamplingInterp(
+            np.real(sigIn), inFs, outFs, jitter
+        ) + 1j * clockSamplingInterp(np.imag(sigIn), inFs, outFs, jitter)
 
         # clipping to [Vmin, Vmax]
-        Eo = np.clip(Eo, Vmin + 1j * Vmin, Vmax + 1j * Vmax)
+        sigOut = np.clip(sigOut, Vmin + 1j * Vmin, Vmax + 1j * Vmax)
 
         # Uniform quantization of the signal according to the number of bits of the ADC
-        Eo = quantizer(np.real(Eo), nBits, Vmax, Vmin) + 1j * quantizer(
-            np.imag(Eo), nBits, Vmax, Vmin
+        sigOut = quantizer(np.real(sigOut), nBits, Vmax, Vmin) + 1j * quantizer(
+            np.imag(sigOut), nBits, Vmax, Vmin
         )
     else:
         # Signal interpolation to the ADC's sampling frequency
-        Eo = clockSamplingInterp(Ei, inFs, outFs, jitter)
+        sigOut = clockSamplingInterp(sigIn, inFs, outFs, jitter)
 
         # clipping to [Vmin, Vmax]
-        Eo = np.clip(Eo, Vmin, Vmax)
+        sigOut = np.clip(sigOut, Vmin, Vmax)
 
         # Uniform quantization of the signal according to the number of bits of the ADC
-        Eo = quantizer(Eo, nBits, Vmax, Vmin)
+        sigOut = quantizer(sigOut, nBits, Vmax, Vmin)
 
     # Apply anti-aliasing filters to the output if AAF is enabled
     if AAF:
-        Eo = firFilter(ho, Eo)
+        sigOut = firFilter(ho, sigOut)
 
     # Add noise corresponding to the effective number of bits (ENOB) of the ADC
     if nBits > ENOB:
@@ -897,16 +897,16 @@ def adc(Ei, param):
         Pnq_actual = scale**2 / (12 * (2 ** (2 * ENOB)))
         Pn_extra = Pnq_actual - Pnq_ideal
 
-        if np.iscomplexobj(Eo):
-            Eo += gaussianComplexNoise(Eo.shape, 2 * Pn_extra)
+        if np.iscomplexobj(sigOut):
+            sigOut += gaussianComplexNoise(sigOut.shape, 2 * Pn_extra)
         else:
-            Eo += gaussianNoise(Eo.shape, Pn_extra)
+            sigOut += gaussianNoise(sigOut.shape, Pn_extra)
 
-    if Eo.shape[1] == 1:
+    if sigOut.shape[1] == 1:
         # If the output is a single column, return it as a 1D array
-        Eo = Eo.flatten()
+        sigOut = sigOut.flatten()
 
-    return Eo
+    return sigOut
 
 
 def dac(Ei, param):
