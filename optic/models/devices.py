@@ -796,7 +796,7 @@ def adc(Ei, param):
 
     Parameters
     ----------
-    Ei : ndarray
+    Ei : np.array
         Input signal.
     param : optic.utils.parameters object, optional
         Parameters of the ADC model.
@@ -813,7 +813,7 @@ def adc(Ei, param):
 
     Returns
     -------
-    Eo : ndarray
+    Eo : np.array
         Resampled and quantized signal.
 
     Notes
@@ -915,7 +915,7 @@ def dac(Ei, param):
 
     Parameters
     ----------
-    Ei : ndarray
+    Ei : np.array
         Input signal.
     param : optic.utils.parameters object, optional
         Parameters of the DAC model.
@@ -931,7 +931,7 @@ def dac(Ei, param):
 
     Returns
     -------
-    Eo : ndarray
+    Eo : np.array
         Resampled and quantized signal.
 
     Notes
