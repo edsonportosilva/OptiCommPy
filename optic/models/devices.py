@@ -859,8 +859,8 @@ def adc(Ei, param):
     if AAF:
         # Anti-aliasing filters:
         Ntaps = min(Ei.shape[0], N)
-        hi = lowPassFIR(param.outFs / 2, param.inFs, Ntaps, typeF="rect")
-        ho = lowPassFIR(param.outFs / 2, param.outFs, Ntaps, typeF="rect")
+        hi = lowPassFIR(outFs / 2, inFs, Ntaps, typeF="rect")
+        ho = lowPassFIR(outFs / 2, outFs, Ntaps, typeF="rect")
         Ei = firFilter(hi, Ei)
 
     if np.iscomplexobj(Ei):
