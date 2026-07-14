@@ -53,14 +53,14 @@ except ImportError:
     from optic.dsp.core import firFilter
 
 
-def pm(Ai, u, Vπ):
+def pm(Ei, u, Vπ):
     """
     Optical Phase Modulator (PM).
 
     Parameters
     ----------
-    Ai : scalar or np.array
-        Amplitude of the optical field at the input of the PM.
+    Ei : scalar or np.array
+        Optical field at the input of the PM.
     u : np.array
         Electrical driving signal.
     Vπ : scalar
@@ -81,24 +81,24 @@ def pm(Ai, u, Vπ):
         u = np.array([u])
 
     try:
-        if Ai.shape == () and u.shape != ():
-            Ai = Ai * np.ones(u.shape)
+        if Ei.shape == () and u.shape != ():
+            Ei = Ei * np.ones(u.shape)
         else:
-            assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
+            assert Ei.shape == u.shape, "Ei and u need to have the same dimensions"
     except AttributeError:
-        Ai = Ai * np.ones(u.shape)
+        Ei = Ei * np.ones(u.shape)
 
-    return calcPM(Ai, Vπ, u)
+    return calcPM(Ei, Vπ, u)
 
 
-def mzm(Ai, u, param=None):
+def mzm(Ei, u, param=None):
     """
     Optical Mach-Zhender Modulator (MZM).
 
     Parameters
     ----------
-    Ai : scalar or np.array
-        Amplitude of the optical field at the input of the MZM.
+    Ei : scalar or np.array
+        Optical field at the input of the MZM.
     u : np.array
         Electrical driving signal.
     param : optic.utils.parameters object, optional
@@ -110,7 +110,7 @@ def mzm(Ai, u, param=None):
 
     Returns
     -------
-    Ao : np.array
+    np.array
         Modulated optical field at the output of the MZM.
 
     References
@@ -134,24 +134,24 @@ def mzm(Ai, u, param=None):
         u = np.array([u])
 
     try:
-        if Ai.shape == () and u.shape != ():
-            Ai = Ai * np.ones(u.shape)
+        if Ei.shape == () and u.shape != ():
+            Ei = Ei * np.ones(u.shape)
         else:
-            assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
+            assert Ei.shape == u.shape, "Ei and u need to have the same dimensions"
     except AttributeError:
-        Ai = Ai * np.ones(u.shape)
+        Ei = Ei * np.ones(u.shape)
 
-    return calcMZM(Ai, Vpi, u, Vb, ER)
+    return calcMZM(Ei, Vpi, u, Vb, ER)
 
 
-def iqm(Ai, u, param=None):
+def iqm(Ei, u, param=None):
     """
     Optical In-Phase/Quadrature Modulator (IQM).
 
     Parameters
     ----------
-    Ai : scalar or np.array
-        Amplitude of the optical field at the input of the IQM.
+    Ei : scalar or np.array
+        Optical field at the input of the IQM.
     u : complex-valued np.array
         Modulator's driving signal (complex-valued baseband).
     param : optic.utils.parameters object, optional
@@ -166,7 +166,7 @@ def iqm(Ai, u, param=None):
 
     Returns
     -------
-    Ao : complex-valued np.array
+    Eo : complex-valued np.array
         Modulated optical field at the output of the IQM.
 
     References
@@ -191,12 +191,12 @@ def iqm(Ai, u, param=None):
         u = np.array([u])
 
     try:
-        if Ai.shape == () and u.shape != ():
-            Ai = Ai * np.ones(u.shape)
+        if Ei.shape == () and u.shape != ():
+            Ei = Ei * np.ones(u.shape)
         else:
-            assert Ai.shape == u.shape, "Ai and u need to have the same dimensions"
+            assert Ei.shape == u.shape, "Ei and u need to have the same dimensions"
     except AttributeError:
-        Ai = Ai * np.ones(u.shape)
+        Ei = Ei * np.ones(u.shape)
 
     # define parameters for the I-MZM:
     paramI = parameters()
@@ -211,8 +211,8 @@ def iqm(Ai, u, param=None):
     paramQ.ER = ERQ
     
     # Calculate MZMs outputs
-    EoI = mzm(Ai / np.sqrt(2), u.real, paramI)
-    EoQ = mzm(Ai / np.sqrt(2), u.imag, paramQ)
+    EoI = mzm(Ei / np.sqrt(2), u.real, paramI)
+    EoQ = mzm(Ei / np.sqrt(2), u.imag, paramQ)
     
     # Combine I and Q branches with the PM rotation to get the IQM output
     Eo = EoI + pm(EoQ, Vphi * np.ones(u.shape), Vpi)
