@@ -909,13 +909,13 @@ def adc(sigIn, param):
     return sigOut
 
 
-def dac(Ei, param):
+def dac(sigIn, param):
     """
     Digital-to-analog converter (DAC) model.
 
     Parameters
     ----------
-    Ei : np.array
+    sigIn : np.array
         Input signal.
     param : optic.utils.parameters object, optional
         Parameters of the DAC model.
@@ -931,7 +931,7 @@ def dac(Ei, param):
 
     Returns
     -------
-    Eo : np.array
+    sigOut : np.array
         Resampled and quantized signal.
 
     Notes
@@ -966,37 +966,37 @@ def dac(Ei, param):
 
     # Reshape the input signal if needed to handle single-dimensional inputs
     try:
-        Ei.shape[1]
+        sigIn.shape[1]
     except IndexError:
-        Ei = Ei.reshape(len(Ei), 1)
+        sigIn = sigIn.reshape(len(sigIn), 1)
 
-    if np.iscomplexobj(Ei):
+    if np.iscomplexobj(sigIn):
         # Uniform quantization of the signal according to the number of bits of the DAC
-        Vmax = np.max([np.max(Ei.real), np.max(Ei.imag)])
-        Vmin = np.min([np.min(Ei.real), np.min(Ei.imag)])
+        Vmax = np.max([np.max(sigIn.real), np.max(sigIn.imag)])
+        Vmin = np.min([np.min(sigIn.real), np.min(sigIn.imag)])
 
-        Eo = quantizer(np.real(Ei), nBits, Vmax, Vmin) + 1j * quantizer(
-            np.imag(Ei), nBits, Vmax, Vmin
+        sigOut = quantizer(np.real(sigIn), nBits, Vmax, Vmin) + 1j * quantizer(
+            np.imag(sigIn), nBits, Vmax, Vmin
         )
 
         # Signal interpolation to the DAC's sampling frequency
-        Eo = clockSamplingInterp(
-            np.real(Eo), inFs, outFs, jitter
-        ) + 1j * clockSamplingInterp(np.imag(Eo), inFs, outFs, jitter)
+        sigOut = clockSamplingInterp(
+            np.real(sigOut), inFs, outFs, jitter
+        ) + 1j * clockSamplingInterp(np.imag(sigOut), inFs, outFs, jitter)
     else:
-        Vmax = np.max(Ei)
-        Vmin = np.min(Ei)
+        Vmax = np.max(sigIn)
+        Vmin = np.min(sigIn)
 
         # Uniform quantization of the signal according to the number of bits of the DAC
-        Eo = quantizer(Ei, nBits, Vmax, Vmin)
+        sigOut = quantizer(sigIn, nBits, Vmax, Vmin)
 
         # Signal interpolation to the DAC's sampling frequency
-        Eo = clockSamplingInterp(Eo, inFs, outFs, jitter)
+        sigOut = clockSamplingInterp(sigOut, inFs, outFs, jitter)
 
     # Apply anti-imaging filters to the output if AIF is enabled
     if AIF:
-        ho = lowPassFIR(param.outFs / 2, param.outFs, min(Eo.shape[0], N), typeF="rect")
-        Eo = firFilter(ho, Eo)
+        ho = lowPassFIR(param.outFs / 2, param.outFs, min(sigOut.shape[0], N), typeF="rect")
+        sigOut = firFilter(ho, sigOut)
 
     # Add noise to the output signal based on the effective number of bits (ENOB)
     if nBits > ENOB:
@@ -1005,16 +1005,16 @@ def dac(Ei, param):
         Pnq_actual = scale**2 / (12 * (2 ** (2 * ENOB)))
         Pn_extra = Pnq_actual - Pnq_ideal
 
-        if np.iscomplexobj(Eo):
-            Eo += gaussianComplexNoise(Eo.shape, 2 * Pn_extra)
+        if np.iscomplexobj(sigOut):
+            sigOut += gaussianComplexNoise(sigOut.shape, 2 * Pn_extra)
         else:
-            Eo += gaussianNoise(Eo.shape, Pn_extra)
+            sigOut += gaussianNoise(sigOut.shape, Pn_extra)
 
-    Eo = Eo * (
+    sigOut = sigOut * (
         Vpp / (Vmax - Vmin)
     )  # Scale the output signal to the DAC's specified peak-to-peak voltage
 
-    if Eo.shape[1] == 1:
+    if sigOut.shape[1] == 1:
         # If the output is a single column, return it as a 1D array
-        Eo = Eo.flatten()
-    return Eo
+        sigOut = sigOut.flatten()
+    return sigOut
