@@ -44,13 +44,13 @@ def edc(Ei, param):
     param : optic.utils.parameters object
         Parameters of the optical channel.
 
-        - param.L: total fiber length [km][default: 50 km]
-        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-        - param.Fs: sampling frequency [Hz] [default: []]
-        - param.Rs: symbol rate [baud] [default: 32e9]
-        - param.NfilterCoeffs: number of filter coefficients [default: []]
-        - param.Nfft: FFT size [default: []]
+        - param.L : total fiber length [km][default: 50 km]
+        - param.D : chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+        - param.Fc : carrier frequency [Hz] [default: 193.1e12 Hz]
+        - param.Fs : sampling frequency [Hz] [default: []]
+        - param.Rs : symbol rate [baud] [default: 32e9]
+        - param.NfilterCoeffs : number of filter coefficients [default: []]
+        - param.Nfft : FFT size [default: []]
 
     Returns
     -------
@@ -135,22 +135,22 @@ def mimoAdaptEqualizer(x, param=None, dx=None):
     param : optic.utils.parameters object, optional
         Parameter object containing the following attributes:
 
-        - numIter : int, number of pre-convergence iterations [default: 1]
-        - nTaps : int, number of filter taps [default: 15]
-        - mu : float or list of floats, step size parameter(s) [default: [1e-3]]
-        - lambdaRLS : float, RLS forgetting factor [default: 0.99]
-        - SpS : int, samples per symbol [default: 2]
-        - H : np.array, coefficient matrix [default: []]
-        - L : int or list of ints, length of the output of the training section [default: []]
-        - Hiter : list, history of coefficient matrices [default: []]
-        - storeCoeff : bool, flag indicating whether to store coefficient matrices [default: False]
-        - runWL: bool, flag indicating whether to run the equalizer in the widely-linear mode [default: False]
-        - alg : str or list of strs, specifying the equalizer algorithm(s) [default: ['nlms']]
-        - constType : str, constellation type [default: 'qam']
-        - M : int, modulation order [default: 4]
-        - prgsBar : bool, flag indicating whether to display progress bar [default: True]
-        - returnResults : bool, flag indicating whether to return all results [default: False]
-        - prec: data type, precision of the computations [default: np.complex64]
+        - param.numIter : int, number of pre-convergence iterations [default: 1]
+        - param.nTaps : int, number of filter taps [default: 15]
+        - param.mu : float or list of floats, step size parameter(s) [default: [1e-3]]
+        - param.lambdaRLS : float, RLS forgetting factor [default: 0.99]
+        - param.SpS : int, samples per symbol [default: 2]
+        - param.H : np.array, coefficient matrix [default: []]
+        - param.L : int or list of ints, length of the output of the training section [default: []]
+        - param.Hiter : list, history of coefficient matrices [default: []]
+        - param.storeCoeff : bool, flag indicating whether to store coefficient matrices [default: False]
+        - param.runWL: bool, flag indicating whether to run the equalizer in the widely-linear mode [default: False]
+        - param.alg : str or list of strs, specifying the equalizer algorithm(s) [default: ['nlms']]
+        - param.constType : str, constellation type [default: 'qam']
+        - param.M : int, modulation order [default: 4]
+        - param.prgsBar : bool, flag indicating whether to display progress bar [default: True]
+        - param.returnResults : bool, flag indicating whether to return all results [default: False]
+        - param.prec : data type, precision of the computations [default: np.complex64]
 
     Returns
     -------
@@ -956,23 +956,23 @@ def manakovDBP(Ei, param):
     param : optic.utils.parameters object
         Physical/simulation parameters of the optical channel.
 
-        - param.Ltotal: total fiber length [km][default: 400 km]
-        - param.Lspan: span length [km][default: 80 km]
-        - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-        - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-        - param.Fs: simulation sampling frequency [samples/second][default: None]
-        - param.prec: numerical precision [default: np.complex128]
-        - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-        - param.maxIter: max number of iter. in the trap. integration [default: 10]
-        - param.tol: convergence tol. of the trap. integration.[default: 1e-5]
-        - param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
-        - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
-        - param.prgsBar: display progress bar? bolean variable [default:True]
-        - param.saveSpanN: specify the span indexes to be outputted [default:[]]
-        - param.returnParameters: bool, return channel parameters [default: False]
+        - param.Ltotal : total fiber length [km][default: 400 km]
+        - param.Lspan : span length [km][default: 80 km]
+        - param.hz : step-size for the split-step Fourier method [km][default: 0.5 km]
+        - param.alpha : fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+        - param.D : chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+        - param.gamma : fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+        - param.Fc : carrier frequency [Hz] [default: 193.1e12 Hz]
+        - param.Fs : simulation sampling frequency [samples/second][default: None]
+        - param.prec : numerical precision [default: np.complex128]
+        - param.amp : 'edfa', 'ideal', or 'None. [default:'edfa']
+        - param.maxIter : max number of iter. in the trap. integration [default: 10]
+        - param.tol : convergence tol. of the trap. integration.[default: 1e-5]
+        - param.nlprMethod : adap step-size based on nonl. phase rot. [default: True]
+        - param.maxNlinPhaseRot : max nonl. phase rot. tolerance [rad][default: 2e-2]
+        - param.prgsBar : display progress bar? bolean variable [default:True]
+        - param.saveSpanN : specify the span indexes to be outputted [default:[]]
+        - param.returnParameters : bool, return channel parameters [default: False]
 
 
     Returns
@@ -1158,18 +1158,18 @@ def dfe(x, dx, param):
     param : optic.utils.parameters object
         DFE parameters:
 
-        - param.nTapsFF: number of feedforward taps [default: 5]
-        - param.nTapsFB: number of feedback taps [default: 5]
-        - param.SpS: samples per symbol [default: 1]
-        - param.mu: step size [default: 0.0001]
-        - param.nTrain: number of training symbols [default: 1000]
-        - param.prec: precision [default: np.float32]
-        - param.M: modulation order [default: 4]
-        - param.constType: constellation type ('pam', 'qam', etc.) [default: 'pam']
-        - param.f: initial feedforward coeffs [default: None]
-        - param.b: initial feedback coeffs [default: None]
-        - param.trainingMode: operation mode ('data-aided', 'fulltime') [default: 'data-aided']
-        - param.preconvIters: number of pre-convergence iterations [default: 1]
+        - param.nTapsFF : number of feedforward taps [default: 5]
+        - param.nTapsFB : number of feedback taps [default: 5]
+        - param.SpS : samples per symbol [default: 1]
+        - param.mu : step size [default: 0.0001]
+        - param.nTrain : number of training symbols [default: 1000]
+        - param.prec : precision [default: np.float32]
+        - param.M : modulation order [default: 4]
+        - param.constType : constellation type ('pam', 'qam', etc.) [default: 'pam']
+        - param.f : initial feedforward coeffs [default: None]
+        - param.b : initial feedback coeffs [default: None]
+        - param.trainingMode : operation mode ('data-aided', 'fulltime') [default: 'data-aided']
+        - param.preconvIters : number of pre-convergence iterations [default: 1]
 
     Returns
     -------

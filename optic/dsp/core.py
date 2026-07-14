@@ -224,10 +224,10 @@ def pulseShape(param):
     param : optic.utils.parameters object, optional
         Parameters of the pulse shaping filter:
 
-        - param.pulseType: Type of pulse shaping filter ('rect','nrz','rrc','rc', 'doubinary'). [default: 'rrc']
-        - param.SpS: Number of samples per symbol of input signal.[default: 2]
-        - param.nFilterTaps: Number of filter coefficients. [default: 256]
-        - param.rollOff: Rolloff of RRC/RC filters. [default: 0.1]
+        - param.pulseType : Type of pulse shaping filter ('rect','nrz','rrc','rc', 'doubinary'). [default: 'rrc']
+        - param.SpS : Number of samples per symbol of input signal.[default: 2]
+        - param.nFilterTaps : Number of filter coefficients. [default: 256]
+        - param.rollOff : Rolloff of RRC/RC filters. [default: 0.1]
 
     Returns
     -------
@@ -444,7 +444,7 @@ def decimate(Ei, param):
     param : optic.utils.parameters object, optional
         Parameters of the decimation process.
 
-        - param.SpSin  : samples per symbol of the input signal.
+        - param.SpSin : samples per symbol of the input signal.
         - param.SpSout : samples per symbol of the output signal.
 
     Returns
@@ -934,10 +934,10 @@ def iqMixing(sig, param):
     param : optic.utils.parameters object
         Parameters of IQ mixing.
 
-        param.ampImb: Amplitude imbalance parameter in dB.[default: 0 dB]
-        param.phaseImb: Phase imbalance parameter (in radians).[default: 0 rad]
-        param.timeSkew: delay between I and Q components. [default: 0 s]
-        param.Fs: simulation sampling frequency. [default: None]            
+        param.ampImb : Amplitude imbalance parameter in dB.[default: 0 dB]
+        param.phaseImb : Phase imbalance parameter (in radians).[default: 0 rad]
+        param.timeSkew : delay between I and Q components. [default: 0 s]
+        param.Fs : simulation sampling frequency. [default: None]            
 
     Returns
     -------

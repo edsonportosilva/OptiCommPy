@@ -95,10 +95,10 @@ def gardnerClockRecovery(Ei, param=None):
 
             - param.kp : Proportional gain for the loop filter. [default: 1e-3]
             - param.ki : Integral gain for the loop filter. [default: 1e-6]
-            - param.isNyquist: is the pulse shape a Nyquist pulse? [default: True]
-            - param.returnTiming: return estimated timing values. [default: False]
-            - param.lpad: length of zero padding at the end of the input vector. [default: 1]
-            - param.maxPPM: maximum clock rate expected deviation in PPM. [default: 500]
+            - param.isNyquist : is the pulse shape a Nyquist pulse? [default: True]
+            - param.returnTiming : return estimated timing values. [default: False]
+            - param.lpad : length of zero padding at the end of the input vector. [default: 1]
+            - param.maxPPM : maximum clock rate expected deviation in PPM. [default: 500]
 
     Returns
     -------

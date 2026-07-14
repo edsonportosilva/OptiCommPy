@@ -45,29 +45,29 @@ def cpr(Ei, param=None, symbTx=None):
     param : optic.utils.parameter object, optional
         Configuration parameters [default: None].
 
-        - param.alg: CPR algorithm to be used ['bps', 'bpsGPU', 'ddpll', or 'viterbi'] [default: 'bps'].
-        - param.shapingFactor: shaping factor, for probabilistic shaped QAM with MB dististribution.[default: 0]
-        - param.constType: constellation type ['qam' or 'psk']. [default: 'qam']
-        - param.M: constellation order. [default: 4]
-        - param.returnPhases: whether to return the estimated phase shifts along with the output signal. [default: False]
-        - param.runFOE: whether to run the Mth-power frequency offset estimation and compensation before CPR. [default: True]
+        - param.alg : CPR algorithm to be used ['bps', 'bpsGPU', 'ddpll', or 'viterbi'] [default: 'bps'].
+        - param.shapingFactor : shaping factor, for probabilistic shaped QAM with MB dististribution.[default: 0]
+        - param.constType : constellation type ['qam' or 'psk']. [default: 'qam']
+        - param.M : constellation order. [default: 4]
+        - param.returnPhases : whether to return the estimated phase shifts along with the output signal. [default: False]
+        - param.runFOE : whether to run the Mth-power frequency offset estimation and compensation before CPR. [default: True]
 
         BPS params:
 
-        - param.N: length of BPS the moving average window. [default: 35]
-        - param.B: number of BPS test phases. [default: 64]
+        - param.N : length of BPS the moving average window. [default: 35]
+        - param.B : number of BPS test phases. [default: 64]
 
         DDPLL params:
 
-        - param.tau1: DDPLL loop filter param. 1. [default: 1/2*pi*10e6]
-        - param.tau2: DDPLL loop filter param. 2. [default: 1/2*pi*10e6]
-        - param.Kv: DDPLL loop filter gain. [default: 0.1]
-        - param.Ts: symbol period. [default: 1/32e9]
-        - param.pilotInd: indexes of pilot-symbol locations.
+        - param.tau1 : DDPLL loop filter param. 1. [default: 1/2*pi*10e6]
+        - param.tau2 : DDPLL loop filter param. 2. [default: 1/2*pi*10e6]
+        - param.Kv : DDPLL loop filter gain. [default: 0.1]
+        - param.Ts : symbol period. [default: 1/32e9]
+        - param.pilotInd : indexes of pilot-symbol locations.
 
         Viterbi params:
 
-        - param.N: length of the moving average window. [default: 35]
+        - param.N : length of the moving average window. [default: 35]
 
     symbTx :complex-valued np.array, optional
         Transmitted symbol sequence. [default: None]

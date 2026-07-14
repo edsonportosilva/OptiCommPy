@@ -45,25 +45,25 @@ def simpleWDMTx(param):
     param : optic.core.parameter object
          Parameters of the WDM transmitter.
 
-        - param.M: modulation order [default: 16].
-        - param.constType: 'qam' or 'psk' [default: 'qam'].
-        - param.Rs: carrier baud rate [baud][default: 32e9].
-        - param.SpS: samples per symbol [default: 16].
-        - param.probDist: pmf type of the symbol source, either 'uniform' or 'maxwell-boltzmann' [default: 'uniform'].
-        - param.shapingFactor: shaping factor of the symbols [default: 0].
-        - param.seed: seed for the random number generator [default: None].
-        - param.nBits: total number of bits per carrier [default: 60000].
-        - param.pulseType: pulse shape ['nrz', 'rrc'][default: 'rrc'].
-        - param.nFilterTaps: number of coefficients of the rrc filter [default: 1024].
-        - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
-        - param.mzmScale: MZM modulation scale factor Vrf/Vpi [default: 0.5].
-        - param.powerPerChannel: launched power per WDM channel [dBm][default:-3 dBm].
-        - param.nChannels: number of WDM channels [default: 5].
-        - param.Fc: central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz].
-        - param.laserLinewidth: laser linewidth [Hz][default: 100 kHz].
-        - param.wdmGridSpacing: frequency spacing of the WDM grid [Hz][default: 40e9 Hz].
-        - param.nPolModes: number of polarization modes [default: 1].
-        - param.prgsBar: display progress bar? [default: True].
+        - param.M : modulation order [default: 16].
+        - param.constType : 'qam' or 'psk' [default: 'qam'].
+        - param.Rs : carrier baud rate [baud][default: 32e9].
+        - param.SpS : samples per symbol [default: 16].
+        - param.probDist : pmf type of the symbol source, either 'uniform' or 'maxwell-boltzmann' [default: 'uniform'].
+        - param.shapingFactor : shaping factor of the symbols [default: 0].
+        - param.seed : seed for the random number generator [default: None].
+        - param.nBits : total number of bits per carrier [default: 60000].
+        - param.pulseType : pulse shape ['nrz', 'rrc'][default: 'rrc'].
+        - param.nFilterTaps : number of coefficients of the rrc filter [default: 1024].
+        - param.pulseRollOff : rolloff do rrc filter [default: 0.01].
+        - param.mzmScale : MZM modulation scale factor Vrf/Vpi [default: 0.5].
+        - param.powerPerChannel : launched power per WDM channel [dBm][default:-3 dBm].
+        - param.nChannels : number of WDM channels [default: 5].
+        - param.Fc : central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz].
+        - param.laserLinewidth : laser linewidth [Hz][default: 100 kHz].
+        - param.wdmGridSpacing : frequency spacing of the WDM grid [Hz][default: 40e9 Hz].
+        - param.nPolModes : number of polarization modes [default: 1].
+        - param.prgsBar : display progress bar? [default: True].
 
     Returns
     -------
@@ -231,23 +231,23 @@ def pamTransmitter(param):
     param :  optic.core.parameter object
          Parameters of the PAM transmitter.
 
-        - param.M: modulation order [default: 4].
-        - param.Rs: symbol rate [baud][default: 32e9].
-        - param.SpS: samples per symbol [default: 16].
-        - param.probDist: pmf type of the symbol source, either 'uniform' or 'maxwell-boltzmann' [default: 'uniform'].
-        - param.shapingFactor: shaping factor of the symbols [default: 0].
-        - param.seed: seed for the random number generator [default: None].
-        - param.nBits: total number of bits [default: 40000].
-        - param.pulseType: pulse shape ['nrz', 'rrc'][default: 'rrc'].
-        - param.nFilterTaps: number of coefficients of the rrc filter [default: 4096].       
-        - param.pulseRollOff: rolloff do rrc filter [default: 0.01].
-        - param.mzmVpi: MZM Vpi [V][default: 3 V].
-        - param.mzmVb: MZM bias voltage [V][default: -1.5 V].
-        - param.mzmScale: MZM modulation scale factor Vrf/Vpi [default: 0.25].
-        - param.mzmER: MZM extinction ratio [dB][default: 80 dB].
-        - param.power: optical output power [dBm][default:-3 dBm].
-        - param.nPolModes: number of polarization modes [default: 1].
-        - param.returnParam: whether to return the parameter object [default: False].
+        - param.M : modulation order [default: 4].
+        - param.Rs : symbol rate [baud][default: 32e9].
+        - param.SpS : samples per symbol [default: 16].
+        - param.probDist : pmf type of the symbol source, either 'uniform' or 'maxwell-boltzmann' [default: 'uniform'].
+        - param.shapingFactor : shaping factor of the symbols [default: 0].
+        - param.seed : seed for the random number generator [default: None].
+        - param.nBits : total number of bits [default: 40000].
+        - param.pulseType : pulse shape ['nrz', 'rrc'][default: 'rrc'].
+        - param.nFilterTaps : number of coefficients of the rrc filter [default: 4096].
+        - param.pulseRollOff : rolloff do rrc filter [default: 0.01].
+        - param.mzmVpi : MZM Vpi [V][default: 3 V].
+        - param.mzmVb : MZM bias voltage [V][default: -1.5 V].
+        - param.mzmScale : MZM modulation scale factor Vrf/Vpi [default: 0.25].
+        - param.mzmER : MZM extinction ratio [dB][default: 80 dB].
+        - param.power : optical output power [dBm][default:-3 dBm].
+        - param.nPolModes : number of polarization modes [default: 1].
+        - param.returnParam : whether to return the parameter object [default: False].
 
     Returns
     -------

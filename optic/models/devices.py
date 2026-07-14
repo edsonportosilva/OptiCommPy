@@ -104,9 +104,9 @@ def mzm(Ai, u, param=None):
     param : optic.utils.parameters object, optional
         Parameters of the MZM model.
 
-        - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
-        - param.Vb: MZM's bias voltage [V][default: -1 V]
-        - param.ER: MZM extinction ratio [dB][default: 60 dB]
+        - param.Vpi : MZM's Vpi voltage [V][default: 2 V]
+        - param.Vb : MZM's bias voltage [V][default: -1 V]
+        - param.ER : MZM extinction ratio [dB][default: 60 dB]
 
     Returns
     -------
@@ -157,12 +157,12 @@ def iqm(Ai, u, param=None):
     param : optic.utils.parameters object, optional
         Parameters of the MZM models.
 
-        - param.Vpi: MZM's Vpi voltage [V][default: 2 V]
-        - param.VbI: I-MZM's bias voltage [V][default: -2 V]
-        - param.VbQ: Q-MZM's bias voltage [V][default: -2 V]
-        - param.Vphi: PM bias voltage [V][default: 1 V]
-        - param.ERI: I-MZM extinction ratio [dB][default: 60 dB]
-        - param.ERQ: Q-MZM extinction ratio [dB][default: 60 dB]
+        - param.Vpi : MZM's Vpi voltage [V][default: 2 V]
+        - param.VbI : I-MZM's bias voltage [V][default: -2 V]
+        - param.VbQ : Q-MZM's bias voltage [V][default: -2 V]
+        - param.Vphi : PM bias voltage [V][default: 1 V]
+        - param.ERI : I-MZM extinction ratio [dB][default: 60 dB]
+        - param.ERQ : Q-MZM extinction ratio [dB][default: 60 dB]
 
     Returns
     -------
@@ -297,21 +297,21 @@ def photodiode(E, param=None):
     param : optic.utils.parameters object, optional
         Parameters of the photodiode model.
 
-        - param.R: photodiode responsivity [A/W][default: 1 A/W]
-        - param.Tc: temperature [°C][default: 25°C]
-        - param.Id: dark current [A][default: 5e-9 A]        
-        - param.RL: impedance load [Ω] [default: 50Ω]
-        - param.B: photodiode bandwidth [Hz][default: 30e9 Hz]
-        - param.IpdSat: saturation value of the photocurrent [A][default: 5e-3 A]
-        - param.N: number of the frequency resp. filter taps. [default: 255]
-        - param.fType: frequency response type [default: 'rect']       
-        - param.ideal: bool enabling the ideal photodiode model (i.e. :math:`i_{pd}(t) = R|E(t)|^2`) [default: False]
-        - param.shotNoise: bool enabling the addition of shot noise to photocurrent. [default: True]
-        - param.thermalNoise: bool enabling the addition of thermal noise to photocurrent. [default: True]
-        - param.currentSaturation: bool enabling the photocurrent saturation. [default: False]
-        - param.bandwidthLimitation: bool enabling the bandwidth limitation. [default: True]
-        - param.Fs: sampling frequency [Hz] [default: None]
-        - param.seed: seed for the random number generator [default: None]
+        - param.R : photodiode responsivity [A/W][default: 1 A/W]
+        - param.Tc : temperature [°C][default: 25°C]
+        - param.Id : dark current [A][default: 5e-9 A]        
+        - param.RL : impedance load [Ω] [default: 50Ω]
+        - param.B : photodiode bandwidth [Hz][default: 30e9 Hz]
+        - param.IpdSat : saturation value of the photocurrent [A][default: 5e-3 A]
+        - param.N : number of the frequency resp. filter taps. [default: 255]
+        - param.fType : frequency response type [default: 'rect']       
+        - param.ideal : bool enabling the ideal photodiode model (i.e. :math:`i_{pd}(t) = R|E(t)|^2`) [default: False]
+        - param.shotNoise : bool enabling the addition of shot noise to photocurrent. [default: True]
+        - param.thermalNoise : bool enabling the addition of thermal noise to photocurrent. [default: True]
+        - param.currentSaturation : bool enabling the photocurrent saturation. [default: False]
+        - param.bandwidthLimitation : bool enabling the bandwidth limitation. [default: True]
+        - param.Fs : sampling frequency [Hz] [default: None]
+        - param.seed : seed for the random number generator [default: None]
 
     Returns
     -------
@@ -412,16 +412,16 @@ def balancedPD(E1, E2, param=None):
     param : optic.utils.parameters object, optional
         Parameters of the photodiode models.
 
-        - param.R: photodiode responsivity [A/W][default: 1 A/W].
-        - param.Tc: temperature [°C][default: 25°C].
-        - param.Id: dark current [A][default: 5e-9 A].
-        - param.RL: impedance load [Ω] [default: 50Ω].
-        - param.B: photodiode bandwidth [Hz][default: 30e9 Hz].
-        - param.Fs: sampling frequency [Hz] [default: 60e9 Hz].
-        - param.fType: frequency response type [default: 'rect'].
-        - param.N: number of the frequency resp. filter taps. [default: 255].
-        - param.ideal: bool enabling the ideal photodiode model (i.e. no noise, no frequency resp.) [default: True].
-        - param.seed: seed for the random number generator [default: None].
+        - param.R : photodiode responsivity [A/W][default: 1 A/W].
+        - param.Tc : temperature [°C][default: 25°C].
+        - param.Id : dark current [A][default: 5e-9 A].
+        - param.RL : impedance load [Ω] [default: 50Ω].
+        - param.B : photodiode bandwidth [Hz][default: 30e9 Hz].
+        - param.Fs : sampling frequency [Hz] [default: 60e9 Hz].
+        - param.fType : frequency response type [default: 'rect'].
+        - param.N : number of the frequency resp. filter taps. [default: 255].
+        - param.ideal : bool enabling the ideal photodiode model (i.e. no noise, no frequency resp.) [default: True].
+        - param.seed : seed for the random number generator [default: None].
 
     Returns
     -------
@@ -513,10 +513,10 @@ def coherentReceiver(Es, Elo, paramFE=None, paramPD=None):
     paramFE : parameter object (struct), optional
         Parameters of the optical frontend:
 
-            - paramFE.Fs: simulation sampling frequency [samples/s].
-            - paramFE.phaseImb: phase imbalance of the I/Q [rad].
-            - paramFE.ampImb: amplitude imbalance of the I/Q [dB].
-            - paramFE.timeSkew: delay of the I of the I/Q [s].
+            - paramFE.Fs : simulation sampling frequency [samples/s].
+            - paramFE.phaseImb : phase imbalance of the I/Q [rad].
+            - paramFE.ampImb : amplitude imbalance of the I/Q [dB].
+            - paramFE.timeSkew : delay of the I of the I/Q [s].
 
     paramPD : parameter object (struct), optional
         Parameters of the photodiodes
@@ -584,18 +584,18 @@ def pdmCoherentReceiver(Es, Elo, paramFE, paramPD=None):
     paramFE : parameter object (struct), optional
         Parameters of the optical frontend:
 
-            - paramFE.Fs: simulation sampling frequency [samples/s].
-            - paramFE.polRotation: input polarization rotation angle [rad].
-            - paramFE.pdl: polarization dependent loss [dB]. If > 0, loss is on X polarization. If < 0, loss is on Y polarization.
-            - paramFE.polDelay: polarization delay [s]. If > 0, delay is on X polarization. If < 0, delay is on Y polarization.
-            - paramFE.polX.phaseImb: phase imbalance of the I/Q of the X polarization [rad].
-            - paramFE.polX.ampImb: amplitude imbalance of the I/Q of the X polarization [dB].
-            - paramFE.polX.skewI: delay of the I of the X polarization [s].
-            - paramFE.polX.skewQ: delay of the Q of the X polarization [s].
-            - paramFE.polY.phaseImb: phase imbalance of the I/Q of the Y polarization [rad].
-            - paramFE.polY.ampImb: amplitude imbalance of the I/Q of the Y polarization [dB].
-            - paramFE.polY.skewI: delay of the I of the Y polarization [s].
-            - paramFE.polY.skewQ: delay of the Q of the Y polarization [s].
+            - paramFE.Fs : simulation sampling frequency [samples/s].
+            - paramFE.polRotation : input polarization rotation angle [rad].
+            - paramFE.pdl : polarization dependent loss [dB]. If > 0, loss is on X polarization. If < 0, loss is on Y polarization.
+            - paramFE.polDelay : polarization delay [s]. If > 0, delay is on X polarization. If < 0, delay is on Y polarization.
+            - paramFE.polX.phaseImb : phase imbalance of the I/Q of the X polarization [rad].
+            - paramFE.polX.ampImb : amplitude imbalance of the I/Q of the X polarization [dB].
+            - paramFE.polX.skewI : delay of the I of the X polarization [s].
+            - paramFE.polX.skewQ : delay of the Q of the X polarization [s].
+            - paramFE.polY.phaseImb : phase imbalance of the I/Q of the Y polarization [rad].
+            - paramFE.polY.ampImb : amplitude imbalance of the I/Q of the Y polarization [dB].
+            - paramFE.polY.skewI : delay of the I of the Y polarization [s].
+            - paramFE.polY.skewQ : delay of the Q of the Y polarization [s].
 
     paramPD : parameter object (struct), optional
         Parameters of the photodiodes (see photodiode model documentation)
@@ -679,11 +679,11 @@ def edfa(Ei, param=None):
     param : optic.utils.parameters object, optional
         Parameters of the EDFA model.
 
-        - param.G: amplifier gain [dB][default: 20 dB]
-        - param.NF: EDFA noise figure [dB][default: 4.5 dB]
-        - param.Fc: central optical frequency [Hz][default: 193.1 THz]
-        - param.Fs: sampling frequency in [samples/s]
-        - param.seed: random seed for noise generation [default: None]
+        - param.G : amplifier gain [dB][default: 20 dB]
+        - param.NF : EDFA noise figure [dB][default: 4.5 dB]
+        - param.Fc : central optical frequency [Hz][default: 193.1 THz]
+        - param.Fs : sampling frequency in [samples/s]
+        - param.seed : random seed for noise generation [default: None]
 
     Returns
     -------
@@ -735,18 +735,18 @@ def basicLaserModel(param=None):
     param : optic.utils.parameters object, optional
         Parameters of the laser model.
 
-        - param.P: laser power [dBm] [default: 10 dBm]
-        - param.lw: laser linewidth [Hz] [default: 1 kHz]
-        - param.RIN_var: variance of the RIN noise [default: 1e-20]
-        - param.Fs: sampling rate [samples/s]
-        - param.Ns: number of signal samples [default: 1e3]
-        - param.seed: random seed for noise generation [default: None]
-        - param.freqShift: frequency shift with respect to the central simulation frequency [Hz] [default: 0 Hz]
+        - param.P : laser power [dBm] [default: 10 dBm]
+        - param.lw : laser linewidth [Hz] [default: 1 kHz]
+        - param.RIN_var : variance of the RIN noise [default: 1e-20]
+        - param.Fs : sampling rate [samples/s]
+        - param.Ns : number of signal samples [default: 1e3]
+        - param.seed : random seed for noise generation [default: None]
+        - param.freqShift : frequency shift with respect to the central simulation frequency [Hz] [default: 0 Hz]
 
     Returns
     -------
-    optical_signal : np.array
-          Optical signal with phase noise and RIN.
+    np.array
+        Optical signal with phase noise and RIN.
 
     References
     ----------
@@ -801,15 +801,15 @@ def adc(Ei, param):
     param : optic.utils.parameters object, optional
         Parameters of the ADC model.
 
-        - param.inFs: sampling frequency of the input signal [samples/s][default: 1 sample/s]
-        - param.outFs: sampling frequency of the output signal [samples/s][default: 1 sample/s]
-        - param.jitter: jitter rms in seconds [s][default: 0 s]
-        - param.nBits: number of bits used for quantization [default: 8 bits]
-        - param.ENOB: effective number of bits of the ADC [default: 8 bits]
-        - param.Vmax: maximum value for the ADC's full-scale range [V][default: 1V]
-        - param.Vmin: minimum value for the ADC's full-scale range [V][default: -1V]
-        - param.AAF: flag indicating whether to use anti-aliasing filters [default: True]
-        - param.N: number of taps of the anti-aliasing filters [default: 201]
+        - param.inFs : sampling frequency of the input signal [samples/s][default: 1 sample/s]
+        - param.outFs : sampling frequency of the output signal [samples/s][default: 1 sample/s]
+        - param.jitter : jitter rms in seconds [s][default: 0 s]
+        - param.nBits : number of bits used for quantization [default: 8 bits]
+        - param.ENOB : effective number of bits of the ADC [default: 8 bits]
+        - param.Vmax : maximum value for the ADC's full-scale range [V][default: 1V]
+        - param.Vmin : minimum value for the ADC's full-scale range [V][default: -1V]
+        - param.AAF : flag indicating whether to use anti-aliasing filters [default: True]
+        - param.N : number of taps of the anti-aliasing filters [default: 201]
 
     Returns
     -------
@@ -920,14 +920,14 @@ def dac(Ei, param):
     param : optic.utils.parameters object, optional
         Parameters of the DAC model.
 
-        - param.inFs: sampling frequency of the input signal [samples/s][default: 1 sample/s]
-        - param.outFs: sampling frequency of the output signal [samples/s][default: 1 sample/s]
-        - param.nBits: number of bits used for quantization [default: 8 bits]
-        - param.ENOB: effective number of bits of the DAC [default: 8 bits]
-        - param.jitter: jitter rms in seconds [s][default: 0 s]
-        - param.Vpp: peak-to-peak voltage of the DAC's output signal [V][default: 2 V]
-        - param.AIF: flag indicating whether to use anti-imaging filters [default: True]
-        - param.N: number of taps of the anti-imaging filters [default: 201]
+        - param.inFs : sampling frequency of the input signal [samples/s][default: 1 sample/s]
+        - param.outFs : sampling frequency of the output signal [samples/s][default: 1 sample/s]
+        - param.nBits : number of bits used for quantization [default: 8 bits]
+        - param.ENOB : effective number of bits of the DAC [default: 8 bits]
+        - param.jitter : jitter rms in seconds [s][default: 0 s]
+        - param.Vpp : peak-to-peak voltage of the DAC's output signal [V][default: 2 V]
+        - param.AIF : flag indicating whether to use anti-imaging filters [default: True]
+        - param.N : number of taps of the anti-imaging filters [default: 201]
 
     Returns
     -------

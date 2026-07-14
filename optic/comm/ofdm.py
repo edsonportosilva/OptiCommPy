@@ -74,23 +74,23 @@ def calcSymbolRate(M, Rb, Nfft, Np, G, hermitSym):
 
     Parameters
     ----------
-    M         : scalar
-                constellation order
-    Rb        : scalar
-                bit rate
-    Nfft      : scalar
-                size of FFT
-    Np        : scalar
-                number of pilot subcarriers
-    G         : scalar
-                cyclic prefix length
+    M : int
+        Constellation order
+    Rb : float
+        Bit rate
+    Nfft : int
+        Size of FFT
+    Np : int
+        number of pilot subcarriers
+    G : scalar
+        cyclic prefix length
     hermitSym : boolean
                 True: Real OFDM symbols / False: Complex OFDM symbols
 
     Returns
     -------
-    Rs        : scalar
-                OFDM symbol rate
+    Rs : scalar
+        OFDM symbol rate
     """
     nDataSymbols = (Nfft // 2 - 1 - Np) if hermitSym else (Nfft - Np)
     return Rb / (nDataSymbols / (Nfft + G) * np.log2(M))
