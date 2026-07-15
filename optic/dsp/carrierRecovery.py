@@ -169,7 +169,7 @@ def cpr(Ei, param=None, symbTx=None):
     return (Eo, phaseEst) if returnPhases else Eo
 
 
-@njit
+@njit(fastmath=True, cache=True)
 def bps(Ei, N, constSymb, B):
     """
     Blind phase search (BPS) algorithm
@@ -223,7 +223,7 @@ def bps(Ei, N, constSymb, B):
     return phaseEst
 
 
-@njit
+@njit(fastmath=True, cache=True)
 def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     """
     Decision-directed Phase-locked Loop (DDPLL) algorithm

@@ -336,7 +336,7 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
         return sigOut
 
 
-@njit(fastmath=True)
+@njit(fastmath=True, cache=True)
 def coreAdaptEq(
     sigIn, symbRef, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, alg, constSymb, prec
 ):
