@@ -159,27 +159,18 @@ def encodeLDPC(bits, param):
     ----------
     bits : np.array of shape (k, N)
         Binary input sequences to be encoded. Each column is a bit sequence of length :math:`k` bits.
-    param : object
+    param : optic.utils.parameters object
         Object containing the following attributes:
 
-        - mode : str
-            Mode of operation ('DVBS2', 'IEEE_802.11nD2', or 'AR4JA').
-
-        - H : np.array of shape (n - k, n)
-            Binary parity-check matrix :math:`H`.
-
-        - G : np.array of shape (k, n), optional
-            Binary generator matrix :math:`G`.
-
-        - systematic : bool, optional
-            If True, the generator matrix is assumed to be in systematic form. If False,
-            the generator matrix is treated as a general linear transformation (default is True).
-
-        - P1 : np.array of shape (m, k), optional
-            Matrix used for encoding in triangular mode.
-
-        - P2 : np.array of shape (m, k), optional
-            Matrix used for encoding in triangular mode.
+        - mode : Mode of operation ('DVBS2', 'IEEE_802.11nD2', or 'AR4JA')[default: 'DVBS2'].
+        - n : Codeword length :math:`n` [default: 64800].
+        - R : Code rate :math:`R` [default: '4/5'].
+        - H : Binary parity-check matrix :math:`H` of shape :math:`(n - k, n)` [default: None].
+        - G : Binary generator matrix :math:`G` of shape :math:`(k, n)` [default: None].
+        - systematic : boolean indicator if the generator matrix is assumed to be in systematic form. [default: True]
+        - P1 : Matrix of shape (m, k) used for encoding in triangular mode [default: None].
+        - P2 : Matrix of shape (m, m) used for encoding in triangular mode [default: None]. 
+        - path : Path to the folder containing ALIST files for the specified mode [default: None].           
 
     Returns
     -------
@@ -702,20 +693,13 @@ def decodeLDPC(llrs, param):
     llrs : np.array of shape (n, numCodewords)
         Array of log-likelihood ratios (LLRs) for each bit of the received codewords.
         Codewords are assumed to be disposed in columns.
-    param : object
+    param : optic.utils.parameters object
         Object containing the following attributes:
 
-        - H : np.array of shape (m, n)
-            Sparse binary parity-check matrix of the LDPC code.
-
-        - maxIter : int
-            Maximum number of iterations for belief propagation.
-
-        - alg : str
-            Decoding algorithm to use ('SPA' for sum-product or 'MSA' for min-sum).
-
-        - prec : data-type
-            Numerical precision to use in computations (default is np.float32).
+        - H : Sparse binary parity-check matrix of shape (m, n) [default: None].
+        - maxIter : Maximum number of iterations for belief propagation [default: 25].
+        - alg : Decoding algorithm to use ('SPA' for sum-product or 'MSA' for min-sum) [default: 'SPA'].
+        - prec : Numerical precision to use in computations (default is np.float32) [default: np.float32].      
 
     Returns
     -------
