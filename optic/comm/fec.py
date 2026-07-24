@@ -30,6 +30,7 @@ Forward error correction (FEC) utilities (:mod:`optic.comm.fec`)
 """Forward error correction (FEC) utilities."""
 import logging as logg
 import os
+from itertools import combinations
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -37,7 +38,6 @@ from numba import njit, prange
 from numba.typed import List
 from prettytable import PrettyTable
 from scipy.sparse import coo_matrix, csc_matrix, csr_matrix
-from itertools import combinations
 
 
 def par2gen(H):
@@ -97,7 +97,6 @@ def par2gen(H):
     G = np.hstack((np.eye(k, dtype=np.uint8), Hm[:, 0:k].T))
 
     return G, colSwaps, H[:, colSwaps]
-
 
 
 @njit(cache=True)
@@ -169,14 +168,13 @@ def encodeLDPC(bits, param):
         - G : Binary generator matrix :math:`G` of shape :math:`(k, n)` [default: None].
         - systematic : boolean indicator if the generator matrix is assumed to be in systematic form. [default: True]
         - P1 : Matrix of shape (m, k) used for encoding in triangular mode [default: None].
-        - P2 : Matrix of shape (m, m) used for encoding in triangular mode [default: None]. 
-        - path : Path to the folder containing ALIST files for the specified mode [default: None].           
+        - P2 : Matrix of shape (m, m) used for encoding in triangular mode [default: None].
+        - path : Path to the folder containing ALIST files for the specified mode [default: None].
 
     Returns
     -------
     codewords : np.array of shape (n, N)
-        Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding
-        to the respective input bit sequence.
+        Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding to the respective input bit sequence.
 
     References
     ----------
@@ -253,7 +251,6 @@ def encodeLDPC(bits, param):
         )
 
 
-
 @njit(parallel=True, fastmath=True, cache=True)
 def encodeDVBS2(bits, A):
     """
@@ -302,7 +299,6 @@ def encodeDVBS2(bits, A):
     return codewords
 
 
-
 @njit(parallel=True, fastmath=True, cache=True)
 def encoder(G, bits, systematic=True):
     """
@@ -346,6 +342,7 @@ def encoder(G, bits, systematic=True):
                 codewords[i, col] = acc
 
     return codewords
+
 
 @njit(parallel=True, fastmath=True, cache=True)
 def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
@@ -699,7 +696,7 @@ def decodeLDPC(llrs, param):
         - H : Sparse binary parity-check matrix of shape (m, n) [default: None].
         - maxIter : Maximum number of iterations for belief propagation [default: 25].
         - alg : Decoding algorithm to use ('SPA' for sum-product or 'MSA' for min-sum) [default: 'SPA'].
-        - prec : Numerical precision to use in computations (default is np.float32) [default: np.float32].      
+        - prec : Numerical precision to use in computations (default is np.float32) [default: np.float32].
 
     Returns
     -------
@@ -1019,7 +1016,6 @@ def triangP1P2(H):
     return P1, P2, H[:, colSwaps]
 
 
-
 @njit(parallel=True, cache=True)
 def encodeTriang(bits, P1, P2):
     """
@@ -1266,13 +1262,11 @@ def encodeHamming(bits, param):
     ----------
     bits : np.array of shape (k, N)
         Binary input sequences to encode. Each column is a bit sequence of length :math:`k`.
-    param : object
+    param : optic.utils.parameters object
         Object containing the following attributes:
 
-        - m : int
-            Number of check bits for the Hamming code.
-        - extended : bool, optional
-            If True, use the extended Hamming code (default is False).
+        - m : Number of check bits for the Hamming code [default: 3].
+        - extended : boolean indication of whether to use the extended Hamming code [default: False].
 
     Returns
     -------
