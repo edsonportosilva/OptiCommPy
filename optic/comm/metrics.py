@@ -262,14 +262,14 @@ def calcExtrLLR(bitLLR, x, xMu, xNu, M, constSymb, bitMap, px=None, prec=np.floa
         bit mapping of the constellation symbols
     - px: np.ndarray of shape (M,), optional
         prior probabilities of the constellation symbols, if None, uniform distribution is used
-    
+
     Returns
     -------
     - LLRe: np.ndarray of shape (q*numSymb,)
-        extrinsic LLRs for each bit     
+        extrinsic LLRs for each bit
     """
-    numFloor = 1e-3 # minimum variance to avoid division by zero
-    probFloor = 1e-4 # minimum probability to avoid log(0)
+    numFloor = 1e-3  # minimum variance to avoid division by zero
+    probFloor = 1e-4  # minimum probability to avoid log(0)
 
     q = int(np.log2(M))
     numSymb = len(x)
@@ -302,7 +302,10 @@ def calcExtrLLR(bitLLR, x, xMu, xNu, M, constSymb, bitMap, px=None, prec=np.floa
         probProd = np.empty((M, q), dtype=prec)
         for m in range(M):
             for b in range(q):
-                probProd[m, b] = Pb1[indSymb, b] * constBits1[m, b] + Pb0[indSymb, b] * constBits0[m, b]
+                probProd[m, b] = (
+                    Pb1[indSymb, b] * constBits1[m, b]
+                    + Pb0[indSymb, b] * constBits0[m, b]
+                )
                 priorProbSymb[m] *= probProd[m, b]
 
         # Compute extrinsic LLRs
