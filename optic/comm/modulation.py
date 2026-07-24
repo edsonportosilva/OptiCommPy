@@ -16,10 +16,10 @@ Digital modulation utilities (:mod:`optic.comm.modulation`)
    demap                    -- Contellation symbol index to bit sequence demapping
    modulateGray             -- Modulate bit sequences to constellation symbol sequences (w/ Gray mapping)
    demodulateGray           -- Demodulate symbol sequences (minEuclid + hard decisions) to bit sequences (assuming Gray mapping)
+   detector                 -- Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule   
    softMapper               -- Map LLRs to soft estimates of constellation symbols with Gray mapping
-   softEstimator            -- Estimate the mean and variance of the received symbols based on LLRs and a given bit mapping
-   llr2bitProb              -- Convert LLRs to bit probabilities using a numerically stable sigmoid
-   detector                 -- Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule
+   softEstimator            -- Estimate the mean and variance of the received symbols based on LLRs and a given bit mapping  
+   mlse                     -- Performs Maximum Likelihood Sequence Estimation (MLSE) using the Viterbi algorithm        
 """
 
 """Digital modulation utilities."""
@@ -83,7 +83,7 @@ def grayMapping(M, constType):
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
     if M != 2 and constType == "ook":
-        logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
+        logg.warning("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
 
     bitsSymb = int(np.log2(M))
@@ -268,7 +268,7 @@ def apskConst(M, m1=None, phaseOffset=None):
     return const * np.exp(1j * phaseOffset)
 
 
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def minEuclid(symb, const):
     """
     Find minimum Euclidean distance.
@@ -299,7 +299,7 @@ def minEuclid(symb, const):
     return ind
 
 
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def demap(indSymb, bitMap):
     """
     Contellation symbol index to bit sequence demapping.
@@ -329,79 +329,6 @@ def demap(indSymb, bitMap):
     for i in prange(len(indSymb)):
         decBits[i * b : i * b + b] = bitMap[indSymb[i], :]
     return decBits
-
-
-@njit
-def detector(r, σ2, constSymb, px=None, rule="MAP"):
-    """
-    Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule.
-
-    Parameters
-    ----------
-    r : np.array
-        The received signal.
-    σ2 : float
-        The noise variance.
-    constSymb : np.array
-        The constellation symbols.
-    px : np.array, optional
-        The prior probabilities of each symbol. If None, uniform priors are assumed.
-    rule : str, optional
-        The detection rule to use. Either 'MAP' (default) or 'ML'.
-
-    Returns
-    -------
-    tuple
-        A tuple containing:
-            - np.array: The detected symbols.
-            - np.array: The indices of the detected symbols in the constellation.
-
-    Notes:
-    ------
-    If `px` is None or `rule` is 'ML', uniform priors are assumed.
-
-    References
-    ----------
-    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
-    """
-    if px is None or rule == "ML":
-        px = 1 / constSymb.size * np.ones(constSymb.size)
-
-    decided = np.zeros(r.size, dtype=r.dtype)
-    indDec = np.zeros(r.size, dtype=np.int64)
-    π = np.pi
-
-    if rule == "MAP":
-        for ii, ri in enumerate(r):  # for each received symbol
-            log_probMetric = np.zeros(constSymb.size)
-
-            # calculate MAP probability metric
-            # calculate log(P(sm|r)) = log(p(r|sm)*P(sm)) for m= 1,2,...,M
-            log_probMetric = -np.abs(ri - constSymb) ** 2 / σ2 + np.log(px)
-
-            # find the constellation symbol with the largest P(sm|r)
-            indDec[ii] = np.argmax(log_probMetric)
-
-            # make the decision in favor of the symbol with the largest metric
-            decided[ii] = constSymb[indDec[ii]]
-
-    elif rule == "ML":
-        for ii, ri in enumerate(r):  # for each received symbol
-            distMetric = np.zeros(constSymb.size)
-            # calculate distance metric
-
-            # calculate |r-sm|**2, for m= 1,2,...,M
-            distMetric = np.abs(ri - constSymb) ** 2
-
-            # find the constellation symbol with the smallest distance metric
-            indDec[ii] = np.argmin(distMetric)
-
-            # make the decision in favor of the symbol with the smallest metric
-            decided[ii] = constSymb[indDec[ii]]
-    else:
-        print("Detection rule should be either MAP or ML")
-
-    return decided, indDec
 
 
 def modulateGray(bits, M, constType):
@@ -480,6 +407,78 @@ def demodulateGray(symb, M, constType):
 
     return demap(indrx, bitMap)
 
+@njit(fastmath=True, cache=True)
+def detector(r, σ2, constSymb, px=None, rule="MAP"):
+    """
+    Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule.
+
+    Parameters
+    ----------
+    r : np.array
+        The received signal.
+    σ2 : float
+        The noise variance.
+    constSymb : np.array
+        The constellation symbols.
+    px : np.array, optional
+        The prior probabilities of each symbol. If None, uniform priors are assumed.
+    rule : str, optional
+        The detection rule to use. Either 'MAP' (default) or 'ML'.
+
+    Returns
+    -------
+    tuple
+        A tuple containing:
+            - np.array: The detected symbols.
+            - np.array: The indices of the detected symbols in the constellation.
+
+    Notes:
+    ------
+    If `px` is None or `rule` is 'ML', uniform priors are assumed.
+
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
+    """
+    if px is None or rule == "ML":
+        px = 1 / constSymb.size * np.ones(constSymb.size)
+
+    decided = np.zeros(r.size, dtype=r.dtype)
+    indDec = np.zeros(r.size, dtype=np.int64)
+    π = np.pi
+
+    if rule == "MAP":
+        for ii, ri in enumerate(r):  # for each received symbol
+            log_probMetric = np.zeros(constSymb.size)
+
+            # calculate MAP probability metric
+            # calculate log(P(sm|r)) = log(p(r|sm)*P(sm)) for m= 1,2,...,M
+            log_probMetric = -np.abs(ri - constSymb) ** 2 / σ2 + np.log(px)
+
+            # find the constellation symbol with the largest P(sm|r)
+            indDec[ii] = np.argmax(log_probMetric)
+
+            # make the decision in favor of the symbol with the largest metric
+            decided[ii] = constSymb[indDec[ii]]
+
+    elif rule == "ML":
+        for ii, ri in enumerate(r):  # for each received symbol
+            distMetric = np.zeros(constSymb.size)
+            # calculate distance metric
+
+            # calculate |r-sm|**2, for m= 1,2,...,M
+            distMetric = np.abs(ri - constSymb) ** 2
+
+            # find the constellation symbol with the smallest distance metric
+            indDec[ii] = np.argmin(distMetric)
+
+            # make the decision in favor of the symbol with the smallest metric
+            decided[ii] = constSymb[indDec[ii]]
+    else:
+        print("Detection rule should be either MAP or ML")
+
+    return decided, indDec
+
 
 def softMapper(llr, M, constType, prec=np.float32):
     """
@@ -519,7 +518,7 @@ def softMapper(llr, M, constType, prec=np.float32):
     return softEstimator(llr, bitMap, constSymb)
 
 
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def softEstimator(llr, bitMap, constSymb):
     """
     Estimates the mean and variance of the received symbols based on LLRs and the bit mapping.
@@ -578,35 +577,103 @@ def softEstimator(llr, bitMap, constSymb):
     return softMean, softVar
 
 
-@njit
-def llr2bitProb(llr, prec=np.float32):
+@njit(fastmath=True, cache=True)
+def mlse(y, h, constSymb):
     """
-    Convert LLRs to bit probabilities using a numerically stable sigmoid.
-
+    Performs Maximum Likelihood Sequence Estimation (MLSE) using the Viterbi algorithm
+    
     Parameters
     ----------
-    llr : 2D numpy array
-        Log-likelihood ratios (LLRs) of bits.
-    prec : numpy dtype, optional
-        Numerical precision for the output array. The default is np.float32.
-
+    y : array-like
+        Received signal sequence
+    h : array-like
+        Channel impulse response  
+    constellation : array-like
+        The available constellation symbols
+    
     Returns
     -------
-    probs : 1D numpy array
-        Bit probabilities P(bit = 1).
-    """
-    n = llr.shape[0]
-    k = llr.shape[1]
-    probs = np.empty((n, k), dtype=prec)
+    yMLSE : ndarray
+        The MLSE decided output sequence
 
-    for i in range(n):
-        for j in range(k):
-            x = llr[i, j]
-            # Numerically stable sigmoid
-            if x >= 0:
-                z = np.exp(-x)
-                probs[i, j] = 1.0 / (1.0 + z)
-            else:
-                z = np.exp(x)
-                probs[i, j] = z / (1.0 + z)
-    return probs
+    References
+    ----------
+    [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
+    """
+    N = len(y)    
+    M = len(constSymb)
+    taps = len(h)  # Channel memory length (filter taps)
+
+    # Trellis preparation: Calculate expected outputs for each state and input symbol
+    L = taps - 1  # Channel memory (past symbols)
+    if L == 0:
+        numStates = 1
+    else:
+        numStates = M ** L
+    
+    # Expected outputs for each state and input symbol (numStates x M)
+    yExpected = np.zeros((numStates, M), dtype=y.dtype) 
+    
+    for s in range(numStates):
+        for k in range(M):
+            # the output depends on the current symbol (k) and the memory of the state (s)
+            chOut = h[0] * constSymb[k]
+            temp = s
+            for i in range(1, taps):
+                indSymb = temp % M
+                chOut += h[i] * constSymb[indSymb]
+                temp = temp // M
+            yExpected[s, k] = chOut
+
+    # Initialize metrics and pointers for Viterbi algorithm
+    pathMetrics = np.zeros(numStates, dtype=np.float64)    
+    pointers = np.zeros((N, numStates), dtype=np.int32)
+    decisions = np.zeros((N, numStates), dtype=np.int32)
+    
+    for n in range(N):
+        newPathMetrics = np.full(numStates, np.inf, dtype=np.float64)
+        newPointers = np.zeros(numStates, dtype=np.int32)
+        newDecisions = np.zeros(numStates, dtype=np.int32)
+        
+        for s in range(numStates):
+            if pathMetrics[s] == np.inf:
+                continue
+                
+            for k in range(M):
+                # Euclidean distance (Branch Metric)
+                pm = pathMetrics[s] + np.abs(y[n] - yExpected[s, k])**2 
+                
+                # Determine the next state in the trellis
+                if L == 0:
+                    nextState = 0
+                else:
+                    nextState = k + (s % (M**(L-1))) * M
+                
+                # Save the surviving path with the lowest metric
+                if pm < newPathMetrics[nextState]:
+                    newPathMetrics[nextState] = pm
+                    newPointers[nextState] = s
+                    newDecisions[nextState] = k
+                    
+        for s in range(numStates):
+            pathMetrics[s] = newPathMetrics[s]
+            pointers[n, s] = newPointers[s]
+            decisions[n, s] = newDecisions[s]
+
+    # Traceback: Reconstruct the optimal sequence
+    bestState = 0
+    minPathMetric = np.inf
+    for s in range(numStates):
+        if pathMetrics[s] < minPathMetric:
+            minPathMetric = pathMetrics[s]
+            bestState = s           
+    
+    currentState = bestState    
+    
+    yMLSE = np.zeros(N, dtype=y.dtype)
+    for n in range(N - 1, -1, -1):
+        k = decisions[n, currentState]
+        yMLSE[n] = constSymb[k]
+        currentState = pointers[n, currentState]
+        
+    return yMLSE
