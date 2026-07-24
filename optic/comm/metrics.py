@@ -8,7 +8,8 @@ Metrics for signal and performance characterization (:mod:`optic.comm.metrics`)
 
    bert                     -- Calculate BER and Q-factor for optical communication using On-Off Keying (OOK).
    fastBERcalc              -- Monte Carlo BER/SER/SNR calculation
-   calcLLR                  -- LLR calculation (circular AGWN channel)
+   calcLLR                  -- LLR calculation assuming a circular AGWN channel model
+   calcExtrLLR              -- Calculate the extrinsic bit LLRs assuming an auxiliary Gaussian channel model
    monteCarloGMI            -- Monte Carlo based generalized mutual information (GMI) estimation
    monteCarloMI             -- Monte Carlo based mutual information (MI) estimation
    Qfunc                    -- Calculate function :math:`Q(x)`
@@ -139,7 +140,7 @@ def fastBERcalc(rx, tx, M, constType, px=None):
 
     """
     if M != 2 and constType == "ook":
-        logg.warn("OOK has only 2 symbols, but M != 2. Changing M to 2.")
+        logg.warning("OOK has only 2 symbols, but M != 2. Changing M to 2.")
         M = 2
 
     # constellation parameters
@@ -194,10 +195,10 @@ def fastBERcalc(rx, tx, M, constType, px=None):
     return BER, SER, SNR
 
 
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def calcLLR(rxSymb, σ2, constSymb, bitMap, px):
     """
-    LLR calculation (circular AGWN channel).
+    LLR calculation assuming a circular AGWN channel model.
 
     Parameters
     ----------
@@ -236,6 +237,90 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap, px):
 
             LLRs[i * b + indBit] = np.log(p0) - np.log(p1)
     return LLRs
+
+
+@njit(parallel=True, cache=True)
+def calcExtrLLR(bitLLR, x, xMu, xNu, M, constSymb, bitMap, px=None, prec=np.float32):
+    """
+    Calculate the extrinsic LLRs assuming an auxiliary Gaussian channel model.
+
+    Parameters
+    -----------
+    - bitLLR: np.ndarray of shape (q*numSymb,)
+        received bit LLRs
+    - x: np.ndarray of shape (numSymb,)
+        received symbols
+    - xMu: np.ndarray of shape (numSymb,)
+        mean of the received symbols
+    - xNu: np.ndarray of shape (numSymb,)
+        variance of the received symbols
+    - M: int
+        modulation order
+    - constSymb: np.ndarray of shape (M,)
+        constellation symbols
+    - bitMap: np.ndarray of shape (M, q)
+        bit mapping of the constellation symbols
+    - px: np.ndarray of shape (M,), optional
+        prior probabilities of the constellation symbols, if None, uniform distribution is used
+    
+    Returns
+    -------
+    - LLRe: np.ndarray of shape (q*numSymb,)
+        extrinsic LLRs for each bit     
+    """
+    numFloor = 1e-3 # minimum variance to avoid division by zero
+    probFloor = 1e-4 # minimum probability to avoid log(0)
+
+    q = int(np.log2(M))
+    numSymb = len(x)
+
+    if px is None:
+        px = np.ones(M, dtype=prec) / M
+
+    LLRe = np.zeros((numSymb, q), dtype=prec)
+    constBits1 = bitMap.astype(prec)
+    constBits0 = 1.0 - constBits1
+
+    Pb1 = llr2bitProb(-bitLLR.reshape((numSymb, q))).astype(prec)
+    Pb1 = np.clip(Pb1, probFloor, 1 - probFloor)
+    Pb0 = 1.0 - Pb1
+
+    for indSymb in prange(numSymb):
+        mu = xMu[indSymb]
+        var = max(xNu[indSymb], numFloor)
+
+        # Gaussian likelihood
+        psi_gsi = np.empty(M, dtype=prec)
+        for m in range(M):
+            diff_real = x[indSymb].real - (mu * constSymb[m]).real
+            diff_imag = x[indSymb].imag - (mu * constSymb[m]).imag
+            diff_abs2 = diff_real**2 + diff_imag**2
+            psi_gsi[m] = (1.0 / (np.pi * var)) * np.exp(-diff_abs2 / var) * px[m]
+
+        # Compute symbol prior from bit probabilities
+        priorProbSymb = np.ones(M, dtype=prec)
+        probProd = np.empty((M, q), dtype=prec)
+        for m in range(M):
+            for b in range(q):
+                probProd[m, b] = Pb1[indSymb, b] * constBits1[m, b] + Pb0[indSymb, b] * constBits0[m, b]
+                priorProbSymb[m] *= probProd[m, b]
+
+        # Compute extrinsic LLRs
+        for b in range(q):
+            Pe1 = 0.0
+            Pe0 = 0.0
+            for m in range(M):
+                extrPrior = priorProbSymb[m] / probProd[m, b]
+                if bitMap[m, b] == 1:
+                    Pe1 += psi_gsi[m] * extrPrior
+                else:
+                    Pe0 += psi_gsi[m] * extrPrior
+
+            Pe1 = min(max(Pe1, probFloor), 1 - probFloor)
+            Pe0 = min(max(Pe0, probFloor), 1 - probFloor)
+            LLRe[indSymb, b] = np.log(Pe0 / Pe1)
+
+    return LLRe.flatten()
 
 
 def monteCarloGMI(rx, tx, M, constType, px=None):
@@ -405,7 +490,7 @@ def monteCarloMI(rx, tx, M, constType, px=None):
     return MI
 
 
-@njit
+@njit(cache=True)
 def calcMI(rx, tx, σ2, constSymb, pX):
     """
     Mutual information (MI) calculation (circular AGWN channel).
@@ -598,7 +683,7 @@ def theoryBER(M, EbN0, constType):
     return Pb
 
 
-@njit
+@njit(cache=True)
 def condEntropy(yI, yQ, const, pX, ind, σ):
     """
     Calculate conditional entropy :math:`H(X|Y=y)` for the DCMC AWGN channel.
@@ -659,7 +744,7 @@ def condEntropy(yI, yQ, const, pX, ind, σ):
     )  # integral of p(Y,X)*log2(p(Y|X)p(X)/p(Y)) = H(X|Y)
 
 
-@njit
+@njit(cache=True)
 def minR(R, x):
     """
     Find the index of the minimum absolute difference between an array R and a value x.
