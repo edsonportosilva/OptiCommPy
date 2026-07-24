@@ -99,7 +99,8 @@ def par2gen(H):
     return G, colSwaps, H[:, colSwaps]
 
 
-@njit
+
+@njit(cache=True)
 def gaussElim(M):
     """
     Perform Gaussian elimination over GF(2) to reduce a binary matrix to row echelon form.
@@ -261,7 +262,8 @@ def encodeLDPC(bits, param):
         )
 
 
-@njit(parallel=True)
+
+@njit(parallel=True, fastmath=True, cache=True)
 def encodeDVBS2(bits, A):
     """
     Encode multiple binary sequences using a DVB-S2 LDPC parity-check matrix.
@@ -309,7 +311,8 @@ def encodeDVBS2(bits, A):
     return codewords
 
 
-@njit(parallel=True)
+
+@njit(parallel=True, fastmath=True, cache=True)
 def encoder(G, bits, systematic=True):
     """
     Encode binary sequences using a generator matrix over GF(2).
@@ -353,8 +356,7 @@ def encoder(G, bits, systematic=True):
 
     return codewords
 
-
-@njit(parallel=True, fastmath=True)
+@njit(parallel=True, fastmath=True, cache=True)
 def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     """
     Performs belief propagation decoding using the sum-product algorithm (SPA) for multiple codewords.
@@ -512,7 +514,7 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     return finalLLR, lastIter, frameDecodingFail
 
 
-@njit(parallel=True, fastmath=True)
+@njit(parallel=True, fastmath=True, cache=True)
 def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     """
     Performs belief propagation decoding using the Min-Sum Algorithm (MSA) for multiple codewords.
@@ -855,7 +857,7 @@ def readAlist(filename):
     return csr_matrix(H)
 
 
-@njit
+@njit(cache=True)
 def inverseMatrixGF2(A):
     """
     Invert a square binary matrix over GF(2) using Gauss-Jordan elimination.
@@ -907,7 +909,7 @@ def inverseMatrixGF2(A):
     return Ainv, True
 
 
-@njit
+@njit(cache=True)
 def triangularize(H):
     """
     Convert binary matrix H into lower-triangular form using only row and column permutations.
@@ -1033,7 +1035,8 @@ def triangP1P2(H):
     return P1, P2, H[:, colSwaps]
 
 
-@njit(parallel=True)
+
+@njit(parallel=True, cache=True)
 def encodeTriang(bits, P1, P2):
     """
     Encode binary sequences using two parity matrices for LDPC encoding.
