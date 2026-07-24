@@ -29,7 +29,7 @@ import numpy as np
 from numba import njit, prange
 
 from optic.dsp.core import pnorm
-from optic.utils import bitarray2dec, dec2bitarray
+from optic.utils import bitarray2dec, dec2bitarray, llr2bitProb
 
 
 def grayCode(n):
