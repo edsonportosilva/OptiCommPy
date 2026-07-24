@@ -15,8 +15,14 @@ from tqdm.notebook import tqdm
 
 from optic.comm.modulation import grayMapping
 from optic.comm.sources import symbolSource
-from optic.dsp.core import (freqShift, phaseNoise, pnorm, pulseShape,
-                            signalPower, upsample)
+from optic.dsp.core import (
+    freqShift,
+    phaseNoise,
+    pnorm,
+    pulseShape,
+    signalPower,
+    upsample,
+)
 from optic.models.devices import iqm, mzm
 from optic.utils import dBm2W, parameters
 
@@ -336,7 +342,9 @@ def pamTransmitter(param):
         symbTx[:, indMode] = symbTx_
 
     if param.nPolModes == 1:
-        sigTxo = sigTxo.reshape(sigTxo.size,)
+        sigTxo = sigTxo.reshape(
+            sigTxo.size,
+        )
 
     if param.returnParam:
         return sigTxo, symbTx, param

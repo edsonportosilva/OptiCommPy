@@ -33,8 +33,8 @@ from optic.dsp.core import (
     calcPM,
     clockSamplingInterp,
     delaySignal,
-    gaussianNoise,
     gaussianComplexNoise,
+    gaussianNoise,
     iqMixing,
     lowPassFIR,
     phaseNoise,
@@ -209,11 +209,11 @@ def iqm(Ei, u, param=None):
     paramQ.Vpi = Vpi
     paramQ.Vb = VbQ
     paramQ.ER = ERQ
-    
+
     # Calculate MZMs outputs
     EoI = mzm(Ei / np.sqrt(2), u.real, paramI)
     EoQ = mzm(Ei / np.sqrt(2), u.imag, paramQ)
-    
+
     # Combine I and Q branches with the PM rotation to get the IQM output
     Eo = EoI + pm(EoQ, Vphi * np.ones(u.shape), Vpi)
 
@@ -299,12 +299,12 @@ def photodiode(E, param=None):
 
         - param.R : photodiode responsivity [A/W][default: 1 A/W]
         - param.Tc : temperature [°C][default: 25°C]
-        - param.Id : dark current [A][default: 5e-9 A]        
+        - param.Id : dark current [A][default: 5e-9 A]
         - param.RL : impedance load [Ω] [default: 50Ω]
         - param.B : photodiode bandwidth [Hz][default: 30e9 Hz]
         - param.IpdSat : saturation value of the photocurrent [A][default: 5e-3 A]
         - param.N : number of the frequency resp. filter taps. [default: 255]
-        - param.fType : frequency response type [default: 'rect']       
+        - param.fType : frequency response type [default: 'rect']
         - param.ideal : bool enabling the ideal photodiode model (i.e. :math:`i_{pd}(t) = R|E(t)|^2`) [default: False]
         - param.shotNoise : bool enabling the addition of shot noise to photocurrent. [default: True]
         - param.thermalNoise : bool enabling the addition of thermal noise to photocurrent. [default: True]
@@ -336,7 +336,7 @@ def photodiode(E, param=None):
     B = getattr(param, "B", 30e9)
     IpdSat = getattr(param, "IpdSat", 5e-3)
     N = getattr(param, "N", 255)
-    fType = getattr(param, "fType", "rect")    
+    fType = getattr(param, "fType", "rect")
     ideal = getattr(param, "ideal", False)
     shotNoise = getattr(param, "shotNoise", True)
     thermalNoise = getattr(param, "thermalNoise", True)
@@ -547,11 +547,11 @@ def coherentReceiver(Es, Elo, paramFE=None, paramPD=None):
 
     paramPDchI = paramPD.copy()
     paramPDchQ = paramPD.copy()
-    
+
     try:
-        seed = paramPD.seed    
+        seed = paramPD.seed
         # make sure to use different seeds for each balanced pair of photodiodes
-        paramPDchI.seed = seed 
+        paramPDchI.seed = seed
         paramPDchQ.seed = seed + 7
     except AttributeError:
         pass
@@ -640,9 +640,9 @@ def pdmCoherentReceiver(Es, Elo, paramFE, paramPD=None):
     paramPDyPol = paramPD.copy()
 
     try:
-        seed = paramPD.seed    
-        # make sure to use different seeds for each polarization    
-        paramPDxPol.seed = seed 
+        seed = paramPD.seed
+        # make sure to use different seeds for each polarization
+        paramPDxPol.seed = seed
         paramPDyPol.seed = seed + 3
     except AttributeError:
         pass
@@ -995,7 +995,9 @@ def dac(sigIn, param):
 
     # Apply anti-imaging filters to the output if AIF is enabled
     if AIF:
-        ho = lowPassFIR(param.outFs / 2, param.outFs, min(sigOut.shape[0], N), typeF="rect")
+        ho = lowPassFIR(
+            param.outFs / 2, param.outFs, min(sigOut.shape[0], N), typeF="rect"
+        )
         sigOut = firFilter(ho, sigOut)
 
     # Add noise to the output signal based on the effective number of bits (ENOB)

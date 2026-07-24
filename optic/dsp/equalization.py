@@ -24,7 +24,7 @@ from numpy.fft import fft, fftfreq, ifft
 from tqdm.notebook import tqdm
 
 from optic.comm.modulation import grayMapping
-from optic.dsp.core import blockwiseFFTConv, pnorm, anorm
+from optic.dsp.core import anorm, blockwiseFFTConv, pnorm
 from optic.models.channels import convergenceCondition, nlinPhaseRot
 
 # try:
@@ -295,21 +295,23 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
                         f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]).real
                     )
             else:
-                sigOut[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = coreAdaptEq(
-                    sigIn[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
-                    symbRef[nStart:nEnd, :],
-                    SpS,
-                    H,
-                    H_,
-                    L[indstage],
-                    mu[indstage],
-                    lambdaRLS,
-                    nTaps,
-                    storeCoeff,
-                    runWL,
-                    runAlg,
-                    constSymb,
-                    prec,
+                sigOut[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = (
+                    coreAdaptEq(
+                        sigIn[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
+                        symbRef[nStart:nEnd, :],
+                        SpS,
+                        H,
+                        H_,
+                        L[indstage],
+                        mu[indstage],
+                        lambdaRLS,
+                        nTaps,
+                        storeCoeff,
+                        runWL,
+                        runAlg,
+                        constSymb,
+                        prec,
+                    )
                 )
                 logg.info(
                     f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]).real
@@ -319,7 +321,20 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
         for indIter in tqdm(range(numIter), disable=not (prgsBar)):
             logg.info(f"{alg}training iteration #%d", indIter)
             sigOut, H, errSq, Hiter = coreAdaptEq(
-                sigIn, symbRef, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, alg, constSymb, prec
+                sigIn,
+                symbRef,
+                SpS,
+                H,
+                H_,
+                L,
+                mu,
+                lambdaRLS,
+                nTaps,
+                storeCoeff,
+                runWL,
+                alg,
+                constSymb,
+                prec,
             )
             logg.info(f"{alg}MSE = %.6f.", np.nanmean(errSq).real)
 
@@ -338,7 +353,20 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
 
 @njit(fastmath=True, cache=True)
 def coreAdaptEq(
-    sigIn, symbRef, SpS, H, H_, L, mu, lambdaRLS, nTaps, storeCoeff, runWL, alg, constSymb, prec
+    sigIn,
+    symbRef,
+    SpS,
+    H,
+    H_,
+    L,
+    mu,
+    lambdaRLS,
+    nTaps,
+    storeCoeff,
+    runWL,
+    alg,
+    constSymb,
+    prec,
 ):
     """
     Adaptive equalizer core processing function
@@ -1230,7 +1258,9 @@ def dfe(sigIn, symbRef, param):
     if b is None:
         b = np.zeros(nTapsFB, dtype=prec)
 
-    sigIn = np.pad(sigIn, (nTapsFF // 2, nTapsFF // 2), "constant", constant_values=(0, 0))
+    sigIn = np.pad(
+        sigIn, (nTapsFF // 2, nTapsFF // 2), "constant", constant_values=(0, 0)
+    )
 
     if constType == "pam":
         sigOut, f, b, mse = realValuedDFECore(

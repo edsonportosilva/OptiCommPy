@@ -38,14 +38,13 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
 """Digital signal processing utilities."""
 import logging as logg
 
+import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit, prange
 from scipy import signal
 from scipy.fftpack import fft, fftfreq, fftshift, ifft
 
 from optic.utils import parameters
-
-import matplotlib.pyplot as plt
 
 
 @njit
@@ -265,7 +264,7 @@ def pulseShape(param):
         pulse = np.sinc(t)
         pulse += np.roll(pulse, SpS)
 
-    pulse = pulse / np.sum(pulse) # Normalize the filter coefficients
+    pulse = pulse / np.sum(pulse)  # Normalize the filter coefficients
 
     return pulse
 
@@ -937,7 +936,7 @@ def iqMixing(sig, param):
         param.ampImb : Amplitude imbalance parameter in dB.[default: 0 dB]
         param.phaseImb : Phase imbalance parameter (in radians).[default: 0 rad]
         param.timeSkew : delay between I and Q components. [default: 0 s]
-        param.Fs : simulation sampling frequency. [default: None]            
+        param.Fs : simulation sampling frequency. [default: None]
 
     Returns
     -------
@@ -1103,11 +1102,12 @@ def calcMZM(Ei, Vpi, u, Vb, ER):
     [2] Seimetz, M., High-Order Modulation for Optical Fiber Transmission. Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
     """
     # convert extinction ratio from dB to linear scale
-    erLin = 10 ** (ER / 10)   
-    gamma = 2*np.sqrt(erLin) / (erLin + 1)
+    erLin = 10 ** (ER / 10)
+    gamma = 2 * np.sqrt(erLin) / (erLin + 1)
 
-    Eo = np.sqrt(1 + gamma) * calcPM(Ei/2, Vpi, (u + Vb)/2) \
-        + np.sqrt(1 - gamma) * calcPM(Ei/2, Vpi, -(u + Vb)/2)
+    Eo = np.sqrt(1 + gamma) * calcPM(Ei / 2, Vpi, (u + Vb) / 2) + np.sqrt(
+        1 - gamma
+    ) * calcPM(Ei / 2, Vpi, -(u + Vb) / 2)
 
     return Eo
 
@@ -1130,11 +1130,11 @@ def calcPM(Ei, Vpi, u):
     -------
     np.array or float
         Complex-valued optical output field after modulation.
-    
+
     References
     ----------
     [1] Seimetz, M., High-Order Modulation for Optical Fiber Transmission. Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
-    
+
     """
     return Ei * np.exp(1j * (u / Vpi) * np.pi)
 
@@ -1150,6 +1150,7 @@ def levinson(r, nTaps):
         Autocorrelation coefficients of the signal, where r[0] is the zero-lag autocorrelation and r[k] is the autocorrelation at lag k.
     nTaps : int
         The order of the whitening filter (number of coefficients to estimate).
+
     Returns
     -------
     a : np.np.array

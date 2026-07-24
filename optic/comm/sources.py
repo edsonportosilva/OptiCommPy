@@ -52,7 +52,7 @@ def bitSource(param):
     mode = getattr(param, "mode", "random")
     order = getattr(param, "order", None)
     seed = getattr(param, "seed", None)
-    
+
     if mode == "random":
         if seed is not None:
             np.random.seed(seed)  # Seed the random number generator
@@ -94,7 +94,7 @@ def prbsGenerator(order=23, length=None, seed=1):
     References
     ----------
     [1] Wikipedia, "Pseudorandom binary sequence," https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence
-    """    
+    """
     if seed is None:
         seed = 1  # Default seed if not provided
 
@@ -119,7 +119,7 @@ def prbsGenerator(order=23, length=None, seed=1):
 
     # Initialize parameters
     if length is None or length > 2**order - 1:
-        length = 2**order - 1 
+        length = 2**order - 1
 
     tap_a, tap_b = taps[order]
     bits = np.zeros(length, dtype=np.int64)
@@ -127,7 +127,7 @@ def prbsGenerator(order=23, length=None, seed=1):
 
     lfsr = seed
     for i in range(length):
-        bits[i] = (lfsr >> (order - 1)) & 1        
+        bits[i] = (lfsr >> (order - 1)) & 1
         fb = (lfsr >> tap_a) ^ (lfsr >> tap_b) & 1
         lfsr = ((lfsr << 1) | fb) & max_val
 

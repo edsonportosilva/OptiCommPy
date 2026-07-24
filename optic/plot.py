@@ -6,7 +6,7 @@ Customized functions for plotting and vizualization (:mod:`optic.plot`)
 .. autosummary::
    :toctree: generated/
 
-   pconst                     -- Generate custom constellation plots      
+   pconst                     -- Generate custom constellation plots
    constHist                  -- Generate histogram for constellation plots
    plotColoredConst           -- Colored constellation scatter plot
    plotDecisionBoundaries     -- Plot decision boundaries of the detector
@@ -171,7 +171,7 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
             plt.ylim(-radius, radius)
 
     plt.show()
-    plt.pause(0.01) # Allow the plot to update 
+    plt.pause(0.01)  # Allow the plot to update
 
     return fig, ax
 
@@ -280,7 +280,7 @@ def plotColoredConst(
     ax.axis("square")
     ax.set_xlabel("In-Phase (I)")
     ax.set_ylabel("Quadrature (Q)")
-    plt.pause(0.01) # Allow the plot to update 
+    plt.pause(0.01)  # Allow the plot to update
 
     return fig, ax
 
@@ -455,7 +455,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
 
         elif ptype == "fast":
             y[x == n * SpS] = np.nan
-            #y[x == 0] = np.nan
+            # y[x == 0] = np.nan
 
             plt.plot(x / SpS, y, color="blue", alpha=0.85, label=plotlabel_)
             plt.xlim(min(x / SpS), max(x / SpS))
@@ -468,7 +468,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
         plt.title(f"eye diagram {plotlabel_}")
         plt.grid(alpha=0.15)
         plt.show()
-        plt.pause(0.01) # Allow the plot to update 
+        plt.pause(0.01)  # Allow the plot to update
 
     return None
 
@@ -501,10 +501,10 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
 
     """
     if fig is None:
-        fig = []  
+        fig = []
     if not fig:
         fig = plt.figure()
-  
+
     try:
         sig.shape[1]
     except IndexError:
@@ -515,7 +515,7 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
             labelString = None
         else:
             labelString = f"{label}: Mode {str(indMode)}"
-            
+
         plt.psd(
             sig[:, indMode],
             Fs=Fs,
@@ -524,11 +524,10 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
             sides="twosided",
             label=labelString,
         )
-        
+
     if label is not None:
         plt.legend(loc="lower left")
     plt.xlim(Fc - Fs / 2, Fc + Fs / 2)
-    
 
     return fig, plt.gca()
 

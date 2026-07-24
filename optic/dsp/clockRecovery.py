@@ -228,5 +228,5 @@ def calcClockDrift(t_nco_values):
     if input1D:
         # If input was 1D, return a 1D array
         ppm = ppm.flatten()
-        
+
     return ppm

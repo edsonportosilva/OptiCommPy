@@ -16,10 +16,10 @@ Digital modulation utilities (:mod:`optic.comm.modulation`)
    demap                    -- Contellation symbol index to bit sequence demapping
    modulateGray             -- Modulate bit sequences to constellation symbol sequences (w/ Gray mapping)
    demodulateGray           -- Demodulate symbol sequences (minEuclid + hard decisions) to bit sequences (assuming Gray mapping)
-   detector                 -- Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule   
+   detector                 -- Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule
    softMapper               -- Map LLRs to soft estimates of constellation symbols with Gray mapping
-   softEstimator            -- Estimate the mean and variance of the received symbols based on LLRs and a given bit mapping  
-   mlse                     -- Performs Maximum Likelihood Sequence Estimation (MLSE) using the Viterbi algorithm        
+   softEstimator            -- Estimate the mean and variance of the received symbols based on LLRs and a given bit mapping
+   mlse                     -- Performs Maximum Likelihood Sequence Estimation (MLSE) using the Viterbi algorithm
 """
 
 """Digital modulation utilities."""
@@ -407,6 +407,7 @@ def demodulateGray(symb, M, constType):
 
     return demap(indrx, bitMap)
 
+
 @njit(fastmath=True, cache=True)
 def detector(r, σ2, constSymb, px=None, rule="MAP"):
     """
@@ -581,16 +582,16 @@ def softEstimator(llr, bitMap, constSymb):
 def mlse(y, h, constSymb):
     """
     Performs Maximum Likelihood Sequence Estimation (MLSE) using the Viterbi algorithm
-    
+
     Parameters
     ----------
     y : array-like
         Received signal sequence
     h : array-like
-        Channel impulse response  
+        Channel impulse response
     constellation : array-like
         The available constellation symbols
-    
+
     Returns
     -------
     yMLSE : ndarray
@@ -600,7 +601,7 @@ def mlse(y, h, constSymb):
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
     """
-    N = len(y)    
+    N = len(y)
     M = len(constSymb)
     taps = len(h)  # Channel memory length (filter taps)
 
@@ -609,11 +610,11 @@ def mlse(y, h, constSymb):
     if L == 0:
         numStates = 1
     else:
-        numStates = M ** L
-    
+        numStates = M**L
+
     # Expected outputs for each state and input symbol (numStates x M)
-    yExpected = np.zeros((numStates, M), dtype=y.dtype) 
-    
+    yExpected = np.zeros((numStates, M), dtype=y.dtype)
+
     for s in range(numStates):
         for k in range(M):
             # the output depends on the current symbol (k) and the memory of the state (s)
@@ -626,35 +627,35 @@ def mlse(y, h, constSymb):
             yExpected[s, k] = chOut
 
     # Initialize metrics and pointers for Viterbi algorithm
-    pathMetrics = np.zeros(numStates, dtype=np.float64)    
+    pathMetrics = np.zeros(numStates, dtype=np.float64)
     pointers = np.zeros((N, numStates), dtype=np.int32)
     decisions = np.zeros((N, numStates), dtype=np.int32)
-    
+
     for n in range(N):
         newPathMetrics = np.full(numStates, np.inf, dtype=np.float64)
         newPointers = np.zeros(numStates, dtype=np.int32)
         newDecisions = np.zeros(numStates, dtype=np.int32)
-        
+
         for s in range(numStates):
             if pathMetrics[s] == np.inf:
                 continue
-                
+
             for k in range(M):
                 # Euclidean distance (Branch Metric)
-                pm = pathMetrics[s] + np.abs(y[n] - yExpected[s, k])**2 
-                
+                pm = pathMetrics[s] + np.abs(y[n] - yExpected[s, k]) ** 2
+
                 # Determine the next state in the trellis
                 if L == 0:
                     nextState = 0
                 else:
-                    nextState = k + (s % (M**(L-1))) * M
-                
+                    nextState = k + (s % (M ** (L - 1))) * M
+
                 # Save the surviving path with the lowest metric
                 if pm < newPathMetrics[nextState]:
                     newPathMetrics[nextState] = pm
                     newPointers[nextState] = s
                     newDecisions[nextState] = k
-                    
+
         for s in range(numStates):
             pathMetrics[s] = newPathMetrics[s]
             pointers[n, s] = newPointers[s]
@@ -666,14 +667,14 @@ def mlse(y, h, constSymb):
     for s in range(numStates):
         if pathMetrics[s] < minPathMetric:
             minPathMetric = pathMetrics[s]
-            bestState = s           
-    
-    currentState = bestState    
-    
+            bestState = s
+
+    currentState = bestState
+
     yMLSE = np.zeros(N, dtype=y.dtype)
     for n in range(N - 1, -1, -1):
         k = decisions[n, currentState]
         yMLSE[n] = constSymb[k]
         currentState = pointers[n, currentState]
-        
+
     return yMLSE

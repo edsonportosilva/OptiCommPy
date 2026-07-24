@@ -15,8 +15,15 @@ import logging as logg
 import numpy as np
 
 from optic.comm.modulation import detector, grayMapping
-from optic.dsp.core import (decimate, firFilter, pnorm, pulseShape, resample,
-                            symbolSync, upsample)
+from optic.dsp.core import (
+    decimate,
+    firFilter,
+    pnorm,
+    pulseShape,
+    resample,
+    symbolSync,
+    upsample,
+)
 from optic.utils import parameters
 
 
@@ -55,7 +62,7 @@ def syncDataSequences(rx, tx, param):
 
         - If param.reference is set to 'signal', rx and tx should be sampled at the same rate.
 
-    """   
+    """
     SpS = getattr(param, "SpS", 1)
     reference = getattr(param, "reference", "signal")
     syncMode = getattr(param, "syncMode", "amp")
@@ -91,7 +98,9 @@ def syncDataSequences(rx, tx, param):
         # Upsample transmitted signal
         tx = upsample(tx, SpS)
     else:
-        logg.warning("Reference type is set to 'signal'. rx and tx should be sampled at the same rate.")
+        logg.warning(
+            "Reference type is set to 'signal'. rx and tx should be sampled at the same rate."
+        )
     # find repetitions of the transmitted signal to match length of received signal"
     repeats = np.ceil(rx.shape[0] / tx.shape[0])
     tx_ = np.tile(tx, (int(repeats), 1))
