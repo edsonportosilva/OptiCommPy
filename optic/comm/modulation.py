@@ -546,7 +546,7 @@ def softEstimator(llr, bitMap, constSymb):
     absConst2 = np.abs(constSymb) ** 2
 
     # Compute bit probabilities
-    Pb1 = llr2bitProb(-llr)
+    Pb1 = llr2bitProb(llr)
     Pb0 = 1.0 - Pb1
 
     for i in prange(numSymb):

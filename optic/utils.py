@@ -15,6 +15,7 @@ General utilities (:mod:`optic.utils`)
    dotNumba               -- Compute dot product using Numba.
    bitarray2dec           -- Convert array of bits to decimal.
    ber2Qfactor            -- Convert bit error rate (BER) to Q factor in dB.
+   llr2bitProb            -- Convert LLRs to bit probabilities using a numerically stable sigmoid.
 """
 
 """General utilities."""
@@ -323,3 +324,35 @@ def ber2Qfactor(ber):
         The Q factor corresponding to the input BER.
     """
     return 10 * np.log10(np.sqrt(2) * erfcinv(2 * ber))
+
+
+@njit(cache=True)
+def llr2bitProb(llr, prec=np.float32):
+    """
+    Convert LLRs to bit probabilities using a numerically stable sigmoid.
+
+    Parameters
+    ----------
+    llrs : 1D numpy array
+        Log-likelihood ratios (LLRs) of bits.
+
+    Returns
+    -------
+    probs : 1D numpy array
+        Bit probabilities P(bit = 1).
+    """
+    n = llr.shape[0]
+    k = llr.shape[1]
+    probs = np.empty((n, k), dtype=prec)
+
+    for i in range(n):
+        for j in range(k):
+            x = -llr[i, j]
+            # Numerically stable sigmoid
+            if x >= 0:
+                z = np.exp(-x)
+                probs[i, j] = 1.0 / (1.0 + z)
+            else:
+                z = np.exp(x)
+                probs[i, j] = z / (1.0 + z)
+    return probs

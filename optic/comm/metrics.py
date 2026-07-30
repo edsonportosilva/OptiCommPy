@@ -31,7 +31,7 @@ from scipy.special import erf
 
 from optic.comm.modulation import demodulateGray, grayMapping, minEuclid
 from optic.dsp.core import pnorm, signalPower
-from optic.utils import dB2lin
+from optic.utils import dB2lin, llr2bitProb
 
 
 def bert(Irx, bitsTx=None, seed=123):
@@ -281,7 +281,7 @@ def calcExtrLLR(bitLLR, x, xMu, xNu, M, constSymb, bitMap, px=None, prec=np.floa
     constBits1 = bitMap.astype(prec)
     constBits0 = 1.0 - constBits1
 
-    Pb1 = llr2bitProb(-bitLLR.reshape((numSymb, q))).astype(prec)
+    Pb1 = llr2bitProb(bitLLR.reshape((numSymb, q))).astype(prec)
     Pb1 = np.clip(Pb1, probFloor, 1 - probFloor)
     Pb0 = 1.0 - Pb1
 
