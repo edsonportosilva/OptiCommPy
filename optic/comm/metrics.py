@@ -31,7 +31,7 @@ from scipy.special import erf
 
 from optic.comm.modulation import demodulateGray, grayMapping, minEuclid
 from optic.dsp.core import pnorm, signalPower
-from optic.utils import dB2lin
+from optic.utils import dB2lin, llr2bitProb
 
 
 def bert(Irx, bitsTx=None, seed=123):
