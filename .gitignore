@@ -16,3 +16,5 @@ optic/.vscode/settings.json
 /examples/.pylint.d
 /optic/dsp/__pycache__
 /optic/comm/__pycache__
+__pycache__/
+.pytest_cache/
