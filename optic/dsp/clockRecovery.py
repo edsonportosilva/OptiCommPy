@@ -82,13 +82,13 @@ def interpolator(x, t):
     )
 
 
-def gardnerClockRecovery(Ei, param=None):
+def gardnerClockRecovery(sigIn, param=None):
     """
     Perform clock recovery using Gardner's algorithm with a loop PI filter.
 
     Parameters
     ----------
-    Ei : numpy.np.array
+    sigIn : numpy.np.array
         Input array representing the received signal.
     param : core.parameter
         Clock recovery parameters:
@@ -103,7 +103,7 @@ def gardnerClockRecovery(Ei, param=None):
     Returns
     -------
     tuple
-        Tuple containing the recovered signal (Eo) and the timing values.
+        Tuple containing the recovered signal (sigOut) and the timing values.
     """
     # Check and set default values for input parameters
     kp = getattr(param, "kp", 1e-3)
@@ -114,24 +114,24 @@ def gardnerClockRecovery(Ei, param=None):
     maxPPM = getattr(param, "maxPPM", 500)
 
     try:
-        Ei.shape[1]
+        sigIn.shape[1]
         input1D = False
     except IndexError:
         input1D = True
-        Ei = Ei.reshape(len(Ei), 1)
+        sigIn = sigIn.reshape(len(sigIn), 1)
 
-    Ei = np.pad(Ei, ((0, lpad), (0, 0)))
+    sigIn = np.pad(sigIn, ((0, lpad), (0, 0)))
 
     # Initializing variables:
-    nModes = Ei.shape[1]
-    nSamples = Ei.shape[0]
+    nModes = sigIn.shape[1]
+    nSamples = sigIn.shape[0]
 
     # Initiate output vector according with a maximum estimate of clock deviation
-    Eo = np.zeros((int((1 - maxPPM / 1e6) * nSamples), nModes), dtype=np.complex64)
+    sigOut = np.zeros((int((1 - maxPPM / 1e6) * nSamples), nModes), dtype=np.complex64)
 
-    Ln = Eo.shape[0]
+    Ln = sigOut.shape[0]
 
-    t_nco_values = np.zeros(Eo.shape, dtype=np.float64)
+    t_nco_values = np.zeros(sigOut.shape, dtype=np.float64)
     last_n = 0
     logg.info(f"Running clock recovery...")
 
@@ -143,13 +143,13 @@ def gardnerClockRecovery(Ei, param=None):
         m = 2
 
         while n < Ln - 1 and m < nSamples - 2:
-            Eo[n, indMode] = interpolator(Ei[m - 2 : m + 2, indMode], t_nco)
+            sigOut[n, indMode] = interpolator(sigIn[m - 2 : m + 2, indMode], t_nco)
 
             if n % 2 == 0:
                 if isNyquist:
-                    ted = gardnerTEDnyquist(Eo[n - 2 : n + 1, indMode])
+                    ted = gardnerTEDnyquist(sigOut[n - 2 : n + 1, indMode])
                 else:
-                    ted = gardnerTED(Eo[n - 2 : n + 1, indMode])
+                    ted = gardnerTED(sigOut[n - 2 : n + 1, indMode])
 
                 # Loop PI Filter:
                 intPart = ki * ted + intPart
@@ -179,16 +179,16 @@ def gardnerClockRecovery(Ei, param=None):
             f"Estimated clock drift mode {indMode}: {calcClockDrift(t_nco_values[:, indMode])[0]:.2f} ppm"
         )
 
-    Eo = Eo[0:last_n, :]
+    sigOut = sigOut[0:last_n, :]
 
     if input1D:
         # If input was 1D, return a 1D array
-        Eo = Eo.flatten()
+        sigOut = sigOut.flatten()
 
     if returnTiming:
-        return Eo, t_nco_values
+        return sigOut, t_nco_values
     else:
-        return Eo
+        return sigOut
 
 
 def calcClockDrift(t_nco_values):
