@@ -34,13 +34,13 @@ except ImportError:
     pass
 
 
-def cpr(Ei, param=None, symbTx=None):
+def cpr(sigIn, param=None, symbTx=None):
     """
     Carrier phase recovery function (CPR)
 
     Parameters
     ----------
-    Ei : complex-valued np.array
+    sigIn : complex-valued np.array
         received constellation symbols.
     param : optic.utils.parameter object, optional
         Configuration parameters [default: None].
@@ -74,7 +74,7 @@ def cpr(Ei, param=None, symbTx=None):
 
     Returns
     -------
-    Eo : complex-valued np.array
+    sigOut : complex-valued np.array
         Phase-compensated signal.
     phaseEst : real-valued np.array
         Time-varying estimated phase-shifts.
@@ -88,7 +88,7 @@ def cpr(Ei, param=None, symbTx=None):
     [3] H. Meyer, Digital Communication Receivers: Synchronization, Channel estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
     """
     if symbTx is None:
-        symbTx = np.zeros(Ei.shape)
+        symbTx = np.zeros(sigIn.shape)
     if param is None:
         param = []
 
@@ -103,15 +103,15 @@ def cpr(Ei, param=None, symbTx=None):
     tau1 = getattr(param, "tau1", 1 / (2 * np.pi * 10e6))
     tau2 = getattr(param, "tau2", 1 / (2 * np.pi * 10e6))
     Ts = getattr(param, "Ts", 1 / 32e9)
-    pilotInd = getattr(param, "pilotInd", np.array([len(Ei) + 1]))
+    pilotInd = getattr(param, "pilotInd", np.array([len(sigIn) + 1]))
     runFOE = getattr(param, "runFOE", True)
     returnPhases = getattr(param, "returnPhases", False)
 
     try:
-        Ei.shape[1]
+        sigIn.shape[1]
         input1D = False
     except IndexError:
-        Ei = Ei.reshape(len(Ei), 1)
+        sigIn = sigIn.reshape(len(sigIn), 1)
         input1D = True
 
     # constellation parameters
@@ -124,31 +124,31 @@ def cpr(Ei, param=None, symbTx=None):
     if runFOE:
         logg.info(f"Running frequency offset compensation...")
         if constType in ["psk", "apsk"]:
-            Ei, fo = fourthPowerFOE(Ei, 1 / Ts, M)
+            sigIn, fo = fourthPowerFOE(sigIn, 1 / Ts, M)
         else:
-            Ei, fo = fourthPowerFOE(Ei, 1 / Ts, 4)
-        Ei = pnorm(Ei)
+            sigIn, fo = fourthPowerFOE(sigIn, 1 / Ts, 4)
+        sigIn = pnorm(sigIn)
         logg.info(f"Estimated frequency offset (MHz): {np.round(fo/1e6, 3)}")
 
     if alg == "ddpll":
         logg.info(f"Running DDPLL carrier phase recovery...")
-        phaseEst = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
+        phaseEst = ddpll(sigIn, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
         logg.info(f"Running BPS carrier phase recovery...")
-        phaseEst = bps(Ei, N // 2, constSymb, B)
+        phaseEst = bps(sigIn, N // 2, constSymb, B)
     elif alg == "bpsGPU":
         try:
             logg.info("Running GPU-based BPS carrier phase recovery...")
-            phaseEst = bpsGPU(Ei, N // 2, constSymb, B)
+            phaseEst = bpsGPU(sigIn, N // 2, constSymb, B)
         except NameError:
             logg.warning("GPU unavailable, switching to CPU processing...")
-            phaseEst = bps(Ei, N // 2, constSymb, B)
+            phaseEst = bps(sigIn, N // 2, constSymb, B)
     elif alg == "viterbi":
         logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")
         if constType in ["psk"]:
-            phaseEst = viterbi(Ei, N, M) + np.pi / 4
+            phaseEst = viterbi(sigIn, N, M) + np.pi / 4
         else:
-            phaseEst = viterbi(Ei, N)
+            phaseEst = viterbi(sigIn, N)
     else:
         logg.error("CPR algorithm incorrectly specified.")
     phaseEst = np.unwrap(4 * phaseEst, axis=0) / 4
@@ -159,24 +159,24 @@ def cpr(Ei, param=None, symbTx=None):
     sigmaPhase = np.mean(np.var(np.diff(phaseEst[discard:-discard, :], axis=0), axis=0))
     logg.info(f"Estimated linewidth: {sigmaPhase/(2 * np.pi* Ts)/1e3:.3f} kHz")
 
-    Eo = pnorm(Ei * np.exp(1j * phaseEst))
+    sigOut = pnorm(sigIn * np.exp(1j * phaseEst))
 
     if input1D:
         # If input was 1D, return a 1D array
-        Eo = Eo.flatten()
+        sigOut = sigOut.flatten()
         phaseEst = phaseEst.flatten()
 
-    return (Eo, phaseEst) if returnPhases else Eo
+    return (sigOut, phaseEst) if returnPhases else sigOut
 
 
 @njit(fastmath=True, cache=True)
-def bps(Ei, N, constSymb, B):
+def bps(sigIn, N, constSymb, B):
     """
     Blind phase search (BPS) algorithm
 
     Parameters
     ----------
-    Ei : complex-valued np.array
+    sigIn : complex-valued np.array
         Received constellation symbols.
     N : int
         Half of the 2*N+1 average window.
@@ -194,15 +194,15 @@ def bps(Ei, N, constSymb, B):
     ----------
     [1] T. Pfau, S. Hoffmann, e R. Noé, “Hardware-efficient coherent digital receiver concept with feedforward carrier recovery for M-QAM constellations”, Journal of Lightwave Technology, vol. 27, nº 8, p. 989–999, 2009, doi: 10.1109/JLT.2008.2010511.
     """
-    nModes = Ei.shape[1]
+    nModes = sigIn.shape[1]
 
     testPhases = np.arange(0, B) * (np.pi / 2) / B  # test phases
 
-    phaseEst = np.zeros(Ei.shape, dtype="float")
+    phaseEst = np.zeros(sigIn.shape, dtype="float")
 
     zeroPad = np.zeros((N, nModes), dtype="complex")
     x = np.concatenate(
-        (zeroPad, Ei, zeroPad)
+        (zeroPad, sigIn, zeroPad)
     )  # pad start and end of the signal with zeros
 
     L = x.shape[0]
@@ -224,13 +224,13 @@ def bps(Ei, N, constSymb, B):
 
 
 @njit(fastmath=True, cache=True)
-def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
+def ddpll(sigIn, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     """
     Decision-directed Phase-locked Loop (DDPLL) algorithm
 
     Parameters
     ----------
-    Ei : complex-valued np.array
+    sigIn : complex-valued np.array
         Received constellation symbols.
     Ts : float scalar
         Symbol period.
@@ -256,7 +256,7 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     ----------
     [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
     """
-    nSymbols, nModes = Ei.shape
+    nSymbols, nModes = sigIn.shape
 
     phaseEst = np.zeros((nSymbols, nModes), dtype=np.float64)
 
@@ -275,38 +275,38 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
         u[2] = 0  # Output of phase detector (residual phase error)
         u[0] = 0  # Output of loop filter
 
-        for k in range(Ei.shape[0]):
+        for k in range(sigIn.shape[0]):
             u[1] = u[2]
 
             # Remove estimate of phase error from input symbol
-            Eo = Ei[k, n] * np.exp(1j * phaseEst[k, n])
+            sigOut = sigIn[k, n] * np.exp(1j * phaseEst[k, n])
 
             # Slicer (perform hard decision on symbol)
             if k in pilotInd:
                 # phase estimation with pilot symbol
                 # Generate phase error signal (also called x_n (Meyer))
-                u[2] = np.imag(Eo * np.conj(symbTx[k, n]))
+                u[2] = np.imag(sigOut * np.conj(symbTx[k, n]))
             else:
                 # find closest constellation symbol
-                decided = np.argmin(np.abs(Eo - constSymb))
+                decided = np.argmin(np.abs(sigOut - constSymb))
                 # Generate phase error signal (also called x_n (Meyer))
-                u[2] = np.imag(Eo * np.conj(constSymb[decided]))
+                u[2] = np.imag(sigOut * np.conj(constSymb[decided]))
             # Pass phase error signal in Loop Filter (also called e_n (Meyer))
             u[0] = np.sum(a1b * u)
 
             # Estimate the phase error for the next symbol
-            if k < Ei.shape[0] - 1:
+            if k < sigIn.shape[0] - 1:
                 phaseEst[k + 1, n] = phaseEst[k, n] - Kv * u[0]
     return phaseEst
 
 
-def viterbi(Ei, N=35, M=4):
+def viterbi(sigIn, N=35, M=4):
     """
     Viterbi & Viterbi carrier phase recovery algorithm.
 
     Parameters
     ----------
-    Ei : np.array
+    sigIn : np.array
         Input signal.
     N : int, optional
         Size of the moving average window.
@@ -323,18 +323,20 @@ def viterbi(Ei, N=35, M=4):
     [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
     """
     return (
-        -np.unwrap(np.angle(movingAverage(Ei**M, N)) / M, period=2 * np.pi / M, axis=0)
+        -np.unwrap(
+            np.angle(movingAverage(sigIn**M, N)) / M, period=2 * np.pi / M, axis=0
+        )
         - np.pi / 4
     )
 
 
-def fourthPowerFOE(Ei, Fs, M=4):
+def fourthPowerFOE(sigIn, Fs, M=4):
     """
     Estimate the frequency offset (FO) with the 4th-power method.
 
     Parameters
     ----------
-    Ei : np.array
+    sigIn : np.array
         Input signal.
     Fs : float
         Sampling frequency.
@@ -351,19 +353,19 @@ def fourthPowerFOE(Ei, Fs, M=4):
     ----------
     [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
     """
-    Nfft = Ei.shape[0]
+    Nfft = sigIn.shape[0]
 
     f = Fs * fftfreq(Nfft)
     f = fftshift(f)
 
-    nModes = Ei.shape[1]
-    Eo = Ei.copy()
-    t = np.arange(0, Eo.shape[0]) * 1 / Fs
+    nModes = sigIn.shape[1]
+    sigOut = sigIn.copy()
+    t = np.arange(0, sigOut.shape[0]) * 1 / Fs
     fo = np.zeros(nModes)
     for n in range(nModes):
-        f4 = 10 * np.log10(np.abs(fftshift(fft(Ei[:, n] ** M))))
+        f4 = 10 * np.log10(np.abs(fftshift(fft(sigIn[:, n] ** M))))
         indFO = np.argmax(f4)
         fo[n] = f[indFO] / M
-        Eo[:, n] = Ei[:, n] * np.exp(-1j * 2 * np.pi * fo[n] * t)
+        sigOut[:, n] = sigIn[:, n] * np.exp(-1j * 2 * np.pi * fo[n] * t)
 
-    return Eo, fo
+    return sigOut, fo
