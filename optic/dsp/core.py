@@ -432,13 +432,13 @@ def upsample(x, factor):
     return xUp
 
 
-def decimate(Ei, param):
+def decimate(sigIn, param):
     """
     Decimate signal.
 
     Parameters
     ----------
-    Ei : np.array
+    sigIn : np.array
         Input signal.
     param : optic.utils.parameters object, optional
         Parameters of the decimation process.
@@ -448,7 +448,7 @@ def decimate(Ei, param):
 
     Returns
     -------
-    Eo : np.array
+    sigOut : np.array
         Decimated signal.
 
     References
@@ -456,48 +456,48 @@ def decimate(Ei, param):
     [1] P. S. R. Diniz, E. A. B. da Silva, e S. L. Netto, Digital Signal Processing: System Analysis and Design. Cambridge University Press, 2010.
 
     """
-    Ei = Ei.copy()
+    sigIn = sigIn.copy()
     try:
-        Ei.shape[1]
+        sigIn.shape[1]
         input1D = False
     except IndexError:
         input1D = True
-        # If Ei is a 1D array, reshape it to a 2D array
-        Ei = Ei.reshape(len(Ei), 1)
+        # If sigIn is a 1D array, reshape it to a 2D array
+        sigIn = sigIn.reshape(len(sigIn), 1)
 
     decFactor = int(param.SpSin / param.SpSout)
 
     # simple timing recovery
-    sampDelay = np.zeros(Ei.shape[1])
+    sampDelay = np.zeros(sigIn.shape[1])
 
     # finds best sampling instant
     # (maximum variance sampling time)
-    for k in range(Ei.shape[1]):
-        a = Ei[:, k].reshape(Ei.shape[0], 1)
-        a = np.reshape(Ei[:, k], (Ei.shape[0], 1))
+    for k in range(sigIn.shape[1]):
+        a = sigIn[:, k].reshape(sigIn.shape[0], 1)
+        a = np.reshape(sigIn[:, k], (sigIn.shape[0], 1))
         varVector = np.var(a.reshape(-1, param.SpSin), axis=0)
         sampDelay[k] = np.where(varVector == np.amax(varVector))[0][0]
     # downsampling
-    Eo = Ei[::decFactor, :].copy()
+    sigOut = sigIn[::decFactor, :].copy()
 
-    for k in range(Ei.shape[1]):
-        Ei[:, k] = np.roll(Ei[:, k], -int(sampDelay[k]))
-        Eo[:, k] = Ei[0::decFactor, k]
+    for k in range(sigIn.shape[1]):
+        sigIn[:, k] = np.roll(sigIn[:, k], -int(sampDelay[k]))
+        sigOut[:, k] = sigIn[0::decFactor, k]
 
     if input1D:
         # If the output is 1D, return it as a 1D array
-        Eo = Eo.flatten()
+        sigOut = sigOut.flatten()
 
-    return Eo
+    return sigOut
 
 
-def resample(Ei, param):
+def resample(sigIn, param):
     """
     Resample signal to a desired sampling rate.
 
     Parameters
     ----------
-    Ei : np.array
+    sigIn : np.array
         Input signal.
     param : optic.utils.parameters object, optional
         Parameters of the resampling process.
@@ -508,7 +508,7 @@ def resample(Ei, param):
 
     Returns
     -------
-    Eo : np.array
+    sigOut : np.array
         Resampled signal.
 
     References
@@ -522,31 +522,31 @@ def resample(Ei, param):
     outFs = getattr(param, "outFs", 2)
 
     try:
-        Ei.shape[1]
+        sigIn.shape[1]
         input1D = False
     except IndexError:
         input1D = True
-        # If Ei is a 1D array, reshape it to a 2D array
-        Ei = Ei.reshape(len(Ei), 1)
+        # If sigIn is a 1D array, reshape it to a 2D array
+        sigIn = sigIn.reshape(len(sigIn), 1)
 
     # Anti-aliasing filters:
     if outFs < inFs:
-        N_ = min(Ei.shape[0], N)
+        N_ = min(sigIn.shape[0], N)
         hi = lowPassFIR(outFs / 2, inFs, N_, typeF="rect")
-        Ei = firFilter(hi, Ei)
+        sigIn = firFilter(hi, sigIn)
 
-    Eo = clockSamplingInterp(Ei, inFs, outFs)
+    sigOut = clockSamplingInterp(sigIn, inFs, outFs)
 
     if outFs > inFs:
-        N_ = min(Eo.shape[0], N)
+        N_ = min(sigOut.shape[0], N)
         ho = lowPassFIR(inFs / 2, outFs, N_, typeF="rect")
-        Eo = firFilter(ho, Eo)
+        sigOut = firFilter(ho, sigOut)
 
     if input1D:
         # If the output is 1D, return it as a 1D array
-        Eo = Eo.flatten()
+        sigOut = sigOut.flatten()
 
-    return Eo
+    return sigOut
 
 
 def symbolSync(rx, tx, SpS, mode="amp"):
@@ -1073,13 +1073,13 @@ def freqShift(x, deltaF, Fs):
 
 
 @njit
-def calcMZM(Ei, Vpi, u, Vb, ER):
+def calcMZM(sigIn, Vpi, u, Vb, ER):
     """
     Fast function to calculate the Mach-Zehnder modulator (MZM) model.
 
     Parameters
     ----------
-    Ei : np.array or float
+    sigIn : np.array or float
         Complex-valued optical input field.
     Vpi : float
         Half-wave voltage of the MZM.
@@ -1105,21 +1105,21 @@ def calcMZM(Ei, Vpi, u, Vb, ER):
     erLin = 10 ** (ER / 10)
     gamma = 2 * np.sqrt(erLin) / (erLin + 1)
 
-    Eo = np.sqrt(1 + gamma) * calcPM(Ei / 2, Vpi, (u + Vb) / 2) + np.sqrt(
+    sigOut = np.sqrt(1 + gamma) * calcPM(sigIn / 2, Vpi, (u + Vb) / 2) + np.sqrt(
         1 - gamma
-    ) * calcPM(Ei / 2, Vpi, -(u + Vb) / 2)
+    ) * calcPM(sigIn / 2, Vpi, -(u + Vb) / 2)
 
-    return Eo
+    return sigOut
 
 
 @njit
-def calcPM(Ei, Vpi, u):
+def calcPM(sigIn, Vpi, u):
     """
     Fast function to calculate the phase modulator (PM) model.
 
     Parameters
     ----------
-    Ei : np.array or float
+    sigIn : np.array or float
         Complex-valued optical input field.
     Vpi : float
         Half-wave voltage of the PM.
@@ -1136,7 +1136,7 @@ def calcPM(Ei, Vpi, u):
     [1] Seimetz, M., High-Order Modulation for Optical Fiber Transmission. Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
-    return Ei * np.exp(1j * (u / Vpi) * np.pi)
+    return sigIn * np.exp(1j * (u / Vpi) * np.pi)
 
 
 @njit(fastmath=True, cache=True)
