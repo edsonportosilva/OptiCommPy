@@ -560,6 +560,6 @@ def awgn(sig, param):
     if complexNoise:
         noise = gaussianComplexNoise(sig.shape, σ2, seed)
     else:
-        noise = gaussianNoise(sig.shape, σ2 / 2, seed)
+        noise = gaussianNoise(sig.shape, σ2, seed)
 
     return sig + noise
