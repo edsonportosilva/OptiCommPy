@@ -397,9 +397,9 @@ def demodulateGray(symb, M, constType):
     const = grayMapping(M, constType)
 
     # get bit to symbol mapping
-    indMap = np.arange(len(const))
-    bitMap = dec2bitarray(indMap, int(np.log2(M)))
     b = int(np.log2(M))
+    indMap = np.arange(len(const))
+    bitMap = dec2bitarray(indMap, b)
     bitMap = bitMap.reshape(-1, b)
 
     # demodulate received symbol sequence
