@@ -16,6 +16,7 @@ Metrics for signal and performance characterization (:mod:`optic.comm.metrics`)
    calcEVM                  -- Calculate error vector magnitude (EVM) metrics
    theoryBER                -- Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel
    theoryMI                 -- Calculate mutual information for the DCMC AWGN channel
+   theoryGMI                -- Calculate generalized mutual information for the DCMC AWGN channel
    calcLinOSNR              -- Calculate the OSNR evolution in a multi-span fiber transmission system
 """
 
@@ -26,12 +27,12 @@ from collections import defaultdict
 import numpy as np
 import scipy.constants as const
 from numba import njit, prange
-from scipy.integrate import dblquad
+from scipy.integrate import dblquad, quad
 from scipy.special import erf
 
 from optic.comm.modulation import demodulateGray, grayMapping, minEuclid
 from optic.dsp.core import pnorm, signalPower
-from optic.utils import dB2lin, llr2bitProb
+from optic.utils import dB2lin, dec2bitarray, llr2bitProb
 
 
 def bert(Irx, bitsTx=None, seed=123):
@@ -40,10 +41,10 @@ def bert(Irx, bitsTx=None, seed=123):
 
     Parameters
     ----------
-    Irx : numpy.np.array
+    Irx : np.array
         Received signal intensity values.
 
-    bitsTx : numpy.np.array, optional
+    bitsTx : np.array, optional
         Transmitted bit sequence. If not provided, a random bit sequence is generated.
 
     seed : int, optional
@@ -64,10 +65,10 @@ def bert(Irx, bitsTx=None, seed=123):
     a random bit sequence is generated using the specified `seed`.
 
     The following statistics are calculated for the received signal:
-    - `I1`: The average value of the signal when the transmitted bit is 1.
-    - `I0`: The average value of the signal when the transmitted bit is 0.
-    - `std1`: The standard deviation of the signal when the transmitted bit is 1.
-    - `std0`: The standard deviation of the signal when the transmitted bit is 0.
+    - :math:`I_1`: The average value of the signal when the transmitted bit is 1.
+    - :math:`I_0`: The average value of the signal when the transmitted bit is 0.
+    - :math:`\\sigma_1`: The standard deviation of the signal when the transmitted bit is 1.
+    - :math:`\\sigma_0`: The standard deviation of the signal when the transmitted bit is 0.
 
     The optimal decision threshold `Id` and the Q-factor are calculated based on the signal statistics.
 
@@ -196,7 +197,7 @@ def fastBERcalc(rx, tx, M, constType, px=None):
 
 
 @njit(parallel=True, cache=True)
-def calcLLR(rxSymb, σ2, constSymb, bitMap, px):
+def calcLLR(rxSymb, σ2, constSymb, bitMap, px, maxLog=False):
     """
     LLR calculation assuming a circular AGWN channel model.
 
@@ -208,10 +209,12 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap, px):
         Noise variance.
     constSymb : (M, 1) np.array
         Constellation symbols.
+    bitMap : (M, log2(M)) np.array
+            Bit-to-symbol mapping.
     px : (M, 1) np.array
         Prior symbol probabilities.
-    bitMap : (M, log2(M)) np.array
-        Bit-to-symbol mapping.
+    maxLog : bool, optional
+        If True, use the Max-Log approximation for LLR calculation.
 
     Returns
     -------
@@ -228,14 +231,32 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap, px):
 
     LLRs = np.zeros(len(rxSymb) * b)
 
-    for i in prange(len(rxSymb)):
-        prob = np.exp((-np.abs(rxSymb[i] - constSymb) ** 2) / σ2) * px
+    if maxLog:
+        # Pre-compute log-priors (adding a small epsilon to avoid log(0) if any px is 0)
+        logPx = np.log(px + 1e-12)
 
-        for indBit in range(b):
-            p0 = np.sum(prob[bitMap[:, indBit] == 0])
-            p1 = np.sum(prob[bitMap[:, indBit] == 1])
+        for i in prange(len(rxSymb)):
+            # Calculate the log-domain metric for all M symbols
+            # metric = -|y - s|^2 / sigma^2 + ln(P(x))
+            metric = -(np.abs(rxSymb[i] - constSymb) ** 2) / σ2 + logPx
 
-            LLRs[i * b + indBit] = np.log(p0) - np.log(p1)
+            for indBit in range(b):
+                # Find the maximum metric for bits 0 and 1 (Max-Log approximation)
+                max0 = np.max(metric[bitMap[:, indBit] == 0])
+                max1 = np.max(metric[bitMap[:, indBit] == 1])
+
+                # LLR = max(metric_0) - max(metric_1)
+                LLRs[i * b + indBit] = max0 - max1
+    else:
+        for i in prange(len(rxSymb)):
+            # Calculate the probability of each symbol
+            prob = np.exp((-np.abs(rxSymb[i] - constSymb) ** 2) / σ2) * px
+
+            for indBit in range(b):
+                p0 = np.sum(prob[bitMap[:, indBit] == 0])
+                p1 = np.sum(prob[bitMap[:, indBit] == 1])
+
+                LLRs[i * b + indBit] = np.log(p0) - np.log(p1)
     return LLRs
 
 
@@ -246,26 +267,26 @@ def calcExtrLLR(bitLLR, x, xMu, xNu, M, constSymb, bitMap, px=None, prec=np.floa
 
     Parameters
     -----------
-    - bitLLR: np.ndarray of shape (q*numSymb,)
+    bitLLR : np.array of shape (q*numSymb,)
         received bit LLRs
-    - x: np.ndarray of shape (numSymb,)
+    x : np.array of shape (numSymb,)
         received symbols
-    - xMu: np.ndarray of shape (numSymb,)
+    xMu : np.array of shape (numSymb,)
         mean of the received symbols
-    - xNu: np.ndarray of shape (numSymb,)
+    xNu : np.array of shape (numSymb,)
         variance of the received symbols
-    - M: int
+    M : int
         modulation order
-    - constSymb: np.ndarray of shape (M,)
+    constSymb : np.array of shape (M,)
         constellation symbols
-    - bitMap: np.ndarray of shape (M, q)
+    bitMap : np.array of shape (M, q)
         bit mapping of the constellation symbols
-    - px: np.ndarray of shape (M,), optional
+    px : np.array of shape (M,), optional
         prior probabilities of the constellation symbols, if None, uniform distribution is used
 
     Returns
     -------
-    - LLRe: np.ndarray of shape (q*numSymb,)
+    LLRe : np.array of shape (q*numSymb,)
         extrinsic LLRs for each bit
     """
     numFloor = 1e-3  # minimum variance to avoid division by zero
@@ -326,7 +347,7 @@ def calcExtrLLR(bitLLR, x, xMu, xNu, M, constSymb, bitMap, px=None, prec=np.floa
     return LLRe.flatten()
 
 
-def monteCarloGMI(rx, tx, M, constType, px=None):
+def monteCarloGMI(rx, tx, M, constType, px=None, bitMap=None):
     """
     Monte Carlo based generalized mutual information (GMI) estimation.
 
@@ -342,6 +363,8 @@ def monteCarloGMI(rx, tx, M, constType, px=None):
         Modulation type: 'qam' or 'psk'
     px : (M, 1) np.array
         Prior symbol probabilities. The default is [].
+    bitMap : (M, b) np.array
+        Bit mapping matrix. The default is None.
 
     Returns
     -------
@@ -359,11 +382,12 @@ def monteCarloGMI(rx, tx, M, constType, px=None):
         px = []
     # constellation parameters
     constSymb = grayMapping(M, constType)
-
-    # get bit mapping
     b = int(np.log2(M))
-    bitMap = demodulateGray(constSymb, M, constType)
-    bitMap = bitMap.reshape(-1, b)
+
+    # if bitMap is not provided, consider Gray mapping
+    if bitMap is None:
+        bitMap = dec2bitarray(np.arange(len(constSymb)), b)
+        bitMap = bitMap.reshape(-1, b)
 
     # We want all the signal sequences to be disposed in columns:
     try:
@@ -382,6 +406,7 @@ def monteCarloGMI(rx, tx, M, constType, px=None):
 
     if len(px) == 0:  # if px is not defined, assume uniform distribution
         px = 1 / M * np.ones(constSymb.shape)
+
     # Normalize constellation
     Es = np.sum(np.abs(constSymb) ** 2 * px)
     constSymb = constSymb / np.sqrt(Es)
@@ -400,21 +425,22 @@ def monteCarloGMI(rx, tx, M, constType, px=None):
         tx[:, k] = pnorm(tx[:, k])
     for k in range(nModes):
         # set the noise variance
-        σ2 = np.var(rx[:, k] - tx[:, k], axis=0)
+        noiseVar = np.var(rx[:, k] - tx[:, k], axis=0)
+
+        if constType in ["pam", "ook"]:
+            noiseVar *= 2
 
         # demodulate transmitted symbol sequence
         btx = demodulateGray(np.sqrt(Es) * tx[:, k], M, constType)
 
         # soft demodulation of the received symbols
-        LLRs = calcLLR(rx[:, k], σ2, constSymb, bitMap, px)
+        LLRs = calcLLR(rx[:, k], noiseVar, constSymb, bitMap, px)
 
         # LLR clipping
         LLRs[LLRs == np.inf] = 500
         LLRs[LLRs == -np.inf] = -500
 
         # Compute bitwise MIs and their sum
-        b = int(np.log2(M))
-
         MIperBitPosition = np.zeros(b)
 
         for n in range(b):
@@ -484,19 +510,20 @@ def monteCarloMI(rx, tx, M, constType, px=None):
         # symbol normalization
         rx[:, k] = pnorm(rx[:, k])
         tx[:, k] = pnorm(tx[:, k])
+
     # Estimate noise variance from the data
     noiseVar = np.var(rx - tx, axis=0)
 
     for k in range(nModes):
         σ2 = noiseVar[k]
-        MI[k] = calcMI(rx[:, k], tx[:, k], σ2, constSymb, px)[0]
+        MI[k] = calcMI(rx[:, k], tx[:, k], σ2, constSymb, px)
     return MI
 
 
 @njit(cache=True)
 def calcMI(rx, tx, σ2, constSymb, pX):
     """
-    Mutual information (MI) calculation (circular AGWN channel).
+    Mutual information (MI) calculation for AWGN channels.
 
     Parameters
     ----------
@@ -506,42 +533,41 @@ def calcMI(rx, tx, σ2, constSymb, pX):
         Transmitted symbol sequence.
     σ2 : scalar
         Noise variance.
-    constSymb : (M, 1) np.array
+    constSymb : (M,) np.array
         Constellation symbols.
-    pX : (M, 1) np.array
-        prob. mass function (p.m.f.) of the constellation symbols.
+    pX : (M,) np.array
+        Prob. mass function (p.m.f.) of the constellation symbols.
 
     Returns
     -------
     scalar
         Estimated mutual information.
-
-    References
-    ----------
-    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
-
     """
     N = len(rx)
-    H_XgY = np.zeros(1, dtype=np.float64)
-    H_X = np.sum(-pX * np.log2(pX))
+    H_XgY = 0.0
+
+    # Unconditional Entropy H(X)
+    H_X = np.sum(-pX * np.log2(np.maximum(pX, 1e-50)))
+
+    # Dimensionality Toggle: Adjust variance scale based on data type
+    is_real = not (np.iscomplexobj(rx) or np.iscomplexobj(constSymb))
+    var_scale = 2.0 * σ2 if is_real else σ2
 
     for k in range(N):
+        # Index of the actually transmitted symbol
         indSymb = np.argmin(np.abs(tx[k] - constSymb))
 
-        log2_pYgX = (
-            -(1 / σ2) * np.abs(rx[k] - tx[k]) ** 2 * np.log2(np.exp(1))
-        )  # log2 p(Y|X)
-        # print('pYgX:', pYgX)
-        pXY = (
-            np.exp(-(1 / σ2) * np.abs(rx[k] - constSymb) ** 2) * pX
-        )  # p(Y,X) = p(Y|X)*p(X)
-        # print('pXY:', pXY)
-        # p(X|Y) = p(Y|X)*p(X)/p(Y), where p(Y) = sum(q(Y|X)*p(X)) in X
+        # log2 p(Y|X) for the transmitted symbol
+        log2_pYgX = -(1.0 / var_scale) * np.abs(rx[k] - tx[k]) ** 2 * np.log2(np.exp(1))
 
+        # p(Y) = sum_x( p(Y|X=x)*p(X=x) ) over all constellation points
+        pXY = np.exp(-(1.0 / var_scale) * np.abs(rx[k] - constSymb) ** 2) * pX
         pY = np.sum(pXY)
 
-        # print('pY:', pY)
-        H_XgY -= log2_pYgX + np.log2(pX[indSymb]) - np.log2(pY)
+        # H(X|Y) Accumulation: -( log2(p(Y|X)) + log2(p(X)) - log2(p(Y)) )
+        # Using max() to prevent log2(0) underflow at very high SNRs
+        H_XgY -= log2_pYgX + np.log2(pX[indSymb]) - np.log2(max(pY, 1e-300))
+
     H_XgY = H_XgY / N
 
     return H_X - H_XgY
@@ -686,7 +712,7 @@ def theoryBER(M, EbN0, constType):
     return Pb
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def condEntropy(yI, yQ, const, pX, ind, σ):
     """
     Calculate conditional entropy :math:`H(X|Y=y)` for the DCMC AWGN channel.
@@ -736,7 +762,7 @@ def condEntropy(yI, yQ, const, pX, ind, σ):
         1 / (2 * π * σ**2) * np.exp(-((yI - xI) ** 2 + (yQ - xQ) ** 2) / (2 * σ**2))
     )
 
-    int1 = expTerm * np.log2(max([expTerm, 1e-50]))  # p(Y|X)*log2(p(Y|X))
+    int1 = expTerm * np.log2(max(expTerm, 1e-50))  # p(Y|X)*log2(p(Y|X))
 
     int2 = expTerm * np.log2(pX[ind])  # p(Y|X)*log2(p(X))
 
@@ -797,14 +823,17 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
     ----------
     [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
     """
-    constSymb = grayMapping(M, constType)  # get constellation
-    Es = signalPower(constSymb)  # calculate average symbol energy
-    constSymb = constSymb / np.sqrt(Es)  # normalize average symbol energy
-
-    σ = np.sqrt((1 / 2) * 1 / dB2lin(SNR))  # noise variance per dimension
-
     if pX is None:
         pX = 1 / M * np.ones(M)
+
+    constSymb = grayMapping(M, constType)  # get constellation
+    Es = np.sum(np.abs(constSymb) ** 2 * pX)  # calculate average symbol energy
+    constSymb = constSymb / np.sqrt(Es)  # normalize average symbol energy
+
+    if constType in ["pam", "ook"]:
+        σ = np.sqrt(1 / dB2lin(SNR))  # noise std per dimension
+    else:
+        σ = np.sqrt((1 / 2) * 1 / dB2lin(SNR))  # noise std per dimension
 
     MI = -np.sum(pX * np.log2(pX))
 
@@ -846,6 +875,262 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
             )[0]
 
     return MI
+
+
+def theoryGMI(M, constType, SNR, bitMap=None, pX=None, lim=None, tol=1e-3):
+    """
+    Calculate generalized mutual information (GMI) for discrete input continuous output the memoryless AWGN channel (DCMC).
+
+    Parameters
+    ----------
+    M : int
+        Number of symbols in the constellation.
+    constType : str
+        Type of constellation ('qam', 'psk').
+    SNR : float
+        Signal-to-noise ratio in dB.
+    bitMap : array_like
+        Bit mapping of the constellation symbols (shape: M x log2(M)).
+    pX : array_like, optional
+        Probability of each transmitted symbol (default is None).
+    lim : float, optional
+        Limit for numerical integration (default is np.inf).
+    tol : float, optional
+        Tolerance for numerical integration error (default is 1e-3).
+
+    Returns
+    -------
+    float
+        Theoretical GMI for the given parameters.
+
+    References
+    ----------
+    [1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.
+    """
+    # if pX is not provided, assume uniform distribution
+    if pX is None:
+        pX = np.ones(M) / M
+
+    constSymb = grayMapping(M, constType)
+    b = int(np.log2(M))
+
+    # if bitMap is not provided, consider Gray mapping
+    if bitMap is None:
+        bitMap = dec2bitarray(np.arange(len(constSymb)), b)
+        bitMap = bitMap.reshape(-1, b)
+
+    Es = np.sum(np.abs(constSymb) ** 2 * pX)
+    constSymb = constSymb / np.sqrt(Es)
+
+    if constType in ["pam", "ook"]:
+        σ = np.sqrt(1 / dB2lin(SNR))
+    else:
+        σ = np.sqrt((1 / 2) * 1 / dB2lin(SNR))
+
+    if lim is None:
+        lim = np.max(np.abs(constSymb)) + 6 * σ
+
+    GMI = 0.0
+
+    if constType in ["pam", "ook"]:
+        is1D = True
+    else:
+        is1D = False
+
+    # Iterate over each parallel bit channel
+    for i in range(b):
+        #  Marginal bit probabilities P(B_i = 0) and P(B_i = 1)
+        pB0 = np.sum(pX[bitMap[:, i] == 0])
+        pB1 = np.sum(pX[bitMap[:, i] == 1])
+
+        # Bit entropy H(B_i)
+        Hb = 0.0
+        if pB0 > 0:
+            Hb -= pB0 * np.log2(max(pB0, 1e-50))
+        if pB1 > 0:
+            Hb -= pB1 * np.log2(max(pB1, 1e-50))
+
+        if is1D:
+            # Conditional entropy H(B_i | Y) via numerical integration (1D case)
+            H_b_y = quad(
+                condEntropyBit1D,
+                -lim,
+                lim,
+                args=(constSymb.real, bitMap, pX, i, σ),
+                epsabs=tol,
+            )[0]
+        else:
+            # Conditional entropy H(B_i | Y) via numerical integration
+            H_b_y = dblquad(
+                condEntropyBit2D,
+                -lim,
+                lim,
+                -lim,
+                lim,
+                args=(constSymb, bitMap, pX, i, σ),
+                epsabs=tol,
+            )[0]
+
+        # Accumulate I(B_i; Y)
+        GMI += Hb - H_b_y
+
+    return GMI
+
+
+@njit(cache=True)
+def condEntropyBit2D(yI, yQ, const, bitMap, pX, i, σ):
+    """
+    Calculate conditional bit entropy :math:`H(B_i|Y=y)` for the DCMC AWGN channel
+
+    Parameters
+    ----------
+    yI, yQ : float
+        Real and imaginary parts of the received signal Y.
+    const : array_like
+        Constellation of complex-valued transmitted symbols.
+    bitMap : array_like
+        Bit mapping matrix of shape (M, q).
+    pX : array_like
+        Probability of each transmitted symbol.
+    i : int
+        Index of the bit channel being evaluated.
+    σ : float
+        Standard deviation of the Gaussian noise.
+
+    Returns
+    -------
+    float
+        conditional bit entropy :math:`H(B_i|Y=y)` for the given bit channel.
+    """
+    π = np.pi
+    M = len(const)
+
+    # Accumulate joint probabilities for B_i = 0 and B_i = 1
+    p_y_b0 = 0.0
+    p_y_b1 = 0.0
+    pB0 = 0.0
+    pB1 = 0.0
+
+    for ii in prange(M):
+        xI = const[ii].real
+        xQ = const[ii].imag
+
+        # Joint probability p(y, x) = p(y|x) * p(x)
+        p_y_x = (
+            1
+            / (2 * π * σ**2)
+            * np.exp(-((yI - xI) ** 2 + (yQ - xQ) ** 2) / (2 * σ**2))
+            * pX[ii]
+        )
+
+        if bitMap[ii, i] == 0:
+            p_y_b0 += p_y_x
+            pB0 += pX[ii]
+        else:
+            p_y_b1 += p_y_x
+            pB1 += pX[ii]
+
+    # Total probability p(y)
+    p_y = p_y_b0 + p_y_b1
+    log2pY = np.log2(max([p_y, 1e-50]))
+
+    entropy = 0.0
+
+    # Compute integrand for B_i = 0
+    if pB0 > 0:
+        expTermB0 = p_y_b0 / pB0  # p(Y | B_i=0)
+
+        int1_b0 = expTermB0 * np.log2(
+            max([expTermB0, 1e-50])
+        )  # p(Y|B_0)*log2(p(Y|B_0))
+        int2_b0 = expTermB0 * np.log2(pB0)  # p(Y|B_0)*log2(p(B_0))
+        int3_b0 = expTermB0 * log2pY  # p(Y|B_0)*log2(p(Y))
+
+        entropy += -(int1_b0 + int2_b0 - int3_b0) * pB0
+
+    # Compute integrand for B_i = 1
+    if pB1 > 0:
+        expTermB1 = p_y_b1 / pB1  # p(Y | B_i=1)
+
+        int1_b1 = expTermB1 * np.log2(
+            max([expTermB1, 1e-50])
+        )  # p(Y|B_1)*log2(p(Y|B_1))
+        int2_b1 = expTermB1 * np.log2(pB1)  # p(Y|B_1)*log2(p(B_1))
+        int3_b1 = expTermB1 * log2pY  # p(Y|B_1)*log2(p(Y))
+
+        entropy += -(int1_b1 + int2_b1 - int3_b1) * pB1
+
+    return entropy  # sum over bits of p(Y, B_i) * log2(p(Y|B_i)p(B_i)/p(Y))
+
+
+@njit(cache=True)
+def condEntropyBit1D(y, const, bitMap, pX, i, σ):
+    """
+    Calculate conditional bit entropy :math:`H(B_i|Y=y)` for the DCMC AWGN channel (1D case).
+
+    Parameters
+    ----------
+    y : float
+        Received signal Y (real).
+    const : array_like
+        Constellation of transmitted symbols.
+    bitMap : array_like
+        Bit mapping matrix of shape (M, q).
+    pX : array_like
+        Probability of each transmitted symbol.
+    i : int
+        Index of the bit channel being evaluated.
+    σ : float
+        Standard deviation of the Gaussian noise.
+
+    Returns
+    -------
+    float
+        conditional bit entropy :math:`H(B_i|Y=y)` for the given bit channel (1D case).
+    """
+    π = np.pi
+    M = len(const)
+
+    p_y_b0 = 0.0
+    p_y_b1 = 0.0
+    pB0 = 0.0
+    pB1 = 0.0
+
+    # Normalization factor for the Gaussian PDF
+    normFactor = 1.0 / np.sqrt(2 * π * σ**2)
+
+    for ii in prange(M):
+        x = const[ii]
+
+        # PDF Gaussiana 1D
+        p_y_x = normFactor * np.exp(-((y - x) ** 2) / (2 * σ**2)) * pX[ii]
+
+        if bitMap[ii, i] == 0:
+            p_y_b0 += p_y_x
+            pB0 += pX[ii]
+        else:
+            p_y_b1 += p_y_x
+            pB1 += pX[ii]
+
+    p_y = p_y_b0 + p_y_b1
+    log2pY = np.log2(max(p_y, 1e-50))
+    entropy = 0.0
+
+    if pB0 > 0:
+        expTermB0 = p_y_b0 / pB0
+        int1_b0 = expTermB0 * np.log2(max(expTermB0, 1e-50))
+        int2_b0 = expTermB0 * np.log2(pB0)
+        int3_b0 = expTermB0 * log2pY
+        entropy += -(int1_b0 + int2_b0 - int3_b0) * pB0
+
+    if pB1 > 0:
+        expTermB1 = p_y_b1 / pB1
+        int1_b1 = expTermB1 * np.log2(max(expTermB1, 1e-50))
+        int2_b1 = expTermB1 * np.log2(pB1)
+        int3_b1 = expTermB1 * log2pY
+        entropy += -(int1_b1 + int2_b1 - int3_b1) * pB1
+
+    return entropy
 
 
 def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
