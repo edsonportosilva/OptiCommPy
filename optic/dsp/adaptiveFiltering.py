@@ -1424,21 +1424,20 @@ def coreAdaptEqBlockFD(
         bEnd = min(bStart + Lb, L)
         LbCur = bEnd - bStart
  
-        # --- coefficients frozen at the start of the block ---
+        # coefficients frozen at the start of the block ---
         Hb3 = H3.copy()
         Hb3_ = H3_.copy() if runWL else H3_
  
         globalStart = bStart * SpS
  
-        # --- overlap-and-save window (zero-padded near the end of sigIn) ---
+        # overlap-and-save window (zero-padded near the end of sigIn) ---
         xWin = np.zeros((Nfft, nModes), dtype=prec)
         nAvail = min(Nfft, max(0, nSampAvail - globalStart))
         if nAvail > 0:
             xWin[:nAvail, :] = sigIn[globalStart : globalStart + nAvail, :]
  
-        # ==================================================================
-        # STEP 1 — filtering: MIMO overlap-and-save via a single batched FFT
-        # ==================================================================
+        
+        # MIMO overlap-and-save via a single batched FFT        
         # Spectrum of every input mode, computed in one call (each column of
         # xWin is transformed independently): Xf[N, :] = FFT{x_N}.
         Xf = fft(xWin, Nfft, axis=0).T  # (nModes, Nfft)
@@ -1473,9 +1472,7 @@ def coreAdaptEqBlockFD(
  
         symbRefBlock = symbRef[bStart:bEnd, :]
  
-        # ==================================================================
-        # STEP 2 — coefficient update
-        # ==================================================================
+        # Coefficient updates
         if alg in ("nlms", "cma", "dd-lms", "rde", "da-rde"):
             # error-like quantity, decimated rate — matches exactly what
             # each *UpBlock computes before correlating it with the input
