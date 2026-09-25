@@ -26,10 +26,9 @@ from tqdm.notebook import tqdm
 from optic.comm.modulation import grayMapping
 from optic.dsp.adaptiveFiltering import (
     complexValuedDFECore,
-    complexValuedFFECore,
-    coreAdaptEq,
-    coreAdaptEqBlock,
-    coreAdaptEqFD,
+    complexValuedFFECore,    
+    coreAdaptEqBlockTD,
+    coreAdaptEqBlockFD,
     realValuedDFECore,
     realValuedFFECore,
     volterraCore,
@@ -213,6 +212,7 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
     prec = getattr(param, "prec", np.complex64)
     domain = getattr(param, "domain", "time")
     Nfft = getattr(param, "Nfft", 64)
+    blockSize = getattr(param, "blockSize", 1)
 
     # We want all the signal sequences to be disposed in columns:
     if not len(symbRef):
@@ -258,20 +258,20 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
             totalNumSymb
         ]  # Length of the output (1 sample/symbol) of the training section
     if not H:  # if H is not defined
-        if domain in ["time", "time-block"]:
+        if domain in ["time"]:
             H = np.zeros((nModes**2, nTaps), dtype=prec)
             for initH in range(nModes):  # initialize filters' taps
                 H[initH + initH * nModes, int(np.floor(H.shape[1] / 2))] = (
                     1 + 1j * 0  # Central spike initialization
                 )
-        elif domain == "freq":
-            H = np.zeros((nModes**2, Nfft), dtype=prec)
+        elif domain in ["freq"]:
+            H = np.zeros((nModes**2, nTaps), dtype=prec)
 
             for initH in range(nModes):  # initialize filters' taps
                 H[initH + initH * nModes, int(np.floor(H.shape[1] / 2))] = (
                     1 + 1j * 0  # Central spike initialization
                 )
-            H = fft(H, n=Nfft, axis=1)  # FFT of the filters' taps
+            # H = fft(H, n=Nfft, axis=1)  # FFT of the filters' taps
     if not H_:  # if H_ is not defined
         H_ = np.zeros((nModes**2, nTaps), dtype=prec)
 
@@ -292,9 +292,29 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
                     logg.info(
                         f"{runAlg} pre-convergence training iteration #%d", indIter
                     )
-                    if domain == "time":
+                    if domain == "freq":
                         sigOut[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = (
-                            coreAdaptEq(
+                            coreAdaptEqBlockFD(
+                                sigIn[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
+                                symbRef[nStart:nEnd, :],
+                                SpS,
+                                H,
+                                H_,
+                                L[indstage],
+                                mu[indstage],
+                                lambdaRLS,
+                                nTaps,
+                                storeCoeff,
+                                runWL,                                
+                                runAlg,
+                                constSymb,
+                                prec,
+                                Nfft,
+                            )
+                        )
+                    elif domain == "time":
+                        sigOut[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = (
+                            coreAdaptEqBlockTD(
                                 sigIn[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
                                 symbRef[nStart:nEnd, :],
                                 SpS,
@@ -309,52 +329,36 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
                                 runAlg,
                                 constSymb,
                                 prec,
-                            )
-                        )
-                    elif domain == "freq":
-                        sigOut[nStart:nEnd, :], H, errSq[:, nStart:nEnd], Hiter = (
-                            coreAdaptEqFD(
-                                sigIn[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
-                                symbRef[nStart:nEnd, :],
-                                SpS,
-                                H,
-                                L[indstage],
-                                mu[indstage],
-                                nTaps,
-                                Nfft,
-                                storeCoeff,
-                                runAlg,
-                                constSymb,
-                                prec=np.complex128,
-                            )
-                        )
-                    elif domain == "time-block":
-                        sigOut[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = (
-                            coreAdaptEqBlock(
-                                sigIn[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
-                                symbRef[nStart:nEnd, :],
-                                SpS,
-                                H,
-                                H_,
-                                L[indstage],
-                                mu[indstage],
-                                lambdaRLS,
-                                nTaps,
-                                storeCoeff,
-                                runWL,
-                                runAlg,
-                                constSymb,
-                                prec,
-                                Nfft,
+                                blockSize,
                             )
                         )
                     logg.info(
                         f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]).real
                     )
             else:
-                if domain == "time":
+                if domain == "freq":
                     sigOut[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = (
-                        coreAdaptEq(
+                        coreAdaptEqBlockFD(
+                            sigIn[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
+                            symbRef[nStart:nEnd, :],
+                            SpS,
+                            H,
+                            H_,
+                            L[indstage],
+                            mu[indstage],
+                            lambdaRLS,
+                            nTaps,                            
+                            storeCoeff,
+                            runWL,
+                            runAlg,
+                            constSymb,
+                            prec,
+                            Nfft,
+                        )
+                    )
+                elif domain == "time":
+                    sigOut[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = (
+                        coreAdaptEqBlockTD(
                             sigIn[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
                             symbRef[nStart:nEnd, :],
                             SpS,
@@ -369,43 +373,7 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
                             runAlg,
                             constSymb,
                             prec,
-                        )
-                    )
-                elif domain == "freq":
-                    sigOut[nStart:nEnd, :], H, errSq[:, nStart:nEnd], Hiter = (
-                        coreAdaptEqFD(
-                            sigIn[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
-                            symbRef[nStart:nEnd, :],
-                            SpS,
-                            H,
-                            L[indstage],
-                            mu[indstage],
-                            nTaps,
-                            Nfft,
-                            storeCoeff,
-                            runAlg,
-                            constSymb,
-                            prec=np.complex128,
-                        )
-                    )
-                elif domain == "time-block":
-                    sigOut[nStart:nEnd, :], H, H_, errSq[:, nStart:nEnd], Hiter = (
-                        coreAdaptEqBlock(
-                            sigIn[nStart * SpS : (nEnd + 2 * Lpad) * SpS, :],
-                            symbRef[nStart:nEnd, :],
-                            SpS,
-                            H,
-                            H_,
-                            L[indstage],
-                            mu[indstage],
-                            lambdaRLS,
-                            nTaps,
-                            storeCoeff,
-                            runWL,
-                            runAlg,
-                            constSymb,
-                            prec,
-                            Nfft,
+                            blockSize,
                         )
                     )
                     logg.info(
@@ -415,8 +383,26 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
     else:
         for indIter in tqdm(range(numIter), disable=not (prgsBar)):
             logg.info(f"{alg}training iteration #%d", indIter)
-            if domain == "time":
-                sigOut, H, H_, errSq, Hiter = coreAdaptEq(
+            if domain == "freq":
+                sigOut, H, H_, errSq, Hiter = coreAdaptEqBlockFD(
+                    sigIn,
+                    symbRef,
+                    SpS,
+                    H,
+                    H_,
+                    L,
+                    mu,
+                    lambdaRLS,
+                    nTaps,                    
+                    storeCoeff,
+                    runWL,
+                    alg,
+                    constSymb,
+                    prec,
+                    Nfft,
+                )
+            elif domain == "time":
+                sigOut, H, H_, errSq, Hiter = coreAdaptEqBlockTD(
                     sigIn,
                     symbRef,
                     SpS,
@@ -431,39 +417,7 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
                     alg,
                     constSymb,
                     prec,
-                )
-            elif domain == "freq":
-                sigOut, H, errSq, Hiter = coreAdaptEqFD(
-                    sigIn,
-                    symbRef,
-                    SpS,
-                    H,
-                    L,
-                    mu,
-                    nTaps,
-                    Nfft,
-                    storeCoeff,
-                    runAlg,
-                    constSymb,
-                    prec=np.complex128,
-                )
-            elif domain == "time-block":
-                sigOut, H, H_, errSq, Hiter = coreAdaptEqBlock(
-                    sigIn,
-                    symbRef,
-                    SpS,
-                    H,
-                    H_,
-                    L,
-                    mu,
-                    lambdaRLS,
-                    nTaps,
-                    storeCoeff,
-                    runWL,
-                    alg,
-                    constSymb,
-                    prec,
-                    Nfft,
+                    blockSize,
                 )
             logg.info(f"{alg}MSE = %.6f.", np.nanmean(errSq).real)
 
