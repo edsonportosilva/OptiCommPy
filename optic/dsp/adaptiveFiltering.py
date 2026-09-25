@@ -1424,13 +1424,13 @@ def coreAdaptEqBlockFD(
         bEnd = min(bStart + Lb, L)
         LbCur = bEnd - bStart
  
-        # coefficients frozen at the start of the block ---
+        # coefficients frozen at the start of the block
         Hb3 = H3.copy()
         Hb3_ = H3_.copy() if runWL else H3_
  
         globalStart = bStart * SpS
  
-        # overlap-and-save window (zero-padded near the end of sigIn) ---
+        # overlap-and-save window (zero-padded near the end of sigIn)
         xWin = np.zeros((Nfft, nModes), dtype=prec)
         nAvail = min(Nfft, max(0, nSampAvail - globalStart))
         if nAvail > 0:
