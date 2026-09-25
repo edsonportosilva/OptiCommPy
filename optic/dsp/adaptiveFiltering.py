@@ -1333,7 +1333,7 @@ def coreAdaptEqBlockFD(
     overlap-and-save). The rows are time-reversed (rather than used as-is)
     because, unlike a conventional causal FIR filter, this equalizer has no
     group delay: output symbol `ind` is formed from input samples `ind*SpS`
-    up to `ind*SpS + nTaps - 1` (`coreAdaptEqBlock`'s `indIn = indTaps +
+    up to `ind*SpS + nTaps - 1` (`coreAdaptEqBlockTD`'s `indIn = indTaps +
     ind*SpS`), i.e. it looks *forward* rather than backward in time.
  
     The remaining `Nvalid = Nfft - nTaps + 1` samples of the discarded-first
@@ -1357,10 +1357,8 @@ def coreAdaptEqBlockFD(
     **Adaptation — FFT correlation theorem (LMS family only).** The tap
     update of any LMS-type algorithm (`nlms`, `cma`, `dd-lms`, `rde`,
     `da-rde`) is, at its core, a cross-correlation between an "error-like"
-    signal and the equalizer input, evaluated at lags `t = 0..nTaps-1`
-    (that is exactly what the time-domain `*UpBlock` functions in
-    `blockUpdateFunctions.py` compute via a matrix product). The FFT
-    correlation theorem lets that correlation be computed for all `nTaps`
+    signal and the equalizer input, evaluated at lags `t = 0..nTaps-1`.
+    The FFT correlation theorem lets that correlation be computed for all `nTaps`
     lags at once from two spectra instead of a `Lb x nTaps` time-domain sum:
     `corr(a, b)[t] = sum_n a[n] conj(b[n+t]) = conj(IFFT(conj(FFT(a)) *
     FFT(b)))[t]`. Since the error only exists at the (sparsely spaced)
@@ -1377,7 +1375,7 @@ def coreAdaptEqBlockFD(
     matrix-inversion-lemma step that is inherently sequential and has no
     simple frequency-domain form, so these two algorithms still build
     `sigInBlock` and call the shared `rlsUpBlock`/`ddrlsUpBlock`, exactly as
-    `coreAdaptEqBlock` does. `static` performs no adaptation at all.
+    `coreAdaptEqBlockTD` does. `static` performs no adaptation at all.
     """
     nModes = sigIn.shape[1]
     indTaps = np.arange(nTaps)
