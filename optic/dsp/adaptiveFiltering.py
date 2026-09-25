@@ -734,10 +734,6 @@ def coreAdaptEqBlock(
     else:
         Hiter = np.zeros((nModes**2, nTaps, 1), dtype=prec)
 
-    # Sd é sempre alocado (mesmo quando o algoritmo não é RLS/DD-RLS) para
-    # que seu tipo fique bem definido em todo caminho do código — evita
-    # falha de inferência de tipos do Numba (variável usada apenas em
-    # alguns ramos do laço, mas não em todos, na visão estática do Numba).
     Sd = np.eye(nTaps, dtype=prec)
     aux = Sd.copy()
     for _ in range(nTaps - 1):
@@ -760,9 +756,6 @@ def coreAdaptEqBlock(
         Hb = H.copy()
         Hb_ = H_.copy()
 
-        # índices de amostras de entrada usados por cada instante do bloco,
-        # construídos com laços explícitos (evita fancy indexing 2D->3D e
-        # broadcasting via None, que o Numba não suporta bem)
         indInBlock = np.zeros((Lb, nTaps), dtype=np.int64)
         for k in range(Lb):
             ind = bStart + k
@@ -776,7 +769,7 @@ def coreAdaptEqBlock(
                 for m in range(nModes):
                     sigInBlock[k, t, m] = sigIn[idx, m]
 
-        # --- passo 1: cálculo da saída do bloco com H fixo ---
+        # compute equalizer output for the block
         outBlock = np.zeros((Lb, nModes), dtype=prec)
         for N in range(nModes):
             inEqBlock = sigInBlock[:, :, N]  # (Lb, nTaps)
@@ -788,7 +781,7 @@ def coreAdaptEqBlock(
             for m in range(nModes):
                 sigOut[bStart + k, m] = outBlock[k, m]
 
-        # --- passo 2: atualização de coeficientes, uma vez por bloco ---
+        # update equalizer taps according to the specified algorithm and save squared error
         symbRefBlock = symbRef[bStart:bEnd, :]
 
         if alg == "nlms":
@@ -820,20 +813,14 @@ def coreAdaptEqBlock(
                 sigInBlock, constSymb, outBlock, lambdaRLS, H, Sd, nModes, prec
             )
         elif alg == "static":
-            # constrói errBlock a partir de uma operação sobre outBlock (em
-            # vez de np.zeros(...) com dtype/layout fixos) para garantir
-            # exatamente o mesmo dtype real (float32/float64, conforme
-            # `prec`) e o mesmo layout ('F', por causa do .T) dos demais
-            # ramos — o Numba exige que todos os ramos que definem a mesma
-            # variável produzam um tipo de array unificável
-            errTemplate = np.abs(outBlock) ** 2  # (Lb, nModes), dtype real de `prec`
+            errTemplate = np.abs(outBlock) ** 2
             errTemplate[:, :] = 0.0
             if bStart > 0:
                 for m in range(nModes):
                     prevVal = errSq[m, bStart - 1]
                     for k in range(Lb):
                         errTemplate[k, m] = prevVal
-            errBlock = errTemplate.T  # (nModes, Lb), layout 'F' como nos outros ramos
+            errBlock = errTemplate.T
         else:
             raise ValueError(
                 "Equalization algorithm not specified (or incorrectly specified)."
@@ -844,8 +831,6 @@ def coreAdaptEqBlock(
                 errSq[m, bStart + k] = errBlock[m, k]
 
         if storeCoeff:
-            # coeficientes só mudam na fronteira do bloco: replica o H
-            # vigente (pós-atualização) para todas as amostras do bloco
             for k in range(Lb):
                 Hiter[:, :, bStart + k] = H
         else:
@@ -857,18 +842,37 @@ def coreAdaptEqBlock(
 @njit(fastmath=True)
 def nlmsUpBlock(sigInBlock, symbRefBlock, outEqBlock, mu, H, H_, nModes, runWL, prec):
     """
-    Atualização de coeficientes por bloco - algoritmo NLMS.
+    NLMS coefficient update for block processing.
 
-    Equivale a somar as Lb atualizações de gradiente NLMS (cada uma
-    normalizada pela potência de entrada daquela amostra, como no algoritmo
-    original) e aplicá-las de uma só vez ao final do bloco.
+    Parameters
+    ----------
+    sigInBlock : np.array
+        Input signal block.
+    symbRefBlock : np.array
+        Reference symbol block.
+    outEqBlock : np.array
+        Equalized output block.
+    mu : float
+        Step size for the update.
+    H : np.array
+        Coefficient matrix.
+    H_ : np.array
+        Augmented coefficient matrix.
+    nModes : int
+        Number of modes.
+    runWL: bool
+        Run widely-linear mode.
+    prec: data type
+        Precision of the computations [default: np.complex64].
 
     Returns
     -------
-    H, H_ : np.array
-        Matrizes de coeficientes atualizadas.
-    errSq : np.array, shape (nModes, Lb)
-        Erro quadrático absoluto de cada amostra do bloco.
+    H : np.array
+        Updated coefficient matrix.
+    H_ : np.array
+        Updated augmented coefficient matrix.
+    errSq : np.array
+        Squared absolute error for the block.
     """
     Lb = sigInBlock.shape[0]
     nTaps = H.shape[1]
@@ -896,7 +900,37 @@ def nlmsUpBlock(sigInBlock, symbRefBlock, outEqBlock, mu, H, H_, nModes, runWL, 
 @njit(fastmath=True)
 def ddlmsUpBlock(sigInBlock, constSymb, outEqBlock, mu, H, H_, nModes, runWL, prec):
     """
-    Atualização de coeficientes por bloco - algoritmo DD-LMS.
+    DD-LMS coefficient update for block processing.
+
+    Parameters
+    ----------
+    sigInBlock : np.array
+        Input signal block.
+    constSymb : np.array
+        Array of constellation symbols.
+    outEqBlock : np.array
+        Equalized output block.
+    mu : float
+        Step size for the update.
+    H : np.array
+        Coefficient matrix.
+    H_ : np.array
+        Augmented coefficient matrix.
+    nModes : int
+        Number of modes.
+    runWL: bool
+        Run widely-linear mode.
+    prec: data type
+        Precision of the computations [default: np.complex64].
+
+    Returns
+    -------
+    H : np.array
+        Updated coefficient matrix.
+    H_ : np.array
+        Updated augmented coefficient matrix.
+    errSq : np.array
+        Squared absolute error for the block.
     """
     Lb = sigInBlock.shape[0]
     indMode = np.arange(0, nModes)
@@ -923,7 +957,37 @@ def ddlmsUpBlock(sigInBlock, constSymb, outEqBlock, mu, H, H_, nModes, runWL, pr
 @njit(fastmath=True)
 def cmaUpBlock(sigInBlock, R, outEqBlock, mu, H, H_, nModes, runWL, prec):
     """
-    Atualização de coeficientes por bloco - algoritmo CMA.
+    CMA coefficient update for block processing.
+
+    Parameters
+    ----------
+    sigInBlock : np.array
+        Input signal block.
+    R : np.array
+        Correlation array.
+    outEqBlock : np.array
+        Equalized output block.
+    mu : float
+        Step size for the update.
+    H : np.array
+        Coefficient matrix.
+    H_ : np.array
+        Augmented coefficient matrix.
+    nModes : int
+        Number of modes.
+    runWL: bool
+        Run widely-linear mode.
+    prec: data type
+        Precision of the computations [default: np.complex64].
+
+    Returns
+    -------
+    H : np.array
+        Updated coefficient matrix.
+    H_ : np.array
+        Updated augmented coefficient matrix.
+    errSq : np.array
+        Squared absolute error for the block.
     """
     indMode = np.arange(0, nModes)
 
@@ -945,7 +1009,37 @@ def cmaUpBlock(sigInBlock, R, outEqBlock, mu, H, H_, nModes, runWL, prec):
 @njit(fastmath=True)
 def rdeUpBlock(sigInBlock, R, outEqBlock, mu, H, H_, nModes, runWL, prec):
     """
-    Atualização de coeficientes por bloco - algoritmo RDE.
+    RDE coefficient update for block processing.
+
+    Parameters
+    ----------
+    sigInBlock : np.array
+        Input signal block.
+    R : np.array
+        Constellation radius array.
+    outEqBlock : np.array
+        Equalized output block.
+    mu : float
+        Step size for the update.
+    H : np.array
+        Coefficient matrix.
+    H_ : np.array
+        Augmented coefficient matrix.
+    nModes : int
+        Number of modes.
+    runWL: bool
+        Run widely-linear mode.
+    prec: data type
+        Precision of the computations [default: np.complex64].
+
+    Returns
+    -------
+    H : np.array
+        Updated coefficient matrix.
+    H_ : np.array
+        Updated augmented coefficient matrix.
+    errSq : np.array
+        Squared absolute error for the block.
     """
     Lb = sigInBlock.shape[0]
     indMode = np.arange(0, nModes)
@@ -974,7 +1068,37 @@ def rdeUpBlock(sigInBlock, R, outEqBlock, mu, H, H_, nModes, runWL, prec):
 @njit(fastmath=True)
 def dardeUpBlock(sigInBlock, refBlock, outEqBlock, mu, H, H_, nModes, runWL, prec):
     """
-    Atualização de coeficientes por bloco - algoritmo data-aided RDE.
+    Data-aided RDE coefficient update for block processing.
+
+    Parameters
+    ----------
+    sigInBlock : np.array
+        Input signal block.
+    refBlock : np.array
+        Reference symbol block.
+    outEqBlock : np.array
+        Equalized output block.
+    mu : float
+        Step size for the update.
+    H : np.array
+        Coefficient matrix.
+    H_ : np.array
+        Augmented coefficient matrix.
+    nModes : int
+        Number of modes.
+    runWL: bool
+        Run widely-linear mode.
+    prec: data type
+        Precision of the computations [default: np.complex64].
+
+    Returns
+    -------
+    H : np.array
+        Updated coefficient matrix.
+    H_ : np.array
+        Updated augmented coefficient matrix.
+    errSq : np.array
+        Squared absolute error for the block.
     """
     indMode = np.arange(0, nModes)
 
@@ -997,11 +1121,36 @@ def dardeUpBlock(sigInBlock, refBlock, outEqBlock, mu, H, H_, nModes, runWL, pre
 @njit(fastmath=True)
 def rlsUpBlock(sigInBlock, symbRefBlock, outEqBlock, λ, H, Sd, nModes, prec):
     """
-    Atualização de coeficientes por bloco - algoritmo RLS.
+    RLS coefficient update for block processing.
 
-    A matriz Sd (correlação inversa) continua evoluindo amostra a amostra
-    (laço interno, inevitável em RLS), mas o incremento resultante em H é
-    acumulado e aplicado uma única vez ao final do bloco.
+    Parameters
+    ----------
+    sigInBlock : np.array
+        Input signal block.
+    symbRefBlock : np.array
+        Reference symbol block.
+    outEqBlock : np.array
+        Equalized output block.
+    λ : float
+        Forgetting factor for the RLS algorithm.
+    H : np.array
+        Coefficient matrix.
+    Sd : np.array
+        Inverse correlation matrix.
+    nModes : int
+        Number of modes.
+    prec: data type
+        Precision of the computations [default: np.complex64].
+
+    Returns
+    -------
+    H : np.array
+        Updated coefficient matrix.
+    Sd : np.array
+        Updated inverse correlation matrix.
+    errSq : np.array
+        Squared absolute error for the block.
+
     """
     Lb = sigInBlock.shape[0]
     nTaps = H.shape[1]
@@ -1042,7 +1191,35 @@ def rlsUpBlock(sigInBlock, symbRefBlock, outEqBlock, λ, H, Sd, nModes, prec):
 @njit(fastmath=True)
 def ddrlsUpBlock(sigInBlock, constSymb, outEqBlock, λ, H, Sd, nModes, prec):
     """
-    Atualização de coeficientes por bloco - algoritmo DD-RLS.
+    DD-RLS coefficient update for block processing.
+
+    Parameters
+    ----------
+    sigInBlock : np.array
+        Input signal block.
+    constSymb : np.array
+        Array of constellation symbols.
+    outEqBlock : np.array
+        Equalized output block.
+    λ : float
+        Forgetting factor for the RLS algorithm.
+    H : np.array
+        Coefficient matrix.
+    Sd : np.array
+        Inverse correlation matrix.
+    nModes : int
+        Number of modes.
+    prec: data type
+        Precision of the computations [default: np.complex64].
+
+    Returns
+    -------
+    H : np.array
+        Updated coefficient matrix.
+    Sd : np.array
+        Updated inverse correlation matrix.
+    errSq : np.array
+        Squared absolute error for the block.
     """
     Lb = sigInBlock.shape[0]
     nTaps = H.shape[1]
