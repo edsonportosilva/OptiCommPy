@@ -210,8 +210,8 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
     prgsBar = getattr(param, "prgsBar", True)
     returnResults = getattr(param, "returnResults", False)
     prec = getattr(param, "prec", np.complex64)
-    domain = getattr(param, "domain", "time")
-    Nfft = getattr(param, "Nfft", 64)
+    domain = getattr(param, "domain", "freq")
+    Nfft = getattr(param, "Nfft", 128)
     blockSize = getattr(param, "blockSize", 1)
 
     # We want all the signal sequences to be disposed in columns:
