@@ -211,11 +211,14 @@ def iqm(Ei, u, param=None):
     paramQ.ER = ERQ
 
     # Calculate MZMs outputs
-    EoI = mzm(Ei / np.sqrt(2), u.real, paramI)
-    EoQ = mzm(Ei / np.sqrt(2), u.imag, paramQ)
+    Ei_ = Ei / np.sqrt(2)  # split the input field between the I and Q branches
+
+    EoI = mzm(Ei_, u.real, paramI)
+    EoQ = mzm(Ei_, u.imag, paramQ)
 
     # Combine I and Q branches with the PM rotation to get the IQM output
-    Eo = EoI + pm(EoQ, Vphi * np.ones(u.shape), Vpi)
+    # (the PM bias Vphi is constant, so its phase rotation is a scalar)
+    Eo = EoI + calcPM(EoQ, Vpi, Vphi)
 
     return Eo
 
