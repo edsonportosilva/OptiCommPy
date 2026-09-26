@@ -1,25 +1,24 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="English">
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>optic.comm.modulation.apskConst &mdash; OptiCommPy alpha 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+  <title>optic.comm.modulation.apskConst &mdash; OptiCommPy 0.11.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f3b36f1a"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -38,9 +37,6 @@
           <a href="../index.html" class="icon icon-home">
             OptiCommPy
           </a>
-              <div class="version">
-                0.9
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -63,16 +59,24 @@
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.pamConst.html">optic.comm.modulation.pamConst</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.qamConst.html">optic.comm.modulation.qamConst</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.pskConst.html">optic.comm.modulation.pskConst</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.comm.modulation.apskConst</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.comm.modulation.apskConst</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optic.comm.modulation.apskConst"><code class="docutils literal notranslate"><span class="pre">apskConst</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.minEuclid.html">optic.comm.modulation.minEuclid</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.demap.html">optic.comm.modulation.demap</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.modulateGray.html">optic.comm.modulation.modulateGray</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.demodulateGray.html">optic.comm.modulation.demodulateGray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.detector.html">optic.comm.modulation.detector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.softMapper.html">optic.comm.modulation.softMapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.softEstimator.html">optic.comm.modulation.softEstimator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.comm.modulation.mlse.html">optic.comm.modulation.mlse</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../comm.html#metrics-for-signal-and-performance-characterization-optic-comm-metrics">Metrics for signal and performance characterization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.metrics</span></code>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../comm.html#sources-of-discrete-sequences-optic-comm-sources">Sources of discrete sequences (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.sources</span></code>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../comm.html#ofdm-utilities-optic-comm-ofdm">OFDM utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.ofdm</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../comm.html#forward-error-correction-fec-utilities-optic-comm-fec">Forward error correction (FEC) utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.fec</span></code>)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../dsp.html">Digital Signal Processing (DSP)</a></li>
@@ -107,27 +111,32 @@
            <div itemprop="articleBody">
              
   <section id="optic-comm-modulation-apskconst">
-<h1>optic.comm.modulation.apskConst<a class="headerlink" href="#optic-comm-modulation-apskconst" title="Permalink to this heading"></a></h1>
+<h1>optic.comm.modulation.apskConst<a class="headerlink" href="#optic-comm-modulation-apskconst" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.comm.modulation.apskConst">
-<span class="sig-name descname"><span class="pre">apskConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phaseOffset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.comm.modulation.apskConst" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">apskConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phaseOffset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/optic/comm/modulation.html#apskConst"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#optic.comm.modulation.apskConst" title="Link to this definition"></a></dt>
 <dd><p>Generate an Amplitude-Phase Shift Keying (APSK) constellation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>M</strong> (<em>int</em>) -- Constellation order.</p></li>
-<li><p><strong>m1</strong> (<em>int</em>) -- Number of bits used to index the radii of the constellation.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Constellation order.</p></li>
+<li><p><strong>m1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of bits used to index the radii of the constellation.</p></li>
+<li><p><strong>phaseOffset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Phase offset applied to each ring of the constellation [rad].
+The default is pi / symbolsPerRing.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>const</strong> -- APSK constellation</p>
+<dd class="field-even"><p><strong>const</strong> – APSK constellation</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>symbols per ring is determined by <span class="math notranslate nohighlight">\(m_2 = log_2(M) - m_1\)</span>, where <span class="math notranslate nohighlight">\(m_1\)</span> is the number of bits used to index the rings.
+If <span class="math notranslate nohighlight">\(m_1\)</span> is not provided, it is set based on M according to references [1] and [2].</p>
 <p class="rubric">References</p>
-<p>[1] Z. Liu, et al &quot;APSK Constellation with Gray Mapping,&quot; IEEE Communications Letters, vol. 15, no. 12, pp. 1271-1273, 2011.</p>
+<p>[1] Z. Liu, et al “APSK Constellation with Gray Mapping,” IEEE Communications Letters, vol. 15, no. 12, pp. 1271-1273, 2011.</p>
 <p>[2] Proakis, J. G., &amp; Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.</p>
 </dd></dl>
 
@@ -144,7 +153,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+    <p>&#169; Copyright 2023-2026, Edson P. da Silva, Adolfo F. Herbster.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

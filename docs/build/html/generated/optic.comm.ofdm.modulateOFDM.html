@@ -1,25 +1,22 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="English">
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>optic.comm.ofdm.modulateOFDM &mdash; OptiCommPy alpha 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+  <title>optic.comm.ofdm.modulateOFDM &mdash; OptiCommPy 0.11.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f3b36f1a"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -38,9 +35,6 @@
           <a href="../index.html" class="icon icon-home">
             OptiCommPy
           </a>
-              <div class="version">
-                0.9
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -64,10 +58,14 @@
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.ofdm.hermit.html">optic.comm.ofdm.hermit</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.ofdm.zeroPad.html">optic.comm.ofdm.zeroPad</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.ofdm.calcSymbolRate.html">optic.comm.ofdm.calcSymbolRate</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.comm.ofdm.modulateOFDM</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.comm.ofdm.modulateOFDM</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optic.comm.ofdm.modulateOFDM"><code class="docutils literal notranslate"><span class="pre">modulateOFDM</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="optic.comm.ofdm.demodulateOFDM.html">optic.comm.ofdm.demodulateOFDM</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../comm.html#forward-error-correction-fec-utilities-optic-comm-fec">Forward error correction (FEC) utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.fec</span></code>)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../dsp.html">Digital Signal Processing (DSP)</a></li>
@@ -102,23 +100,24 @@
            <div itemprop="articleBody">
              
   <section id="optic-comm-ofdm-modulateofdm">
-<h1>optic.comm.ofdm.modulateOFDM<a class="headerlink" href="#optic-comm-ofdm-modulateofdm" title="Permalink to this heading"></a></h1>
+<h1>optic.comm.ofdm.modulateOFDM<a class="headerlink" href="#optic-comm-ofdm-modulateofdm" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.comm.ofdm.modulateOFDM">
-<span class="sig-name descname"><span class="pre">modulateOFDM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.comm.ofdm.modulateOFDM" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">modulateOFDM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/optic/comm/ofdm.html#modulateOFDM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#optic.comm.ofdm.modulateOFDM" title="Link to this definition"></a></dt>
 <dd><p>Modulate OFDM signal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symb</strong> (<em>np.np.array</em>) -- Complex-valued array of modulation symbols representing the symbols sequence to be transmitted.</p></li>
-<li><p><strong>param</strong> (<em>optic.utils.parameters object</em>) -- <p>An object containing the parameters for OFDM modulation.
-- Nfft : scalar, optional. Size of the FFT. Default is 512.</p>
+<li><p><strong>symb</strong> (<em>np.np.array</em>) – Complex-valued array of modulation symbols representing the symbols sequence to be transmitted.</p></li>
+<li><p><strong>param</strong> (<em>optic.utils.parameters object</em><em>, </em><em>optional</em>) – <p>Parameters for OFDM modulation.</p>
 <ul>
-<li><p>G : scalar, optional. Cyclic prefix length. Default is 4.</p></li>
-<li><p>hermitSymmetry : bool, optional. If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.</p></li>
-<li><p>pilot : complex-valued scalar, optional. Pilot symbol. Default is 1 + 1j.</p></li>
-<li><p>pilotCarriers : np.array, optional. Indexes of pilot subcarriers. Default is an empty array.</p></li>
-<li><p>SpS : int, optional. Oversampling factor. Default is 2.</p></li>
+<li><p>param.Nfft : scalar, optional. Size of the FFT. [default: 512].</p></li>
+<li><p>param.G : scalar, optional. Cyclic prefix length. [default: 4].</p></li>
+<li><p>param.hermitSymmetry : bool, optional. If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. [default: False].</p></li>
+<li><p>param.pilot : complex-valued scalar, optional. Pilot symbol. [default: 1 + 1j].</p></li>
+<li><p>param.pilotCarriers : np.array, optional. Indexes of pilot subcarriers. [default: empty array].</p></li>
+<li><p>param.nullCarriers : np.array, optional. Indexes of null subcarriers. [default: empty array].</p></li>
+<li><p>param.SpS : int, optional. Oversampling factor. [default: 2].</p></li>
 </ul>
 </p></li>
 </ul>
@@ -147,7 +146,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+    <p>&#169; Copyright 2023-2026, Edson P. da Silva, Adolfo F. Herbster.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

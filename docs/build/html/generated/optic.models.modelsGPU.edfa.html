@@ -1,30 +1,27 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="English">
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>optic.models.modelsGPU.edfa &mdash; OptiCommPy alpha 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+  <title>optic.models.modelsGPU.edfa &mdash; OptiCommPy 0.11.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f3b36f1a"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="optic.models.tx.simpleWDMTx" href="optic.models.tx.simpleWDMTx.html" />
-    <link rel="prev" title="optic.models.modelsGPU.manakovSSF" href="optic.models.modelsGPU.manakovSSF.html" /> 
+    <link rel="prev" title="optic.models.modelsGPU.manakovDBP" href="optic.models.modelsGPU.manakovDBP.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -38,9 +35,6 @@
           <a href="../index.html" class="icon icon-home">
             OptiCommPy
           </a>
-              <div class="version">
-                0.9
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -65,10 +59,15 @@
 <li class="toctree-l2 current"><a class="reference internal" href="../models.html#functions-adapted-to-run-with-gpu-cupy-processing-optic-models-modelsgpu">Functions adapted to run with GPU (CuPy) processing (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.modelsGPU</span></code>)</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="optic.models.modelsGPU.ssfm.html">optic.models.modelsGPU.ssfm</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.models.modelsGPU.manakovSSF.html">optic.models.modelsGPU.manakovSSF</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.models.modelsGPU.edfa</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.models.modelsGPU.manakovDBP.html">optic.models.modelsGPU.manakovDBP</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.models.modelsGPU.edfa</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optic.models.modelsGPU.edfa"><code class="docutils literal notranslate"><span class="pre">edfa</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../models.html#advanced-models-for-optical-transmitters-optic-models-tx">Advanced models for optical transmitters (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.tx</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../models.html#perturbation-models-for-fiber-nonlinear-interference-optic-models-perturbation">Perturbation models for fiber nonlinear interference (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.models.perturbation</span></code>)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Utilities</a></li>
@@ -101,34 +100,36 @@
            <div itemprop="articleBody">
              
   <section id="optic-models-modelsgpu-edfa">
-<h1>optic.models.modelsGPU.edfa<a class="headerlink" href="#optic-models-modelsgpu-edfa" title="Permalink to this heading"></a></h1>
+<h1>optic.models.modelsGPU.edfa<a class="headerlink" href="#optic-models-modelsgpu-edfa" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.models.modelsGPU.edfa">
-<span class="sig-name descname"><span class="pre">edfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.models.modelsGPU.edfa" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">edfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/optic/models/modelsGPU.html#edfa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#optic.models.modelsGPU.edfa" title="Link to this definition"></a></dt>
 <dd><p>Implement simple EDFA model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Ei</strong> (<em>np.array</em>) -- Input signal field.</p></li>
-<li><p><strong>param</strong> (<em>parameter object</em><em> (</em><em>struct</em><em>)</em><em>, </em><em>optional</em>) -- <p>Parameters of the edfa.</p>
+<li><p><strong>Ei</strong> (<em>np.array</em>) – Input signal field.</p></li>
+<li><p><strong>param</strong> (<em>optic.utils.parameters object</em><em>, </em><em>optional</em>) – <p>Parameters of the EDFA model.</p>
 <ul>
-<li><p>param.G : amplifier gain in dB. The default is 20.</p></li>
-<li><p>param.NF : EDFA noise figure in dB. The default is 4.5.</p></li>
-<li><p>param.Fc : central optical frequency. The default is 193.1e12.</p></li>
-<li><p>param.Fs : sampling frequency in samples/second.</p></li>
+<li><p>param.G : amplifier gain in dB [default: 20 dB].</p></li>
+<li><p>param.NF : EDFA noise figure in dB [default: 4.5 dB].</p></li>
+<li><p>param.Fc : central optical frequency [default: 193.1e12 Hz].</p></li>
+<li><p>param.Fs : sampling frequency in samples/second [default: None].</p></li>
+<li><p>param.prec : numerical precision [default: cp.complex128].</p></li>
+<li><p>param.seed : seed for the random number generator [default: None].</p></li>
 </ul>
 </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>Eo</strong> -- Amplified noisy optical signal.</p>
+<dd class="field-even"><p><strong>Eo</strong> – Amplified noisy optical signal.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p>[1] R. -J. Essiambre,et al, &quot;Capacity Limits of Optical Fiber Networks,&quot; in Journal of Lightwave Technology, vol. 28, no. 4, pp. 662-701, 2010, doi: 10.1109/JLT.2009.2039464.</p>
+<p>[1] R. -J. Essiambre,et al, “Capacity Limits of Optical Fiber Networks,” in Journal of Lightwave Technology, vol. 28, no. 4, pp. 662-701, 2010, doi: 10.1109/JLT.2009.2039464.</p>
 </dd></dl>
 
 </section>
@@ -137,14 +138,14 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="optic.models.modelsGPU.manakovSSF.html" class="btn btn-neutral float-left" title="optic.models.modelsGPU.manakovSSF" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="optic.models.modelsGPU.manakovDBP.html" class="btn btn-neutral float-left" title="optic.models.modelsGPU.manakovDBP" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="optic.models.tx.simpleWDMTx.html" class="btn btn-neutral float-right" title="optic.models.tx.simpleWDMTx" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+    <p>&#169; Copyright 2023-2026, Edson P. da Silva, Adolfo F. Herbster.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

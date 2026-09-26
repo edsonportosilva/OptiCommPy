@@ -1,25 +1,22 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="English">
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>optic.plot.plotColoredConst &mdash; OptiCommPy alpha 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+  <title>optic.plot.plotColoredConst &mdash; OptiCommPy 0.11.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f3b36f1a"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -38,9 +35,6 @@
           <a href="../index.html" class="icon icon-home">
             OptiCommPy
           </a>
-              <div class="version">
-                0.9
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -63,11 +57,15 @@
 <li class="toctree-l2 current"><a class="reference internal" href="../plot.html#customized-functions-for-plotting-and-vizualization-optic-plot">Customized functions for plotting and vizualization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.plot</span></code>)</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="optic.plot.pconst.html">optic.plot.pconst</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.plot.constHist.html">optic.plot.constHist</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.plot.plotColoredConst</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.plot.plotColoredConst</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optic.plot.plotColoredConst"><code class="docutils literal notranslate"><span class="pre">plotColoredConst</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="optic.plot.plotDecisionBoundaries.html">optic.plot.plotDecisionBoundaries</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.plot.eyediagram.html">optic.plot.eyediagram</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.plot.plotPSD.html">optic.plot.plotPSD</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.plot.randomCmap.html">optic.plot.randomCmap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.plot.animateConstGIF.html">optic.plot.animateConstGIF</a></li>
 </ul>
 </li>
 </ul>
@@ -101,29 +99,29 @@
            <div itemprop="articleBody">
              
   <section id="optic-plot-plotcoloredconst">
-<h1>optic.plot.plotColoredConst<a class="headerlink" href="#optic-plot-plotcoloredconst" title="Permalink to this heading"></a></h1>
+<h1>optic.plot.plotColoredConst<a class="headerlink" href="#optic-plot-plotcoloredconst" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.plot.plotColoredConst">
-<span class="sig-name descname"><span class="pre">plotColoredConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SNR=20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rule='MAP'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap=&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.plot.plotColoredConst" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plotColoredConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SNR=20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rule='MAP'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap=&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/optic/plot.html#plotColoredConst"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#optic.plot.plotColoredConst" title="Link to this definition"></a></dt>
 <dd><p>Colored constellation scatter plot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symb</strong> (<em>np.array</em>) -- Complex-valued constellation symbols.</p></li>
-<li><p><strong>constSymb</strong> (<em>np.array</em>) -- Complex-valued constellation symbols used for detection.</p></li>
-<li><p><strong>px</strong> (<em>array_like</em><em>, </em><em>optional</em>) -- Prior probabilities of symbols.</p></li>
-<li><p><strong>SNR</strong> (<em>float</em><em>, </em><em>optional</em>) -- Signal-to-Noise Ratio (SNR) in decibels (dB). Default is 20 dB.</p></li>
-<li><p><strong>rule</strong> (<em>str</em><em>, </em><em>optional</em>) -- Detection rule, either &quot;MAP&quot; for Maximum A Posteriori or &quot;ML&quot; for Maximum Likelihood.
-Default is &quot;MAP&quot;.</p></li>
-<li><p><strong>cmap</strong> (<em>matplotlib.colors.Colormap</em><em>, </em><em>optional</em>) -- Colormap for coloring the constellation symbols. Default is matplotlib.cm.turbo.</p></li>
-<li><p><strong>fig</strong> (<em>matplotlib.figure.Figure</em><em>, </em><em>optional</em>) -- Figure object for the plot. If None, a new figure is created. Default is None.</p></li>
-<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>optional</em>) -- Axes object for the plot. If None, a new axes is created. Default is None.</p></li>
+<li><p><strong>symb</strong> (<em>np.array</em>) – Complex-valued constellation symbols.</p></li>
+<li><p><strong>constSymb</strong> (<em>np.array</em>) – Complex-valued constellation symbols used for detection.</p></li>
+<li><p><strong>px</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Prior probabilities of symbols.</p></li>
+<li><p><strong>SNR</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Signal-to-Noise Ratio (SNR) in decibels (dB). Default is 20 dB.</p></li>
+<li><p><strong>rule</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Detection rule, either “MAP” for Maximum A Posteriori or “ML” for Maximum Likelihood.
+Default is “MAP”.</p></li>
+<li><p><strong>cmap</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Colormap.html#matplotlib.colors.Colormap" title="(in Matplotlib v3.11.2)"><em>matplotlib.colors.Colormap</em></a><em>, </em><em>optional</em>) – Colormap for coloring the constellation symbols. Default is matplotlib.cm.turbo.</p></li>
+<li><p><strong>fig</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.11.2)"><em>matplotlib.figure.Figure</em></a><em>, </em><em>optional</em>) – Figure object for the plot. If None, a new figure is created. Default is None.</p></li>
+<li><p><strong>ax</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><em>matplotlib.axes.Axes</em></a><em>, </em><em>optional</em>) – Axes object for the plot. If None, a new axes is created. Default is None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>fig</strong> (<em>matplotlib.figure.Figure</em>) -- Figure object for the plot.</p></li>
-<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) -- Axes object for the plot.</p></li>
+<li><p><strong>fig</strong> (<em>matplotlib.figure.Figure</em>) – Figure object for the plot.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) – Axes object for the plot.</p></li>
 </ul>
 </p>
 </dd>
@@ -148,7 +146,7 @@ variance, detection rule, and prior probabilities (if available).</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+    <p>&#169; Copyright 2023-2026, Edson P. da Silva, Adolfo F. Herbster.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
