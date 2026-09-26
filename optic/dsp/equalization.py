@@ -376,7 +376,7 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
                             blockSize,
                         )
                     )
-                    logg.info(
+                logg.info(
                         f"{runAlg} MSE = %.6f.", np.nanmean(errSq[:, nStart:nEnd]).real
                     )
             nStart = nEnd
@@ -400,7 +400,7 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
                     constSymb,
                     prec,
                     Nfft,
-                )
+                )            
             elif domain == "time":
                 sigOut, H, H_, errSq, Hiter = coreAdaptEqBlockTD(
                     sigIn,
