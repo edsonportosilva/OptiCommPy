@@ -33,7 +33,7 @@ from optic.dsp.core import pnorm, signalPower
 from optic.utils import dB2lin
 
 warnings.filterwarnings("ignore", r"All-NaN (slice|axis) encountered")
-def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True, figsize=(4, 6)):
+def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True, figsize=None):
     """
     Plot signal constellations.
 
@@ -109,7 +109,10 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True, figsiz
         # Create a Position index
         Position = range(1, nSubPts + 1)
 
-        fig = plt.figure(figsize=figsize)
+        if figsize is None:
+            fig = plt.figure()
+        else:
+            fig = plt.figure(figsize=figsize)
 
         if type(x) == list:
             for k in range(nSubPts):
@@ -158,7 +161,11 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True, figsiz
         plt.tight_layout()
 
     elif nSubPts == 1:
-        fig = plt.figure(figsize=figsize)
+        if figsize is None:
+            fig = plt.figure()
+        else:
+            fig = plt.figure(figsize=figsize)
+            
         # ax = plt.gca()
         if pType == "fancy":
             ax = fig.add_subplot(1, 1, 1, projection="scatter_density")
