@@ -41,11 +41,18 @@ setup(
         "numba>=0.54.0",
         "simple-pid>=1.0.1",
         "mpl-scatter-density>=0.8",
-        "sphinx-rtd-theme>=1.2.2",
-        "nbsphinx>=0.9.3",
-        "nbsphinx-link>=1.3.0",
         "prettytable>=3.16.0",
     ],
+    # dependencies to build the documentation: pip install .[docs]
+    extras_require={
+        "docs": [
+            "sphinx>=7.0",
+            "sphinx-rtd-theme>=3.0",
+            "nbsphinx>=0.9.3",
+            "nbsphinx-link>=1.3.0",
+            "ipython",  # syntax highlighting of the notebook code cells
+        ],
+    },
     #'package' package must contain files (see list above)
     # This dict maps the package name =to=> directories
     # It says, package *needs* these files.

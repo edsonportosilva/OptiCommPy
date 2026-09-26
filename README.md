@@ -61,10 +61,7 @@ This repository is a Python-based framework to simulate systems, subsystems, and
 -  numba>=0.54.1
 -  tqdm>=4.64.1
 -  simple-pid>=1.0.1
--  mpl-scatter-density>=0.7.0
--  sphinx-rtd-theme>=1.2.2
--  nbsphinx>=0.9.3
--  nbsphinx-link>=1.3.0
+-  mpl-scatter-density>=0.8
 -  prettytable>=3.16.0
 -  cupy-cuda12x >= 13.1.0 (optional, in case GPU processing is desired)
 
@@ -85,6 +82,13 @@ $ pip install .
 ```
 ## Documentation
 We are continuously making efforts to improve the code documentation. You can find the latest documentation in [opticommpy.readthedocs.io](https://opticommpy.readthedocs.io/en/latest/index.html).
+
+To build the documentation locally, install OptiCommPy with the documentation dependencies and run Sphinx from the root of the repository:
+
+```
+$ pip install .[docs]
+$ sphinx-build -b html docs/source docs/build/html
+```
 
 ## Citing this repository
 

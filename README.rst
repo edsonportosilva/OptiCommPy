@@ -1,5 +1,6 @@
 
 .. image:: ../../figures/logo_OptiCommPy.jpg
+   :alt: OptiCommPy logo
    :width: 75%  
    :align: center
 
@@ -7,12 +8,15 @@
 components of fiber optic communication systems, for educational and research purposes.
 
 .. image:: ../../figures/eyeDisp.gif
+     :alt: Animated density eye diagram of a two-level signal
      :width: 45%      
 .. image:: ../../figures/40GOOK_spectrum.jpg
+     :alt: Simulated optical spectrum (power spectral density versus frequency) of a 40G OOK signal centered at 193.1 THz
      :width: 45% 
      
 
 .. image:: ../../figures/DSP.jpg
+     :alt: 16-QAM constellations of the received signal: as detected, after dispersion compensation, after adaptive equalization, and after carrier frequency and phase recovery
      :width: 600px  
      :align: center
 
@@ -66,7 +70,7 @@ How can I contribute?
    - After the process is finished, send a pull request. 
 
 - If you want to suggest or discuss anything related to OptiCommPy, please get in touch via e-mail
-(edsonporto88@gmail.com).
+  (edsonporto88@gmail.com).
 
 Requirements/Dependencies
 -------------------------
@@ -78,10 +82,7 @@ Requirements/Dependencies
 -  numba>=0.54.1
 -  tqdm>=4.64.1
 -  simple-pid>=1.0.1
--  mpl-scatter-density>=0.7.0
--  sphinx-rtd-theme>=1.2.2
--  nbsphinx>=0.9.3
--  nbsphinx-link>=1.3.0
+-  mpl-scatter-density>=0.8
 -  prettytable>=3.16.0
 -  cupy-cuda12x>=13.1.0 (optional, in case GPU processing is desired)
 
@@ -109,20 +110,34 @@ We are continuously making efforts to improve the code documentation.
 You can find the latest documentation in
 `opticommpy.readthedocs.io <https://opticommpy.readthedocs.io/en/latest/index.html>`__.
 
+To build the documentation locally, install OptiCommPy with the documentation
+dependencies and run Sphinx from the root of the repository:
+
+::
+
+   $ pip install .[docs]
+   $ sphinx-build -b html docs/source docs/build/html
+
 Citing this repository
 ----------------------
 
 Edson Porto da Silva, Adolfo Fernandes Herbster. "OptiCommPy: Open-source Simulation of Fiber Optic Communications with Python", *Journal of Open Source Software*, 9(98), 6600, (2024) https://doi.org/10.21105/joss.06600
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/OptiCommPy?label=pypi%20package
+   :alt: PyPI package version
 .. |PyPI - Downloads| image:: https://img.shields.io/pypi/dm/OptiCommPy
+   :alt: PyPI monthly downloads
 .. |Documentation Status| image:: https://readthedocs.org/projects/opticommpy/badge/?version=latest
+   :alt: Documentation status
    :target: https://opticommpy.readthedocs.io/en/latest/?badge=latest
 .. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.11450597.svg
+   :alt: Zenodo DOI
    :target: https://doi.org/10.5281/zenodo.11450597
-.. |JOSS| image:: https://joss.theoj.org/papers/10.21105/joss.06600/status.svg 
+.. |JOSS| image:: https://joss.theoj.org/papers/10.21105/joss.06600/status.svg
+   :alt: JOSS paper
    :target: https://doi.org/10.21105/joss.06600
 .. |PyPI - All Downloads| image:: https://static.pepy.tech/personalized-badge/opticommpy?period=total&units=NONE&left_color=GRAY&right_color=GREEN&left_text=PyPI+Downloads
+   :alt: Total PyPI downloads
 
    
 

@@ -4,8 +4,8 @@
 *.png
 *.pdf
 
-/doc/_build
-/doc/generated
+/docs/build
+/docs/source/generated
 /build
 /dist
 /OptiCommPy.egg-info

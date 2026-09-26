@@ -6,26 +6,24 @@ version: 2
 
 # Set the OS, Python version and other tools you might need
 build:
-  os: ubuntu-22.04
+  os: ubuntu-24.04
   tools:
-    python: "3.10"
-    # You can also specify other tool versions:
-    # nodejs: "19"
-    # rust: "1.64"
-    # golang: "1.19"
+    python: "3.12"
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
-   configuration: docs/source/conf.py
+  configuration: docs/source/conf.py
 
-# Optionally build your docs in additional formats such as PDF and ePub
-# formats:
-#    - pdf
-#    - epub
+# Build the documentation also in offline formats (ePub) for download
+formats:
+  - epub
 
-# Optional but recommended, declare the Python requirements required
-# to build your documentation
+# Install OptiCommPy from this repository (so that the documented API is the
+# one of the source code being built) together with the docs dependencies
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
 python:
-    install:
-    - requirements: rtd.txt
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs
