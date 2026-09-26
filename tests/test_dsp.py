@@ -289,9 +289,18 @@ class TestDelaySignal:
         rng = np.random.default_rng(8)
         x = rng.normal(size=512)
 
-        # the very last sample is excluded: for delay = 0 no zero padding is
-        # added, so the internal np.roll(..., -1) correction drops it
-        np.testing.assert_allclose(delaySignal(x, 0, Fs=1)[:-1], x[:-1], atol=1e-9)
+        np.testing.assert_array_equal(delaySignal(x, 0, Fs=1), x)
+
+    @pytest.mark.parametrize("delay", [0.4, -0.4, 1e-3])
+    def test_small_delay_keeps_the_last_sample(self, delay):
+        rng = np.random.default_rng(9)
+        x = rng.normal(size=512)
+
+        # fractional delays smaller than one sample must not zero the last sample
+        y = delaySignal(x, delay, Fs=1)
+
+        assert y.size == x.size
+        assert abs(y[-1]) > 1e-3
 
 
 class TestNoiseGeneration:

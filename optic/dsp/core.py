@@ -21,6 +21,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    symbolSync              -- Synchronizer delayed sequences of symbols.
    finddelay               -- Estimate the delay between sequences of symbols.
    pnorm                   -- Normalize the average power of each componennt of x.
+   anorm                   -- Normalize the amplitude of each componennt of x.
    gaussianComplexNoise    -- Generate complex-valued circular Gaussian noise.
    gaussianNoise           -- Generate Gaussian noise.
    phaseNoise              -- Generate realization of a random-walk phase-noise process.
@@ -28,6 +29,7 @@ Core digital signal processing utilities (:mod:`optic.dsp.core`)
    delaySignal             -- Apply a time delay to a signal.
    blockwiseFFTConv        -- Calculates convolutions in the frequency domain.
    freqShift               -- Applies a frequency shift to a signal.
+   iqMixing                -- Add IQ mixing (IQ imbalance and skew) to a signal.
    calcMZM                 -- Fast function to be used in the Mach-Zehnder modulator (MZM) model.
    calcPM                  -- Fast function to be used in the phase modulator (PM) model.
    levinson                -- Solve the Toeplitz system of equations using the Levinson-Durbin algorithm.
@@ -340,12 +342,24 @@ def quantizer(x, nBits=16, maxV=1, minV=-1):
     Δ = (maxV - minV) / (2**nBits - 1)
 
     d = np.arange(minV, maxV + Δ, Δ)
+    lastLevel = len(d) - 1
 
     y = np.zeros(x.shape, dtype=np.float64)
 
-    for indMode in prange(x.shape[1]):
-        for idx in prange(len(x)):
-            y[idx, indMode] = d[int(np.argmin(np.abs(x[idx, indMode] - d)))]
+    for idx in prange(len(x)):
+        for indMode in range(x.shape[1]):
+            xk = x[idx, indMode]
+
+            # the closest level is at most one position away from the rounded
+            # (and clipped) level index, so only these candidates are checked
+            k = int(np.round(min(max((xk - minV) / Δ, 0), lastLevel)))
+
+            closest = max(k - 1, 0)
+            for level in range(closest + 1, min(k + 1, lastLevel) + 1):
+                if np.abs(xk - d[level]) < np.abs(xk - d[closest]):
+                    closest = level
+
+            y[idx, indMode] = d[closest]
 
     return y
 
@@ -893,24 +907,30 @@ def delaySignal(sig, delay, Fs=1, NFFT=1024):
     NFFT : int, optional
         FFT size to be used. Must be greater than the length of the filter.
         If None, it will be set to the next power of 2 greater than or equal
-        to the length of the filter. Default is None.
+        to the length of the (zero-padded) signal. Default is 1024.
 
     Returns
     -------
     np.array
-        The delayed signal.
+        The delayed signal, with the same length as `sig`. If `delay` is zero,
+        a copy of `sig` is returned.
     """
+    if delay == 0:
+        # nothing to delay: return a copy with the same output dtype
+        return sig.astype(np.result_type(sig.dtype, np.float64))
+
     # Calculate the length of the signal
     N = len(sig)
 
     # Calculate the length of zero padding needed
     padLen = int(np.ceil(np.abs(delay * Fs)))
 
-    # Zero-pad the signal to avoid circular shift
-    sigPad = np.pad(sig, (0, padLen), mode="constant")
+    # Zero-pad the signal to avoid circular shift (plus one sample to hold the
+    # extra one-sample delay of the even-length frequency-domain filter)
+    sigPad = np.pad(sig, (0, padLen + 1), mode="constant")
 
     if NFFT is None:
-        NFFT = 2 ** int(np.ceil(np.log2(N + padLen)))
+        NFFT = 2 ** int(np.ceil(np.log2(N + padLen + 1)))
 
     # Compute the frequency vector
     freq = fftfreq(NFFT // 2, d=1 / Fs)
@@ -918,9 +938,9 @@ def delaySignal(sig, delay, Fs=1, NFFT=1024):
     # Apply the phase shift corresponding to the time delay
     H = np.exp(-1j * 2 * np.pi * freq * delay)
     delayedSig = blockwiseFFTConv(sigPad, H, NFFT=NFFT, freqDomainFilter=True)
-    delayedSig = np.roll(delayedSig, -1)
 
-    return delayedSig[:N]
+    # discard the extra one-sample filter delay
+    return delayedSig[1 : N + 1]
 
 
 def iqMixing(sig, param):
