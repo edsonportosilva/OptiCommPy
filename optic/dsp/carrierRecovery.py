@@ -18,7 +18,7 @@ import logging as logg
 
 import numpy as np
 from numba import njit
-from numpy.fft import fft, fftfreq, fftshift
+from numpy.fft import fft, fftfreq
 
 from optic.comm.modulation import grayMapping
 from optic.dsp.core import movingAverage, pnorm
@@ -195,8 +195,13 @@ def bps(sigIn, N, constSymb, B):
     [1] T. Pfau, S. Hoffmann, e R. Noé, “Hardware-efficient coherent digital receiver concept with feedforward carrier recovery for M-QAM constellations”, Journal of Lightwave Technology, vol. 27, nº 8, p. 989–999, 2009, doi: 10.1109/JLT.2008.2010511.
     """
     nModes = sigIn.shape[1]
+    windowLen = 2 * N + 1
 
     testPhases = np.arange(0, B) * (np.pi / 2) / B  # test phases
+    rotations = np.exp(1j * testPhases)
+
+    constReal = constSymb.real.copy()
+    constImag = constSymb.imag.copy()
 
     phaseEst = np.zeros(sigIn.shape, dtype="float")
 
@@ -208,18 +213,31 @@ def bps(sigIn, N, constSymb, B):
     L = x.shape[0]
 
     for n in range(nModes):
-        dist = np.zeros((B, constSymb.shape[0]), dtype="float")
-        dmin = np.zeros((B, 2 * N + 1), dtype="float")
+        # circular buffer with the min. distances inside the averaging window
+        dmin = np.zeros((windowLen, B), dtype="float")
+        sumDmin = np.zeros(B, dtype="float")  # running sum over the window
 
         for k in range(L):
-            for indPhase, phi in enumerate(testPhases):
-                dist[indPhase, :] = np.abs(x[k, n] * np.exp(1j * phi) - constSymb) ** 2
-                dmin[indPhase, -1] = np.min(dist[indPhase, :])
+            slot = k % windowLen
+            for indPhase in range(B):
+                xRot = x[k, n] * rotations[indPhase]
+
+                # squared distance to the closest constellation symbol
+                dminNew = np.inf
+                for indSymb in range(constReal.shape[0]):
+                    dist = (xRot.real - constReal[indSymb]) ** 2 + (
+                        xRot.imag - constImag[indSymb]
+                    ) ** 2
+                    if dist < dminNew:
+                        dminNew = dist
+
+                # replace the oldest distance in the window by the newest one
+                sumDmin[indPhase] += dminNew - dmin[slot, indPhase]
+                dmin[slot, indPhase] = dminNew
+
             if k >= 2 * N:
-                sumDmin = np.sum(dmin, axis=1)
                 indRot = np.argmin(sumDmin)
                 phaseEst[k - 2 * N, n] = testPhases[indRot]
-            dmin = np.roll(dmin, -1)
     return phaseEst
 
 
@@ -261,42 +279,42 @@ def ddpll(sigIn, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     phaseEst = np.zeros((nSymbols, nModes), dtype=np.float64)
 
     # Loop filter coefficients
-    a1b = np.array(
-        [
-            1,
-            Ts / (2 * tau1) * (1 - 1 / np.tan(Ts / (2 * tau2))),
-            Ts / (2 * tau1) * (1 + 1 / np.tan(Ts / (2 * tau2))),
-        ]
-    )
+    b1 = Ts / (2 * tau1) * (1 - 1 / np.tan(Ts / (2 * tau2)))
+    b2 = Ts / (2 * tau1) * (1 + 1 / np.tan(Ts / (2 * tau2)))
 
-    u = np.zeros(3, dtype=np.float64)  # [u_f, u_d1, u_d]
+    # Boolean mask of pilot-symbol locations (O(1) lookup inside the loop)
+    isPilot = np.zeros(nSymbols, dtype=np.bool_)
+    for ind in pilotInd:
+        if 0 <= ind < nSymbols:
+            isPilot[int(ind)] = True
 
     for n in range(nModes):
-        u[2] = 0  # Output of phase detector (residual phase error)
-        u[0] = 0  # Output of loop filter
+        u_d = 0.0  # Output of phase detector (residual phase error)
+        u_f = 0.0  # Output of loop filter
 
-        for k in range(sigIn.shape[0]):
-            u[1] = u[2]
+        for k in range(nSymbols):
+            u_d1 = u_d
 
             # Remove estimate of phase error from input symbol
             sigOut = sigIn[k, n] * np.exp(1j * phaseEst[k, n])
 
             # Slicer (perform hard decision on symbol)
-            if k in pilotInd:
+            if isPilot[k]:
                 # phase estimation with pilot symbol
-                # Generate phase error signal (also called x_n (Meyer))
-                u[2] = np.imag(sigOut * np.conj(symbTx[k, n]))
+                decided = symbTx[k, n]
             else:
                 # find closest constellation symbol
-                decided = np.argmin(np.abs(sigOut - constSymb))
-                # Generate phase error signal (also called x_n (Meyer))
-                u[2] = np.imag(sigOut * np.conj(constSymb[decided]))
+                decided = constSymb[np.argmin(np.abs(sigOut - constSymb))]
+
+            # Generate phase error signal (also called x_n (Meyer))
+            u_d = np.imag(sigOut * np.conj(decided))
+
             # Pass phase error signal in Loop Filter (also called e_n (Meyer))
-            u[0] = np.sum(a1b * u)
+            u_f = u_f + b1 * u_d1 + b2 * u_d
 
             # Estimate the phase error for the next symbol
-            if k < sigIn.shape[0] - 1:
-                phaseEst[k + 1, n] = phaseEst[k, n] - Kv * u[0]
+            if k < nSymbols - 1:
+                phaseEst[k + 1, n] = phaseEst[k, n] - Kv * u_f
     return phaseEst
 
 
@@ -356,16 +374,12 @@ def fourthPowerFOE(sigIn, Fs, M=4):
     Nfft = sigIn.shape[0]
 
     f = Fs * fftfreq(Nfft)
-    f = fftshift(f)
+    t = np.arange(0, Nfft) * 1 / Fs
 
-    nModes = sigIn.shape[1]
-    sigOut = sigIn.copy()
-    t = np.arange(0, sigOut.shape[0]) * 1 / Fs
-    fo = np.zeros(nModes)
-    for n in range(nModes):
-        f4 = 10 * np.log10(np.abs(fftshift(fft(sigIn[:, n] ** M))))
-        indFO = np.argmax(f4)
-        fo[n] = f[indFO] / M
-        sigOut[:, n] = sigIn[:, n] * np.exp(-1j * 2 * np.pi * fo[n] * t)
+    # spectral peak of the M-th power signal of each mode
+    indFO = np.argmax(np.abs(fft(sigIn**M, axis=0)), axis=0)
+    fo = f[indFO] / M
 
-    return sigOut, fo
+    sigOut = sigIn * np.exp(-1j * 2 * np.pi * np.outer(t, fo))
+
+    return sigOut.astype(sigIn.dtype, copy=False), fo
