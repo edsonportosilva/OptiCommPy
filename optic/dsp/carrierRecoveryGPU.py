@@ -10,8 +10,16 @@ Functions adapted to run with GPU (CuPy) processing (:mod:`optic.dsp.carrierReco
    bpsGPU -- Blind phase search (BPS) carrier phase recovery algorithm.
 """
 
+import warnings
+
 import cupy as cp
-from cupyx.scipy.signal import oaconvolve
+
+with warnings.catch_warnings():
+    # cupyx.scipy.signal uses the experimental cupyx.jit.rawkernel internally
+    warnings.filterwarnings(
+        "ignore", "cupyx.jit.rawkernel is experimental", FutureWarning
+    )
+    from cupyx.scipy.signal import oaconvolve
 
 
 def bpsGPU(sigIn, N, constSymb, B):
