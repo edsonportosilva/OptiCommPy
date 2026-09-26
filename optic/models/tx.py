@@ -16,11 +16,9 @@ from tqdm.auto import tqdm
 from optic.comm.modulation import grayMapping
 from optic.comm.sources import symbolSource
 from optic.dsp.core import (
-    freqShift,
     phaseNoise,
     pnorm,
     pulseShape,
-    signalPower,
     upsample,
 )
 from optic.models.devices import iqm, mzm
@@ -178,11 +176,18 @@ def simpleWDMTx(param):
             "channel %d\t fc : %3.4f THz" % (indCh, (param.Fc + freqGrid[indCh]) / 1e12)
         )
 
+        # generate LO field with phase noise, already shifted to the channel
+        # frequency (the IQM is linear in the LO field, so the frequency shift
+        # is computed once per channel instead of once per mode)
+        ϕ_pn_lo = phaseNoise(param.laserLinewidth, len(t), 1 / Fs, seed=param.seed)
+        sigLO = np.exp(1j * (ϕ_pn_lo + 2 * π * freqGrid[indCh] * (t * (1 / Fs))))
+
+        PchMode = Pch[indCh] / param.nPolModes  # optical signal power per mode
+
         Pmode = 0
         for indMode in range(param.nPolModes):
             logg.info(
-                "  mode #%d\t power: %.2f dBm"
-                % (indMode, 10 * np.log10((Pch[indCh] / param.nPolModes) / 1e-3))
+                "  mode #%d\t power: %.2f dBm" % (indMode, 10 * np.log10(PchMode / 1e-3))
             )
 
             # Generate sequence of constellation symbols
@@ -199,21 +204,15 @@ def simpleWDMTx(param):
 
             # pulse shaping
             sigTx = firFilter(pulse, symbolsUp)
-            sigTx = sigTx / np.max(np.abs(sigTx))  # normalize signal to amplitude 1
 
-            # optical modulation
-            if indMode == 0:  # generate LO field with phase noise
-                ϕ_pn_lo = phaseNoise(
-                    param.laserLinewidth, len(sigTx), 1 / Fs, seed=param.seed
-                )
-                sigLO = np.exp(1j * ϕ_pn_lo)
+            # optical modulation (driving signal normalized to amplitude mzmScale)
+            sigTxCh = iqm(sigLO, (param.mzmScale / np.max(np.abs(sigTx))) * sigTx)
 
-            sigTxCh = iqm(sigLO, param.mzmScale * sigTx)
-            sigTxCh = np.sqrt(Pch[indCh] / param.nPolModes) * pnorm(sigTxCh)
+            # set the optical signal power of the mode
+            PsigTxCh = np.vdot(sigTxCh, sigTxCh).real / len(sigTxCh)
+            sigTxWDM[:, indMode] += np.sqrt(PchMode / PsigTxCh) * sigTxCh
 
-            sigTxWDM[:, indMode] += freqShift(sigTxCh, freqGrid[indCh], Fs)
-
-            Pmode += signalPower(sigTxCh)
+            Pmode += PchMode
 
         Psig += Pmode
 
