@@ -53,6 +53,39 @@ except ImportError:
     from optic.dsp.core import firFilter
 
 
+def checkModulatorInputs(Ei, u):
+    """
+    Check the inputs of the optical modulator models.
+
+    Parameters
+    ----------
+    Ei : scalar or np.array
+        Optical field at the input of the modulator.
+    u : scalar or np.array
+        Electrical driving signal.
+
+    Returns
+    -------
+    Ei : scalar or np.array
+        Optical field (scalar fields are kept as scalars, since calcPM and
+        calcMZM broadcast them to the shape of u).
+    u : np.array
+        Electrical driving signal as an array.
+
+    """
+    try:
+        u.shape
+    except AttributeError:
+        u = np.array([u])
+
+    if np.ndim(Ei) == 0:
+        Ei = Ei[()] if isinstance(Ei, np.ndarray) else Ei  # 0-d array -> scalar
+    else:
+        assert Ei.shape == u.shape, "Ei and u need to have the same dimensions"
+
+    return Ei, u
+
+
 def pm(Ei, u, Vπ):
     """
     Optical Phase Modulator (PM).
@@ -75,18 +108,7 @@ def pm(Ei, u, Vπ):
     [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
 
     """
-    try:
-        u.shape
-    except AttributeError:
-        u = np.array([u])
-
-    try:
-        if Ei.shape == () and u.shape != ():
-            Ei = Ei * np.ones(u.shape)
-        else:
-            assert Ei.shape == u.shape, "Ei and u need to have the same dimensions"
-    except AttributeError:
-        Ei = Ei * np.ones(u.shape)
+    Ei, u = checkModulatorInputs(Ei, u)
 
     return calcPM(Ei, Vπ, u)
 
@@ -128,18 +150,7 @@ def mzm(Ei, u, param=None):
     Vb = getattr(param, "Vb", -1)
     ER = getattr(param, "ER", 60)  # extinction ratio in dB
 
-    try:
-        u.shape
-    except AttributeError:
-        u = np.array([u])
-
-    try:
-        if Ei.shape == () and u.shape != ():
-            Ei = Ei * np.ones(u.shape)
-        else:
-            assert Ei.shape == u.shape, "Ei and u need to have the same dimensions"
-    except AttributeError:
-        Ei = Ei * np.ones(u.shape)
+    Ei, u = checkModulatorInputs(Ei, u)
 
     return calcMZM(Ei, Vpi, u, Vb, ER)
 
@@ -185,18 +196,7 @@ def iqm(Ei, u, param=None):
     ERI = getattr(param, "ERI", 60)
     ERQ = getattr(param, "ERQ", 60)
 
-    try:
-        u.shape
-    except AttributeError:
-        u = np.array([u])
-
-    try:
-        if Ei.shape == () and u.shape != ():
-            Ei = Ei * np.ones(u.shape)
-        else:
-            assert Ei.shape == u.shape, "Ei and u need to have the same dimensions"
-    except AttributeError:
-        Ei = Ei * np.ones(u.shape)
+    Ei, u = checkModulatorInputs(Ei, u)
 
     # define parameters for the I-MZM:
     paramI = parameters()
@@ -354,12 +354,14 @@ def photodiode(E, param=None):
     except IndexError:
         nModes = 1
 
+    # |E|^2 computed as a real-valued array, so that noise addition and
+    # filtering are performed with real (instead of complex) arithmetic
+    Pin = E.real**2 + E.imag**2
+
     if nModes > 1:
-        ipd = R * np.sum(
-            np.abs(E) ** 2, axis=1
-        )  # ideal photocurrent with two or more modes
+        ipd = R * np.sum(Pin, axis=1)  # ideal photocurrent with two or more modes
     else:
-        ipd = R * E * np.conj(E)  # ideal photocurrent
+        ipd = R * Pin  # ideal photocurrent
 
     if N % 2 == 0:
         N += 1  # make sure N is odd
@@ -379,7 +381,7 @@ def photodiode(E, param=None):
         assert Fs >= 2 * B, "Sampling frequency Fs needs to be at least twice of B."
 
         if currentSaturation:
-            ipd[ipd > IpdSat] = IpdSat  # saturation of the photocurrent
+            ipd = np.minimum(ipd, IpdSat)  # saturation of the photocurrent
 
         if shotNoise:
             # shot noise
@@ -498,9 +500,8 @@ def opticalHybrid2x4(Es, Elo):
         ]
     )
 
-    Ei = np.array([Es, np.zeros((Es.size,)), np.zeros((Es.size,)), Elo])
-
-    return T @ Ei
+    # only the first (Es) and last (Elo) hybrid inputs are non-zero
+    return T[:, [0, 3]] @ np.array([Es, Elo])
 
 
 def coherentReceiver(Es, Elo, paramFE=None, paramPD=None):
