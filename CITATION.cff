@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If you use OptiCommPy in your research, please cite the paper below."
+title: "OptiCommPy: Open-source Simulation of Fiber Optic Communications with Python"
+type: software
+authors:
+  - given-names: Edson
+    family-names: Porto da Silva
+  - given-names: Adolfo
+    family-names: Fernandes Herbster
+abstract: >-
+  OptiCommPy is a Python framework to simulate fiber optic communication
+  systems, from the bits at the transmitter to the performance metrics at the
+  receiver, including models of optical and optoelectronic devices, linear and
+  nonlinear fiber propagation, optical amplification, receiver digital signal
+  processing, forward error correction and performance metrics.
+keywords:
+  - optical communications
+  - fiber optics
+  - digital signal processing
+  - simulation
+  - python
+license: GPL-3.0
+repository-code: "https://github.com/edsonportosilva/OptiCommPy"
+url: "https://opticommpy.readthedocs.io"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.11450597
+    description: Software archive on Zenodo
+  - type: doi
+    value: 10.21105/joss.06600
+    description: Paper in the Journal of Open Source Software
+preferred-citation:
+  type: article
+  title: "OptiCommPy: Open-source Simulation of Fiber Optic Communications with Python"
+  authors:
+    - given-names: Edson
+      family-names: Porto da Silva
+    - given-names: Adolfo
+      family-names: Fernandes Herbster
+  journal: Journal of Open Source Software
+  year: 2024
+  volume: 9
+  issue: 98
+  start: 6600
+  doi: 10.21105/joss.06600
+  url: "https://doi.org/10.21105/joss.06600"
