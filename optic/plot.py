@@ -13,6 +13,7 @@ Customized functions for plotting and vizualization (:mod:`optic.plot`)
    eyediagram                 -- Plots eyediagrams of communication signals
    plotPSD                    -- Plot power spectral density of signals
    randomCmap                 -- Generate a random RGB colormap
+   animateConstGIF            -- Create and save a constellation plot animation as GIF
 """
 
 """Plot utilities."""

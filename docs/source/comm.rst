@@ -8,7 +8,7 @@ Digital Communications Utilities
 
 .. automodule:: optic.comm.metrics
     :members:
-    :exclude-members: minR, condEntropy, GNmodel_OSNR, ASE_NyquistWDM, GN_Model_NyquistWDM
+    :exclude-members: minR, condEntropy, condEntropyBit1D, condEntropyBit2D, GNmodel_OSNR, ASE_NyquistWDM, GN_Model_NyquistWDM
     :noindex:
 
 .. automodule:: optic.comm.sources

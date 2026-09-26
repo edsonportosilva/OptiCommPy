@@ -12,6 +12,7 @@ Metrics for signal and performance characterization (:mod:`optic.comm.metrics`)
    calcExtrLLR              -- Calculate the extrinsic bit LLRs assuming an auxiliary Gaussian channel model
    monteCarloGMI            -- Monte Carlo based generalized mutual information (GMI) estimation
    monteCarloMI             -- Monte Carlo based mutual information (MI) estimation
+   calcMI                   -- Mutual information (MI) calculation for AWGN channels
    Qfunc                    -- Calculate function :math:`Q(x)`
    calcEVM                  -- Calculate error vector magnitude (EVM) metrics
    theoryBER                -- Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel

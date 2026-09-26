@@ -64,8 +64,8 @@ def simpleWDMTx(param):
         - param.powerPerChannel : launched power per WDM channel [dBm][default:-3 dBm].
         - param.nChannels : number of WDM channels [default: 5].
         - param.Fc : central frequency of the WDM spectrum [Hz][default: 193.1e12 Hz].
-        - param.laserLinewidth : laser linewidth [Hz][default: 100 kHz].
-        - param.wdmGridSpacing : frequency spacing of the WDM grid [Hz][default: 40e9 Hz].
+        - param.laserLinewidth : laser linewidth [Hz][default: 0 Hz].
+        - param.wdmGridSpacing : frequency spacing of the WDM grid [Hz][default: 50e9 Hz].
         - param.nPolModes : number of polarization modes [default: 1].
         - param.prgsBar : display progress bar? [default: True].
 

@@ -8,6 +8,7 @@ Digital Signal Processing (DSP)
 
 .. automodule:: optic.dsp.adaptiveFiltering
     :members:
+    :exclude-members: nlmsUpBlock, rlsUpBlock, cmaUpBlock, rdeUpBlock, ddlmsUpBlock, ddrlsUpBlock, dardeUpBlock
     :noindex:
 
 .. automodule:: optic.dsp.equalization
