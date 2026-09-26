@@ -21,7 +21,7 @@ import scipy.constants as const
 from cupy.fft import fft, fftfreq, ifft
 from cupy.linalg import norm
 from cupy.random import normal
-from tqdm.notebook import tqdm
+from tqdm.auto import tqdm
 
 from optic.dsp.core import signalPower
 from optic.utils import parameters

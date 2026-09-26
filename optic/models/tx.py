@@ -11,7 +11,7 @@ Advanced models for optical transmitters (:mod:`optic.models.tx`)
 """
 
 import numpy as np
-from tqdm.notebook import tqdm
+from tqdm.auto import tqdm
 
 from optic.comm.modulation import grayMapping
 from optic.comm.sources import symbolSource

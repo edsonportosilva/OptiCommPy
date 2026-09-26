@@ -21,7 +21,7 @@ import numpy as np
 import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
-from tqdm.notebook import tqdm
+from tqdm.auto import tqdm
 
 from optic.comm.modulation import grayMapping
 from optic.dsp.adaptiveFiltering import (

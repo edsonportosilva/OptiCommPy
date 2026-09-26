@@ -20,7 +20,7 @@ import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from scipy.linalg import norm
-from tqdm.notebook import tqdm
+from tqdm.auto import tqdm
 
 from optic.dsp.core import gaussianComplexNoise, gaussianNoise, sigPow
 from optic.models.devices import edfa
