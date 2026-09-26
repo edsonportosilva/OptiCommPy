@@ -19,14 +19,14 @@ Customized functions for plotting and vizualization (:mod:`optic.plot`)
 import copy
 import warnings
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import mpl_scatter_density
 import numpy as np
-from matplotlib import cm
 from matplotlib.animation import FuncAnimation
 from matplotlib.colors import ListedColormap
-from scipy.interpolate import interp1d
-from scipy.ndimage.filters import gaussian_filter
+from scipy.interpolate import make_interp_spline
+from scipy.ndimage import gaussian_filter
 
 from optic.comm.modulation import detector
 from optic.dsp.core import pnorm, signalPower
@@ -210,7 +210,7 @@ def constHist(symb, ax, cmap="turbo", whiteb=True):
         axis of the plot.
 
     """
-    cmap = copy.copy(plt.get_cmap(cmap))
+    cmap = copy.copy(mpl.colormaps.get_cmap(cmap))
     if whiteb:
         cmap.set_under(alpha=0)
 
@@ -274,7 +274,7 @@ def plotColoredConst(
     The detected symbols are determined using a detector based on the provided input symbols, noise
     variance, detection rule, and prior probabilities (if available).
     """
-    cmap = copy.copy(plt.get_cmap(cmap))
+    cmap = copy.copy(mpl.colormaps.get_cmap(cmap))
 
     σ2 = 1 / dB2lin(SNR)
 
@@ -438,7 +438,7 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel=None):
             if nsymb < 500000:
                 y = np.tile(y, int(np.ceil(500000 / nsymb)))
 
-            f = interp1d(np.arange(y.size), y, kind="cubic")
+            f = make_interp_spline(np.arange(y.size), y, k=3)  # cubic interpolation
 
             Nup = 40 * SpS
             tnew = np.arange(y.size) * (1 / Nup)
@@ -666,9 +666,7 @@ def randomCmap(nColors=100, low=0.1, high=0.99):
     matplotlib.colors.ListedColormap
         Random colormap with the specified number of colors and random RGB values.
     """
-    randRGBcolors = [
-        (np.random.uniform(low=low, high=high, size=(1, 3))) for i in range(nColors)
-    ]
-    new_cmap = ListedColormap(randRGBcolors, "new_map", N=nColors)
+    randRGBcolors = np.random.uniform(low=low, high=high, size=(nColors, 3))
+    new_cmap = ListedColormap(randRGBcolors, "new_map")
 
     return new_cmap
