@@ -40,7 +40,7 @@ setup(
         "tqdm>=4.64.1",
         "numba>=0.54.0",
         "simple-pid>=1.0.1",
-        "mpl-scatter-density>=0.7.0",
+        "mpl-scatter-density>=0.8",
         "sphinx-rtd-theme>=1.2.2",
         "nbsphinx>=0.9.3",
         "nbsphinx-link>=1.3.0",
