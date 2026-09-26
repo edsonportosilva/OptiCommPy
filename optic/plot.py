@@ -33,9 +33,7 @@ from optic.dsp.core import pnorm, signalPower
 from optic.utils import dB2lin
 
 warnings.filterwarnings("ignore", r"All-NaN (slice|axis) encountered")
-
-
-def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
+def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True, figsize=(4, 6)):
     """
     Plot signal constellations.
 
@@ -63,6 +61,10 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
     whiteb : bool, optional
         Flag indicating whether to use white background for scatter_density plot.
         Defaults to True.
+
+    figsize : tuple, optional
+        Figure size.
+        Defaults to (4, 6).
 
     Returns
     -------
@@ -97,14 +99,17 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
         if nSubPts < 5:
             nCols = nSubPts
             nRows = 1
-        elif nSubPts >= 6:
+        elif nSubPts <= 6:
             nCols = int(np.ceil(nSubPts / 2))
             nRows = 2
+        elif nSubPts > 10:
+            nCols = int(np.ceil(nSubPts / 3))
+            nRows = 3
 
         # Create a Position index
         Position = range(1, nSubPts + 1)
 
-        fig = plt.figure()
+        fig = plt.figure(figsize=figsize)
 
         if type(x) == list:
             for k in range(nSubPts):
@@ -150,10 +155,10 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
                     ax.set_xlim(-radius, radius)
                     ax.set_ylim(-radius, radius)
 
-        fig.tight_layout()
+        plt.tight_layout()
 
     elif nSubPts == 1:
-        fig = plt.figure()
+        fig = plt.figure(figsize=figsize)
         # ax = plt.gca()
         if pType == "fancy":
             ax = fig.add_subplot(1, 1, 1, projection="scatter_density")
