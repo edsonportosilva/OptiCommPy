@@ -116,7 +116,8 @@ def firFilter(h, x):
     nModes = x.shape[1]
 
     for n in range(nModes):
-        y[:, n] = signal.fftconvolve(x[:, n], h, mode="same")
+        # overlap-add convolution: faster than a single long FFT when len(h) << len(x)
+        y[:, n] = signal.oaconvolve(x[:, n], h, mode="same")
 
     if input1D:
         # If the input is 1D, return it as a 1D array
@@ -1105,11 +1106,13 @@ def calcMZM(sigIn, Vpi, u, Vb, ER):
     erLin = 10 ** (ER / 10)
     gamma = 2 * np.sqrt(erLin) / (erLin + 1)
 
-    sigOut = np.sqrt(1 + gamma) * calcPM(sigIn / 2, Vpi, (u + Vb) / 2) + np.sqrt(
-        1 - gamma
-    ) * calcPM(sigIn / 2, Vpi, -(u + Vb) / 2)
+    # The two arms apply opposite phase shifts ±θ, with amplitudes sqrt(1 ± gamma):
+    # [sqrt(1 + gamma) * exp(jθ) + sqrt(1 - gamma) * exp(-jθ)] / 2 = cI * cos(θ) + j * cQ * sin(θ)
+    cI = (np.sqrt(1 + gamma) + np.sqrt(1 - gamma)) / 2
+    cQ = (np.sqrt(1 + gamma) - np.sqrt(1 - gamma)) / 2
+    θ = (u + Vb) / (2 * Vpi) * np.pi
 
-    return sigOut
+    return sigIn * (cI * np.cos(θ) + 1j * cQ * np.sin(θ))
 
 
 @njit
@@ -1136,7 +1139,9 @@ def calcPM(sigIn, Vpi, u):
     [1] Seimetz, M., High-Order Modulation for Optical Fiber Transmission. Springer Series in Optical Sciences. Springer Berlin Heidelberg, 2009.
 
     """
-    return sigIn * np.exp(1j * (u / Vpi) * np.pi)
+    φ = (u / Vpi) * np.pi
+
+    return sigIn * (np.cos(φ) + 1j * np.sin(φ))  # sigIn * exp(jφ)
 
 
 @njit(fastmath=True, cache=True)
