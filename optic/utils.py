@@ -147,7 +147,7 @@ class parameters:
 
 
 def lin2dB(x):
-    """
+    r"""
     Convert linear value to dB (decibels).
 
     Parameters
@@ -159,12 +159,19 @@ def lin2dB(x):
     -------
     float
         The value converted to dB, i.e 10log10(x).
+
+    Notes
+    -----
+    The value in decibels of a (power) ratio :math:`x` is
+
+    .. math::
+        x_{dB} = 10\log_{10}x. \tag{1}
     """
     return 10 * np.log10(x)
 
 
 def dB2lin(x):
-    """
+    r"""
     Convert dB (decibels) to a linear value.
 
     Parameters
@@ -176,12 +183,19 @@ def dB2lin(x):
     -------
     float
         The linear value.
+
+    Notes
+    -----
+    A (power) ratio expressed in decibels is converted to linear units as
+
+    .. math::
+        x = 10^{x_{dB}/10}. \tag{1}
     """
     return 10 ** (x / 10)
 
 
 def dBm2W(x):
-    """
+    r"""
     Convert dBm to Watts.
 
     Parameters
@@ -193,6 +207,15 @@ def dBm2W(x):
     -------
     float
         The power value in Watts.
+
+    Notes
+    -----
+    The dBm is the power level in decibels relative to 1 mW,
+
+    .. math::
+        P_{W} = 10^{-3}\cdot 10^{P_{dBm}/10}, \tag{1}
+
+    so that 0 dBm corresponds to 1 mW and 30 dBm to 1 W.
     """
     return 1e-3 * 10 ** (x / 10)
 
@@ -310,7 +333,7 @@ def dotNumba(a, b):
 
 
 def ber2Qfactor(ber):
-    """
+    r"""
     Converts a bit error rate (BER) to a Q factor in dB.
 
     Parameters
@@ -322,13 +345,24 @@ def ber2Qfactor(ber):
     -------
     float
         The Q factor corresponding to the input BER.
+
+    Notes
+    -----
+    For a binary signal with Gaussian noise, the bit error rate is related to the
+    Q-factor by :math:`\mathrm{BER} = \frac{1}{2}\mathrm{erfc}\left(Q/\sqrt{2}\right)`,
+    which is inverted as
+
+    .. math::
+        Q = \sqrt{2}\,\mathrm{erfc}^{-1}(2\,\mathrm{BER}). \tag{1}
+
+    The value returned is :math:`10\log_{10}Q`.
     """
     return 10 * np.log10(np.sqrt(2) * erfcinv(2 * ber))
 
 
 @njit(cache=True)
 def llr2bitProb(llr, prec=np.float32):
-    """
+    r"""
     Convert LLRs to bit probabilities using a numerically stable sigmoid.
 
     Parameters
@@ -340,6 +374,18 @@ def llr2bitProb(llr, prec=np.float32):
     -------
     probs : 1D numpy array
         Bit probabilities P(bit = 1).
+
+    Notes
+    -----
+    With the log-likelihood ratio defined as
+    :math:`\Lambda = \ln\left[P(b = 0)/P(b = 1)\right]`, the probability of the bit
+    being equal to one is given by the logistic (sigmoid) function,
+
+    .. math::
+        P(b = 1) = \frac{1}{1 + e^{\Lambda}}. \tag{1}
+
+    Eq. (1) is evaluated in a numerically stable way, which avoids the overflow of
+    the exponential for LLRs of large magnitude.
     """
     n = llr.shape[0]
     k = llr.shape[1]
