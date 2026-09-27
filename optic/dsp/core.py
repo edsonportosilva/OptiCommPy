@@ -229,7 +229,7 @@ def rrcFilterTaps(t, alpha, Ts):
                     np.sin(t1 * (1 - alpha))
                     + 4 * alpha * t_i / Ts * np.cos(t1 * (1 + alpha))
                 )
-                / (np.pi * t_i * (1 - t2**2))
+                / (np.pi * t_i / Ts * (1 - t2**2))
             )
 
     return coeffs
