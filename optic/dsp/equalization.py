@@ -183,6 +183,9 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
         - param.prgsBar : bool, flag indicating whether to display progress bar [default: True]
         - param.returnResults : bool, flag indicating whether to return all results [default: False]
         - param.prec : data type, precision of the computations [default: np.complex64]
+        - param.domain : str, domain of the equalizer ('time' or 'freq') [default: 'freq']
+        - param.Nfft : int, FFT size for frequency domain equalization [default: 128]
+        - param.blockSize : int, block size for time domain equalization [default: 1]
 
     Returns
     -------
