@@ -87,7 +87,7 @@ def checkModulatorInputs(Ei, u):
 
 
 def pm(Ei, u, Vπ):
-    """
+    r"""
     Optical Phase Modulator (PM).
 
     Parameters
@@ -103,6 +103,20 @@ def pm(Ei, u, Vπ):
     Ao : np.array
         Modulated optical field at the output of the PM.
 
+    Notes
+    -----
+    The electro-optic (Pockels) effect in a material such as lithium niobate changes
+    its refractive index proportionally to the applied electric field. As a result,
+    the optical field that propagates through a phase modulator driven by the voltage
+    :math:`u(t)` acquires a phase shift proportional to it,
+
+    .. math::
+        E_{out}(t) = E_{in}(t)\exp\left[j\pi\frac{u(t)}{V_\pi}\right], \tag{1}
+
+    where :math:`V_\pi` is the voltage required to produce a phase shift of
+    :math:`\pi` rad. The modulator changes only the phase of the field, so that
+    :math:`|E_{out}(t)| = |E_{in}(t)|`.
+
     References
     ----------
     [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
@@ -114,7 +128,7 @@ def pm(Ei, u, Vπ):
 
 
 def mzm(Ei, u, param=None):
-    """
+    r"""
     Optical Mach-Zhender Modulator (MZM).
 
     Parameters
@@ -134,6 +148,32 @@ def mzm(Ei, u, param=None):
     -------
     np.array
         Modulated optical field at the output of the MZM.
+
+    Notes
+    -----
+    A Mach-Zehnder modulator (MZM) is an interferometer with a phase modulator in each
+    of its arms. In push-pull operation, the arms are driven with opposite phase
+    shifts, so that the output field is modulated in amplitude without residual phase
+    modulation (chirp). For an ideal device, i.e. infinite extinction ratio,
+
+    .. math::
+        E_{out}(t) = E_{in}(t)\cos\left[\frac{\pi}{2}\frac{u(t) + V_b}{V_\pi}\right], \tag{1}
+
+    where :math:`u(t)` is the driving signal, :math:`V_b` is the bias voltage, and
+    :math:`V_\pi` is the voltage that switches the output from maximum to minimum
+    transmission. The corresponding power transfer function is
+
+    .. math::
+        \frac{P_{out}(t)}{P_{in}(t)}
+        = \cos^2\left[\frac{\pi}{2}\frac{u(t) + V_b}{V_\pi}\right]
+        = \frac{1}{2}\left\{1 + \cos\left[\pi\frac{u(t) + V_b}{V_\pi}\right]\right\}. \tag{2}
+
+    Biasing the modulator at :math:`V_b = -V_\pi/2` (quadrature point, the default)
+    yields an output power that varies approximately linearly with small drive
+    signals, as used in intensity modulation. Biasing at :math:`V_b = -V_\pi` (null
+    point) makes the output field approximately linear with the drive signal, taking
+    positive and negative values, as used in coherent modulation. A finite extinction
+    ratio is also taken into account (see :func:`optic.dsp.core.calcMZM`).
 
     References
     ----------
@@ -156,7 +196,7 @@ def mzm(Ei, u, param=None):
 
 
 def iqm(Ei, u, param=None):
-    """
+    r"""
     Optical In-Phase/Quadrature Modulator (IQM).
 
     Parameters
@@ -179,6 +219,33 @@ def iqm(Ei, u, param=None):
     -------
     Eo : complex-valued np.array
         Modulated optical field at the output of the IQM.
+
+    Notes
+    -----
+    An in-phase/quadrature modulator (IQM) is a nested structure with one MZM in each
+    of its two arms, and a phase modulator that introduces a :math:`\pi/2` phase
+    difference between them. The input field is split equally between the arms; the
+    in-phase (I) MZM is driven by :math:`u_I(t) = \mathrm{Re}\{u(t)\}` and the
+    quadrature (Q) MZM by :math:`u_Q(t) = \mathrm{Im}\{u(t)\}`, and the two fields are
+    then recombined,
+
+    .. math::
+        E_{out}(t) = E_I(t) + E_Q(t)\,e^{j\pi V_\phi/V_\pi}, \tag{1}
+
+    where :math:`E_I` and :math:`E_Q` are the outputs of the MZMs, each one fed with
+    :math:`E_{in}/\sqrt{2}` (see :func:`mzm`), and :math:`V_\phi` is the bias of the
+    phase modulator. With both MZMs biased at the null point, :math:`V_{b,I} =
+    V_{b,Q} = -V_\pi`, and :math:`V_\phi = V_\pi/2` (the defaults), an ideal IQM
+    produces
+
+    .. math::
+        E_{out}(t) = \frac{E_{in}(t)}{\sqrt{2}}\left\{
+        \sin\left[\frac{\pi}{2}\frac{u_I(t)}{V_\pi}\right]
+        + j\sin\left[\frac{\pi}{2}\frac{u_Q(t)}{V_\pi}\right]\right\}, \tag{2}
+
+    which, for small drive signals, is proportional to the complex baseband signal
+    :math:`u(t) = u_I(t) + ju_Q(t)`. This is how complex constellations such as QAM
+    are imprinted on the optical carrier.
 
     References
     ----------
@@ -224,7 +291,7 @@ def iqm(Ei, u, param=None):
 
 
 def pbs(E, θ=0):
-    """
+    r"""
     Polarization beam splitter (PBS).
 
     Parameters
@@ -240,6 +307,25 @@ def pbs(E, θ=0):
         Ex output single pol. field.
     Ey : (N,) np.array
         Ey output single pol. field.
+
+    Notes
+    -----
+    The input field :math:`\mathbf{E} = [E_x, E_y]^T` is first rotated by the angle
+    :math:`\theta` with respect to the principal axes of the polarization beam
+    splitter (PBS), which then separates its two orthogonal components,
+
+    .. math::
+        :nowrap:
+
+        \begin{equation}
+            \begin{bmatrix} E_x' \\ E_y' \end{bmatrix} =
+            \begin{bmatrix} \cos\theta & \sin\theta \\ -\sin\theta & \cos\theta \end{bmatrix}
+            \begin{bmatrix} E_x \\ E_y \end{bmatrix}. \tag{1}
+        \end{equation}
+
+    A single-polarization input is assumed to be aligned with the :math:`x` axis,
+    :math:`E_y = 0`, so that for :math:`\theta = \pi/4` its power is split equally
+    between the two outputs.
 
     References
     ----------
@@ -264,7 +350,7 @@ def pbs(E, θ=0):
 
 
 def voa(E, A=0):
-    """
+    r"""
     Variable optical attenuator (VOA).
 
     Parameters
@@ -279,6 +365,14 @@ def voa(E, A=0):
     Eo : np.array
           Output optical field.
 
+    Notes
+    -----
+    An attenuation of :math:`A` dB reduces the optical power by a factor
+    :math:`10^{-A/10}`, which corresponds to scaling the optical field by
+
+    .. math::
+        E_{out}(t) = 10^{-A/20}\, E_{in}(t). \tag{1}
+
     References
     ----------
     [1] G. P. Agrawal, Fiber-Optic Communication Systems. Wiley, 2021.
@@ -290,7 +384,7 @@ def voa(E, A=0):
 
 
 def photodiode(E, param=None):
-    """
+    r"""
     Pin photodiode (PD).
 
     Parameters
@@ -320,6 +414,37 @@ def photodiode(E, param=None):
     -------
     ipd : np.array
           photocurrent.
+
+    Notes
+    -----
+    A PIN photodiode converts the incident optical power into an electric current.
+    For an ideal photodiode, the photocurrent is proportional to the optical power,
+
+    .. math::
+        i_{pd}(t) = R\,|E(t)|^2 = R\,P(t), \tag{1}
+
+    where :math:`R` is the responsivity in A/W. For a multimode field, the powers of
+    all the modes are summed. Two noise sources are added to the photocurrent. The
+    shot noise arises from the discrete nature of the photons and electrons, and has
+    variance
+
+    .. math::
+        \sigma_s^2 = 2q\left[i_{pd}(t) + I_d\right]B, \tag{2}
+
+    where :math:`q` is the elementary charge, :math:`I_d` is the dark current and
+    :math:`B` is the photodiode bandwidth. The thermal (Johnson) noise is produced by
+    the random motion of the electrons in the load resistor :math:`R_L`, at the
+    absolute temperature :math:`T`, and has variance
+
+    .. math::
+        \sigma_T^2 = \frac{4k_B T B}{R_L}, \tag{3}
+
+    where :math:`k_B` is the Boltzmann constant. Both are modeled as Gaussian noises,
+    generated as white noises with power spectral density :math:`\sigma^2/(2B)` over
+    the simulation bandwidth :math:`[-F_s/2, F_s/2]`, so that after the bandwidth
+    limitation of the photodiode, which is modeled by a lowpass filter with cutoff
+    frequency :math:`B`, their variances are those given by Eqs. (2) and (3). The
+    photocurrent may also be limited to a saturation value :math:`I_{sat}`.
 
     References
     ----------
@@ -405,7 +530,7 @@ def photodiode(E, param=None):
 
 
 def balancedPD(E1, E2, param=None):
-    """
+    r"""
     Balanced photodiode pair (BPD).
 
     Parameters
@@ -432,6 +557,21 @@ def balancedPD(E1, E2, param=None):
     -------
     ibpd : np.array
            Balanced photocurrent.
+
+    Notes
+    -----
+    A balanced photodetector consists of two photodiodes whose photocurrents are
+    subtracted,
+
+    .. math::
+        i(t) = i_1(t) - i_2(t) = R\left(|E_1(t)|^2 - |E_2(t)|^2\right)
+        + n_1(t) - n_2(t), \tag{1}
+
+    where :math:`n_1` and :math:`n_2` are the independent noises of the photodiodes
+    (see :func:`photodiode`). When the two inputs are the outputs of a coupler that
+    combines a signal and a local oscillator, the terms :math:`|E_s|^2` and
+    :math:`|E_{LO}|^2` cancel in Eq. (1), leaving only the beat term between the
+    signal and the local oscillator.
 
     References
     ----------
@@ -465,7 +605,7 @@ def balancedPD(E1, E2, param=None):
 
 
 def opticalHybrid2x4(Es, Elo):
-    """
+    r"""
     Optical hybrid 2 x 4 90°.
 
     Parameters
@@ -479,6 +619,33 @@ def opticalHybrid2x4(Es, Elo):
     -------
     Eo : np.array
         Optical hybrid outputs.
+
+    Notes
+    -----
+    The 2 x 4 90° optical hybrid combines the signal :math:`E_s` and the local
+    oscillator :math:`E_{LO}` with relative phase shifts of 0, :math:`\pi`,
+    :math:`\pi/2` and :math:`-\pi/2`. Its outputs are
+
+    .. math::
+        :nowrap:
+
+        \begin{equation}
+            \begin{bmatrix} E_1 \\ E_2 \\ E_3 \\ E_4 \end{bmatrix} = \frac{1}{2}
+            \begin{bmatrix}
+                E_s - E_{LO} \\
+                j\left(E_s + E_{LO}\right) \\
+                jE_s - E_{LO} \\
+                -E_s + jE_{LO}
+            \end{bmatrix}. \tag{1}
+        \end{equation}
+
+    Detecting the pairs :math:`(E_1, E_2)` and :math:`(E_3, E_4)` with balanced
+    photodetectors gives currents proportional to the in-phase and quadrature
+    components of :math:`E_s E_{LO}^*`, since
+
+    .. math::
+        |E_2|^2 - |E_1|^2 = \mathrm{Re}\left\{E_s E_{LO}^*\right\}, \qquad
+        |E_3|^2 - |E_4|^2 = \mathrm{Im}\left\{E_s E_{LO}^*\right\}. \tag{2}
 
     References
     ----------
@@ -505,7 +672,7 @@ def opticalHybrid2x4(Es, Elo):
 
 
 def coherentReceiver(Es, Elo, paramFE=None, paramPD=None):
-    """
+    r"""
     Single polarization coherent optical front-end.
 
     Parameters
@@ -529,6 +696,23 @@ def coherentReceiver(Es, Elo, paramFE=None, paramPD=None):
     -------
     s : np.array
         Downconverted signal after balanced detection.
+
+    Notes
+    -----
+    In a coherent receiver, the received signal is mixed with a local oscillator (LO)
+    in a 90° optical hybrid, whose outputs are detected by two balanced
+    photodetectors (see :func:`opticalHybrid2x4` and :func:`balancedPD`). The
+    in-phase and quadrature photocurrents form the complex signal
+
+    .. math::
+        s(t) = i_I(t) + j\,i_Q(t) = R\,E_s(t)E_{LO}^*(t) + n(t), \tag{1}
+
+    where :math:`R` is the responsivity of the photodiodes and :math:`n(t)` is the
+    noise of the photodetectors. For an LO with constant amplitude and a frequency and
+    phase aligned to those of the signal carrier, :math:`s(t)` is proportional to the
+    complex envelope of the optical field, i.e., both its amplitude and its phase are
+    recovered. Imperfections of the front-end (IQ imbalance and skew) are finally
+    added to :math:`s(t)` (see :func:`optic.dsp.core.iqMixing`).
 
     References
     ----------
@@ -576,7 +760,7 @@ def coherentReceiver(Es, Elo, paramFE=None, paramPD=None):
 
 
 def pdmCoherentReceiver(Es, Elo, paramFE, paramPD=None):
-    """
+    r"""
     Polarization multiplexed coherent optical front-end.
 
     Parameters
@@ -608,6 +792,29 @@ def pdmCoherentReceiver(Es, Elo, paramFE, paramPD=None):
     -------
     S : np.array
         Downconverted signal after balanced detection.
+
+    Notes
+    -----
+    A polarization-diversity coherent receiver detects the two orthogonal
+    polarizations of the received field. The signal is split by a polarization beam
+    splitter (PBS) into its components :math:`E_{s,x}` and :math:`E_{s,y}`, after a
+    rotation of its state of polarization by the angle ``polRotation``, while the LO,
+    launched at 45°, is split equally between the two polarizations (see
+    :func:`pbs`). Each pair of signal and LO components is then detected by a
+    single-polarization coherent receiver (see :func:`coherentReceiver`),
+
+    .. math::
+        :nowrap:
+
+        \begin{equation}
+            \mathbf{S}(t) = \begin{bmatrix} S_x(t) \\ S_y(t) \end{bmatrix} \propto
+            \begin{bmatrix} E_{s,x}(t)E_{LO,x}^*(t) \\ E_{s,y}(t)E_{LO,y}^*(t) \end{bmatrix}. \tag{1}
+        \end{equation}
+
+    A polarization dependent loss of ``pdl`` dB is modeled by attenuating one
+    polarization and amplifying the other by ``pdl/2`` dB, and a differential delay
+    :math:`\tau` between the polarizations is modeled by advancing the :math:`x`
+    component and delaying the :math:`y` component by :math:`\tau/2`.
 
     References
     ----------
@@ -673,7 +880,7 @@ def pdmCoherentReceiver(Es, Elo, paramFE, paramPD=None):
 
 
 def edfa(Ei, param=None):
-    """
+    r"""
     Implement simple EDFA model.
 
     Parameters
@@ -693,6 +900,32 @@ def edfa(Ei, param=None):
     -------
     Eo : np.array
         Amplified noisy optical signal.
+
+    Notes
+    -----
+    The amplifier multiplies the optical field by :math:`\sqrt{G}`, where :math:`G` is
+    the power gain, and adds the amplified spontaneous emission (ASE) noise, modeled
+    as a complex circular Gaussian noise :math:`n(t)`:
+
+    .. math::
+        E_{out}(t) = \sqrt{G}\,E_{in}(t) + n(t). \tag{1}
+
+    The power spectral density of the ASE noise, per polarization mode, is
+
+    .. math::
+        N_{ASE} = (G-1)\,n_{sp}\,h\nu, \tag{2}
+
+    where :math:`h\nu` is the photon energy at the carrier frequency :math:`\nu = F_c`
+    and :math:`n_{sp}` is the spontaneous emission factor, which is related to the
+    noise figure :math:`NF` (in linear units) by
+
+    .. math::
+        n_{sp} = \frac{G\cdot NF - 1}{2(G-1)}. \tag{3}
+
+    For a large gain, :math:`NF \approx 2n_{sp} \geq 2` (3 dB), which is the quantum
+    limit of the noise figure of a phase-insensitive amplifier. The noise power within
+    the simulation bandwidth is :math:`P_n = N_{ASE}F_s`, where :math:`F_s` is the
+    sampling frequency.
 
     References
     ----------
@@ -731,7 +964,7 @@ def edfa(Ei, param=None):
 
 
 def basicLaserModel(param=None):
-    """
+    r"""
     Laser model with Maxwellian random walk phase noise and RIN.
 
     Parameters
@@ -751,6 +984,24 @@ def basicLaserModel(param=None):
     -------
     np.array
         Optical signal with phase noise and RIN.
+
+    Notes
+    -----
+    The optical field at the laser output is modeled as
+
+    .. math::
+        E(t) = \sqrt{P + \delta P(t)}\;\exp\left\{j\left[2\pi\Delta f\,t
+        + \phi(t)\right]\right\}, \tag{1}
+
+    where :math:`P` is the average optical power, :math:`\Delta f` is the frequency
+    shift with respect to the central frequency of the simulation, and
+    :math:`\phi(t)` is the phase noise, modeled as a Wiener process whose increments
+    over a sampling period :math:`T_s` have variance :math:`2\pi\Delta\nu T_s`, where
+    :math:`\Delta\nu` is the laser linewidth (see :func:`optic.dsp.core.phaseNoise`).
+    The relative intensity noise (RIN) is modeled by the random power fluctuation
+    :math:`\delta P(t)`, a zero-mean Gaussian noise with variance ``RIN_var``
+    (generated as a circularly-symmetric complex Gaussian sequence, see
+    :func:`optic.dsp.core.gaussianComplexNoise`).
 
     References
     ----------
@@ -795,7 +1046,7 @@ def basicLaserModel(param=None):
 
 
 def adc(sigIn, param):
-    """
+    r"""
     Analog-to-digital converter (ADC) model.
 
     Parameters
@@ -825,6 +1076,37 @@ def adc(sigIn, param):
     - The input signal will be clipped to the range [Vmin, Vmax] before quantization.
     - If the effective number of bits (ENOB) is less than nBits, additional noise will be added to the output signal to model the reduced resolution of the ADC. The noise power is calculated based on the difference between the ideal quantization noise power (corresponding to nBits) and the actual quantization noise power (corresponding to ENOB).
     - If AAF is enabled, anti-aliasing filters will be applied to the input signal before resampling and to the output signal after quantization to mitigate aliasing effects.
+
+    The analog-to-digital conversion is modeled by the following sequence of
+    operations:
+
+    1. Anti-aliasing filtering: the input is lowpass filtered with cutoff frequency
+       :math:`F_{out}/2`, the Nyquist frequency of the ADC.
+    2. Sampling: the signal is resampled at the ADC sampling rate :math:`F_{out}`,
+       with instants :math:`t_m = m/F_{out} + \epsilon_m` affected by a random
+       timing jitter :math:`\epsilon_m \sim \mathcal{N}(0, \sigma_j^2)` (see
+       :func:`optic.dsp.core.clockSamplingInterp`).
+    3. Clipping and quantization: the samples are limited to the full-scale range
+       :math:`[V_{min}, V_{max}]` and quantized with a uniform :math:`b`-bit quantizer
+       (see :func:`optic.dsp.core.quantizer`).
+    4. Output filtering: the quantized signal is filtered again by a lowpass filter
+       with cutoff frequency :math:`F_{out}/2`.
+
+    Steps 1 and 4 are skipped if the anti-aliasing filters are disabled (``AAF``).
+    Real converters perform worse than an ideal quantizer with the same number of
+    bits. This is described by the effective number of bits (ENOB), i.e., the
+    resolution of an ideal quantizer with the same signal-to-noise-and-distortion
+    ratio, :math:`\mathrm{SINAD} = 6.02\,\mathrm{ENOB} + 1.76` dB for a full-scale
+    sinusoid. With the full-scale range :math:`V_{FS} = V_{max} - V_{min}`, the
+    quantization noise power of a :math:`b`-bit quantizer is approximately
+    :math:`V_{FS}^2 / (12 \cdot 2^{2b})`, and the degradation is modeled by adding a
+    Gaussian noise with power
+
+    .. math::
+        P_{extra} = \frac{V_{FS}^2}{12}\left(2^{-2\,\mathrm{ENOB}} - 2^{-2b}\right), \tag{1}
+
+    per real dimension (I and Q) of the signal, so that the total noise power
+    corresponds to a quantizer with :math:`\mathrm{ENOB}` bits.
     """
     # Check and set default values for input parameters
     param.inFs = getattr(param, "inFs", 1)
@@ -914,7 +1196,7 @@ def adc(sigIn, param):
 
 
 def dac(sigIn, param):
-    """
+    r"""
     Digital-to-analog converter (DAC) model.
 
     Parameters
@@ -942,6 +1224,32 @@ def dac(sigIn, param):
     -----
     - The input signal will be clipped to the range [Vmin, Vmax] before quantization.
     - If AIF is enabled, anti-imaging filters will be applied to the output signal after quantization to mitigate imaging effects.
+
+    The digital-to-analog conversion is modeled by the following sequence of
+    operations:
+
+    1. Quantization: the samples are quantized with a uniform :math:`b`-bit quantizer
+       whose full-scale range :math:`[V_{min}, V_{max}]` is given by the minimum and
+       maximum values of the input (see :func:`optic.dsp.core.quantizer`).
+    2. Interpolation: the signal is converted from the input sampling rate
+       :math:`F_{in}` to the output rate :math:`F_{out}` (see
+       :func:`optic.dsp.core.clockSamplingInterp`), with an optional timing jitter.
+    3. Anti-imaging filtering: the interpolated signal is filtered by a lowpass
+       filter with cutoff frequency :math:`F_{out}/2` (if ``AIF`` is enabled).
+
+    A finite effective number of bits (ENOB) is modeled by adding a Gaussian noise
+    with power
+
+    .. math::
+        P_{extra} = \frac{V_{FS}^2}{12}\left(2^{-2\,\mathrm{ENOB}} - 2^{-2b}\right), \qquad
+        V_{FS} = V_{max} - V_{min}, \tag{1}
+
+    per real dimension of the signal (see :func:`adc`). Finally, the output is scaled
+    so that the full-scale range corresponds to the peak-to-peak voltage
+    :math:`V_{pp}` of the DAC,
+
+    .. math::
+        y(t) \leftarrow \frac{V_{pp}}{V_{max} - V_{min}}\,y(t). \tag{2}
     """
     # Check and set default values for input parameters
     param.inFs = getattr(param, "inFs", 1)
