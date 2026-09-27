@@ -37,7 +37,7 @@ from optic.utils import dB2lin, dec2bitarray, llr2bitProb
 
 
 def bert(Irx, bitsTx=None, seed=123):
-    """
+    r"""
     Calculate Bit Error Rate (BER) and Q-factor for optical communication using On-Off Keying (OOK).
 
     Parameters
@@ -68,13 +68,35 @@ def bert(Irx, bitsTx=None, seed=123):
     The following statistics are calculated for the received signal:
     - :math:`I_1`: The average value of the signal when the transmitted bit is 1.
     - :math:`I_0`: The average value of the signal when the transmitted bit is 0.
-    - :math:`\\sigma_1`: The standard deviation of the signal when the transmitted bit is 1.
-    - :math:`\\sigma_0`: The standard deviation of the signal when the transmitted bit is 0.
+    - :math:`\sigma_1`: The standard deviation of the signal when the transmitted bit is 1.
+    - :math:`\sigma_0`: The standard deviation of the signal when the transmitted bit is 0.
 
     The optimal decision threshold `Id` and the Q-factor are calculated based on the signal statistics.
 
     The function then applies the optimal decision rule to estimate the received bit sequence `bitsRx`. The Bit Error Rate (BER) is calculated
     by comparing `bitsRx` to `bitsTx`.
+
+    Assuming that the received signal, conditioned on each transmitted bit, is
+    Gaussian distributed with mean :math:`I_b` and standard deviation
+    :math:`\sigma_b`, :math:`b \in \{0, 1\}`, the decision threshold that minimizes
+    the bit error rate is well approximated by
+
+    .. math::
+        I_D = \frac{\sigma_0 I_1 + \sigma_1 I_0}{\sigma_0 + \sigma_1}, \tag{1}
+
+    for which the error probabilities of the two symbols are equal. The quality of
+    the signal is summarized by the Q-factor,
+
+    .. math::
+        Q = \frac{I_1 - I_0}{\sigma_1 + \sigma_0}, \tag{2}
+
+    which is related to the bit error probability by
+
+    .. math::
+        P_b = \frac{1}{2}\,\mathrm{erfc}\left(\frac{Q}{\sqrt{2}}\right)
+        \approx \frac{e^{-Q^2/2}}{Q\sqrt{2\pi}}. \tag{3}
+
+    For example, :math:`Q = 6` corresponds to :math:`P_b \approx 10^{-9}`.
 
     References
     ----------
@@ -111,7 +133,7 @@ def bert(Irx, bitsTx=None, seed=123):
 
 
 def fastBERcalc(rx, tx, M, constType, px=None):
-    """
+    r"""
     Monte Carlo BER/SER/SNR calculation.
 
     Parameters
@@ -135,6 +157,27 @@ def fastBERcalc(rx, tx, M, constType, px=None):
         Symbol-error-rate.
     SNR : np.array
         Estimated SNR from the received constellation.
+
+    Notes
+    -----
+    Before the error counting, the received symbols :math:`y[k]` are aligned with the
+    transmitted ones :math:`x[k]`: for QAM and PSK, a constant complex gain
+    :math:`\hat{h} = \frac{1}{N}\sum_k x[k]/y[k]` compensates a residual amplitude
+    scaling and phase rotation, and both sequences are normalized to unit power. The
+    signal-to-noise ratio is then estimated as
+
+    .. math::
+        \widehat{\mathrm{SNR}} = \frac{\sum_k |x[k]|^2}{\sum_k |y[k] - x[k]|^2}. \tag{1}
+
+    The received symbols are demodulated by minimum Euclidean distance hard decisions
+    and Gray demapping, and the error rates are estimated by counting,
+
+    .. math::
+        \mathrm{BER} = \frac{N_{b,err}}{N\log_2 M}, \qquad
+        \mathrm{SER} = \frac{N_{s,err}}{N}, \tag{2}
+
+    where :math:`N_{b,err}` is the number of wrong bits and :math:`N_{s,err}` is the
+    number of symbols with at least one wrong bit.
 
     References
     ----------
@@ -199,7 +242,7 @@ def fastBERcalc(rx, tx, M, constType, px=None):
 
 @njit(parallel=True, cache=True)
 def calcLLR(rxSymb, σ2, constSymb, bitMap, px, maxLog=False):
-    """
+    r"""
     LLR calculation assuming a circular AGWN channel model.
 
     Parameters
@@ -221,6 +264,31 @@ def calcLLR(rxSymb, σ2, constSymb, bitMap, px, maxLog=False):
     -------
     LLRs : np.array
         sequence of calculated LLRs.
+
+    Notes
+    -----
+    For a transmitted symbol :math:`x` drawn from the constellation
+    :math:`\mathcal{X}` with probability :math:`p(x)`, and an additive circular
+    Gaussian noise with variance :math:`\sigma^2`, the log-likelihood ratio (LLR) of
+    the :math:`i`-th bit of the symbol, given the received sample :math:`y`, is
+
+    .. math::
+        \Lambda_i(y) = \ln\frac{P(b_i = 0 \mid y)}{P(b_i = 1 \mid y)}
+        = \ln\frac{\sum_{x \in \mathcal{X}_i^0} p(x)\,
+        \exp\left(-|y-x|^2/\sigma^2\right)}
+        {\sum_{x \in \mathcal{X}_i^1} p(x)\,\exp\left(-|y-x|^2/\sigma^2\right)}, \tag{1}
+
+    where :math:`\mathcal{X}_i^b` is the subset of constellation points whose
+    :math:`i`-th bit is :math:`b`. The max-log approximation replaces each sum by its
+    largest term,
+
+    .. math::
+        \Lambda_i(y) \approx
+        \max_{x \in \mathcal{X}_i^0}\left[-\frac{|y-x|^2}{\sigma^2} + \ln p(x)\right]
+        - \max_{x \in \mathcal{X}_i^1}\left[-\frac{|y-x|^2}{\sigma^2} + \ln p(x)\right], \tag{2}
+
+    which avoids the evaluation of exponentials and logarithms at the cost of a small
+    loss of accuracy at low SNR. Positive LLRs favor the bit value 0.
 
     References
     ----------
@@ -349,7 +417,7 @@ def calcExtrLLR(bitLLR, x, xMu, xNu, M, constSymb, bitMap, px=None, prec=np.floa
 
 
 def monteCarloGMI(rx, tx, M, constType, px=None, bitMap=None):
-    """
+    r"""
     Monte Carlo based generalized mutual information (GMI) estimation.
 
     Parameters
@@ -373,6 +441,31 @@ def monteCarloGMI(rx, tx, M, constType, px=None, bitMap=None):
         Generalized mutual information values.
     NGMI : np.array
         Normalized mutual information.
+
+    Notes
+    -----
+    The generalized mutual information (GMI) is an achievable rate, in bits per
+    symbol, for systems with bit-wise decoding, where a binary FEC decoder processes
+    the bit LLRs independently. For a constellation with :math:`m = \log_2 M` bits per
+    symbol, it is estimated from :math:`N` transmitted symbols as
+
+    .. math::
+        \mathrm{GMI} \approx H(X) - \sum_{i=1}^{m}\frac{1}{N}\sum_{k=1}^{N}
+        \log_2\left(1 + e^{(2b_{k,i} - 1)\Lambda_{k,i}}\right), \tag{1}
+
+    where :math:`H(X) = -\sum_x p(x)\log_2 p(x)` is the entropy of the transmitted
+    symbols, :math:`b_{k,i}` is the :math:`i`-th bit of the :math:`k`-th symbol and
+    :math:`\Lambda_{k,i}` is its LLR (see :func:`calcLLR`), computed assuming an
+    AWGN channel whose noise variance is estimated from the data. Each term of the
+    inner sum is equal to :math:`-\log_2 P(b_{k,i} \mid y_k)`, the information that
+    is still missing about the transmitted bit after the observation of
+    :math:`y_k`. The normalized GMI,
+
+    .. math::
+        \mathrm{NGMI} = \frac{\mathrm{GMI}}{H(X)}, \tag{2}
+
+    is the fraction of the transmitted information that is recovered, and is
+    commonly used as a threshold for soft-decision FEC decoders.
 
     References
     ----------
@@ -454,7 +547,7 @@ def monteCarloGMI(rx, tx, M, constType, px=None, bitMap=None):
 
 
 def monteCarloMI(rx, tx, M, constType, px=None):
-    """
+    r"""
     Monte Carlo based mutual information (MI) estimation.
 
     Parameters
@@ -474,6 +567,16 @@ def monteCarloMI(rx, tx, M, constType, px=None):
     -------
     MI : np.array
         Estimated MI values.
+
+    Notes
+    -----
+    The mutual information :math:`I(X;Y)` between the transmitted and the received
+    symbols is the maximum achievable rate, in bits per symbol, for a given input
+    distribution :math:`p(x)` with symbol-wise decoding. After aligning and
+    normalizing the received symbols with respect to the transmitted ones, the noise
+    variance :math:`\sigma^2` is estimated from the data, and :math:`I(X;Y)` is
+    estimated by assuming an AWGN channel with this noise variance (see
+    :func:`calcMI`).
 
     References
     ----------
@@ -523,7 +626,7 @@ def monteCarloMI(rx, tx, M, constType, px=None):
 
 @njit(cache=True)
 def calcMI(rx, tx, σ2, constSymb, pX):
-    """
+    r"""
     Mutual information (MI) calculation for AWGN channels.
 
     Parameters
@@ -543,6 +646,30 @@ def calcMI(rx, tx, σ2, constSymb, pX):
     -------
     scalar
         Estimated mutual information.
+
+    Notes
+    -----
+    The mutual information is computed as
+
+    .. math::
+        I(X;Y) = H(X) - H(X \mid Y), \qquad
+        H(X) = -\sum_{x \in \mathcal{X}} p(x)\log_2 p(x), \tag{1}
+
+    where the conditional entropy is estimated by Monte Carlo averaging over the
+    :math:`N` pairs of transmitted and received symbols :math:`(x_k, y_k)`,
+
+    .. math::
+        H(X \mid Y) \approx -\frac{1}{N}\sum_{k=1}^{N}
+        \log_2\frac{p(y_k \mid x_k)\,p(x_k)}
+        {\sum_{x \in \mathcal{X}} p(y_k \mid x)\,p(x)}. \tag{2}
+
+    The channel transition probability is that of the AWGN channel with noise
+    variance :math:`\sigma^2`, i.e.
+    :math:`p(y \mid x) \propto \exp\left(-|y-x|^2/\sigma^2\right)` for complex
+    symbols and :math:`p(y \mid x) \propto \exp\left[-(y-x)^2/(2\sigma^2)\right]` for
+    real symbols (the normalization constants cancel out in Eq. (2)). When the
+    actual channel is not AWGN, the result is a lower bound on the mutual information
+    of the channel, achievable by a receiver designed for the AWGN channel.
     """
     N = len(rx)
     H_XgY = 0.0
@@ -575,7 +702,7 @@ def calcMI(rx, tx, σ2, constSymb, pX):
 
 
 def Qfunc(x):
-    """
+    r"""
     Calculate function Q(x).
 
     Parameters
@@ -588,6 +715,19 @@ def Qfunc(x):
     scalar
         value of Q(x).
 
+    Notes
+    -----
+    The Gaussian Q-function is the tail probability of the standard normal
+    distribution,
+
+    .. math::
+        Q(x) = \frac{1}{\sqrt{2\pi}}\int_{x}^{\infty} e^{-u^2/2}\,du
+        = \frac{1}{2}\,\mathrm{erfc}\left(\frac{x}{\sqrt{2}}\right). \tag{1}
+
+    It gives the probability that a zero-mean Gaussian random variable with unit
+    variance exceeds :math:`x`, and appears in most error probability expressions for
+    AWGN channels.
+
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
@@ -597,7 +737,7 @@ def Qfunc(x):
 
 
 def calcEVM(symb, M, constType, symbTx=None):
-    """
+    r"""
     Calculate error vector magnitude (EVM) metrics.
 
     Parameters
@@ -615,6 +755,22 @@ def calcEVM(symb, M, constType, symbTx=None):
     -------
     EVM : np.array
         Error vector magnitude (EVM) per signal dimension.
+
+    Notes
+    -----
+    The error vector magnitude (EVM) measures the deviation of the received symbols
+    :math:`y[k]` from their references :math:`x[k]`. Both are normalized to unit
+    average power, and the value returned for each signal dimension is the ratio of
+    the power of the error vector to the power of the reference symbols,
+
+    .. math::
+        \mathrm{EVM}^2 = \frac{\sum_k |y[k] - x[k]|^2}{\sum_k |x[k]|^2}. \tag{1}
+
+    If the transmitted symbols are provided, they are used as references (after a
+    constant complex gain alignment for QAM and PSK); otherwise, the references are
+    the closest constellation points (data-aided or decision-directed EVM). The rms
+    EVM in percent is :math:`100\sqrt{\mathrm{EVM}^2}`, and, for an AWGN channel with
+    data-aided references, :math:`\mathrm{EVM}^2 \approx 1/\mathrm{SNR}`.
 
     References
     ----------
@@ -665,7 +821,7 @@ def calcEVM(symb, M, constType, symbTx=None):
 
 
 def theoryBER(M, EbN0, constType):
-    """
+    r"""
     Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel.
 
     Parameters
@@ -687,6 +843,33 @@ def theoryBER(M, EbN0, constType):
     The values of error probability obtained with this function are good approximations for moderate to high SNR regime (see [1]).
     All cases assume Gray mapped constellations. For low SNR values and high constellation cardinalities (:math:`P_b`>1e-1), the results
     should underestimate the real error probability.
+
+    For an average energy per bit to noise power spectral density ratio
+    :math:`E_b/N_0` and :math:`k = \log_2 M` bits per symbol, the approximations
+    used are:
+
+    - Square M-QAM, with :math:`L = \sqrt{M}`:
+
+      .. math::
+          P_b \approx \frac{2\left(1 - 1/L\right)}{\log_2 L}\,
+          Q\left(\sqrt{\frac{3\log_2 L}{L^2 - 1}\,\frac{2E_b}{N_0}}\right). \tag{1}
+
+    - M-PSK:
+
+      .. math::
+          P_b \approx \frac{2}{k}\,
+          Q\left(\sqrt{\frac{2kE_b}{N_0}}\,\sin\frac{\pi}{M}\right). \tag{2}
+
+    - M-PAM:
+
+      .. math::
+          P_b \approx \frac{2(M-1)}{kM}\,
+          Q\left(\sqrt{\frac{6\log_2 M}{M^2 - 1}\,\frac{E_b}{N_0}}\right). \tag{3}
+
+    Here :math:`Q(\cdot)` is the Gaussian Q-function (see :func:`Qfunc`). The PSK and
+    PAM expressions approximate the symbol error probability and assume that, with
+    Gray mapping, each symbol error causes a single bit error, so that
+    :math:`P_b \approx P_s/k`.
 
     References
     ----------
@@ -795,7 +978,7 @@ def minR(R, x):
 
 
 def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
-    """
+    r"""
     Calculate mutual information for discrete input continuous output the memoryless AWGN channel (DCMC).
 
     Parameters
@@ -819,6 +1002,30 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
     -------
     float
         Mutual information for the given parameters.
+
+    Notes
+    -----
+    For a discrete-input continuous-output memoryless channel (DCMC) with additive
+    white Gaussian noise, the mutual information is
+
+    .. math::
+        I(X;Y) = H(X) - \sum_{x \in \mathcal{X}} p(x)\int p(y \mid x)
+        \log_2\frac{p(y)}{p(y \mid x)\,p(x)}\,dy, \tag{1}
+
+    with :math:`p(y) = \sum_{x} p(y \mid x)\,p(x)` and, for complex constellations
+    normalized to unit average energy,
+
+    .. math::
+        p(y \mid x) = \frac{1}{2\pi\sigma^2}
+        \exp\left(-\frac{|y-x|^2}{2\sigma^2}\right), \qquad
+        \sigma^2 = \frac{1}{2\,\mathrm{SNR}}, \tag{2}
+
+    where :math:`\sigma^2` is the noise variance per real dimension (for PAM, a
+    real-valued Gaussian with :math:`\sigma^2 = 1/\mathrm{SNR}` is used). The integral
+    in Eq. (1) is evaluated numerically. Since the integrand of constellation points
+    with the same magnitude is identical for rotationally symmetric constellations,
+    the integral may be computed once for each group of such points
+    (``symmetry=True``).
 
     References
     ----------
@@ -879,7 +1086,7 @@ def theoryMI(M, constType, SNR, pX=None, symmetry=True, lim=np.inf, tol=1e-3):
 
 
 def theoryGMI(M, constType, SNR, bitMap=None, pX=None, lim=None, tol=1e-3):
-    """
+    r"""
     Calculate generalized mutual information (GMI) for discrete input continuous output the memoryless AWGN channel (DCMC).
 
     Parameters
@@ -903,6 +1110,28 @@ def theoryGMI(M, constType, SNR, bitMap=None, pX=None, lim=None, tol=1e-3):
     -------
     float
         Theoretical GMI for the given parameters.
+
+    Notes
+    -----
+    The generalized mutual information of a bit-interleaved coded modulation (BICM)
+    system with :math:`m = \log_2 M` bits per symbol is the sum of the mutual
+    informations between each bit :math:`B_i` of the symbol and the channel output,
+
+    .. math::
+        \mathrm{GMI} = \sum_{i=1}^{m} I(B_i; Y)
+        = \sum_{i=1}^{m}\left[H(B_i) - H(B_i \mid Y)\right], \tag{1}
+
+    where the channel law of each bit is the mixture of the AWGN transition
+    probabilities of the constellation points that carry it,
+
+    .. math::
+        p(y \mid B_i = b) = \frac{1}{P(B_i = b)}
+        \sum_{x \in \mathcal{X}_i^b} p(x)\,p(y \mid x). \tag{2}
+
+    The conditional entropies :math:`H(B_i \mid Y)` are evaluated by numerical
+    integration. The GMI depends on the bit mapping and is upper bounded by the
+    mutual information of the constellation (see :func:`theoryMI`), being close to it
+    for Gray mapping.
 
     References
     ----------
@@ -1226,7 +1455,7 @@ def GNmodel_OSNR(Rs, Nch, Δf, Ptx, paramCh=None, Bref=12.5e9):
 
 
 def calcLinOSNR(Ns, Pin, α, Ls, OSNRin, NF=4.5, Fc=193.1e12, Bref=12.5e9):
-    """
+    r"""
     Calculate the OSNR evolution in a multi-span fiber transmission system.
 
     Parameters
@@ -1252,6 +1481,38 @@ def calcLinOSNR(Ns, Pin, α, Ls, OSNRin, NF=4.5, Fc=193.1e12, Bref=12.5e9):
     -------
     OSNR : np.array
         OSNR values in dB at the output of each fiber span.
+
+    Notes
+    -----
+    In a chain of :math:`N_s` fiber spans of length :math:`L_s`, each one followed by
+    an EDFA whose gain :math:`G = \alpha L_s` (in dB) compensates the span loss, the
+    signal power at the output of each amplifier is equal to the launch power
+    :math:`P_{in}`, whereas the ASE noise accumulates. Each amplifier adds the ASE
+    noise power
+
+    .. math::
+        P_{ASE} = 2N_{ASE}B_{ref}, \qquad N_{ASE} = (G-1)\,n_{sp}\,h\nu, \tag{1}
+
+    in both polarizations, within the reference bandwidth :math:`B_{ref}` (usually
+    12.5 GHz, i.e. 0.1 nm at 1550 nm), where :math:`n_{sp} = (G\cdot NF -
+    1)/[2(G-1)]` is obtained from the noise figure :math:`NF` (see
+    :func:`optic.models.devices.edfa`). Since the gain of each amplifier compensates
+    exactly the loss of the preceding span, the noise power at the output of the
+    :math:`k`-th amplifier is
+
+    .. math::
+        P_{n,k} = G\,\frac{P_{n,k-1}}{G} + P_{ASE} = P_{n,k-1} + P_{ASE},
+        \qquad P_{n,0} = \frac{P_{in}}{\mathrm{OSNR}_{in}}, \tag{2}
+
+    where :math:`P_{n,0}` is the noise at the input of the link, given by the input
+    OSNR. Hence, :math:`P_{n,k} = P_{n,0} + kP_{ASE}` and the OSNR after the
+    :math:`k`-th span is
+
+    .. math::
+        \mathrm{OSNR}_k = \frac{P_{in}}{P_{n,0} + kP_{ASE}}. \tag{3}
+
+    For a negligible input noise, the OSNR decreases by 3 dB each time the number of
+    spans doubles.
 
     References
     ----------
