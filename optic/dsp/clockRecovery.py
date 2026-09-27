@@ -23,7 +23,7 @@ from scipy.signal import find_peaks
 
 @njit
 def gardnerTED(x):
-    """
+    r"""
     Calculate the timing error using the Gardner timing error detector.
 
     Parameters
@@ -35,13 +35,28 @@ def gardnerTED(x):
     -------
     float
         Gardner timing error detector (TED) value.
+
+    Notes
+    -----
+    The Gardner timing error detector (TED) works with two samples per symbol. Given
+    the samples at the current and the previous symbol instants, :math:`y_k` and
+    :math:`y_{k-1}`, and the sample halfway between them, :math:`y_{k-1/2}`, the timing
+    error is
+
+    .. math::
+        e_k = \mathrm{Re}\left\{y_{k-1/2}^*\left(y_k - y_{k-1}\right)\right\}. \tag{1}
+
+    When a symbol transition occurs, the midpoint sample is close to zero if the
+    sampling instants are correct; otherwise, its sign relative to the slope of the
+    transition indicates whether the sampling is early or late. The TED does not
+    depend on symbol decisions and is insensitive to the carrier phase.
     """
     return np.real(np.conj(x[1]) * (x[2] - x[0]))
 
 
 @njit
 def gardnerTEDnyquist(x):
-    """
+    r"""
     Modified Gardner timing error detector for Nyquist pulses.
 
     Parameters
@@ -53,13 +68,25 @@ def gardnerTEDnyquist(x):
     -------
     float
         Gardner timing error detector (TED) value.
+
+    Notes
+    -----
+    For Nyquist pulses with small roll-off factors, the S-curve of the classical
+    Gardner TED (see :func:`gardnerTED`) vanishes. This modified detector uses the
+    power of the samples instead,
+
+    .. math::
+        e_k = |y_{k-1/2}|^2\left(|y_{k-1}|^2 - |y_k|^2\right), \tag{1}
+
+    where :math:`y_{k-1}` and :math:`y_k` are consecutive symbol-spaced samples and
+    :math:`y_{k-1/2}` is the sample halfway between them.
     """
     return np.abs(x[1]) ** 2 * (np.abs(x[0]) ** 2 - np.abs(x[2]) ** 2)
 
 
 @njit
 def interpolator(x, t):
-    """
+    r"""
     Perform cubic interpolation using the Farrow structure.
 
     Parameters
@@ -73,6 +100,35 @@ def interpolator(x, t):
     -------
     y : float
         Interpolated signal value.
+
+    Notes
+    -----
+    The interpolator computes the value of the signal at a fractional position
+    :math:`t \in [-1, 1]` with respect to the sample :math:`x[2]`, by cubic Lagrange
+    interpolation of the four samples :math:`x[0], \ldots, x[3]`, located at the
+    positions :math:`-2, -1, 0` and :math:`1`,
+
+    .. math::
+        y(t) = \sum_{i=0}^{3} x[i]\,\ell_i(t), \qquad
+        \ell_i(t) = \prod_{j \neq i}\frac{t - t_j}{t_i - t_j}, \tag{1}
+
+    which is implemented with the Farrow structure, i.e. with the polynomial
+    coefficients
+
+    .. math::
+        :nowrap:
+
+        \begin{equation}
+            \begin{aligned}
+                \ell_0(t) &= -\tfrac{1}{6}t^3 + \tfrac{1}{6}t, &
+                \ell_1(t) &= \tfrac{1}{2}t^3 + \tfrac{1}{2}t^2 - t, \\
+                \ell_2(t) &= -\tfrac{1}{2}t^3 - t^2 + \tfrac{1}{2}t + 1, &
+                \ell_3(t) &= \tfrac{1}{6}t^3 + \tfrac{1}{2}t^2 + \tfrac{1}{3}t.
+            \end{aligned} \tag{2}
+        \end{equation}
+
+    In this form, the fractional delay :math:`t` can be changed at every output
+    sample without recomputing filter coefficients.
     """
     return (
         x[0] * (-1 / 6 * t**3 + 1 / 6 * t)
@@ -83,7 +139,7 @@ def interpolator(x, t):
 
 
 def gardnerClockRecovery(sigIn, param=None):
-    """
+    r"""
     Perform clock recovery using Gardner's algorithm with a loop PI filter.
 
     Parameters
@@ -104,6 +160,30 @@ def gardnerClockRecovery(sigIn, param=None):
     -------
     tuple
         Tuple containing the recovered signal (sigOut) and the timing values.
+
+    Notes
+    -----
+    The clock recovery is a feedback loop composed of an interpolator, a timing
+    error detector (TED), a loop filter and a numerically controlled oscillator
+    (NCO). At each output sample, the interpolator computes the signal at the
+    fractional delay :math:`\tau` given by the NCO (see :func:`interpolator`). Once
+    per symbol, the TED computes the timing error :math:`e_k` (see
+    :func:`gardnerTED` and :func:`gardnerTEDnyquist`), which is filtered by a
+    proportional-integral (PI) loop filter,
+
+    .. math::
+        v_k = k_p e_k + k_i\sum_{l \le k} e_l, \tag{1}
+
+    and the NCO updates the fractional delay as
+
+    .. math::
+        \tau \leftarrow \tau - v_k. \tag{2}
+
+    Whenever :math:`\tau` crosses :math:`\pm 1`, it is wrapped back into
+    :math:`[-1, 1]` and one input sample is skipped or repeated, which allows the
+    loop to track a clock frequency offset (drift) between the transmitter and the
+    receiver. The integral term removes the steady-state timing error caused by such
+    a drift.
     """
     # Check and set default values for input parameters
     kp = getattr(param, "kp", 1e-3)
