@@ -33,7 +33,7 @@ from optic.utils import bitarray2dec, dec2bitarray, llr2bitProb
 
 
 def grayCode(n):
-    """
+    r"""
     Gray code generator.
 
     Parameters
@@ -46,6 +46,18 @@ def grayCode(n):
     code : list
            list of binary strings of the gray code.
 
+    Notes
+    -----
+    In a Gray code, the binary words assigned to consecutive integers differ in a
+    single bit. The :math:`i`-th codeword is obtained from the binary representation
+    of :math:`i` as
+
+    .. math::
+        g_i = i \oplus \left\lfloor i/2 \right\rfloor, \tag{1}
+
+    where :math:`\oplus` denotes the bitwise exclusive OR. When the codewords are
+    assigned to neighboring constellation points (Gray mapping), the most likely
+    symbol errors, i.e. those between nearest neighbors, cause a single bit error.
     """
     code = []
 
@@ -119,7 +131,7 @@ def grayMapping(M, constType):
 
 
 def pamConst(M):
-    """
+    r"""
     Generate a Pulse Amplitude Modulation (PAM) constellation.
 
     Parameters
@@ -132,6 +144,17 @@ def pamConst(M):
     np.array
         1D PAM constellation.
 
+    Notes
+    -----
+    The :math:`M` points of the pulse amplitude modulation (PAM) constellation are
+    equally spaced and symmetric around zero,
+
+    .. math::
+        \mathcal{X} = \left\{-(M-1), \ldots, -3, -1, 1, 3, \ldots, M-1\right\}, \tag{1}
+
+    with minimum distance :math:`d_{min} = 2` and, for equiprobable symbols, average
+    energy :math:`E_s = (M^2 - 1)/3`.
+
     References
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
@@ -141,7 +164,7 @@ def pamConst(M):
 
 
 def qamConst(M):
-    """
+    r"""
     Generate a Quadrature Amplitude Modulation (QAM) constellation.
 
     Parameters
@@ -153,6 +176,19 @@ def qamConst(M):
     -------
     const : np.array
         Complex square M-QAM constellation.
+
+    Notes
+    -----
+    A square :math:`M`-QAM constellation is the Cartesian product of two
+    :math:`L`-PAM constellations, :math:`L = \sqrt{M}`, one in the in-phase and one in
+    the quadrature component,
+
+    .. math::
+        \mathcal{X} = \left\{x_I + jx_Q \;:\; x_I, x_Q \in
+        \{-(L-1), \ldots, -1, 1, \ldots, L-1\}\right\}, \tag{1}
+
+    with minimum distance :math:`d_{min} = 2` and, for equiprobable symbols, average
+    energy :math:`E_s = 2(M-1)/3`.
 
     References
     ----------
@@ -175,7 +211,7 @@ def qamConst(M):
 
 
 def pskConst(M):
-    """
+    r"""
     Generate a Phase Shift Keying (PSK) constellation.
 
     Parameters
@@ -187,6 +223,17 @@ def pskConst(M):
     -------
     np.array
         Complex M-PSK constellation.
+
+    Notes
+    -----
+    The :math:`M` points of the phase shift keying (PSK) constellation lie on the
+    unit circle, equally spaced in phase,
+
+    .. math::
+        x_m = e^{j2\pi m/M}, \qquad m = 0, 1, \ldots, M-1, \tag{1}
+
+    so that all symbols have unit energy and the minimum distance is
+    :math:`d_{min} = 2\sin(\pi/M)`.
 
     References
     ----------
@@ -270,7 +317,7 @@ def apskConst(M, m1=None, phaseOffset=None):
 
 @njit(parallel=True, cache=True)
 def minEuclid(symb, const):
-    """
+    r"""
     Find minimum Euclidean distance.
 
     Find closest constellation symbol w.r.t the Euclidean distance in the
@@ -287,6 +334,18 @@ def minEuclid(symb, const):
     -------
     np.array of int
         indexes of the closest constellation symbols.
+
+    Notes
+    -----
+    Each received symbol :math:`y` is associated with the closest point of the
+    constellation :math:`\mathcal{X} = \{x_0, \ldots, x_{M-1}\}` in the Euclidean
+    sense,
+
+    .. math::
+        \hat{m} = \arg\min_{m}\, |y - x_m|^2. \tag{1}
+
+    For equiprobable symbols and additive white Gaussian noise, this is the maximum
+    likelihood (ML) decision rule.
 
     References
     ----------
@@ -410,7 +469,7 @@ def demodulateGray(symb, M, constType):
 
 @njit(fastmath=True, cache=True)
 def detector(r, σ2, constSymb, px=None, rule="MAP"):
-    """
+    r"""
     Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule.
 
     Parameters
@@ -433,9 +492,28 @@ def detector(r, σ2, constSymb, px=None, rule="MAP"):
             - np.array: The detected symbols.
             - np.array: The indices of the detected symbols in the constellation.
 
-    Notes:
-    ------
+    Notes
+    -----
     If `px` is None or `rule` is 'ML', uniform priors are assumed.
+
+    Given the received sample :math:`y = x + n`, where :math:`n` is circular Gaussian
+    noise with variance :math:`\sigma^2`, the maximum a posteriori (MAP) rule chooses
+    the symbol with the largest posterior probability,
+
+    .. math::
+        \hat{x}_{MAP} = \arg\max_{x \in \mathcal{X}}\, p(x \mid y)
+        = \arg\max_{x \in \mathcal{X}}\left[-\frac{|y - x|^2}{\sigma^2}
+        + \ln p(x)\right], \tag{1}
+
+    which minimizes the symbol error probability. For equiprobable symbols, the prior
+    term :math:`\ln p(x)` is constant and the MAP rule reduces to the maximum
+    likelihood (ML) rule, i.e. the minimum Euclidean distance decision,
+
+    .. math::
+        \hat{x}_{ML} = \arg\min_{x \in \mathcal{X}}\, |y - x|^2. \tag{2}
+
+    For non-uniform priors, as in probabilistically shaped constellations, the MAP
+    decision regions shrink around the less likely symbols.
 
     References
     ----------
