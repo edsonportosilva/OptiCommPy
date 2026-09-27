@@ -23,7 +23,7 @@ with warnings.catch_warnings():
 
 
 def bpsGPU(sigIn, N, constSymb, B):
-    """
+    r"""
     Blind phase search (BPS) algorithm
 
     Parameters
@@ -41,6 +41,15 @@ def bpsGPU(sigIn, N, constSymb, B):
     -------
     θ : real-valued np.array
         Time-varying estimated phase-shifts.
+
+    Notes
+    -----
+    This is the GPU (CuPy) implementation of the blind phase search algorithm: for
+    :math:`B` test phases :math:`\varphi_b = \frac{b}{B}\frac{\pi}{2}`, the squared
+    distances between the rotated symbols :math:`y[k]e^{j\varphi_b}` and the closest
+    constellation points are summed over a window of :math:`2N+1` symbols, and the
+    test phase with the smallest sum is selected. See
+    :func:`optic.dsp.carrierRecovery.bps` for the description of the algorithm.
 
     References
     ----------
