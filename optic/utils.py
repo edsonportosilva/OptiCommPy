@@ -344,7 +344,7 @@ def ber2Qfactor(ber):
     Returns
     -------
     float
-        The Q factor corresponding to the input BER.
+        The Q factor in dB, :math:`20\log_{10}Q`, corresponding to the input BER.
 
     Notes
     -----
@@ -355,9 +355,15 @@ def ber2Qfactor(ber):
     .. math::
         Q = \sqrt{2}\,\mathrm{erfc}^{-1}(2\,\mathrm{BER}). \tag{1}
 
-    The value returned is :math:`10\log_{10}Q`.
+    The value returned is the Q-factor in dB, following the usual convention
+
+    .. math::
+        Q_{dB} = 20\log_{10}Q = 10\log_{10}Q^2, \tag{2}
+
+    so that, e.g., :math:`\mathrm{BER} = 10^{-9}` corresponds to
+    :math:`Q \approx 6` and :math:`Q_{dB} \approx 15.6` dB.
     """
-    return 10 * np.log10(np.sqrt(2) * erfcinv(2 * ber))
+    return 20 * np.log10(np.sqrt(2) * erfcinv(2 * ber))
 
 
 @njit(cache=True)
