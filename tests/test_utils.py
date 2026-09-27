@@ -54,12 +54,16 @@ class TestUnitConversions:
         assert dBm2W(dBm) == pytest.approx(watts)
 
     def test_ber2Qfactor_is_consistent_with_the_gaussian_approximation(self):
-        # BER = 0.5*erfc(Q/sqrt(2)), with Q returned in dB by ber2Qfactor
+        # BER = 0.5*erfc(Q/sqrt(2)), with Q returned in dB (20*log10(Q))
         from scipy.special import erfc
 
         for ber in [1e-2, 1e-3, 1e-5, 1e-9]:
-            Q = dB2lin(ber2Qfactor(ber))
+            Q = 10 ** (ber2Qfactor(ber) / 20)
             assert 0.5 * erfc(Q / np.sqrt(2)) == pytest.approx(ber, rel=1e-6)
+
+    def test_ber2Qfactor_reference_value(self):
+        # BER = 1e-9 corresponds to Q ~ 6, i.e. ~15.6 dB
+        assert ber2Qfactor(1e-9) == pytest.approx(15.56, abs=0.01)
 
     def test_ber2Qfactor_decreases_with_increasing_ber(self):
         Q = [ber2Qfactor(ber) for ber in [1e-9, 1e-6, 1e-3, 1e-2]]
