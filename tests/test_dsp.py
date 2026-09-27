@@ -21,6 +21,7 @@ from optic.dsp.core import (
     pulseShape,
     quantizer,
     resample,
+    rrcFilterTaps,
     sigPow,
     signalPower,
     symbolSync,
@@ -122,6 +123,15 @@ class TestFIRFiltering:
 
 
 class TestPulseShaping:
+    @pytest.mark.parametrize("Ts", [0.5, 2.0, 1 / 32e9])
+    def test_rrcFilterTaps_scales_with_the_symbol_period(self, Ts):
+        # p(t; Ts) = p(t/Ts; 1)/Ts, which also checks continuity at t = 0
+        t = np.linspace(-8, 8, 401)
+
+        np.testing.assert_allclose(
+            rrcFilterTaps(t * Ts, 0.3, Ts) * Ts, rrcFilterTaps(t, 0.3, 1.0)
+        )
+
     @pytest.mark.parametrize("pulseType", ["rect", "nrz", "rrc", "rc"])
     def test_pulseShape_returns_coefficients_with_unit_dc_gain(self, pulseType):
         param = parameters()
