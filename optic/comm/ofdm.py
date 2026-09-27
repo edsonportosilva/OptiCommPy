@@ -19,7 +19,7 @@ from scipy.interpolate import interp1d
 
 
 def hermit(V):
-    """
+    r"""
     Hermitian simmetry block.
 
     Parameters
@@ -31,6 +31,20 @@ def hermit(V):
     -------
     Vh : complex-valued np.array
         vector with hermitian simmetry
+
+    Notes
+    -----
+    The discrete Fourier transform of a real-valued sequence of length :math:`N`
+    satisfies the Hermitian symmetry :math:`X[N-k] = X^*[k]`. To generate a
+    real-valued OFDM signal (e.g. for intensity modulation), the vector :math:`V` of
+    :math:`N_s` subcarrier symbols is arranged as
+
+    .. math::
+        V_h = \left[0,\; V[0], \ldots, V[N_s-1],\; 0,\; V^*[N_s-1], \ldots, V^*[0]\right],
+        \tag{1}
+
+    with length :math:`2N_s + 2`, where the DC and the Nyquist subcarriers are set to
+    zero. The inverse DFT of :math:`V_h` is then real-valued.
     """
 
     Vh = np.zeros(2 * len(V) + 2, complex)
@@ -69,7 +83,7 @@ def zeroPad(x, L):
 
 
 def calcSymbolRate(M, Rb, Nfft, Np, G, hermitSym):
-    """
+    r"""
     Calculate the symbol rate of a given OFDM configuration.
 
     Parameters
@@ -91,13 +105,27 @@ def calcSymbolRate(M, Rb, Nfft, Np, G, hermitSym):
     -------
     Rs : scalar
         OFDM symbol rate
+
+    Notes
+    -----
+    Each OFDM frame of :math:`N_{FFT} + G` samples, where :math:`G` is the length of
+    the cyclic prefix, carries :math:`N_d` data symbols of :math:`\log_2 M` bits each.
+    To transport the bit rate :math:`R_b`, the sampling (symbol) rate of the OFDM
+    signal must be
+
+    .. math::
+        R_s = \frac{R_b}{\dfrac{N_d}{N_{FFT} + G}\,\log_2 M}, \tag{1}
+
+    where :math:`N_d = N_{FFT} - N_p` for complex OFDM and
+    :math:`N_d = N_{FFT}/2 - 1 - N_p` with Hermitian symmetry, :math:`N_p` being the
+    number of pilot subcarriers.
     """
     nDataSymbols = (Nfft // 2 - 1 - Np) if hermitSym else (Nfft - Np)
     return Rb / (nDataSymbols / (Nfft + G) * np.log2(M))
 
 
 def modulateOFDM(symb, param=None):
-    """
+    r"""
     Modulate OFDM signal.
 
     Parameters
@@ -119,6 +147,33 @@ def modulateOFDM(symb, param=None):
     -------
     np.array
         Complex-valued array representing the OFDM symbols sequence transmitted.
+
+    Notes
+    -----
+    In orthogonal frequency division multiplexing (OFDM), the data symbols are
+    transmitted in parallel over :math:`N_{FFT}` orthogonal subcarriers. Each OFDM
+    frame is built by placing the data symbols on the data subcarriers, the pilot
+    symbol on the pilot subcarriers, and zeros on the null subcarriers, which yields
+    the vector :math:`X[k]`, :math:`k = 0, \ldots, N_{FFT}-1` (with Hermitian
+    symmetry, see :func:`hermit`, the time-domain signal is real-valued). The
+    time-domain samples are obtained with an inverse DFT,
+
+    .. math::
+        x[n] = \frac{1}{\sqrt{N_{FFT}}}\sum_{k=0}^{N_{FFT}-1} X[k]\,
+        e^{j2\pi kn/N_{FFT}}, \qquad n = 0, \ldots, N_{FFT}-1. \tag{1}
+
+    Eq. (1) corresponds to ``SpS = 1``; oversampling by ``SpS`` is implemented by zero
+    padding the spectrum before the inverse DFT, with the normalization adjusted to
+    preserve the signal power. Finally, a cyclic prefix is inserted by copying the last :math:`G`
+    samples of the frame to its beginning,
+
+    .. math::
+        \tilde{x}[n] = x[(n - G) \bmod N_{FFT}], \qquad n = 0, \ldots, N_{FFT} + G - 1. \tag{2}
+
+    As long as the channel memory is shorter than the cyclic prefix, the linear
+    convolution with the channel impulse response becomes a circular convolution
+    within each frame, so that each subcarrier experiences a single complex gain
+    :math:`H[k]`.
 
     References
     ----------
@@ -183,7 +238,7 @@ def modulateOFDM(symb, param=None):
 
 
 def demodulateOFDM(sig, param=None):
-    """
+    r"""
     Demodulate OFDM signal.
 
     Parameters
@@ -211,6 +266,23 @@ def demodulateOFDM(sig, param=None):
     -----
     - The input signal must be sampled at one sample per symbol.
     - This function performs demodulation of the OFDM signal according to the provided parameters, including channel estimation and single tap equalization.
+
+    For each received frame, the cyclic prefix is removed and the subcarrier
+    symbols are obtained with a DFT,
+
+    .. math::
+        Y[k] = \frac{1}{\sqrt{N_{FFT}}}\sum_{n=0}^{N_{FFT}-1} y[n]\,
+        e^{-j2\pi kn/N_{FFT}} = H[k]X[k] + N[k], \tag{1}
+
+    where :math:`H[k]` is the frequency response of the channel at the :math:`k`-th
+    subcarrier. If pilot subcarriers are used, the channel is estimated at the pilot
+    positions :math:`k_p`, as :math:`\hat{H}[k_p] = Y[k_p]/X_p`, where :math:`X_p` is
+    the pilot symbol. The magnitude and the phase of :math:`\hat{H}` are then
+    linearly interpolated over all subcarriers and averaged over the frames, and the
+    data symbols are recovered by one-tap (zero-forcing) equalization,
+
+    .. math::
+        \hat{X}[k] = \frac{Y[k]}{\hat{H}[k]}. \tag{2}
 
     References
     ----------
