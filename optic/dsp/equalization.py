@@ -43,7 +43,7 @@ from optic.models.channels import convergenceCondition, nlinPhaseRot
 
 
 def edc(sigIn, param):
-    """
+    r"""
     Electronic chromatic dispersion compensation (EDC).
 
     Parameters
@@ -65,6 +65,29 @@ def edc(sigIn, param):
     -------
     sigOut : np.array
         Dispersion compensated output signal.
+
+    Notes
+    -----
+    Chromatic dispersion is a linear effect, described in the frequency domain by
+    the all-pass transfer function
+    :math:`H_{CD}(\omega) = \exp\left(j\frac{\beta_2}{2}\omega^2 L\right)` (see
+    :func:`optic.models.channels.linearFiberChannel`), where :math:`\beta_2 =
+    -D\lambda^2/(2\pi c)` and :math:`L` is the fiber length. It is compensated by the
+    inverse filter,
+
+    .. math::
+        H_{EDC}(\omega) = \exp\left(-j\frac{\beta_2}{2}\omega^2 L\right), \tag{1}
+
+    which is applied by blockwise FFT convolution (see
+    :func:`optic.dsp.core.blockwiseFFTConv`). The dispersion broadens the impulse
+    response of the channel proportionally to :math:`|\beta_2|L` and to the signal
+    bandwidth; the default number of filter coefficients follows the rule
+
+    .. math::
+        N_{taps} = 2\left\lceil 6.67\,|\beta_2|\,L\,R_s^2\,\frac{F_s}{R_s}\right\rceil,
+        \tag{2}
+
+    where :math:`R_s` is the symbol rate and :math:`F_s` the sampling rate.
 
     References
     ----------
