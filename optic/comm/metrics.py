@@ -754,7 +754,10 @@ def calcEVM(symb, M, constType, symbTx=None):
     Returns
     -------
     EVM : np.array
-        Error vector magnitude (EVM) per signal dimension.
+        Squared error vector magnitude per signal dimension, i.e. the ratio
+        between the power of the error vector and the power of the reference
+        symbols (linear scale). The rms EVM in percent is ``100*np.sqrt(EVM)``,
+        and ``10*np.log10(EVM)`` gives the EVM in dB.
 
     Notes
     -----
