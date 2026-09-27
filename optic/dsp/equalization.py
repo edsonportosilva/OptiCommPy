@@ -458,7 +458,7 @@ def mimoAdaptEqualizer(sigIn, param=None, symbRef=None):
 
 
 def manakovDBP(Ei, param):
-    """
+    r"""
     Run the Manakov SSF digital backpropagation (symmetric, dual-pol.).
 
     Parameters
@@ -493,6 +493,23 @@ def manakovDBP(Ei, param):
         Optical signal after nonlinear backward propagation.
     param : parameter object  (struct)
         Object with physical/simulation parameters used in the split-step alg.
+
+    Notes
+    -----
+    Digital backpropagation (DBP) compensates the deterministic linear and nonlinear
+    impairments of the fiber by numerically solving the Manakov equations (see
+    :func:`optic.models.channels.manakovSSF`) in the reverse direction, i.e. with
+    the signs of the attenuation, dispersion and nonlinear parameters inverted,
+
+    .. math::
+        \frac{\partial A_{x,y}}{\partial z} = +\frac{\alpha}{2}A_{x,y}
+        + j\frac{\beta_2}{2}\frac{\partial^2 A_{x,y}}{\partial t^2}
+        - j\frac{8}{9}\gamma\left(|A_x|^2 + |A_y|^2\right)A_{x,y}, \tag{1}
+
+    starting from the received field and propagating it back to the transmitter
+    over the same spans, with the split-step Fourier method. Since the ASE noise
+    added along the link is not deterministic, it cannot be removed, which limits the
+    performance gain of DBP.
 
     References
     ----------
