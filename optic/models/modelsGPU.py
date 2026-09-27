@@ -54,7 +54,7 @@ def gaussianComplexNoise(shapeOut, σ2=1.0, seed=None):
 
 
 def edfa(Ei, param):
-    """
+    r"""
     Implement simple EDFA model.
 
     Parameters
@@ -75,6 +75,14 @@ def edfa(Ei, param):
     -------
     Eo : np.array
         Amplified noisy optical signal.
+
+    Notes
+    -----
+    This is the GPU (CuPy) implementation of the EDFA model,
+    :math:`E_{out}(t) = \sqrt{G}\,E_{in}(t) + n(t)`, where :math:`n(t)` is the
+    amplified spontaneous emission noise. See :func:`optic.models.devices.edfa` for
+    the expressions of the noise power as a function of the gain and the noise
+    figure.
 
     References
     ----------
@@ -115,7 +123,7 @@ def edfa(Ei, param):
 
 
 def ssfm(Ei, param):
-    """
+    r"""
     Split-step Fourier method (symmetric, single-pol.).
 
     Parameters
@@ -147,6 +155,19 @@ def ssfm(Ei, param):
         Optical signal after nonlinear propagation.
     param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
+
+    Notes
+    -----
+    This is the GPU (CuPy) implementation of the split-step Fourier solution of the
+    nonlinear Schrödinger equation,
+
+    .. math::
+        \frac{\partial A}{\partial z} = -\frac{\alpha}{2}A
+        - j\frac{\beta_2}{2}\frac{\partial^2 A}{\partial t^2}
+        + j\gamma|A|^2A. \tag{1}
+
+    See :func:`optic.models.channels.ssfm` for the description of the model and of
+    the numerical method.
 
     References
     ----------
@@ -279,7 +300,7 @@ def ssfm(Ei, param):
 
 
 def manakovSSF(Ei, param):
-    """
+    r"""
     Run the Manakov split-step Fourier model (symmetric, dual-pol.).
 
     Parameters
@@ -316,6 +337,20 @@ def manakovSSF(Ei, param):
         Optical signal after nonlinear propagation.
     param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
+
+    Notes
+    -----
+    This is the GPU (CuPy) implementation of the split-step Fourier solution of the
+    Manakov equations,
+
+    .. math::
+        \frac{\partial A_{x,y}}{\partial z} = -\frac{\alpha}{2}A_{x,y}
+        - j\frac{\beta_2}{2}\frac{\partial^2 A_{x,y}}{\partial t^2}
+        + j\frac{8}{9}\gamma\left(|A_x|^2 + |A_y|^2\right)A_{x,y}. \tag{1}
+
+    See :func:`optic.models.channels.manakovSSF` for the description of the model and
+    of the numerical method, including the adaptive step size and the iterative
+    trapezoidal integration of the nonlinear phase.
 
     References
     ----------
@@ -562,7 +597,7 @@ def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
 
 
 def manakovDBP(Ei, param):
-    """
+    r"""
     Run the Manakov SSF digital backpropagation (symmetric, dual-pol.).
 
     Parameters
@@ -597,6 +632,21 @@ def manakovDBP(Ei, param):
         Optical signal after nonlinear backward propagation.
     param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
+
+    Notes
+    -----
+    Digital backpropagation (DBP) compensates the deterministic linear and nonlinear
+    impairments of the fiber by numerically solving the Manakov equations (see
+    :func:`manakovSSF`) in the reverse direction, i.e. with the signs of the
+    attenuation, dispersion and nonlinear parameters inverted,
+
+    .. math::
+        \frac{\partial A_{x,y}}{\partial z} = +\frac{\alpha}{2}A_{x,y}
+        + j\frac{\beta_2}{2}\frac{\partial^2 A_{x,y}}{\partial t^2}
+        - j\frac{8}{9}\gamma\left(|A_x|^2 + |A_y|^2\right)A_{x,y}, \tag{1}
+
+    starting from the received field and propagating it back to the transmitter
+    over the same spans. This is the GPU (CuPy) implementation.
 
     References
     ----------
