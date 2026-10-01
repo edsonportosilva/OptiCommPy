@@ -197,7 +197,7 @@ def calcPertCoeffMatrix(param):
     return C, C_ifwm, C_ixpm, C_ispm
 
 
-@njit(parallel=True, fastmath=True)
+@njit(parallel=True)
 def calcNLINperturbation(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
     """
     Fast calculation of the first-order perturbation model.
@@ -339,7 +339,7 @@ def calcNLINperturbation(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
     return dx, dy, phi_ixpm_x, phi_ixpm_y
 
 
-@njit(parallel=True, fastmath=True)
+@njit(parallel=True)
 def calcNLINperturbationSimplified(
     C_ifwm, C_ixpm, C_ispm, x, y, coeffTol=-20, prec=np.complex64
 ):
