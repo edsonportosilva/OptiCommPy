@@ -27,7 +27,7 @@ from optic.utils import dBm2W
 
 
 def calcPertCoeffMatrix(param):
-    """
+    r"""
     Calculates the coefficients for the intrachannel nonlinear first-order perturbation model.
 
     Parameters
@@ -41,7 +41,7 @@ def calcPertCoeffMatrix(param):
         - param.length : total fiber length [km] [default: 800 km]
         - param.pulseWidth : pulse width (fraction of symbol period) [default: 0.5]
         - param.gamma : fiber nonlinear coefficient [1/W/km] [default: 1.3 1/W/km]
-        - param.Fc : carrier frequency [THz] [default: 193.2e12 Hz]
+        - param.Fc : carrier frequency [Hz] [default: 193.2e12 Hz]
         - param.powerWeighted : power-weighted coefficient calculation? Boolean variable [default: False]
         - param.Rs : symbol rate [baud] [default: 32e9 baud]
         - param.powerWeightN : power-weighting order [default: 10]
@@ -57,6 +57,24 @@ def calcPertCoeffMatrix(param):
         Nonlinear coefficient matrix for intrachannel cross-phase modulation (IXPM).
     C_ispm : float
         Scalar nonlinear coefficient for intrachannel self-phase modulation (SPM).
+
+    Notes
+    -----
+    In the matrices, the coefficient at the row :math:`i` and column :math:`j`
+    corresponds to the symbol offsets :math:`n = L - i` and :math:`m = j - L`
+    (:math:`L` is ``param.matrixOrder``), see :func:`calcNLINperturbation`. In the
+    standard calculation, the IFWM coefficients depend only on the product :math:`mn`,
+    so that :math:`C_{ifwm}[m,n] = C_{ifwm}[n,m]`, and the IXPM coefficients are
+    non-zero only in the column :math:`m = 0` and in the row :math:`n = 0`.
+
+    The default carrier frequency of this function (193.2 THz) is different from the
+    one of :func:`perturbationNLIN` (193.1 THz), which sets it before calling this
+    function.
+
+    The power-weighted calculation (``param.powerWeighted = True``) requires the
+    incomplete gamma function of a complex argument, which
+    :func:`scipy.special.gammaincc` does not support, so it currently raises a
+    ``TypeError``.
 
     References
     ----------
@@ -451,7 +469,7 @@ def _nlinPerturbation(C_ifwm, C_ixpm, C_ispm, x, y, ind, prec, block=256):
 
 
 def calcNLINperturbation(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
-    """
+    r"""
     Fast calculation of the first-order perturbation model.
 
     Parameters
@@ -488,6 +506,31 @@ def calcNLINperturbation(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
     phi_ixpm_y : ndarray of shape (N,)
         Phase rotation due to cross-phase modulation affecting polarization Y.
 
+    Notes
+    -----
+    The signals are normalized to unit average power (the inputs are not modified).
+    Denoting :math:`x_k = x[t+k]` and :math:`y_k = y[t+k]` (zero outside of the
+    signal), the perturbations of the symbol :math:`t` of the polarization X are
+
+    .. math::
+        \delta_x[t] = \sum_{m,n} C_{ifwm}[m,n]\left(x_n x^*_{m+n} + y_n y^*_{m+n}\right)x_m
+        + x_0\sum_{n} C_{ixpm}[0,n]\,|y_n|^2, \tag{1}
+
+    .. math::
+        \phi_x[t] = \mathrm{Im}\left\{\sum_{m} C_{ixpm}[m,0]\left(2|x_m|^2 + |y_m|^2\right)
+        + C_{ispm}\left(|x_{-L}|^2 + |y_{-L}|^2\right)\right\}, \tag{2}
+
+    with :math:`-L \leq m, n \leq L`, and the expressions for the polarization Y are
+    obtained by exchanging :math:`x` and :math:`y`. The coefficient :math:`C[m,n]`
+    is stored in the row :math:`L - n` and column :math:`m + L` of the matrices.
+
+    The cost is :math:`\mathcal{O}(NL^2)`, dominated by the four-wave mixing sum of
+    Eq. (1). It is evaluated in parallel by compiled kernels (cached on disk after the
+    first call) that process the symbols in blocks, and that compute the terms
+    :math:`(m,n)` and :math:`(n,m)` together, since :math:`C_{ifwm}[m,n] =
+    C_{ifwm}[n,m]`. The additive terms are computed with the precision `prec`,
+    while the phase rotations are always double-precision.
+
     References
     ----------
     [1] Z. Tao, et al., "Analytical Intrachannel Nonlinear Models to Predict the Nonlinear Noise Waveform," Journal of Lightwave Technology, vol. 33, no. 10, pp. 2111-2119, 2015.
@@ -503,30 +546,30 @@ def calcNLINperturbation(C_ifwm, C_ixpm, C_ispm, x, y, prec=np.complex64):
 def calcNLINperturbationSimplified(
     C_ifwm, C_ixpm, C_ispm, x, y, coeffTol=-20, prec=np.complex64
 ):
-    """
+    r"""
     Fast calculation of the first-order perturbation model with reduced number of coefficients.
 
     Parameters
     ----------
-    C_ifwm : ndarray of shape (M,)
-        Coefficient matrix for the Inverse Fourier-weighted filter model.
+    C_ifwm : ndarray of shape (2L+1, 2L+1)
+        Nonlinear coefficient matrix for intrachannel four-wave mixing (IFWM).
 
-    C_ixpm : ndarray of shape (M,)
-        Coefficient matrix for the Inverse XPM model.
+    C_ixpm : ndarray of shape (2L+1, 2L+1)
+        Nonlinear coefficient matrix for intrachannel cross-phase modulation (IXPM).
 
-    C_ispm : scalar
-        Coefficient for the Inverse Single-Phase Modulation model.
+    C_ispm : float
+        Scalar nonlinear coefficient for intrachannel self-phase modulation (SPM).
 
     x : ndarray of shape (N,)
-        Input signal for the X component (complex-valued).
+        Input signal for polarization X (complex-valued).
 
     y : ndarray of shape (N,)
-        Input signal for the Y component (complex-valued).
+        Input signal for polarization Y (complex-valued).
 
-    coeffTol : float
-        Coefficient magnitude tolerance in dB. Coefficients with a magnitude
-        below this threshold (in dB) are excluded from the calculation to reduce
-        computational complexity. Default is -20 dB.
+    coeffTol : float, optional
+        Coefficient magnitude tolerance in dB, relative to the largest coefficient.
+        Only the coefficients whose magnitude is above this threshold are used in the
+        calculation, which reduces its computational complexity. Default is -20 dB.
 
     prec : dtype, optional
         The precision of the computation. Default is `np.complex64`.
@@ -534,16 +577,35 @@ def calcNLINperturbationSimplified(
     Returns
     -------
     dx : ndarray of shape (N,)
-        The computed result for the X component after processing.
+        Nonlinear perturbation waveform for polarization X.
 
     dy : ndarray of shape (N,)
-        The computed result for the Y component after processing.
+        Nonlinear perturbation waveform for polarization Y.
 
     phi_ixpm_x : ndarray of shape (N,)
-        Phase information related to the XPM effect on the X component.
+        Phase rotation due to cross-phase modulation affecting polarization X.
 
     phi_ixpm_y : ndarray of shape (N,)
-        Phase information related to the XPM effect on the Y component.
+        Phase rotation due to cross-phase modulation affecting polarization Y.
+
+    nReducedCoeffs : int
+        Number of coefficients used in the calculation.
+
+    reductionFactor : float
+        Percentage of the coefficients of the full model that were discarded.
+
+    Notes
+    -----
+    The model is the one of :func:`calcNLINperturbation` (see Eqs. (1) and (2)
+    there), with the sums restricted to the :math:`n_c` largest coefficients of
+    :math:`C = C_{ifwm} + C_{ixpm}` (in which the SPM coefficient replaces the
+    coefficient of the corner :math:`(m,n) = (L,-L)`). The computational cost is
+    proportional to :math:`n_c`.
+
+    The self-phase term of Eq. (2) is evaluated with the field at the offset of the
+    largest retained coefficient (instead of :math:`-L`), so the phase rotations are
+    not exactly those of the full model, even if all the coefficients are kept. The
+    central coefficient of :math:`C` is zero, and is never retained.
 
     References
     ----------
@@ -571,7 +633,7 @@ def calcNLINperturbationSimplified(
 
 
 def perturbationNLIN(Ein, param):
-    """
+    r"""
     Calculates the intrachannel NLIN via first-order perturbation models.
 
     Parameters
@@ -579,9 +641,11 @@ def perturbationNLIN(Ein, param):
     Ein : ndarray of shape (N, 2)
         Input signal for dual-polarization (complex-valued).
         The first column represents the X polarization, and the second column represents the Y polarization.
+        The power of each polarization is normalized to one **in place**.
 
     param : optic.utils.parameters object
-        Object with physical/simulation parameters of the optical channel.
+        Object with physical/simulation parameters of the optical channel. The
+        parameters that were not provided are set to their default values.
 
         - param.D : chromatic dispersion parameter [ps/nm/km] [default: 17 ps/nm/km]
         - param.alpha : fiber attenuation parameter [dB/km] [default: 0.2 dB/km]
@@ -589,7 +653,7 @@ def perturbationNLIN(Ein, param):
         - param.length : total fiber length [km] [default: 800 km]
         - param.pulseWidth : pulse width (fraction of symbol period) [default: 0.5]
         - param.gamma : fiber nonlinear coefficient [1/W/km] [default: 1.3 1/W/km]
-        - param.Fc : carrier frequency [THz] [default: 193.2e12 Hz]
+        - param.Fc : carrier frequency [Hz] [default: 193.1e12 Hz]
         - param.powerWeighted : power-weighted coefficient calculation? Boolean variable [default: False]
         - param.Rs : symbol rate [baud] [default: 32e9 baud]
         - param.powerWeightN : power-weighting order [default: 10]
@@ -604,6 +668,21 @@ def perturbationNLIN(Ein, param):
     nlin : ndarray of shape (N, 2)
         Nonlinear perturbation for dual-polarization signals.
         The first column represents the X polarization, and the second column represents the Y polarization.
+
+    Notes
+    -----
+    The perturbations :math:`\delta` and :math:`\phi` of :func:`calcNLINperturbation`
+    (or :func:`calcNLINperturbationSimplified`, if ``param.mode = 'AMR'``), calculated
+    with the coefficients of :func:`calcPertCoeffMatrix`, are scaled with the peak
+    power :math:`P` of the launched signal, which is half of the launch power
+    :math:`P_{in}` (in W), and the nonlinear perturbation
+    of the polarization X is
+
+    .. math::
+        \mathrm{nlin}_x[t] = \sqrt{P}\,x[t]\left(e^{j P \phi_x[t]} - 1\right)
+        + P^{3/2}\delta_x[t]\,e^{j P \phi_x[t]},
+
+    where :math:`x` is the normalized signal (and similarly for the polarization Y).
 
     References
     ----------
