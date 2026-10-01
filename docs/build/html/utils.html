@@ -1,29 +1,27 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="English">
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>General Utilities &mdash; OptiCommPy alpha 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+  <title>General Utilities &mdash; OptiCommPy 0.11.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f3b36f1a"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="optic.plot.randomCmap" href="generated/optic.plot.randomCmap.html" /> 
+    <link rel="next" title="optic.utils.parameters" href="generated/optic.utils.parameters.html" />
+    <link rel="prev" title="optic.plot.animateConstGIF" href="generated/optic.plot.animateConstGIF.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -37,9 +35,6 @@
           <a href="index.html" class="icon icon-home">
             OptiCommPy
           </a>
-              <div class="version">
-                0.9
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -59,7 +54,22 @@
 <li class="toctree-l1"><a class="reference internal" href="dsp.html">Digital Signal Processing (DSP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Physical Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Utilities</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">General Utilities</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">General Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general-utilities-optic-utils">General utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.utils</span></code>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.utils.parameters.html">optic.utils.parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.utils.lin2dB.html">optic.utils.lin2dB</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.utils.dB2lin.html">optic.utils.dB2lin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.utils.dBm2W.html">optic.utils.dBm2W</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.utils.dec2bitarray.html">optic.utils.dec2bitarray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.utils.decimal2bitarray.html">optic.utils.decimal2bitarray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.utils.dotNumba.html">optic.utils.dotNumba</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.utils.bitarray2dec.html">optic.utils.bitarray2dec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.utils.ber2Qfactor.html">optic.utils.ber2Qfactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.utils.llr2bitProb.html">optic.utils.llr2bitProb</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -87,125 +97,283 @@
            <div itemprop="articleBody">
              
   <section id="general-utilities">
-<h1>General Utilities<a class="headerlink" href="#general-utilities" title="Permalink to this heading"></a></h1>
-<p>General utilities.</p>
+<h1>General Utilities<a class="headerlink" href="#general-utilities" title="Link to this heading"></a></h1>
+<section id="general-utilities-optic-utils">
+<h2>General utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.utils</span></code>)<a class="headerlink" href="#general-utilities-optic-utils" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.utils.parameters.html#optic.utils.parameters" title="optic.utils.parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code></a>()</p></td>
+<td><p>Basic class to be used as a struct of parameters</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.utils.lin2dB.html#optic.utils.lin2dB" title="optic.utils.lin2dB"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lin2dB</span></code></a>(x)</p></td>
+<td><p>Convert linear value to dB (decibels).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.utils.dB2lin.html#optic.utils.dB2lin" title="optic.utils.dB2lin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dB2lin</span></code></a>(x)</p></td>
+<td><p>Convert dB (decibels) to a linear value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.utils.dBm2W.html#optic.utils.dBm2W" title="optic.utils.dBm2W"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dBm2W</span></code></a>(x)</p></td>
+<td><p>Convert dBm to Watts.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.utils.dec2bitarray.html#optic.utils.dec2bitarray" title="optic.utils.dec2bitarray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dec2bitarray</span></code></a>(x, bit_width)</p></td>
+<td><p>Converts a positive integer or an array-like of positive integers to a NumPy array of the specified size containing bits (0 and 1).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.utils.decimal2bitarray.html#optic.utils.decimal2bitarray" title="optic.utils.decimal2bitarray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decimal2bitarray</span></code></a>(x, bit_width)</p></td>
+<td><p>Converts a positive integer to a NumPy array of the specified size containing bits (0 and 1).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.utils.dotNumba.html#optic.utils.dotNumba" title="optic.utils.dotNumba"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dotNumba</span></code></a>(a, b)</p></td>
+<td><p>Computes the dot product of two 1D arrays in a Numba-compatible way.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.utils.bitarray2dec.html#optic.utils.bitarray2dec" title="optic.utils.bitarray2dec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bitarray2dec</span></code></a>(x_bitarray)</p></td>
+<td><p>Converts an input NumPy array of bits (0 and 1) to a decimal integer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.utils.ber2Qfactor.html#optic.utils.ber2Qfactor" title="optic.utils.ber2Qfactor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ber2Qfactor</span></code></a>(ber)</p></td>
+<td><p>Converts a bit error rate (BER) to a Q factor in dB.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.utils.llr2bitProb.html#optic.utils.llr2bitProb" title="optic.utils.llr2bitProb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llr2bitProb</span></code></a>(llr[, prec])</p></td>
+<td><p>Convert LLRs to bit probabilities using a numerically stable sigmoid.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">bitarray2dec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_bitarray</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Converts an input NumPy array of bits (0 and 1) to a decimal integer.</p>
+<span class="sig-name descname"><span class="pre">ber2Qfactor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ber</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#ber2Qfactor"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Converts a bit error rate (BER) to a Q factor in dB.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x_bitarray</strong> (<em>1D array of int</em>) -- Input NumPy array of bits.</p>
+<dd class="field-odd"><p><strong>ber</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The bit error rate to be converted.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>number</strong> -- Integer representation(s) of the input bit array(s).</p>
+<dd class="field-even"><p>The Q factor corresponding to the input BER.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int or array of int</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">dB2lin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">bitarray2dec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_bitarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#bitarray2dec"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Converts an input NumPy array of bits (0 and 1) to a decimal integer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x_bitarray</strong> (<em>1D array</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Input NumPy array of bits.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>number</strong> – Integer representation(s) of the input bit array(s).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a> or array of <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">dB2lin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#dB2lin"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Convert dB (decibels) to a linear value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>float</em>) -- The value in dB to be converted to a linear value.</p>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The value in dB to be converted to a linear value.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The linear value.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">dBm2W</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">dBm2W</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#dBm2W"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Convert dBm to Watts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>float</em>) -- The power value in dBm to be converted to Watts.</p>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The power value in dBm to be converted to Watts.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The power value in Watts.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">dec2bitarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_width</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">dec2bitarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_width</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#dec2bitarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Converts a positive integer or an array-like of positive integers to a NumPy array of the specified size containing
 bits (0 and 1).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>int</em><em> or </em><em>array-like of int</em>) -- Positive integer(s) to be converted to a bit array.</p></li>
-<li><p><strong>bit_width</strong> (<em>int</em>) -- Size of the output bit array.</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><em>array-like</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Positive integer(s) to be converted to a bit array.</p></li>
+<li><p><strong>bit_width</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Size of the output bit array.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>bitarray</strong> -- Array containing the binary representation of all the input decimal(s).</p>
+<dd class="field-even"><p><strong>bitarray</strong> – Array containing the binary representation of all the input decimal(s).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>2D NumPy array of int</p>
+<dd class="field-odd"><p>2D NumPy array of <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">decimal2bitarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_width</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">decimal2bitarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_width</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#decimal2bitarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Converts a positive integer to a NumPy array of the specified size containing bits (0 and 1). This version is slightly
 quicker but only works for one integer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>int</em>) -- Positive integer to be converted to a bit array.</p></li>
-<li><p><strong>bit_width</strong> (<em>int</em>) -- Size of the output bit array.</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Positive integer to be converted to a bit array.</p></li>
+<li><p><strong>bit_width</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Size of the output bit array.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>bitarray</strong> -- Array containing the binary representation of the input decimal.</p>
+<dd class="field-even"><p><strong>bitarray</strong> – Array containing the binary representation of the input decimal.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>1D NumPy array of int</p>
+<dd class="field-odd"><p>1D NumPy array of <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">lin2dB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">dotNumba</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#dotNumba"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes the dot product of two 1D arrays in a Numba-compatible way.</p>
+<p>This function is equivalent to <code class="xref py py-obj docutils literal notranslate"><span class="pre">np.dot</span></code> for 1D arrays but can be
+JIT-compiled with Numba for accelerated execution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>N</em><em>,</em><em>)</em>) – First input array (complex-valued).</p></li>
+<li><p><strong>b</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>N</em><em>,</em><em>)</em>) – Second input array (complex-valued).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>result</strong> – The dot product of <em class="xref py py-obj">a</em> and <em class="xref py py-obj">b</em>, computed as the sum of element-wise products.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#complex" title="(in Python v3.14)">complex</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Both input arrays must have the same length.</p></li>
+<li><p>This function initializes the result as a complex number to support
+complex-valued operations.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">lin2dB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#lin2dB"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Convert linear value to dB (decibels).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>float</em>) -- The linear value to be converted to dB.</p>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The linear value to be converted to dB.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The value converted to dB, i.e 10log10(x).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">llr2bitProb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">llr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.float32'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#llr2bitProb"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Convert LLRs to bit probabilities using a numerically stable sigmoid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>llrs</strong> (<em>1D numpy array</em>) – Log-likelihood ratios (LLRs) of bits.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>probs</strong> – Bit probabilities P(bit = 1).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1D numpy array</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parameters</span></span></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parameters</span></span><a class="reference internal" href="_modules/optic/utils.html#parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Basic class to be used as a struct of parameters</p>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">view</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#parameters.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Returns a deep copy of the parameters object.</p>
+<p>This method creates a new instance of the parameters class with the same attributes and values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new instance of the parameters class with copied attributes.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="generated/optic.utils.parameters.html#optic.utils.parameters" title="optic.utils.parameters">parameters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">latex_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#parameters.latex_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generates a LaTeX table of the parameters and their values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A LaTeX table representation of the parameters and their values.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#parameters.table"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generates a Markdown table of the parameters and their values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A Markdown table representation of the parameters and their values.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">to_engineering_notation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#parameters.to_engineering_notation"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Converts a numerical value to engineering notation with appropriate prefixes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The numerical value to be converted.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value formatted in engineering notation with a prefix, or the original value if it does not meet the criteria.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a> or value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">view</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/utils.html#parameters.view"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Prints the attributes and their values in either standard or scientific notation.</p>
 </dd></dl>
 
@@ -217,13 +385,14 @@ quicker but only works for one integer.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="generated/optic.plot.randomCmap.html" class="btn btn-neutral float-left" title="optic.plot.randomCmap" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="generated/optic.plot.animateConstGIF.html" class="btn btn-neutral float-left" title="optic.plot.animateConstGIF" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="generated/optic.utils.parameters.html" class="btn btn-neutral float-right" title="optic.utils.parameters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+    <p>&#169; Copyright 2023-2026, Edson P. da Silva, Adolfo F. Herbster.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

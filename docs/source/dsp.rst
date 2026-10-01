@@ -6,9 +6,14 @@ Digital Signal Processing (DSP)
     :members:
     :noindex:
 
+.. automodule:: optic.dsp.adaptiveFiltering
+    :members:
+    :exclude-members: nlmsUpBlock, rlsUpBlock, cmaUpBlock, rdeUpBlock, ddlmsUpBlock, ddrlsUpBlock, dardeUpBlock
+    :noindex:
+
 .. automodule:: optic.dsp.equalization
     :members:
-    :exclude-members: cmaUp, dardeUp, ddlmsUp, ddrlsUp, nlmsUp, rdeUp, rlsUp, coreAdaptEq, realValuedFFECore, complexValuedFFECore, realValuedDFECore, complexValuedDFECore, volterraCore
+    :exclude-members: 
     :noindex:
 
 .. automodule:: optic.dsp.carrierRecovery

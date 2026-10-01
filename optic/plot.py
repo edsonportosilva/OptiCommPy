@@ -13,20 +13,21 @@ Customized functions for plotting and vizualization (:mod:`optic.plot`)
    eyediagram                 -- Plots eyediagrams of communication signals
    plotPSD                    -- Plot power spectral density of signals
    randomCmap                 -- Generate a random RGB colormap
+   animateConstGIF            -- Create and save a constellation plot animation as GIF
 """
 
 """Plot utilities."""
 import copy
 import warnings
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import mpl_scatter_density
 import numpy as np
-from matplotlib import cm
 from matplotlib.animation import FuncAnimation
 from matplotlib.colors import ListedColormap
-from scipy.interpolate import interp1d
-from scipy.ndimage.filters import gaussian_filter
+from scipy.interpolate import make_interp_spline
+from scipy.ndimage import gaussian_filter
 
 from optic.comm.modulation import detector
 from optic.dsp.core import pnorm, signalPower
@@ -35,7 +36,7 @@ from optic.utils import dB2lin
 warnings.filterwarnings("ignore", r"All-NaN (slice|axis) encountered")
 
 
-def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
+def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True, figsize=None):
     """
     Plot signal constellations.
 
@@ -63,6 +64,10 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
     whiteb : bool, optional
         Flag indicating whether to use white background for scatter_density plot.
         Defaults to True.
+
+    figsize : tuple, optional
+        Figure size.
+        Defaults to (4, 6).
 
     Returns
     -------
@@ -97,14 +102,20 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
         if nSubPts < 5:
             nCols = nSubPts
             nRows = 1
-        elif nSubPts >= 6:
+        elif nSubPts <= 6:
             nCols = int(np.ceil(nSubPts / 2))
             nRows = 2
+        elif nSubPts > 10:
+            nCols = int(np.ceil(nSubPts / 3))
+            nRows = 3
 
         # Create a Position index
         Position = range(1, nSubPts + 1)
 
-        fig = plt.figure()
+        if figsize is None:
+            fig = plt.figure()
+        else:
+            fig = plt.figure(figsize=figsize)
 
         if type(x) == list:
             for k in range(nSubPts):
@@ -150,10 +161,14 @@ def pconst(x, lim=True, R=1.25, pType="fancy", cmap="turbo", whiteb=True):
                     ax.set_xlim(-radius, radius)
                     ax.set_ylim(-radius, radius)
 
-        fig.tight_layout()
+        plt.tight_layout()
 
     elif nSubPts == 1:
-        fig = plt.figure()
+        if figsize is None:
+            fig = plt.figure()
+        else:
+            fig = plt.figure(figsize=figsize)
+
         # ax = plt.gca()
         if pType == "fancy":
             ax = fig.add_subplot(1, 1, 1, projection="scatter_density")
@@ -198,7 +213,7 @@ def constHist(symb, ax, cmap="turbo", whiteb=True):
         axis of the plot.
 
     """
-    cmap = copy.copy(plt.get_cmap(cmap))
+    cmap = copy.copy(mpl.colormaps.get_cmap(cmap))
     if whiteb:
         cmap.set_under(alpha=0)
 
@@ -262,7 +277,7 @@ def plotColoredConst(
     The detected symbols are determined using a detector based on the provided input symbols, noise
     variance, detection rule, and prior probabilities (if available).
     """
-    cmap = copy.copy(plt.get_cmap(cmap))
+    cmap = copy.copy(mpl.colormaps.get_cmap(cmap))
 
     σ2 = 1 / dB2lin(SNR)
 
@@ -439,14 +454,14 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel="", dpi=None):
             if nsymb < 500000:
                 yPlot = np.tile(yPlot, int(np.ceil(500000 / nsymb)))
                 xPlot = np.tile(xPlot, int(np.ceil(500000 / nsymb)))
-            
+
             yMin, yMax = np.min(yPlot), np.max(yPlot)
             yMargin = 0.1 * np.mean(np.abs(yPlot))
             imRange = [[np.min(xPlot), np.max(xPlot)], [yMin - yMargin, 1.1 * yMax]]
 
             H, _, yEdges = np.histogram2d(xPlot, yPlot, bins=350, range=imRange)
             H = gaussian_filter(H.T, sigma=1.0)
-            
+
             ax.imshow(
                 H,
                 cmap="turbo",
@@ -455,11 +470,11 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel="", dpi=None):
                 extent=[0, n, yEdges[0], yEdges[-1]],
             )
 
-        elif ptype == "fast":            
+        elif ptype == "fast":
             # Find wraparound points to insert NaNs, breaking the plot lines so they don't streak across
             wrap_indices = np.where(np.diff(xPlot) < 0)[0]
             yPlot[wrap_indices] = np.nan
-            
+
             ax.plot(
                 xPlot,
                 yPlot,
@@ -666,9 +681,7 @@ def randomCmap(nColors=100, low=0.1, high=0.99):
     matplotlib.colors.ListedColormap
         Random colormap with the specified number of colors and random RGB values.
     """
-    randRGBcolors = [
-        (np.random.uniform(low=low, high=high, size=(1, 3))) for i in range(nColors)
-    ]
-    new_cmap = ListedColormap(randRGBcolors, "new_map", N=nColors)
+    randRGBcolors = np.random.uniform(low=low, high=high, size=(nColors, 3))
+    new_cmap = ListedColormap(randRGBcolors, "new_map")
 
     return new_cmap

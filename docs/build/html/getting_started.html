@@ -1,33 +1,30 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="English">
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Getting started &mdash; OptiCommPy alpha 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
-      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+  <title>Getting started &mdash; OptiCommPy 0.11.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f3b36f1a"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Simulation of coherent WDM transmission" href="test_WDM_transmission.html" />
-    <link rel="prev" title="Welcome to OptiCommPy&#39;s documentation!" href="index.html" /> 
+    <link rel="prev" title="Welcome to OptiCommPy’s documentation!" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,9 +38,6 @@
           <a href="index.html" class="icon icon-home">
             OptiCommPy
           </a>
-              <div class="version">
-                0.9
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -118,10 +112,10 @@
 </div>
 </div>
 <section id="Getting-started">
-<h1>Getting started<a class="headerlink" href="#Getting-started" title="Permalink to this heading"></a></h1>
+<h1>Getting started<a class="headerlink" href="#Getting-started" title="Link to this heading"></a></h1>
 <p>In this notebook, a basic illustrative example of the usage of the OptiCommPy package is presented.</p>
 <section id="Defining-the-model-to-be-simulated">
-<h2>Defining the model to be simulated<a class="headerlink" href="#Defining-the-model-to-be-simulated" title="Permalink to this heading"></a></h2>
+<h2>Defining the model to be simulated<a class="headerlink" href="#Defining-the-model-to-be-simulated" title="Link to this heading"></a></h2>
 <p>To demonstrate the basic features of OptiCommPy, in this notebook a simulation of a On-Off Keying (OOK) transmission system based on intensity modulation and direct-detection (IM/DD) is presented. A schematic for the transmission system to be simulated is shown in the figure below.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
@@ -187,7 +181,7 @@
 </table>
 </section>
 <section id="Simulating-a-basic-IM/DD-model">
-<h2>Simulating a basic IM/DD model<a class="headerlink" href="#Simulating-a-basic-IM/DD-model" title="Permalink to this heading"></a></h2>
+<h2>Simulating a basic IM/DD model<a class="headerlink" href="#Simulating-a-basic-IM/DD-model" title="Link to this heading"></a></h2>
 <p>To build the corresponding simulation setup with OptiCommPy, first the necessary functions need to be imported as</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
@@ -196,9 +190,10 @@
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">optic.models.devices</span> <span class="kn">import</span> <span class="n">mzm</span><span class="p">,</span> <span class="n">photodiode</span>
 <span class="kn">from</span> <span class="nn">optic.models.channels</span> <span class="kn">import</span> <span class="n">linearFiberChannel</span>
+<span class="kn">from</span> <span class="nn">optic.comm.sources</span> <span class="kn">import</span> <span class="n">bitSource</span>
 <span class="kn">from</span> <span class="nn">optic.comm.modulation</span> <span class="kn">import</span> <span class="n">modulateGray</span>
 <span class="kn">from</span> <span class="nn">optic.comm.metrics</span> <span class="kn">import</span> <span class="n">bert</span>
-<span class="kn">from</span> <span class="nn">optic.dsp.core</span> <span class="kn">import</span> <span class="n">firFilter</span><span class="p">,</span> <span class="n">pulseShape</span><span class="p">,</span> <span class="n">upsample</span><span class="p">,</span> <span class="n">pnorm</span>
+<span class="kn">from</span> <span class="nn">optic.dsp.core</span> <span class="kn">import</span> <span class="n">firFilter</span><span class="p">,</span> <span class="n">pulseShape</span><span class="p">,</span> <span class="n">upsample</span><span class="p">,</span> <span class="n">pnorm</span><span class="p">,</span> <span class="n">anorm</span>
 <span class="kn">from</span> <span class="nn">optic.utils</span> <span class="kn">import</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">dBm2W</span>
 <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">erfc</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -219,9 +214,16 @@
 <span class="n">Pi_dBm</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># laser optical power at the input of the MZM in dBm</span>
 <span class="n">Pi</span> <span class="o">=</span> <span class="n">dBm2W</span><span class="p">(</span><span class="n">Pi_dBm</span><span class="p">)</span>  <span class="c1"># convert from dBm to W</span>
 
-<span class="c1"># typical NRZ pulse</span>
-<span class="n">pulse</span> <span class="o">=</span> <span class="n">pulseShape</span><span class="p">(</span><span class="s2">&quot;nrz&quot;</span><span class="p">,</span> <span class="n">SpS</span><span class="p">)</span>
-<span class="n">pulse</span> <span class="o">=</span> <span class="n">pulse</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">pulse</span><span class="p">))</span>  <span class="c1"># normalize to 1 Vpp</span>
+<span class="c1"># Bit source parameters</span>
+<span class="n">paramBits</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramBits</span><span class="o">.</span><span class="n">nBits</span> <span class="o">=</span> <span class="mi">100000</span>  <span class="c1"># number of bits to be generated</span>
+<span class="n">paramBits</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;random&#39;</span> <span class="c1"># mode of the bit source</span>
+<span class="n">paramBits</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="mi">123</span>      <span class="c1"># seed for the random number generator</span>
+
+<span class="c1"># pulse shaping parameters</span>
+<span class="n">paramPulse</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramPulse</span><span class="o">.</span><span class="n">pulseType</span> <span class="o">=</span> <span class="s1">&#39;nrz&#39;</span>  <span class="c1"># pulse shape type</span>
+<span class="n">paramPulse</span><span class="o">.</span><span class="n">SpS</span> <span class="o">=</span> <span class="n">SpS</span>     <span class="c1"># samples per symbol</span>
 
 <span class="c1"># MZM parameters</span>
 <span class="n">paramMZM</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
@@ -241,6 +243,7 @@
 <span class="n">paramPD</span><span class="o">.</span><span class="n">ideal</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">paramPD</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">Rs</span>
 <span class="n">paramPD</span><span class="o">.</span><span class="n">Fs</span> <span class="o">=</span> <span class="n">Fs</span>
+<span class="n">paramPD</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="mi">456</span>  <span class="c1"># seed for the random number generator</span>
 </pre></div>
 </div>
 </div>
@@ -254,8 +257,7 @@ carrier, free from phase and intensity noise. This optical signal, upon exiting 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Starting simulation...&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
 <span class="c1"># generate pseudo-random bit sequence</span>
-<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>  <span class="c1"># fixing the seed to get reproducible results</span>
-<span class="n">bitsTx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
+<span class="n">bitsTx</span> <span class="o">=</span> <span class="n">bitSource</span><span class="p">(</span><span class="n">paramBits</span><span class="p">)</span>
 
 <span class="c1"># generate 2-PAM modulated symbol sequence</span>
 <span class="n">symbTx</span> <span class="o">=</span> <span class="n">modulateGray</span><span class="p">(</span><span class="n">bitsTx</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="s2">&quot;pam&quot;</span><span class="p">)</span>
@@ -264,7 +266,9 @@ carrier, free from phase and intensity noise. This optical signal, upon exiting 
 <span class="n">symbolsUp</span> <span class="o">=</span> <span class="n">upsample</span><span class="p">(</span><span class="n">symbTx</span><span class="p">,</span> <span class="n">SpS</span><span class="p">)</span>
 
 <span class="c1"># pulse shaping</span>
+<span class="n">pulse</span> <span class="o">=</span> <span class="n">pulseShape</span><span class="p">(</span><span class="n">paramPulse</span><span class="p">)</span>
 <span class="n">sigTx</span> <span class="o">=</span> <span class="n">firFilter</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="n">symbolsUp</span><span class="p">)</span>
+<span class="n">sigTx</span> <span class="o">=</span> <span class="n">anorm</span><span class="p">(</span><span class="n">sigTx</span><span class="p">)</span> <span class="c1"># normalize to 1 Vpp</span>
 
 <span class="c1"># optical modulation</span>
 <span class="n">Ai</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Pi</span><span class="p">)</span>  <span class="c1"># ideal cw laser constant envelope</span>
@@ -317,18 +321,18 @@ Starting simulation...simulation completed.
 <div class="highlight"><pre>
 
 Transmission performance metrics:
-Q-factor = 3.49
-BER = 2.80e-04
-Pb = 2.44e-04
+Q-factor = 3.58
+BER = 1.00e-04
+Pb = 1.73e-04
 
 </pre></div></div>
 </div>
 </section>
 <section id="Generating-BER-vs-P_{in},-Q-vs-P_{in}-curves">
-<h2>Generating BER vs <span class="math notranslate nohighlight">\(P_{in}\)</span>, Q vs <span class="math notranslate nohighlight">\(P_{in}\)</span> curves<a class="headerlink" href="#Generating-BER-vs-P_{in},-Q-vs-P_{in}-curves" title="Permalink to this heading"></a></h2>
+<h2>Generating BER vs <span class="math notranslate nohighlight">\(P_{in}\)</span>, Q vs <span class="math notranslate nohighlight">\(P_{in}\)</span> curves<a class="headerlink" href="#Generating-BER-vs-P_{in},-Q-vs-P_{in}-curves" title="Link to this heading"></a></h2>
 <p>Starting from this basic setup, we can conduct a comprehensive analysis via Monte Carlo simulations to characterize transmission performance across various system parameters. For instance, by repeating the same simulation with different optical launch powers and transmission distances, we can generate performance curves that depict BER and Q-factor as functions of received optical power at varying transmission distances. The corresponding code is shown in the next cell.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tqdm.notebook</span> <span class="kn">import</span> <span class="n">tqdm</span>
@@ -340,14 +344,21 @@ Pb = 2.44e-04
 <span class="n">Fs</span> <span class="o">=</span> <span class="n">SpS</span><span class="o">*</span><span class="n">Rs</span>     <span class="c1"># Signal sampling frequency (samples/second)</span>
 <span class="n">Ts</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">Fs</span>       <span class="c1"># Sampling period</span>
 
+<span class="c1"># Bit source parameters</span>
+<span class="n">paramBits</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramBits</span><span class="o">.</span><span class="n">nBits</span> <span class="o">=</span> <span class="mi">100000</span>  <span class="c1"># number of bits to be generated</span>
+<span class="n">paramBits</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;random&#39;</span> <span class="c1"># mode of the bit source</span>
+<span class="n">paramBits</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="mi">123</span>      <span class="c1"># seed for the random number generator</span>
+
+<span class="c1"># pulse shaping parameters</span>
+<span class="n">paramPulse</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
+<span class="n">paramPulse</span><span class="o">.</span><span class="n">pulseType</span> <span class="o">=</span> <span class="s1">&#39;nrz&#39;</span>  <span class="c1"># pulse shape type</span>
+<span class="n">paramPulse</span><span class="o">.</span><span class="n">SpS</span> <span class="o">=</span> <span class="n">SpS</span>     <span class="c1"># samples per symbol</span>
+
 <span class="c1"># MZM parameters</span>
 <span class="n">paramMZM</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
 <span class="n">paramMZM</span><span class="o">.</span><span class="n">Vpi</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">paramMZM</span><span class="o">.</span><span class="n">Vb</span> <span class="o">=</span> <span class="o">-</span><span class="n">paramMZM</span><span class="o">.</span><span class="n">Vpi</span><span class="o">/</span><span class="mi">2</span>
-
-<span class="c1"># typical NRZ pulse</span>
-<span class="n">pulse</span> <span class="o">=</span> <span class="n">pulseShape</span><span class="p">(</span><span class="s1">&#39;nrz&#39;</span><span class="p">,</span> <span class="n">SpS</span><span class="p">)</span>
-<span class="n">pulse</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">/</span><span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">pulse</span><span class="p">))</span>
 
 <span class="c1"># linear fiber optical channel parameters</span>
 <span class="n">paramCh</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">()</span>
@@ -375,8 +386,7 @@ Pb = 2.44e-04
         <span class="n">Pi</span> <span class="o">=</span> <span class="n">dBm2W</span><span class="p">(</span><span class="n">Pi_dBm</span> <span class="o">+</span> <span class="n">L</span><span class="o">*</span><span class="n">paramCh</span><span class="o">.</span><span class="n">alpha</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="c1"># optical signal power in W at the MZM input</span>
 
         <span class="c1"># generate pseudo-random bit sequence</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>  <span class="c1"># fixing the seed to get reproducible results</span>
-        <span class="n">bitsTx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="o">**</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">bitsTx</span> <span class="o">=</span> <span class="n">bitSource</span><span class="p">(</span><span class="n">paramBits</span><span class="p">)</span>
         <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bitsTx</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 
         <span class="c1"># generate ook modulated symbol sequence</span>
@@ -387,7 +397,9 @@ Pb = 2.44e-04
         <span class="n">symbolsUp</span> <span class="o">=</span> <span class="n">upsample</span><span class="p">(</span><span class="n">symbTx</span><span class="p">,</span> <span class="n">SpS</span><span class="p">)</span>
 
         <span class="c1"># pulse formatting</span>
+        <span class="n">pulse</span> <span class="o">=</span> <span class="n">pulseShape</span><span class="p">(</span><span class="n">paramPulse</span><span class="p">)</span>
         <span class="n">sigTx</span> <span class="o">=</span> <span class="n">firFilter</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="n">symbolsUp</span><span class="p">)</span>
+        <span class="n">sigTx</span> <span class="o">=</span> <span class="n">anorm</span><span class="p">(</span><span class="n">sigTx</span><span class="p">)</span> <span class="c1"># normalize to 1 Vpp</span>
 
         <span class="c1"># optical modulation</span>
         <span class="n">Ai</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Pi</span><span class="p">)</span>
@@ -405,19 +417,14 @@ Pb = 2.44e-04
 
         <span class="c1"># calculate the BER and Q-factor</span>
         <span class="n">BER</span><span class="p">[</span><span class="n">indL</span><span class="p">,</span> <span class="n">indPi</span><span class="p">],</span> <span class="n">Q</span><span class="p">[</span><span class="n">indL</span><span class="p">,</span> <span class="n">indPi</span><span class="p">]</span> <span class="o">=</span> <span class="n">bert</span><span class="p">(</span><span class="n">I_Rx</span><span class="p">)</span>
-
-<span class="c1">#         print(f&#39;\nPin = {Pi_dBm:.2f} dBm&#39;)</span>
-<span class="c1">#         print(&#39;\nReceived signal parameters:&#39;)</span>
-<span class="c1">#         print(f&#39;Q-factor = {Q[indL, indPi]:.2f} &#39;)</span>
-<span class="c1">#         print(f&#39;BER = {BER[indL, indPi]:.2e}&#39;)</span>
-</pre></div>
+<br/></pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "84ce38b2984c4bcb90b70246acef56a5", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "251e998d9ec84914be66b0da72f42529", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
@@ -462,7 +469,7 @@ Pb = 2.44e-04
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-C:\Users\edson.DESKTOP-54IJM4F\AppData\Local\Temp\ipykernel_5396\2042705777.py:8: RuntimeWarning: divide by zero encountered in log10
+C:\Users\edson\AppData\Local\Temp\ipykernel_35428\2042705777.py:8: RuntimeWarning: divide by zero encountered in log10
   plt.plot(Prx, np.log10(BER[indL,:]),&#39;--&#39;, marker=markers[indL], label=f&#39;{L} km&#39;)
 </pre></div></div>
 </div>
@@ -483,7 +490,7 @@ C:\Users\edson.DESKTOP-54IJM4F\AppData\Local\Temp\ipykernel_5396\2042705777.py:8
 <p>These plots clearly illustrate that system performance deteriorates with longer transmission distances, which is primarily attributed to the cumulative impact of chromatic dispersion and the noise sources at the photodiode, resulting in increased signal degradation.</p>
 </section>
 <section id="References">
-<h2>References<a class="headerlink" href="#References" title="Permalink to this heading"></a></h2>
+<h2>References<a class="headerlink" href="#References" title="Link to this heading"></a></h2>
 <p>[1] G. P. Agrawal, Fiber-Optic Communication Systems. John Wiley &amp; Sons, 2021.</p>
 </section>
 </section>
@@ -492,14 +499,14 @@ C:\Users\edson.DESKTOP-54IJM4F\AppData\Local\Temp\ipykernel_5396\2042705777.py:8
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to OptiCommPy&#39;s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to OptiCommPy’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="test_WDM_transmission.html" class="btn btn-neutral float-right" title="Simulation of coherent WDM transmission" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+    <p>&#169; Copyright 2023-2026, Edson P. da Silva, Adolfo F. Herbster.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

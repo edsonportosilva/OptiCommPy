@@ -1,11 +1,18 @@
 """GPU-based digital signal processing utilities."""
 
 import logging as logg
+import warnings
 
 import cupy as cp
 import numpy as np
 from cupy.fft import fft, fftshift, ifft
-from cupyx.scipy import signal
+
+with warnings.catch_warnings():
+    # cupyx.scipy.signal uses the experimental cupyx.jit.rawkernel internally
+    warnings.filterwarnings(
+        "ignore", "cupyx.jit.rawkernel is experimental", FutureWarning
+    )
+    from cupyx.scipy import signal
 
 
 def checkGPU():

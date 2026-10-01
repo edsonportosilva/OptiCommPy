@@ -30,6 +30,7 @@ Forward error correction (FEC) utilities (:mod:`optic.comm.fec`)
 """Forward error correction (FEC) utilities."""
 import logging as logg
 import os
+from itertools import combinations
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -37,7 +38,6 @@ from numba import njit, prange
 from numba.typed import List
 from prettytable import PrettyTable
 from scipy.sparse import coo_matrix, csc_matrix, csr_matrix
-from itertools import combinations
 
 
 def par2gen(H):
@@ -99,7 +99,7 @@ def par2gen(H):
     return G, colSwaps, H[:, colSwaps]
 
 
-@njit
+@njit(cache=True)
 def gaussElim(M):
     """
     Perform Gaussian elimination over GF(2) to reduce a binary matrix to row echelon form.
@@ -158,33 +158,23 @@ def encodeLDPC(bits, param):
     ----------
     bits : np.array of shape (k, N)
         Binary input sequences to be encoded. Each column is a bit sequence of length :math:`k` bits.
-    param : object
+    param : optic.utils.parameters object
         Object containing the following attributes:
 
-        - mode : str
-            Mode of operation ('DVBS2', 'IEEE_802.11nD2', or 'AR4JA').
-
-        - H : np.array of shape (n - k, n)
-            Binary parity-check matrix :math:`H`.
-
-        - G : np.array of shape (k, n), optional
-            Binary generator matrix :math:`G`.
-
-        - systematic : bool, optional
-            If True, the generator matrix is assumed to be in systematic form. If False,
-            the generator matrix is treated as a general linear transformation (default is True).
-
-        - P1 : np.array of shape (m, k), optional
-            Matrix used for encoding in triangular mode.
-
-        - P2 : np.array of shape (m, k), optional
-            Matrix used for encoding in triangular mode.
+        - mode : Mode of operation ('DVBS2', 'IEEE_802.11nD2', or 'AR4JA')[default: 'DVBS2'].
+        - n : Codeword length :math:`n` [default: 64800].
+        - R : Code rate :math:`R` [default: '4/5'].
+        - H : Binary parity-check matrix :math:`H` of shape :math:`(n - k, n)` [default: None].
+        - G : Binary generator matrix :math:`G` of shape :math:`(k, n)` [default: None].
+        - systematic : boolean indicator if the generator matrix is assumed to be in systematic form. [default: True]
+        - P1 : Matrix of shape (m, k) used for encoding in triangular mode [default: None].
+        - P2 : Matrix of shape (m, m) used for encoding in triangular mode [default: None].
+        - path : Path to the folder containing ALIST files for the specified mode [default: None].
 
     Returns
     -------
     codewords : np.array of shape (n, N)
-        Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding
-        to the respective input bit sequence.
+        Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding to the respective input bit sequence.
 
     References
     ----------
@@ -261,7 +251,7 @@ def encodeLDPC(bits, param):
         )
 
 
-@njit(parallel=True)
+@njit(parallel=True, fastmath=True, cache=True)
 def encodeDVBS2(bits, A):
     """
     Encode multiple binary sequences using a DVB-S2 LDPC parity-check matrix.
@@ -309,7 +299,7 @@ def encodeDVBS2(bits, A):
     return codewords
 
 
-@njit(parallel=True)
+@njit(parallel=True, fastmath=True, cache=True)
 def encoder(G, bits, systematic=True):
     """
     Encode binary sequences using a generator matrix over GF(2).
@@ -354,7 +344,7 @@ def encoder(G, bits, systematic=True):
     return codewords
 
 
-@njit(parallel=True, fastmath=True)
+@njit(parallel=True, fastmath=True, cache=True)
 def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     """
     Performs belief propagation decoding using the sum-product algorithm (SPA) for multiple codewords.
@@ -512,7 +502,7 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     return finalLLR, lastIter, frameDecodingFail
 
 
-@njit(parallel=True, fastmath=True)
+@njit(parallel=True, fastmath=True, cache=True)
 def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     """
     Performs belief propagation decoding using the Min-Sum Algorithm (MSA) for multiple codewords.
@@ -700,20 +690,13 @@ def decodeLDPC(llrs, param):
     llrs : np.array of shape (n, numCodewords)
         Array of log-likelihood ratios (LLRs) for each bit of the received codewords.
         Codewords are assumed to be disposed in columns.
-    param : object
+    param : optic.utils.parameters object
         Object containing the following attributes:
 
-        - H : np.array of shape (m, n)
-            Sparse binary parity-check matrix of the LDPC code.
-
-        - maxIter : int
-            Maximum number of iterations for belief propagation.
-
-        - alg : str
-            Decoding algorithm to use ('SPA' for sum-product or 'MSA' for min-sum).
-
-        - prec : data-type
-            Numerical precision to use in computations (default is np.float32).
+        - H : Sparse binary parity-check matrix of shape (m, n) [default: None].
+        - maxIter : Maximum number of iterations for belief propagation [default: 25].
+        - alg : Decoding algorithm to use ('SPA' for sum-product or 'MSA' for min-sum) [default: 'SPA'].
+        - prec : Numerical precision to use in computations (default is np.float32) [default: np.float32].
 
     Returns
     -------
@@ -855,7 +838,7 @@ def readAlist(filename):
     return csr_matrix(H)
 
 
-@njit
+@njit(cache=True)
 def inverseMatrixGF2(A):
     """
     Invert a square binary matrix over GF(2) using Gauss-Jordan elimination.
@@ -907,7 +890,7 @@ def inverseMatrixGF2(A):
     return Ainv, True
 
 
-@njit
+@njit(cache=True)
 def triangularize(H):
     """
     Convert binary matrix H into lower-triangular form using only row and column permutations.
@@ -1033,7 +1016,7 @@ def triangP1P2(H):
     return P1, P2, H[:, colSwaps]
 
 
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def encodeTriang(bits, P1, P2):
     """
     Encode binary sequences using two parity matrices for LDPC encoding.
@@ -1279,13 +1262,11 @@ def encodeHamming(bits, param):
     ----------
     bits : np.array of shape (k, N)
         Binary input sequences to encode. Each column is a bit sequence of length :math:`k`.
-    param : object
+    param : optic.utils.parameters object
         Object containing the following attributes:
 
-        - m : int
-            Number of check bits for the Hamming code.
-        - extended : bool, optional
-            If True, use the extended Hamming code (default is False).
+        - m : Number of check bits for the Hamming code [default: 3].
+        - extended : boolean indication of whether to use the extended Hamming code [default: False].
 
     Returns
     -------

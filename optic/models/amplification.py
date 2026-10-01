@@ -25,11 +25,11 @@ import os
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 import numpy as np
-import numpy.matlib as npmat
 from numpy.fft import fft, fftfreq, ifft
 from scipy import interpolate, signal
 from scipy.constants import Planck, c
-from scipy.integrate import solve_ivp
+from scipy.integrate import solve_ivp, trapezoid
+
 # import pandas as pd
 from scipy.special import jv, kv
 from simple_pid import PID
@@ -245,10 +245,10 @@ def getOverlapInt(n2_norm, properties, param_edf):
 
     """
     dopPrf = (
-        npmat.repmat(2 * np.pi * param_edf.r * n2_norm, np.shape(properties.i_k)[1], 1)
+        np.tile(2 * np.pi * param_edf.r * n2_norm, (np.shape(properties.i_k)[1], 1))
         * param_edf.dr
     )
-    return np.trapz(np.transpose(properties.i_k) * dopPrf)
+    return trapezoid(np.transpose(properties.i_k) * dopPrf)
 
 
 def get_mode_radius(model, radius, V, v, u):
@@ -630,7 +630,7 @@ def edfaSM(Ei, Fs, Fc, param_edfa):
             if np.abs(errorAutoCrtl) > param_edfa.tolCtrl:
                 logg.info("EDFA SM: control loop %2d" % (tryCtrlLoop + 1))
                 logg.info("Convergence: %5.3f dB" % (errorAutoCrtl))
-                logg.info("Pump for.: %5.2f mW\n" % (1e3 * pumpPmpFor))
+                logg.info("Pump for.: %5.2f mW\n" % (1e3 * pumpPmpFor[0]))
             tryCtrlLoop = tryCtrlLoop + 1
             if tryCtrlLoop == MaxTry:
                 logg.info(

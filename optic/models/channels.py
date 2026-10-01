@@ -20,7 +20,7 @@ import scipy.constants as const
 from numba import njit
 from numpy.fft import fft, fftfreq, ifft
 from scipy.linalg import norm
-from tqdm.notebook import tqdm
+from tqdm.auto import tqdm
 
 from optic.dsp.core import gaussianComplexNoise, gaussianNoise, sigPow
 from optic.models.devices import edfa
@@ -28,7 +28,7 @@ from optic.utils import parameters
 
 
 def linearFiberChannel(Ei, param):
-    """
+    r"""
     Simulate signal propagation through a linear fiber channel.
 
     Parameters
@@ -38,17 +38,46 @@ def linearFiberChannel(Ei, param):
     param : optic.utils.parameters object
         Physical/simulation parameters of the optical channel.
 
-        - param.L: total fiber length [km][default: 50 km]
-        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-        - param.D: chromatic dispersion parameter [ps/nm/km][default: 17 ps/nm/km]
-        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-        - param.Fs: sampling frequency [Hz] [default: None]
-        - param.returnParameters: bool, return channel parameters [default: False]
+        - param.L : total fiber length [km][default: 50 km]
+        - param.alpha : fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+        - param.D : chromatic dispersion parameter [ps/nm/km][default: 17 ps/nm/km]
+        - param.Fc : carrier frequency [Hz] [default: 193.1e12 Hz]
+        - param.Fs : sampling frequency [Hz] [default: None]
+        - param.returnParameters : bool, return channel parameters [default: False]
 
     Returns
     -------
     Eo : np.array
         Optical field at the output of the fiber.
+
+    Notes
+    -----
+    In the linear regime, the propagation of the complex envelope :math:`A(z, t)` of
+    the optical field along the fiber is described by
+
+    .. math::
+        \frac{\partial A}{\partial z} = -\frac{\alpha}{2}A
+        - j\frac{\beta_2}{2}\frac{\partial^2 A}{\partial t^2}, \tag{1}
+
+    where :math:`\alpha` is the attenuation coefficient and :math:`\beta_2` is the
+    group velocity dispersion parameter. They are obtained from the fiber parameters
+    in engineering units as
+
+    .. math::
+        \alpha = \frac{\alpha_{dB}}{10\log_{10}e}, \qquad
+        \beta_2 = -\frac{D\lambda^2}{2\pi c}, \tag{2}
+
+    where :math:`\alpha_{dB}` is the loss in dB/km, :math:`D` is the dispersion
+    parameter, :math:`\lambda = c/F_c` is the carrier wavelength and :math:`c` is the
+    speed of light. In the frequency domain, Eq. (1) has the exact solution
+
+    .. math::
+        \tilde{A}(L, \omega) = \tilde{A}(0, \omega)
+        \exp\left(-\frac{\alpha}{2}L + j\frac{\beta_2}{2}\omega^2 L\right), \tag{3}
+
+    where :math:`\tilde{A}(z, \omega)` is the Fourier transform of :math:`A(z, t)` and
+    :math:`L` is the fiber length. The model is applied independently to each mode
+    (column) of the input field.
 
     References
     ----------
@@ -110,7 +139,7 @@ def linearFiberChannel(Ei, param):
 
 
 def ssfm(Ei, param=None):
-    """
+    r"""
     Split-step Fourier method (symmetric, single-pol.).
 
     Parameters
@@ -120,20 +149,20 @@ def ssfm(Ei, param=None):
     param : optic.utils.parameters object
         Physical/simulation parameters of the optical channel.
 
-        - param.Ltotal: total fiber length [km][default: 400 km]
-        - param.Lspan: span length [km][default: 80 km]
-        - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-        - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-        - param.Fs: simulation sampling frequency [samples/second][default: None]
-        - param.prec: numerical precision [default: np.complex128]
-        - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-        - param.NF: edfa noise figure [dB] [default: 4.5 dB]
-        - param.seed: seed for the random number generator [default: None]
-        - param.prgsBar: display progress bar? bolean variable [default:True]
-        - param.returnParameters: bool, return channel parameters [default: False]
+        - param.Ltotal : total fiber length [km][default: 400 km]
+        - param.Lspan : span length [km][default: 80 km]
+        - param.hz : step-size for the split-step Fourier method [km][default: 0.5 km]
+        - param.alpha : fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+        - param.D : chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+        - param.gamma : fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+        - param.Fc : carrier frequency [Hz] [default: 193.1e12 Hz]
+        - param.Fs : simulation sampling frequency [samples/second][default: None]
+        - param.prec : numerical precision [default: np.complex128]
+        - param.amp : 'edfa', 'ideal', or 'None. [default:'edfa']
+        - param.NF : edfa noise figure [dB] [default: 4.5 dB]
+        - param.seed : seed for the random number generator [default: None]
+        - param.prgsBar : display progress bar? bolean variable [default:True]
+        - param.returnParameters : bool, return channel parameters [default: False]
 
     Returns
     -------
@@ -141,6 +170,37 @@ def ssfm(Ei, param=None):
         Optical signal after nonlinear propagation.
     param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
+
+    Notes
+    -----
+    The propagation of the complex envelope :math:`A(z, t)` of the optical field in a
+    single-mode fiber is described by the nonlinear Schrödinger equation (NLSE),
+
+    .. math::
+        \frac{\partial A}{\partial z} = -\frac{\alpha}{2}A
+        - j\frac{\beta_2}{2}\frac{\partial^2 A}{\partial t^2}
+        + j\gamma|A|^2A, \tag{1}
+
+    where :math:`\alpha` is the attenuation coefficient, :math:`\beta_2` is the group
+    velocity dispersion parameter (see :func:`linearFiberChannel`), and :math:`\gamma`
+    is the nonlinear parameter. Writing Eq. (1) as
+    :math:`\partial A/\partial z = (\hat{D} + \hat{N})A`, where :math:`\hat{D}`
+    accounts for loss and dispersion and :math:`\hat{N} = j\gamma|A|^2` for the Kerr
+    nonlinearity, the symmetric split-step Fourier method (SSFM) advances the field
+    by a step :math:`h` as
+
+    .. math::
+        A(z+h, t) \approx e^{\frac{h}{2}\hat{D}}\, e^{h\hat{N}}\,
+        e^{\frac{h}{2}\hat{D}} A(z, t). \tag{2}
+
+    The linear operator :math:`e^{\frac{h}{2}\hat{D}}` is applied in the frequency
+    domain, where it is the multiplication by
+    :math:`\exp\left[\left(-\frac{\alpha}{2} + j\frac{\beta_2}{2}\omega^2\right)\frac{h}{2}\right]`,
+    and the nonlinear operator is applied in the time domain, where it is the phase
+    rotation :math:`\exp\left(j\gamma|A|^2h\right)`. The approximation in Eq. (2)
+    has a global error of order :math:`h^2`. The link is composed of spans of length
+    :math:`L_{span}`, each one followed by an optical amplifier with gain
+    :math:`\alpha_{dB}L_{span}` dB, which compensates the span loss.
 
     References
     ----------
@@ -250,7 +310,7 @@ def ssfm(Ei, param=None):
 
 
 def manakovSSF(Ei, param):
-    """
+    r"""
     Run the Manakov split-step Fourier model (symmetric, dual-pol.).
 
     Parameters
@@ -260,25 +320,25 @@ def manakovSSF(Ei, param):
     param : optic.utils.parameters object
         Physical/simulation parameters of the optical channel.
 
-        - param.Ltotal: total fiber length [km][default: 400 km]
-        - param.Lspan: span length [km][default: 80 km]
-        - param.hz: step-size for the split-step Fourier method [km][default: 0.5 km]
-        - param.alpha: fiber attenuation parameter [dB/km][default: 0.2 dB/km]
-        - param.D: chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
-        - param.gamma: fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
-        - param.Fc: carrier frequency [Hz] [default: 193.1e12 Hz]
-        - param.Fs: simulation sampling frequency [samples/second][default: None]
-        - param.prec: numerical precision [default: np.complex128]
-        - param.amp: 'edfa', 'ideal', or 'None. [default:'edfa']
-        - param.NF: edfa noise figure [dB] [default: 4.5 dB]
-        - param.maxIter: max number of iter. in the trap. integration [default: 10]
-        - param.tol: convergence tol. of the trap. integration.[default: 1e-5]
-        - param.nlprMethod: adap step-size based on nonl. phase rot. [default: True]
-        - param.maxNlinPhaseRot: max nonl. phase rot. tolerance [rad][default: 2e-2]
-        - param.prgsBar: display progress bar? bolean variable [default:True]
-        - param.saveSpanN: specify the span indexes to be outputted [default:[]]
-        - param.seed: seed for the random number generator [default: None]
-        - param.returnParameters: bool, return channel parameters [default: False]
+        - param.Ltotal : total fiber length [km][default: 400 km]
+        - param.Lspan : span length [km][default: 80 km]
+        - param.hz : step-size for the split-step Fourier method [km][default: 0.5 km]
+        - param.alpha : fiber attenuation parameter [dB/km][default: 0.2 dB/km]
+        - param.D : chromatic dispersion parameter [ps/nm/km][default: 16 ps/nm/km]
+        - param.gamma : fiber nonlinear parameter [1/W/km][default: 1.3 1/W/km]
+        - param.Fc : carrier frequency [Hz] [default: 193.1e12 Hz]
+        - param.Fs : simulation sampling frequency [samples/second][default: None]
+        - param.prec : numerical precision [default: np.complex128]
+        - param.amp : 'edfa', 'ideal', or 'None. [default:'edfa']
+        - param.NF : edfa noise figure [dB] [default: 4.5 dB]
+        - param.maxIter : max number of iter. in the trap. integration [default: 10]
+        - param.tol : convergence tol. of the trap. integration.[default: 1e-5]
+        - param.nlprMethod : adap step-size based on nonl. phase rot. [default: True]
+        - param.maxNlinPhaseRot : max nonl. phase rot. tolerance [rad][default: 2e-2]
+        - param.prgsBar : display progress bar? bolean variable [default:True]
+        - param.saveSpanN : specify the span indexes to be outputted [default:[]]
+        - param.seed : seed for the random number generator [default: None]
+        - param.returnParameters : bool, return channel parameters [default: False]
 
     Returns
     -------
@@ -286,6 +346,37 @@ def manakovSSF(Ei, param):
         Optical signal after nonlinear propagation.
     param : optic.utils.parameters object
         Object with physical/simulation parameters used in the split-step alg.
+
+    Notes
+    -----
+    In fibers with random birefringence, the propagation of the two polarization
+    components :math:`A_x(z, t)` and :math:`A_y(z, t)` of the optical field, averaged
+    over the fast random evolution of the state of polarization, is described by the
+    Manakov equations,
+
+    .. math::
+        \frac{\partial A_{x,y}}{\partial z} = -\frac{\alpha}{2}A_{x,y}
+        - j\frac{\beta_2}{2}\frac{\partial^2 A_{x,y}}{\partial t^2}
+        + j\frac{8}{9}\gamma\left(|A_x|^2 + |A_y|^2\right)A_{x,y}, \tag{1}
+
+    where :math:`\alpha`, :math:`\beta_2` and :math:`\gamma` are defined as in
+    :func:`ssfm`, and the factor :math:`8/9` results from the averaging of the
+    nonlinear interaction over the Poincaré sphere. Eq. (1) is solved with a
+    symmetric split-step Fourier method: in each step of length :math:`h`, a linear
+    half-step is followed by a nonlinear phase rotation and another linear half-step.
+    The nonlinear phase rotation, common to both polarizations,
+
+    .. math::
+        \phi_{NL}(t) = \frac{8}{9}\gamma\,
+        \frac{P(z, t) + P(z+h, t)}{2}\,h, \qquad P = |A_x|^2 + |A_y|^2, \tag{2}
+
+    uses the trapezoidal rule to approximate the integral of the power over the step.
+    Since :math:`P(z+h, t)` depends on the result of the step itself, the step is
+    iterated until the relative change of the fields falls below the tolerance
+    ``tol``. When ``nlprMethod`` is enabled, the step size is adapted along the
+    fiber so that the maximum nonlinear phase rotation per step,
+    :math:`\max_t \phi_{NL}(t)`, is equal to ``maxNlinPhaseRot``. Each span of length
+    :math:`L_{span}` is followed by an optical amplifier that compensates its loss.
 
     References
     ----------
@@ -520,7 +611,7 @@ def convergenceCondition(Ex_fd, Ey_fd, Ex_conv, Ey_conv):
 
 
 def awgn(sig, param):
-    """
+    r"""
     Implement a basic AWGN channel model.
 
     Parameters
@@ -531,16 +622,32 @@ def awgn(sig, param):
     param : optic.utils.parameters object
         Physical/simulation parameters of the AWGN channel.
 
-            - param.snr: signal-to-noise ratio [dB][default: 20 dB]
-            - param.Fs: simulation sampling frequency [samples/second][default: 1]
-            - param.B: signal bandwidth [Hz][default: 1]
-            - param.complexNoise: boolean variable, add complex noise? [default: True]
-            - param.seed: seed for the random number generator [default: None]
+            - param.snr : signal-to-noise ratio [dB][default: 20 dB]
+            - param.Fs : simulation sampling frequency [samples/second][default: 1]
+            - param.B : signal bandwidth [Hz][default: 1]
+            - param.complexNoise : boolean variable, add complex noise? [default: True]
+            - param.seed : seed for the random number generator [default: None]
 
     Returns
     -------
     np.array
         Input signal plus noise.
+
+    Notes
+    -----
+    Complex (or real) white Gaussian noise :math:`n[k]` is added to the signal,
+    :math:`y[k] = x[k] + n[k]`. The signal-to-noise ratio is defined within the signal
+    bandwidth :math:`B`,
+
+    .. math::
+        \mathrm{SNR} = \frac{P_x}{\sigma_B^2}, \tag{1}
+
+    where :math:`P_x` is the average power of the signal and :math:`\sigma_B^2` is the
+    power of the noise within :math:`B`. Since the noise is white over the simulation
+    bandwidth :math:`F_s` (the sampling frequency), its total power is
+
+    .. math::
+        \sigma^2 = \frac{F_s}{B}\,\frac{P_x}{\mathrm{SNR}}. \tag{2}
 
     References
     ----------
@@ -560,6 +667,6 @@ def awgn(sig, param):
     if complexNoise:
         noise = gaussianComplexNoise(sig.shape, σ2, seed)
     else:
-        noise = gaussianNoise(sig.shape, σ2 / 2, seed)
+        noise = gaussianNoise(sig.shape, σ2, seed)
 
     return sig + noise

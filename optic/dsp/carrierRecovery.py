@@ -16,10 +16,9 @@ DSP algorithms for carrier phase and frequency recovery (:mod:`optic.dsp.carrier
 
 import logging as logg
 
-import matplotlib.pyplot as plt
 import numpy as np
 from numba import njit
-from numpy.fft import fft, fftfreq, fftshift
+from numpy.fft import fft, fftfreq
 
 from optic.comm.modulation import grayMapping
 from optic.dsp.core import movingAverage, pnorm
@@ -35,46 +34,47 @@ except ImportError:
     pass
 
 
-def cpr(Ei, param=None, symbTx=None):
+def cpr(sigIn, param=None, symbTx=None):
     """
     Carrier phase recovery function (CPR)
 
     Parameters
     ----------
-    Ei : complex-valued np.array
+    sigIn : complex-valued np.array
         received constellation symbols.
     param : optic.utils.parameter object, optional
         Configuration parameters [default: None].
 
-        - param.alg: CPR algorithm to be used ['bps', 'bpsGPU', 'ddpll', or 'viterbi'] [default: 'bps'].
-        - param.shapingFactor: shaping factor, for probabilistic shaped QAM with MB dististribution.[default: 0]
-        - param.constType: constellation type ['qam' or 'psk']. [default: 'qam']
-        - param.M: constellation order. [default: 4]
-        - param.returnPhases: whether to return the estimated phase shifts along with the output signal. [default: False]
+        - param.alg : CPR algorithm to be used ['bps', 'bpsGPU', 'ddpll', or 'viterbi'] [default: 'bps'].
+        - param.shapingFactor : shaping factor, for probabilistic shaped QAM with MB dististribution.[default: 0]
+        - param.constType : constellation type ['qam' or 'psk']. [default: 'qam']
+        - param.M : constellation order. [default: 4]
+        - param.returnPhases : whether to return the estimated phase shifts along with the output signal. [default: False]
+        - param.runFOE : whether to run the Mth-power frequency offset estimation and compensation before CPR. [default: True]
 
         BPS params:
 
-        - param.N: length of BPS the moving average window. [default: 35]
-        - param.B: number of BPS test phases. [default: 64]
+        - param.N : length of BPS the moving average window. [default: 35]
+        - param.B : number of BPS test phases. [default: 64]
 
         DDPLL params:
 
-        - param.tau1: DDPLL loop filter param. 1. [default: 1/2*pi*10e6]
-        - param.tau2: DDPLL loop filter param. 2. [default: 1/2*pi*10e6]
-        - param.Kv: DDPLL loop filter gain. [default: 0.1]
-        - param.Ts: symbol period. [default: 1/32e9]
-        - param.pilotInd: indexes of pilot-symbol locations.
+        - param.tau1 : DDPLL loop filter param. 1. [default: 1/2*pi*10e6]
+        - param.tau2 : DDPLL loop filter param. 2. [default: 1/2*pi*10e6]
+        - param.Kv : DDPLL loop filter gain. [default: 0.1]
+        - param.Ts : symbol period. [default: 1/32e9]
+        - param.pilotInd : indexes of pilot-symbol locations.
 
         Viterbi params:
 
-        - param.N: length of the moving average window. [default: 35]
+        - param.N : length of the moving average window. [default: 35]
 
     symbTx :complex-valued np.array, optional
         Transmitted symbol sequence. [default: None]
 
     Returns
     -------
-    Eo : complex-valued np.array
+    sigOut : complex-valued np.array
         Phase-compensated signal.
     phaseEst : real-valued np.array
         Time-varying estimated phase-shifts.
@@ -88,7 +88,7 @@ def cpr(Ei, param=None, symbTx=None):
     [3] H. Meyer, Digital Communication Receivers: Synchronization, Channel estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
     """
     if symbTx is None:
-        symbTx = np.zeros(Ei.shape)
+        symbTx = np.zeros(sigIn.shape)
     if param is None:
         param = []
 
@@ -103,14 +103,15 @@ def cpr(Ei, param=None, symbTx=None):
     tau1 = getattr(param, "tau1", 1 / (2 * np.pi * 10e6))
     tau2 = getattr(param, "tau2", 1 / (2 * np.pi * 10e6))
     Ts = getattr(param, "Ts", 1 / 32e9)
-    pilotInd = getattr(param, "pilotInd", np.array([len(Ei) + 1]))
+    pilotInd = getattr(param, "pilotInd", np.array([len(sigIn) + 1]))
+    runFOE = getattr(param, "runFOE", True)
     returnPhases = getattr(param, "returnPhases", False)
 
     try:
-        Ei.shape[1]
+        sigIn.shape[1]
         input1D = False
     except IndexError:
-        Ei = Ei.reshape(len(Ei), 1)
+        sigIn = sigIn.reshape(len(sigIn), 1)
         input1D = True
 
     # constellation parameters
@@ -120,29 +121,36 @@ def cpr(Ei, param=None, symbTx=None):
     constSymb /= np.sqrt(np.sum(np.abs(constSymb) ** 2 * px))
 
     # 4th power frequency offset estimation/compensation
-    logg.info(f"Running frequency offset compensation...")
-    Ei, fo = fourthPowerFOE(Ei, 1 / Ts)
-    Ei = pnorm(Ei)
-    logg.info(f"Estimated frequency offset (MHz): {np.round(fo/1e6, 3)}")
+    if runFOE:
+        logg.info(f"Running frequency offset compensation...")
+        if constType in ["psk", "apsk"]:
+            sigIn, fo = fourthPowerFOE(sigIn, 1 / Ts, M)
+        else:
+            sigIn, fo = fourthPowerFOE(sigIn, 1 / Ts, 4)
+        sigIn = pnorm(sigIn)
+        logg.info(f"Estimated frequency offset (MHz): {np.round(fo/1e6, 3)}")
 
     if alg == "ddpll":
         logg.info(f"Running DDPLL carrier phase recovery...")
-        phaseEst = ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
+        phaseEst = ddpll(sigIn, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd)
     elif alg == "bps":
         logg.info(f"Running BPS carrier phase recovery...")
-        phaseEst = bps(Ei, N // 2, constSymb, B)
+        phaseEst = bps(sigIn, N // 2, constSymb, B)
     elif alg == "bpsGPU":
         try:
             logg.info("Running GPU-based BPS carrier phase recovery...")
-            phaseEst = bpsGPU(Ei, N // 2, constSymb, B)
+            phaseEst = bpsGPU(sigIn, N // 2, constSymb, B)
         except NameError:
             logg.warning("GPU unavailable, switching to CPU processing...")
-            phaseEst = bps(Ei, N // 2, constSymb, B)
+            phaseEst = bps(sigIn, N // 2, constSymb, B)
     elif alg == "viterbi":
         logg.info(f"Running Viterbi&Viterbi carrier phase recovery...")
-        phaseEst = viterbi(Ei, N)
+        if constType in ["psk"]:
+            phaseEst = viterbi(sigIn, N, M) + np.pi / 4
+        else:
+            phaseEst = viterbi(sigIn, N)
     else:
-        raise ValueError("CPR algorithm incorrectly specified.")
+        logg.error("CPR algorithm incorrectly specified.")
     phaseEst = np.unwrap(4 * phaseEst, axis=0) / 4
 
     discard = (
@@ -151,24 +159,24 @@ def cpr(Ei, param=None, symbTx=None):
     sigmaPhase = np.mean(np.var(np.diff(phaseEst[discard:-discard, :], axis=0), axis=0))
     logg.info(f"Estimated linewidth: {sigmaPhase/(2 * np.pi* Ts)/1e3:.3f} kHz")
 
-    Eo = pnorm(Ei * np.exp(1j * phaseEst))
+    sigOut = pnorm(sigIn * np.exp(1j * phaseEst))
 
     if input1D:
         # If input was 1D, return a 1D array
-        Eo = Eo.flatten()
+        sigOut = sigOut.flatten()
         phaseEst = phaseEst.flatten()
 
-    return (Eo, phaseEst) if returnPhases else Eo
+    return (sigOut, phaseEst) if returnPhases else sigOut
 
 
-@njit
-def bps(Ei, N, constSymb, B):
-    """
+@njit(fastmath=True, cache=True)
+def bps(sigIn, N, constSymb, B):
+    r"""
     Blind phase search (BPS) algorithm
 
     Parameters
     ----------
-    Ei : complex-valued np.array
+    sigIn : complex-valued np.array
         Received constellation symbols.
     N : int
         Half of the 2*N+1 average window.
@@ -182,47 +190,92 @@ def bps(Ei, N, constSymb, B):
     phaseEst : real-valued np.array
         Time-varying estimated phase-shifts.
 
+    Notes
+    -----
+    The blind phase search (BPS) algorithm is a feedforward carrier phase estimator
+    that works with any constellation. Due to the rotational symmetry of square QAM
+    constellations, the phase is only identifiable modulo :math:`\pi/2`, so
+    :math:`B` test phases are distributed within this interval,
+
+    .. math::
+        \varphi_b = \frac{b}{B}\,\frac{\pi}{2}, \qquad b = 0, 1, \ldots, B-1. \tag{1}
+
+    For each received symbol :math:`y[k]` and test phase, the squared distance
+    between the rotated symbol and the closest constellation point is computed,
+
+    .. math::
+        d_b[k] = \min_{x \in \mathcal{X}}\left|y[k]e^{j\varphi_b} - x\right|^2. \tag{2}
+
+    To reduce the influence of the noise, the distances are summed over a window of
+    :math:`2N+1` consecutive symbols, and the test phase with the smallest sum is
+    selected,
+
+    .. math::
+        \hat{\varphi}[k] = \arg\min_{\varphi_b} \sum_{n=-N}^{N} d_b[k+n]. \tag{3}
+
+    The phase-corrected symbols are :math:`y[k]e^{j\hat{\varphi}[k]}`. The
+    :math:`\pi/2` ambiguity of the estimates is removed later by phase unwrapping
+    (see :func:`cpr`).
+
     References
     ----------
     [1] T. Pfau, S. Hoffmann, e R. Noé, “Hardware-efficient coherent digital receiver concept with feedforward carrier recovery for M-QAM constellations”, Journal of Lightwave Technology, vol. 27, nº 8, p. 989–999, 2009, doi: 10.1109/JLT.2008.2010511.
     """
-    nModes = Ei.shape[1]
+    nModes = sigIn.shape[1]
+    windowLen = 2 * N + 1
 
     testPhases = np.arange(0, B) * (np.pi / 2) / B  # test phases
+    rotations = np.exp(1j * testPhases)
 
-    phaseEst = np.zeros(Ei.shape, dtype="float")
+    constReal = constSymb.real.copy()
+    constImag = constSymb.imag.copy()
+
+    phaseEst = np.zeros(sigIn.shape, dtype="float")
 
     zeroPad = np.zeros((N, nModes), dtype="complex")
     x = np.concatenate(
-        (zeroPad, Ei, zeroPad)
+        (zeroPad, sigIn, zeroPad)
     )  # pad start and end of the signal with zeros
 
     L = x.shape[0]
 
     for n in range(nModes):
-        dist = np.zeros((B, constSymb.shape[0]), dtype="float")
-        dmin = np.zeros((B, 2 * N + 1), dtype="float")
+        # circular buffer with the min. distances inside the averaging window
+        dmin = np.zeros((windowLen, B), dtype="float")
+        sumDmin = np.zeros(B, dtype="float")  # running sum over the window
 
         for k in range(L):
-            for indPhase, phi in enumerate(testPhases):
-                dist[indPhase, :] = np.abs(x[k, n] * np.exp(1j * phi) - constSymb) ** 2
-                dmin[indPhase, -1] = np.min(dist[indPhase, :])
+            slot = k % windowLen
+            for indPhase in range(B):
+                xRot = x[k, n] * rotations[indPhase]
+
+                # squared distance to the closest constellation symbol
+                dminNew = np.inf
+                for indSymb in range(constReal.shape[0]):
+                    dist = (xRot.real - constReal[indSymb]) ** 2 + (
+                        xRot.imag - constImag[indSymb]
+                    ) ** 2
+                    if dist < dminNew:
+                        dminNew = dist
+
+                # replace the oldest distance in the window by the newest one
+                sumDmin[indPhase] += dminNew - dmin[slot, indPhase]
+                dmin[slot, indPhase] = dminNew
+
             if k >= 2 * N:
-                sumDmin = np.sum(dmin, axis=1)
                 indRot = np.argmin(sumDmin)
                 phaseEst[k - 2 * N, n] = testPhases[indRot]
-            dmin = np.roll(dmin, -1)
     return phaseEst
 
 
-@njit
-def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
-    """
+@njit(fastmath=True, cache=True)
+def ddpll(sigIn, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
+    r"""
     Decision-directed Phase-locked Loop (DDPLL) algorithm
 
     Parameters
     ----------
-    Ei : complex-valued np.array
+    sigIn : complex-valued np.array
         Received constellation symbols.
     Ts : float scalar
         Symbol period.
@@ -244,61 +297,88 @@ def ddpll(Ei, Ts, Kv, tau1, tau2, constSymb, symbTx, pilotInd):
     phaseEst : real-valued np.array
         Time-varying estimated phase-shifts.
 
+    Notes
+    -----
+    The decision-directed phase-locked loop (DD-PLL) tracks the carrier phase
+    symbol by symbol. The received symbol :math:`y[k]` is first corrected by the
+    current phase estimate :math:`\hat{\theta}[k]`, and a phase error signal is
+    generated by comparing it with the decided symbol :math:`\hat{x}[k]` (or with the
+    known pilot symbol, at pilot positions),
+
+    .. math::
+        u_d[k] = \mathrm{Im}\left\{y[k]e^{j\hat{\theta}[k]}\,\hat{x}^*[k]\right\}
+        \approx |\hat{x}[k]|^2 \sin\left(\theta[k] + \hat{\theta}[k]\right), \tag{1}
+
+    which, for small errors, is proportional to the residual phase error. The error
+    signal is smoothed by a second-order (proportional-integral) loop filter,
+
+    .. math::
+        u_f[k] = u_f[k-1] + b_1 u_d[k-1] + b_2 u_d[k], \tag{2}
+
+    with :math:`b_{1,2} = \frac{T_s}{2\tau_1}\left[1 \mp
+    \cot\left(\frac{T_s}{2\tau_2}\right)\right]`, given by the loop filter
+    time constants :math:`\tau_1` and :math:`\tau_2`, and the phase estimate for the next symbol is updated as
+
+    .. math::
+        \hat{\theta}[k+1] = \hat{\theta}[k] - K_v u_f[k], \tag{3}
+
+    where :math:`K_v` is the loop gain.
+
     References
     ----------
     [1] H. Meyer, Digital Communication Receivers: Synchronization, Channel estimation, and Signal Processing, Wiley 1998. Section 5.8 and 5.9.
     """
-    nSymbols, nModes = Ei.shape
+    nSymbols, nModes = sigIn.shape
 
     phaseEst = np.zeros((nSymbols, nModes), dtype=np.float64)
 
     # Loop filter coefficients
-    a1b = np.array(
-        [
-            1,
-            Ts / (2 * tau1) * (1 - 1 / np.tan(Ts / (2 * tau2))),
-            Ts / (2 * tau1) * (1 + 1 / np.tan(Ts / (2 * tau2))),
-        ]
-    )
+    b1 = Ts / (2 * tau1) * (1 - 1 / np.tan(Ts / (2 * tau2)))
+    b2 = Ts / (2 * tau1) * (1 + 1 / np.tan(Ts / (2 * tau2)))
 
-    u = np.zeros(3, dtype=np.float64)  # [u_f, u_d1, u_d]
+    # Boolean mask of pilot-symbol locations (O(1) lookup inside the loop)
+    isPilot = np.zeros(nSymbols, dtype=np.bool_)
+    for ind in pilotInd:
+        if 0 <= ind < nSymbols:
+            isPilot[int(ind)] = True
 
     for n in range(nModes):
-        u[2] = 0  # Output of phase detector (residual phase error)
-        u[0] = 0  # Output of loop filter
+        u_d = 0.0  # Output of phase detector (residual phase error)
+        u_f = 0.0  # Output of loop filter
 
-        for k in range(Ei.shape[0]):
-            u[1] = u[2]
+        for k in range(nSymbols):
+            u_d1 = u_d
 
             # Remove estimate of phase error from input symbol
-            Eo = Ei[k, n] * np.exp(1j * phaseEst[k, n])
+            sigOut = sigIn[k, n] * np.exp(1j * phaseEst[k, n])
 
             # Slicer (perform hard decision on symbol)
-            if k in pilotInd:
+            if isPilot[k]:
                 # phase estimation with pilot symbol
-                # Generate phase error signal (also called x_n (Meyer))
-                u[2] = np.imag(Eo * np.conj(symbTx[k, n]))
+                decided = symbTx[k, n]
             else:
                 # find closest constellation symbol
-                decided = np.argmin(np.abs(Eo - constSymb))
-                # Generate phase error signal (also called x_n (Meyer))
-                u[2] = np.imag(Eo * np.conj(constSymb[decided]))
+                decided = constSymb[np.argmin(np.abs(sigOut - constSymb))]
+
+            # Generate phase error signal (also called x_n (Meyer))
+            u_d = np.imag(sigOut * np.conj(decided))
+
             # Pass phase error signal in Loop Filter (also called e_n (Meyer))
-            u[0] = np.sum(a1b * u)
+            u_f = u_f + b1 * u_d1 + b2 * u_d
 
             # Estimate the phase error for the next symbol
-            if k < Ei.shape[0] - 1:
-                phaseEst[k + 1, n] = phaseEst[k, n] - Kv * u[0]
+            if k < nSymbols - 1:
+                phaseEst[k + 1, n] = phaseEst[k, n] - Kv * u_f
     return phaseEst
 
 
-def viterbi(Ei, N=35, M=4):
-    """
+def viterbi(sigIn, N=35, M=4):
+    r"""
     Viterbi & Viterbi carrier phase recovery algorithm.
 
     Parameters
     ----------
-    Ei : np.array
+    sigIn : np.array
         Input signal.
     N : int, optional
         Size of the moving average window.
@@ -310,28 +390,50 @@ def viterbi(Ei, N=35, M=4):
     np.array, float
         Estimated phase error.
 
+    Notes
+    -----
+    The Viterbi & Viterbi algorithm is a feedforward carrier phase estimator for
+    constellations with :math:`M`-fold rotational symmetry. Raising the received
+    symbols :math:`y[k] = x[k]e^{j\theta[k]} + n[k]` to the :math:`M`-th power
+    removes the phase modulation, since :math:`x^M[k]` has a constant argument (for
+    QPSK with points at :math:`\pm\pi/4` and :math:`\pm 3\pi/4`, :math:`x^4 = -1`),
+    leaving :math:`M\theta[k]`. The noise is reduced by averaging over a window of
+    :math:`N` symbols, and the phase correction returned is
+
+    .. math::
+        \hat{\varphi}[k] = -\frac{1}{M}\arg\left\{\sum_{n} y^M[k+n]\right\}
+        - \frac{\pi}{4}, \tag{1}
+
+    which is unwrapped with period :math:`2\pi/M` along the sequence. The corrected
+    symbols :math:`y[k]e^{j\hat{\varphi}[k]}` are aligned with the constellation up
+    to the :math:`2\pi/M` ambiguity inherent to its rotational symmetry. For square
+    QAM constellations, the fourth power is used as well, since the average of
+    :math:`x^4` is also a negative real number (e.g. :math:`-0.68E_s^2` for 16-QAM).
+
     References
     ----------
     [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
     """
     return (
-        -np.unwrap(np.angle(movingAverage(Ei**M, N)) / M, period=2 * np.pi / M, axis=0)
+        -np.unwrap(
+            np.angle(movingAverage(sigIn**M, N)) / M, period=2 * np.pi / M, axis=0
+        )
         - np.pi / 4
     )
 
 
-def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
-    """
+def fourthPowerFOE(sigIn, Fs, M=4):
+    r"""
     Estimate the frequency offset (FO) with the 4th-power method.
 
     Parameters
     ----------
-    Ei : np.array
+    sigIn : np.array
         Input signal.
     Fs : float
         Sampling frequency.
-    plotSpec : bool, optional
-        Whether to plot the spectrum. Default is False.
+    M : int, optional
+        M-th power order. Default is 4.
 
     Returns
     -------
@@ -339,34 +441,41 @@ def fourthPowerFOE(Ei, Fs, plotSpec=False):  # sourcery skip: extract-method
         - The output signal after applying frequency offset correction.
         - The estimated frequency offset.
 
+    Notes
+    -----
+    A frequency offset :math:`\Delta f` between the transmitter laser and the local
+    oscillator rotates the received symbols as :math:`y[k] = x[k]e^{j2\pi\Delta f
+    kT_s}`. Raising the signal to the :math:`M`-th power (:math:`M = 4` for QPSK and
+    square QAM) largely removes the modulation, producing a strong spectral line at
+    :math:`M\Delta f`. The frequency offset is estimated from the location of the
+    peak of the spectrum of :math:`y^M[k]`,
+
+    .. math::
+        \Delta\hat{f} = \frac{1}{M}\arg\max_{f}
+        \left|\mathrm{DFT}\left\{y^M[k]\right\}(f)\right|, \tag{1}
+
+    and compensated as
+
+    .. math::
+        y_c[k] = y[k]\,e^{-j2\pi\Delta\hat{f}\,kT_s}. \tag{2}
+
+    The estimation range is :math:`|\Delta f| < F_s/(2M)`, and the resolution is
+    :math:`F_s/(MN)`, where :math:`F_s` is the sampling rate and :math:`N` the number
+    of samples.
+
     References
     ----------
     [1] S. J. Savory, “Digital coherent optical receivers: Algorithms and subsystems”, IEEE Journal on Selected Topics in Quantum Electronics, vol. 16, nº 5, p. 1164–1179, set. 2010, doi: 10.1109/JSTQE.2010.2044751.
     """
-    Nfft = Ei.shape[0]
+    Nfft = sigIn.shape[0]
 
     f = Fs * fftfreq(Nfft)
-    f = fftshift(f)
+    t = np.arange(0, Nfft) * 1 / Fs
 
-    nModes = Ei.shape[1]
-    Eo = Ei.copy()
-    t = np.arange(0, Eo.shape[0]) * 1 / Fs
-    fo = np.zeros(nModes)
-    for n in range(nModes):
-        f4 = 10 * np.log10(np.abs(fftshift(fft(Ei[:, n] ** 4))))
-        indFO = np.argmax(f4)
-        fo[n] = f[indFO] / 4
-        Eo[:, n] = Ei[:, n] * np.exp(-1j * 2 * np.pi * fo[n] * t)
+    # spectral peak of the M-th power signal of each mode
+    indFO = np.argmax(np.abs(fft(sigIn**M, axis=0)), axis=0)
+    fo = f[indFO] / M
 
-    if plotSpec:
-        plotSpectrum(f, f4, indFO)
-    return Eo, fo
+    sigOut = sigIn * np.exp(-1j * 2 * np.pi * np.outer(t, fo))
 
-
-def plotSpectrum(f, f4, indFO):
-    plt.figure()
-    plt.plot(f, f4, label="$|FFT(s[k]^4)|[dB]$")
-    plt.plot(f[indFO], f4[indFO], "x", label="$4f_o$")
-    plt.legend()
-    plt.xlim(min(f), max(f))
-    plt.grid()
+    return sigOut.astype(sigIn.dtype, copy=False), fo

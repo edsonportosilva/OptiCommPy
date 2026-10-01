@@ -1,25 +1,24 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="English">
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Digital Communications Utilities &mdash; OptiCommPy alpha 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+  <title>Digital Communications Utilities &mdash; OptiCommPy 0.11.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f3b36f1a"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -38,9 +37,6 @@
           <a href="index.html" class="icon icon-home">
             OptiCommPy
           </a>
-              <div class="version">
-                0.9
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -68,18 +64,25 @@
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.demap.html">optic.comm.modulation.demap</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.modulateGray.html">optic.comm.modulation.modulateGray</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.demodulateGray.html">optic.comm.modulation.demodulateGray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.detector.html">optic.comm.modulation.detector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.softMapper.html">optic.comm.modulation.softMapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.softEstimator.html">optic.comm.modulation.softEstimator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.modulation.mlse.html">optic.comm.modulation.mlse</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#metrics-for-signal-and-performance-characterization-optic-comm-metrics">Metrics for signal and performance characterization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.metrics</span></code>)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.bert.html">optic.comm.metrics.bert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.fastBERcalc.html">optic.comm.metrics.fastBERcalc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.calcLLR.html">optic.comm.metrics.calcLLR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.calcExtrLLR.html">optic.comm.metrics.calcExtrLLR</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.monteCarloGMI.html">optic.comm.metrics.monteCarloGMI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.monteCarloMI.html">optic.comm.metrics.monteCarloMI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.calcMI.html">optic.comm.metrics.calcMI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.Qfunc.html">optic.comm.metrics.Qfunc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.calcEVM.html">optic.comm.metrics.calcEVM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.theoryBER.html">optic.comm.metrics.theoryBER</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.theoryMI.html">optic.comm.metrics.theoryMI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.theoryGMI.html">optic.comm.metrics.theoryGMI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.metrics.calcLinOSNR.html">optic.comm.metrics.calcLinOSNR</a></li>
 </ul>
 </li>
@@ -87,6 +90,7 @@
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.sources.bitSource.html">optic.comm.sources.bitSource</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.sources.prbsGenerator.html">optic.comm.sources.prbsGenerator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.sources.symbolSource.html">optic.comm.sources.symbolSource</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.sources.cazacSequence.html">optic.comm.sources.cazacSequence</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ofdm-utilities-optic-comm-ofdm">OFDM utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.ofdm</span></code>)</a><ul>
@@ -95,6 +99,28 @@
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.ofdm.calcSymbolRate.html">optic.comm.ofdm.calcSymbolRate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.ofdm.modulateOFDM.html">optic.comm.ofdm.modulateOFDM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.ofdm.demodulateOFDM.html">optic.comm.ofdm.demodulateOFDM</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#forward-error-correction-fec-utilities-optic-comm-fec">Forward error correction (FEC) utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.fec</span></code>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.par2gen.html">optic.comm.fec.par2gen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.gaussElim.html">optic.comm.fec.gaussElim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.encoder.html">optic.comm.fec.encoder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.encodeDVBS2.html">optic.comm.fec.encodeDVBS2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.encodeTriang.html">optic.comm.fec.encodeTriang</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.sumProductAlgorithm.html">optic.comm.fec.sumProductAlgorithm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.minSumAlgorithm.html">optic.comm.fec.minSumAlgorithm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.encodeLDPC.html">optic.comm.fec.encodeLDPC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.decodeLDPC.html">optic.comm.fec.decodeLDPC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.writeAlist.html">optic.comm.fec.writeAlist</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.readAlist.html">optic.comm.fec.readAlist</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.triangularize.html">optic.comm.fec.triangularize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.triangP1P2.html">optic.comm.fec.triangP1P2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.inverseMatrixGF2.html">optic.comm.fec.inverseMatrixGF2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.plotBinaryMatrix.html">optic.comm.fec.plotBinaryMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.parseAlist.html">optic.comm.fec.parseAlist</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.summarizeAlistFolder.html">optic.comm.fec.summarizeAlistFolder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.hammingParityCheckMatrix.html">optic.comm.fec.hammingParityCheckMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/optic.comm.fec.encodeHamming.html">optic.comm.fec.encodeHamming</a></li>
 </ul>
 </li>
 </ul>
@@ -130,9 +156,9 @@
            <div itemprop="articleBody">
              
   <section id="digital-communications-utilities">
-<h1>Digital Communications Utilities<a class="headerlink" href="#digital-communications-utilities" title="Permalink to this heading"></a></h1>
+<h1>Digital Communications Utilities<a class="headerlink" href="#digital-communications-utilities" title="Link to this heading"></a></h1>
 <section id="digital-modulation-utilities-optic-comm-modulation">
-<h2>Digital modulation utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.modulation</span></code>)<a class="headerlink" href="#digital-modulation-utilities-optic-comm-modulation" title="Permalink to this heading"></a></h2>
+<h2>Digital modulation utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.modulation</span></code>)<a class="headerlink" href="#digital-modulation-utilities-optic-comm-modulation" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.modulation.grayCode.html#optic.comm.modulation.grayCode" title="optic.comm.modulation.grayCode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">grayCode</span></code></a>(n)</p></td>
@@ -165,44 +191,62 @@
 <tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.modulation.demodulateGray.html#optic.comm.modulation.demodulateGray" title="optic.comm.modulation.demodulateGray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">demodulateGray</span></code></a>(symb, M, constType)</p></td>
 <td><p>Demodulate symbol sequences to bit sequences (w/ Gray mapping).</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.modulation.detector.html#optic.comm.modulation.detector" title="optic.comm.modulation.detector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">detector</span></code></a>(r, σ2, constSymb[, px, rule])</p></td>
+<td><p>Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.modulation.softMapper.html#optic.comm.modulation.softMapper" title="optic.comm.modulation.softMapper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">softMapper</span></code></a>(llr, M, constType[, prec])</p></td>
+<td><p>Soft mapper for Gray-mapped modulation formats.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.modulation.softEstimator.html#optic.comm.modulation.softEstimator" title="optic.comm.modulation.softEstimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">softEstimator</span></code></a>(llr, bitMap, constSymb)</p></td>
+<td><p>Estimates the mean and variance of the received symbols based on LLRs and the bit mapping.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.modulation.mlse.html#optic.comm.modulation.mlse" title="optic.comm.modulation.mlse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mlse</span></code></a>(y, h, constSymb)</p></td>
+<td><p>Performs Maximum Likelihood Sequence Estimation (MLSE) using the Viterbi algorithm</p></td>
+</tr>
 </tbody>
 </table>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">apskConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phaseOffset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">apskConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phaseOffset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#apskConst"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Generate an Amplitude-Phase Shift Keying (APSK) constellation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>M</strong> (<em>int</em>) -- Constellation order.</p></li>
-<li><p><strong>m1</strong> (<em>int</em>) -- Number of bits used to index the radii of the constellation.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Constellation order.</p></li>
+<li><p><strong>m1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of bits used to index the radii of the constellation.</p></li>
+<li><p><strong>phaseOffset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Phase offset applied to each ring of the constellation [rad].
+The default is pi / symbolsPerRing.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>const</strong> -- APSK constellation</p>
+<dd class="field-even"><p><strong>const</strong> – APSK constellation</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>symbols per ring is determined by <span class="math notranslate nohighlight">\(m_2 = log_2(M) - m_1\)</span>, where <span class="math notranslate nohighlight">\(m_1\)</span> is the number of bits used to index the rings.
+If <span class="math notranslate nohighlight">\(m_1\)</span> is not provided, it is set based on M according to references [1] and [2].</p>
 <p class="rubric">References</p>
-<p>[1] Z. Liu, et al &quot;APSK Constellation with Gray Mapping,&quot; IEEE Communications Letters, vol. 15, no. 12, pp. 1271-1273, 2011.</p>
+<p>[1] Z. Liu, et al “APSK Constellation with Gray Mapping,” IEEE Communications Letters, vol. 15, no. 12, pp. 1271-1273, 2011.</p>
 <p>[2] Proakis, J. G., &amp; Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">demap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitMap</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">demap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitMap</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#demap"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Contellation symbol index to bit sequence demapping.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>indSymb</strong> (<em>np.array of ints</em>) -- Indexes of received symbol sequence.</p></li>
-<li><p><strong>bitMap</strong> (<em>(</em><em>M</em><em>, </em><em>log2</em><em>(</em><em>M</em><em>)</em><em>) </em><em>np.array</em>) -- bit-to-symbol mapping.</p></li>
+<li><p><strong>indSymb</strong> (<em>np.array</em><em> of </em><em>ints</em>) – Indexes of received symbol sequence.</p></li>
+<li><p><strong>bitMap</strong> (<em>(</em><em>M</em><em>, </em><em>log2</em><em>(</em><em>M</em><em>)</em><em>) </em><em>np.array</em>) – bit-to-symbol mapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>decBits</strong> -- Sequence of demapped bits.</p>
+<dd class="field-even"><p><strong>decBits</strong> – Sequence of demapped bits.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
@@ -214,15 +258,15 @@
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">demodulateGray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">demodulateGray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#demodulateGray"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Demodulate symbol sequences to bit sequences (w/ Gray mapping).</p>
 <p>Hard demodulation is based on minimum Euclidean distance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symb</strong> (<em>array of complex constellation symbols</em>) -- sequence of constellation symbols to be demodulated.</p></li>
-<li><p><strong>M</strong> (<em>int</em>) -- order of the modulation format.</p></li>
-<li><p><strong>constType</strong> (<em>string</em>) -- 'qam', 'psk', 'apsk', 'pam' or 'ook'.</p></li>
+<li><p><strong>symb</strong> (<em>array</em><em> of </em><em>complex constellation symbols</em>) – sequence of constellation symbols to be demodulated.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – order of the modulation format.</p></li>
+<li><p><strong>constType</strong> (<em>string</em>) – ‘qam’, ‘psk’, ‘apsk’, ‘pam’ or ‘ook’.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -238,21 +282,21 @@
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'MAP'</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'MAP'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#detector"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Perform symbol detection using either the MAP (Maximum A Posteriori) or ML (Maximum Likelihood) rule.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>r</strong> (<em>np.array</em>) -- The received signal.</p></li>
-<li><p><strong>σ2</strong> (<em>float</em>) -- The noise variance.</p></li>
-<li><p><strong>constSymb</strong> (<em>np.array</em>) -- The constellation symbols.</p></li>
-<li><p><strong>px</strong> (<em>np.array</em><em>, </em><em>optional</em>) -- The prior probabilities of each symbol. If None, uniform priors are assumed.</p></li>
-<li><p><strong>rule</strong> (<em>str</em><em>, </em><em>optional</em>) -- The detection rule to use. Either 'MAP' (default) or 'ML'.</p></li>
+<li><p><strong>r</strong> (<em>np.array</em>) – The received signal.</p></li>
+<li><p><strong>σ2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The noise variance.</p></li>
+<li><p><strong>constSymb</strong> (<em>np.array</em>) – The constellation symbols.</p></li>
+<li><p><strong>px</strong> (<em>np.array</em><em>, </em><em>optional</em>) – The prior probabilities of each symbol. If None, uniform priors are assumed.</p></li>
+<li><p><strong>rule</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The detection rule to use. Either ‘MAP’ (default) or ‘ML’.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul>
-<li><p><em>tuple</em> --</p>
+<li><p><em>tuple</em> –</p>
 <dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
 <li><p>np.array: The detected symbols.</p></li>
@@ -262,8 +306,8 @@
 </dl>
 </li>
 <li><p><em>Notes</em></p></li>
-<li><p><em>------</em></p></li>
-<li><p>If <em class="xref py py-obj">px</em> is None or <em class="xref py py-obj">rule</em> is 'ML', uniform priors are assumed.</p></li>
+<li><p><em>——</em></p></li>
+<li><p>If <em class="xref py py-obj">px</em> is None or <em class="xref py py-obj">rule</em> is ‘ML’, uniform priors are assumed.</p></li>
 </ul>
 </p>
 </dd>
@@ -274,34 +318,34 @@
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">grayCode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">grayCode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#grayCode"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Gray code generator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) -- length of the codeword in bits.</p>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – length of the codeword in bits.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>code</strong> -- list of binary strings of the gray code.</p>
+<dd class="field-even"><p><strong>code</strong> – list of binary strings of the gray code.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">grayMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">grayMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#grayMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Gray Mapping for digital modulations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>M</strong> (<em>int</em>) -- modulation order</p></li>
-<li><p><strong>constType</strong> (<em>'qam'</em><em>, </em><em>'psk'</em><em>, </em><em>'pam'</em><em> or </em><em>'ook'.</em>) -- type of constellation.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – modulation order</p></li>
+<li><p><strong>constType</strong> (<em>'qam'</em><em>, </em><em>'psk'</em><em>, </em><em>'pam'</em><em> or </em><em>'ook'.</em>) – type of constellation.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>const</strong> -- constellation symbols (sorted according their corresponding
+<dd class="field-even"><p><strong>const</strong> – constellation symbols (sorted according their corresponding
 Gray bit sequence as integer decimal).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -314,22 +358,22 @@ Gray bit sequence as integer decimal).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">minEuclid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">const</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">minEuclid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">const</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#minEuclid"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Find minimum Euclidean distance.</p>
 <p>Find closest constellation symbol w.r.t the Euclidean distance in the
 complex plane.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symb</strong> (<em>np.array</em>) -- Received constellation symbols.</p></li>
-<li><p><strong>const</strong> (<em>np.array</em>) -- Reference constellation.</p></li>
+<li><p><strong>symb</strong> (<em>np.array</em>) – Received constellation symbols.</p></li>
+<li><p><strong>const</strong> (<em>np.array</em>) – Reference constellation.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>indexes of the closest constellation symbols.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.array of int</p>
+<dd class="field-odd"><p>np.array of <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
 </dd>
 </dl>
 <p class="rubric">References</p>
@@ -338,14 +382,37 @@ complex plane.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">modulateGray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">mlse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#mlse"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs Maximum Likelihood Sequence Estimation (MLSE) using the Viterbi algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<em>array-like</em>) – Received signal sequence</p></li>
+<li><p><strong>h</strong> (<em>array-like</em>) – Channel impulse response</p></li>
+<li><p><strong>constellation</strong> (<em>array-like</em>) – The available constellation symbols</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>yMLSE</strong> – The MLSE decided output sequence</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] Proakis, J. G., &amp; Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">modulateGray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#modulateGray"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Modulate bit sequences to constellation symbol sequences (w/ Gray mapping).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>bits</strong> (<em>array of ints</em>) -- sequence of data bits.</p></li>
-<li><p><strong>M</strong> (<em>int</em>) -- order of the modulation format.</p></li>
-<li><p><strong>constType</strong> (<em>string</em>) -- 'qam', 'psk', 'apsk', 'pam' or 'ook'.</p></li>
+<li><p><strong>bits</strong> (<em>array</em><em> of </em><em>ints</em>) – sequence of data bits.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – order of the modulation format.</p></li>
+<li><p><strong>constType</strong> (<em>string</em>) – ‘qam’, ‘psk’, ‘apsk’, ‘pam’ or ‘ook’.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -361,11 +428,11 @@ complex plane.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">pamConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">pamConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#pamConst"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Generate a Pulse Amplitude Modulation (PAM) constellation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>M</strong> (<em>int</em>) -- Number of symbols in the constellation. It must be an integer.</p>
+<dd class="field-odd"><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of symbols in the constellation. It must be an integer.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>1D PAM constellation.</p>
@@ -380,11 +447,11 @@ complex plane.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">pskConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">pskConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#pskConst"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Generate a Phase Shift Keying (PSK) constellation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>M</strong> (<em>int</em>) -- Number of symbols in the constellation. It must be a power of 2 positive integer.</p>
+<dd class="field-odd"><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of symbols in the constellation. It must be a power of 2 positive integer.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Complex M-PSK constellation.</p>
@@ -399,14 +466,14 @@ complex plane.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">qamConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">qamConst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#qamConst"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Generate a Quadrature Amplitude Modulation (QAM) constellation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>M</strong> (<em>int</em>) -- Number of symbols in the constellation. It must be a perfect square.</p>
+<dd class="field-odd"><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of symbols in the constellation. It must be a perfect square.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>const</strong> -- Complex square M-QAM constellation.</p>
+<dd class="field-even"><p><strong>const</strong> – Complex square M-QAM constellation.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
@@ -416,9 +483,53 @@ complex plane.</p>
 <p>[1] Proakis, J. G., &amp; Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.</p>
 </dd></dl>
 
-</section>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">softEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">llr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitMap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#softEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Estimates the mean and variance of the received symbols based on LLRs and the bit mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>llr</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>numSymb</em><em>, </em><em>numBits</em><em>)</em>) – Log-likelihood ratios for each bit in the symbol.</p></li>
+<li><p><strong>bitMap</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>M</em><em>, </em><em>numBits</em><em>)</em>) – Bit mapping of constellation points (binary matrix).</p></li>
+<li><p><strong>constSymb</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>M</em><em>,</em><em>)</em>) – Complex-valued constellation symbols.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>softMean</strong> (<em>ndarray of shape (numSymb,)</em>)</p></li>
+<li><p><strong>softVar</strong> (<em>ndarray of shape (numSymb,)</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">softMapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">llr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.float32'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/modulation.html#softMapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Soft mapper for Gray-mapped modulation formats.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>llr</strong> (<em>1D numpy array</em>) – Log-likelihood ratios (LLRs) of bits.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Modulation order.</p></li>
+<li><p><strong>constType</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Type of constellation (‘qam’, ‘psk’, ‘pam’, ‘apsk’, or ‘ook’).</p></li>
+<li><p><strong>prec</strong> (<em>data type</em><em>, </em><em>optional</em>) – Precision of the output (default is np.float32).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>- softMean</strong> (<em>1D numpy array</em>) – Soft mean of the constellation symbols.</p></li>
+<li><p><strong>- softVar</strong> (<em>1D numpy array</em>) – Soft variance of the constellation symbols.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 <section id="metrics-for-signal-and-performance-characterization-optic-comm-metrics">
-<h2>Metrics for signal and performance characterization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.metrics</span></code>)<a class="headerlink" href="#metrics-for-signal-and-performance-characterization-optic-comm-metrics" title="Permalink to this heading"></a></h2>
+<h2>Metrics for signal and performance characterization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.metrics</span></code>)<a class="headerlink" href="#metrics-for-signal-and-performance-characterization-optic-comm-metrics" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.metrics.bert.html#optic.comm.metrics.bert" title="optic.comm.metrics.bert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bert</span></code></a>(Irx[, bitsTx, seed])</p></td>
@@ -427,14 +538,20 @@ complex plane.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.metrics.fastBERcalc.html#optic.comm.metrics.fastBERcalc" title="optic.comm.metrics.fastBERcalc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fastBERcalc</span></code></a>(rx, tx, M, constType[, px])</p></td>
 <td><p>Monte Carlo BER/SER/SNR calculation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.metrics.calcLLR.html#optic.comm.metrics.calcLLR" title="optic.comm.metrics.calcLLR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calcLLR</span></code></a>(rxSymb, σ2, constSymb, bitMap, px)</p></td>
-<td><p>LLR calculation (circular AGWN channel).</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.metrics.calcLLR.html#optic.comm.metrics.calcLLR" title="optic.comm.metrics.calcLLR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calcLLR</span></code></a>(rxSymb, σ2, constSymb, bitMap, px[, ...])</p></td>
+<td><p>LLR calculation assuming a circular AGWN channel model.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.metrics.monteCarloGMI.html#optic.comm.metrics.monteCarloGMI" title="optic.comm.metrics.monteCarloGMI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">monteCarloGMI</span></code></a>(rx, tx, M, constType[, px])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.metrics.calcExtrLLR.html#optic.comm.metrics.calcExtrLLR" title="optic.comm.metrics.calcExtrLLR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calcExtrLLR</span></code></a>(bitLLR, x, xMu, xNu, M, ...[, ...])</p></td>
+<td><p>Calculate the extrinsic LLRs assuming an auxiliary Gaussian channel model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.metrics.monteCarloGMI.html#optic.comm.metrics.monteCarloGMI" title="optic.comm.metrics.monteCarloGMI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">monteCarloGMI</span></code></a>(rx, tx, M, constType[, px, bitMap])</p></td>
 <td><p>Monte Carlo based generalized mutual information (GMI) estimation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.metrics.monteCarloMI.html#optic.comm.metrics.monteCarloMI" title="optic.comm.metrics.monteCarloMI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">monteCarloMI</span></code></a>(rx, tx, M, constType[, px])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.metrics.monteCarloMI.html#optic.comm.metrics.monteCarloMI" title="optic.comm.metrics.monteCarloMI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">monteCarloMI</span></code></a>(rx, tx, M, constType[, px])</p></td>
 <td><p>Monte Carlo based mutual information (MI) estimation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.metrics.calcMI.html#optic.comm.metrics.calcMI" title="optic.comm.metrics.calcMI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calcMI</span></code></a>(rx, tx, σ2, constSymb, pX)</p></td>
+<td><p>Mutual information (MI) calculation for AWGN channels.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.metrics.Qfunc.html#optic.comm.metrics.Qfunc" title="optic.comm.metrics.Qfunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Qfunc</span></code></a>(x)</p></td>
 <td><p>Calculate function Q(x).</p></td>
@@ -445,21 +562,25 @@ complex plane.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.metrics.theoryBER.html#optic.comm.metrics.theoryBER" title="optic.comm.metrics.theoryBER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">theoryBER</span></code></a>(M, EbN0, constType)</p></td>
 <td><p>Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.metrics.theoryMI.html#optic.comm.metrics.theoryMI" title="optic.comm.metrics.theoryMI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">theoryMI</span></code></a>(M, constType, SNR[, pX, symetry, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.metrics.theoryMI.html#optic.comm.metrics.theoryMI" title="optic.comm.metrics.theoryMI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">theoryMI</span></code></a>(M, constType, SNR[, pX, symmetry, ...])</p></td>
 <td><p>Calculate mutual information for discrete input continuous output the memoryless AWGN channel (DCMC).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.metrics.calcLinOSNR.html#optic.comm.metrics.calcLinOSNR" title="optic.comm.metrics.calcLinOSNR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calcLinOSNR</span></code></a>(Ns, Pin, α, Ls, OSNRin[, NF, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.metrics.theoryGMI.html#optic.comm.metrics.theoryGMI" title="optic.comm.metrics.theoryGMI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">theoryGMI</span></code></a>(M, constType, SNR[, bitMap, pX, ...])</p></td>
+<td><p>Calculate generalized mutual information (GMI) for discrete input continuous output the memoryless AWGN channel (DCMC).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.metrics.calcLinOSNR.html#optic.comm.metrics.calcLinOSNR" title="optic.comm.metrics.calcLinOSNR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calcLinOSNR</span></code></a>(Ns, Pin, α, Ls, OSNRin[, NF, ...])</p></td>
 <td><p>Calculate the OSNR evolution in a multi-span fiber transmission system.</p></td>
 </tr>
 </tbody>
 </table>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">Qfunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">Qfunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#Qfunc"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Calculate function Q(x).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>scalar</em>) -- function input.</p>
+<dd class="field-odd"><p><strong>x</strong> (<em>scalar</em>) – function input.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>value of Q(x).</p>
@@ -474,20 +595,20 @@ complex plane.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">bert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Irx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitsTx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">123</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">bert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Irx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitsTx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">123</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#bert"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Calculate Bit Error Rate (BER) and Q-factor for optical communication using On-Off Keying (OOK).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Irx</strong> (<em>numpy.np.array</em>) -- Received signal intensity values.</p></li>
-<li><p><strong>bitsTx</strong> (<em>numpy.np.array</em><em>, </em><em>optional</em>) -- Transmitted bit sequence. If not provided, a random bit sequence is generated.</p></li>
-<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) -- Random seed for bit sequence generation when bitsTx is not provided.</p></li>
+<li><p><strong>Irx</strong> (<em>np.array</em>) – Received signal intensity values.</p></li>
+<li><p><strong>bitsTx</strong> (<em>np.array</em><em>, </em><em>optional</em>) – Transmitted bit sequence. If not provided, a random bit sequence is generated.</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Random seed for bit sequence generation when bitsTx is not provided.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>BER</strong> (<em>float</em>) -- Bit Error Rate, a measure of the number of erroneous bits relative to the total bits.</p></li>
-<li><p><strong>Q</strong> (<em>float</em>) -- Q-factor, a measure of signal quality in the communication system.</p></li>
+<li><p><strong>BER</strong> (<em>float</em>) – Bit Error Rate, a measure of the number of erroneous bits relative to the total bits.</p></li>
+<li><p><strong>Q</strong> (<em>float</em>) – Q-factor, a measure of signal quality in the communication system.</p></li>
 </ul>
 </p>
 </dd>
@@ -497,10 +618,10 @@ complex plane.</p>
 The received signal intensity <em class="xref py py-obj">Irx</em> and an optional transmitted bit sequence <em class="xref py py-obj">bitsTx</em> are required. If <em class="xref py py-obj">bitsTx</em> is not provided,
 a random bit sequence is generated using the specified <em class="xref py py-obj">seed</em>.</p>
 <p>The following statistics are calculated for the received signal:
-- <em class="xref py py-obj">I1</em>: The average value of the signal when the transmitted bit is 1.
-- <em class="xref py py-obj">I0</em>: The average value of the signal when the transmitted bit is 0.
-- <em class="xref py py-obj">std1</em>: The standard deviation of the signal when the transmitted bit is 1.
-- <em class="xref py py-obj">std0</em>: The standard deviation of the signal when the transmitted bit is 0.</p>
+- <span class="math notranslate nohighlight">\(I_1\)</span>: The average value of the signal when the transmitted bit is 1.
+- <span class="math notranslate nohighlight">\(I_0\)</span>: The average value of the signal when the transmitted bit is 0.
+- <span class="math notranslate nohighlight">\(\sigma_1\)</span>: The standard deviation of the signal when the transmitted bit is 1.
+- <span class="math notranslate nohighlight">\(\sigma_0\)</span>: The standard deviation of the signal when the transmitted bit is 0.</p>
 <p>The optimal decision threshold <em class="xref py py-obj">Id</em> and the Q-factor are calculated based on the signal statistics.</p>
 <p>The function then applies the optimal decision rule to estimate the received bit sequence <em class="xref py py-obj">bitsRx</em>. The Bit Error Rate (BER) is calculated
 by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj">bitsTx</em>.</p>
@@ -510,19 +631,19 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">calcEVM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">calcEVM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbTx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#calcEVM"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Calculate error vector magnitude (EVM) metrics.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symb</strong> (<em>np.array</em>) -- Sequence of noisy symbols.</p></li>
-<li><p><strong>M</strong> (<em>int</em>) -- Constellation order.</p></li>
-<li><p><strong>constType</strong> (<em>string</em>) -- Modulation type: 'pam', 'qam' or 'psk'</p></li>
-<li><p><strong>symbTx</strong> (<em>np.array</em><em>, </em><em>optional</em>) -- Sequence of transmitted symbols (noiseless). The default is [].</p></li>
+<li><p><strong>symb</strong> (<em>np.array</em>) – Sequence of noisy symbols.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Constellation order.</p></li>
+<li><p><strong>constType</strong> (<em>string</em>) – Modulation type: ‘pam’, ‘qam’ or ‘psk’</p></li>
+<li><p><strong>symbTx</strong> (<em>np.array</em><em>, </em><em>optional</em>) – Sequence of transmitted symbols (noiseless). The default is [].</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>EVM</strong> -- Error vector magnitude (EVM) per signal dimension.</p>
+<dd class="field-even"><p><strong>EVM</strong> – Error vector magnitude (EVM) per signal dimension.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
@@ -535,20 +656,47 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">calcLLR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitMap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>LLR calculation (circular AGWN channel).</p>
+<span class="sig-name descname"><span class="pre">calcExtrLLR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bitLLR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xMu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xNu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitMap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.float32'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#calcExtrLLR"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculate the extrinsic LLRs assuming an auxiliary Gaussian channel model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rxSymb</strong> (<em>np.array</em>) -- Received symbol sequence.</p></li>
-<li><p><strong>σ2</strong> (<em>scalar</em>) -- Noise variance.</p></li>
-<li><p><strong>constSymb</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) -- Constellation symbols.</p></li>
-<li><p><strong>px</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) -- Prior symbol probabilities.</p></li>
-<li><p><strong>bitMap</strong> (<em>(</em><em>M</em><em>, </em><em>log2</em><em>(</em><em>M</em><em>)</em><em>) </em><em>np.array</em>) -- Bit-to-symbol mapping.</p></li>
+<li><p><strong>bitLLR</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>q*numSymb</em><em>,</em><em>)</em>) – received bit LLRs</p></li>
+<li><p><strong>x</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>numSymb</em><em>,</em><em>)</em>) – received symbols</p></li>
+<li><p><strong>xMu</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>numSymb</em><em>,</em><em>)</em>) – mean of the received symbols</p></li>
+<li><p><strong>xNu</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>numSymb</em><em>,</em><em>)</em>) – variance of the received symbols</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – modulation order</p></li>
+<li><p><strong>constSymb</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>M</em><em>,</em><em>)</em>) – constellation symbols</p></li>
+<li><p><strong>bitMap</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>M</em><em>, </em><em>q</em><em>)</em>) – bit mapping of the constellation symbols</p></li>
+<li><p><strong>px</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>M</em><em>,</em><em>)</em><em>, </em><em>optional</em>) – prior probabilities of the constellation symbols, if None, uniform distribution is used</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>LLRs</strong> -- sequence of calculated LLRs.</p>
+<dd class="field-even"><p><strong>LLRe</strong> – extrinsic LLRs for each bit</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array of shape (q*numSymb,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">calcLLR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitMap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxLog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#calcLLR"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>LLR calculation assuming a circular AGWN channel model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rxSymb</strong> (<em>np.array</em>) – Received symbol sequence.</p></li>
+<li><p><strong>σ2</strong> (<em>scalar</em>) – Noise variance.</p></li>
+<li><p><strong>constSymb</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) – Constellation symbols.</p></li>
+<li><p><strong>bitMap</strong> (<em>(</em><em>M</em><em>, </em><em>log2</em><em>(</em><em>M</em><em>)</em><em>) </em><em>np.array</em>) – Bit-to-symbol mapping.</p></li>
+<li><p><strong>px</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) – Prior symbol probabilities.</p></li>
+<li><p><strong>maxLog</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, use the Max-Log approximation for LLR calculation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>LLRs</strong> – sequence of calculated LLRs.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
@@ -560,23 +708,23 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">calcLinOSNR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">α</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OSNRin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Bref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12500000000.0</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">calcLinOSNR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">α</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OSNRin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">193100000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Bref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12500000000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#calcLinOSNR"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Calculate the OSNR evolution in a multi-span fiber transmission system.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Ns</strong> (<em>int</em>) -- Number of spans of fiber + EDFA.</p></li>
-<li><p><strong>Pin</strong> (<em>scalar</em>) -- Fiber launch power.</p></li>
-<li><p><strong>α</strong> (<em>scalar</em>) -- Fiber attenuation coefficient in dB/km.</p></li>
-<li><p><strong>Ls</strong> (<em>scalar</em>) -- Length of fiber spans in km.</p></li>
-<li><p><strong>OSNRin</strong> (<em>scalar</em>) -- OSNR at the input of the first span.</p></li>
-<li><p><strong>NF</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Noise figure of the EDFA amplifiers. The default is 4.5.</p></li>
-<li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Optical central frequency. The default is 193.1e12.</p></li>
-<li><p><strong>Bref</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- Reference bandwidth for OSNR measurement. The default is 12.5e9.</p></li>
+<li><p><strong>Ns</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of spans of fiber + EDFA.</p></li>
+<li><p><strong>Pin</strong> (<em>scalar</em>) – Fiber launch power.</p></li>
+<li><p><strong>α</strong> (<em>scalar</em>) – Fiber attenuation coefficient in dB/km.</p></li>
+<li><p><strong>Ls</strong> (<em>scalar</em>) – Length of fiber spans in km.</p></li>
+<li><p><strong>OSNRin</strong> (<em>scalar</em>) – OSNR at the input of the first span.</p></li>
+<li><p><strong>NF</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Noise figure of the EDFA amplifiers. The default is 4.5.</p></li>
+<li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Optical central frequency. The default is 193.1e12.</p></li>
+<li><p><strong>Bref</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Reference bandwidth for OSNR measurement. The default is 12.5e9.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>OSNR</strong> -- OSNR values in dB at the output of each fiber span.</p>
+<dd class="field-even"><p><strong>OSNR</strong> – OSNR values in dB at the output of each fiber span.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
@@ -584,22 +732,22 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 </dl>
 <p class="rubric">References</p>
 <p>[1] J. G. Proakis; M. Salehi, Communication Systems Engineering, 2nd Edition. Pearson, 2002.</p>
-<p>[2] R. -J. Essiambre, et al, &quot;Capacity Limits of Optical Fiber Networks,&quot;  Journal of Lightwave Technology, vol. 28, no. 4, p. 662-701, 2010, doi: 10.1109/JLT.2009.2039464.</p>
+<p>[2] R. -J. Essiambre, et al, “Capacity Limits of Optical Fiber Networks,”  Journal of Lightwave Technology, vol. 28, no. 4, p. 662-701, 2010, doi: 10.1109/JLT.2009.2039464.</p>
 <p>[3] R. Schober, P. Bayvel, e F. D. Pasquale, “Analytical model for the calculation of the optical signal-to-noise ratio (SNR) of WDM EDFA chains”, Optical and Quantum Electronics, vol. 31, no 3, p. 237–241. 1999, doi: 10.1023/A:1006948826091.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">calcMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pX</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Mutual information (MI) calculation (circular AGWN channel).</p>
+<span class="sig-name descname"><span class="pre">calcMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">σ2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constSymb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pX</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#calcMI"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Mutual information (MI) calculation for AWGN channels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rx</strong> (<em>np.array</em>) -- Received symbol sequence.</p></li>
-<li><p><strong>tx</strong> (<em>np.array</em>) -- Transmitted symbol sequence.</p></li>
-<li><p><strong>σ2</strong> (<em>scalar</em>) -- Noise variance.</p></li>
-<li><p><strong>constSymb</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) -- Constellation symbols.</p></li>
-<li><p><strong>pX</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) -- prob. mass function (p.m.f.) of the constellation symbols.</p></li>
+<li><p><strong>rx</strong> (<em>np.array</em>) – Received symbol sequence.</p></li>
+<li><p><strong>tx</strong> (<em>np.array</em>) – Transmitted symbol sequence.</p></li>
+<li><p><strong>σ2</strong> (<em>scalar</em>) – Noise variance.</p></li>
+<li><p><strong>constSymb</strong> (<em>(</em><em>M</em><em>,</em><em>) </em><em>np.array</em>) – Constellation symbols.</p></li>
+<li><p><strong>pX</strong> (<em>(</em><em>M</em><em>,</em><em>) </em><em>np.array</em>) – Prob. mass function (p.m.f.) of the constellation symbols.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -609,29 +757,27 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 <dd class="field-odd"><p>scalar</p>
 </dd>
 </dl>
-<p class="rubric">References</p>
-<p>[1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">fastBERcalc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">fastBERcalc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#fastBERcalc"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Monte Carlo BER/SER/SNR calculation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rx</strong> (<em>np.array</em>) -- Received symbol sequence.</p></li>
-<li><p><strong>tx</strong> (<em>np.array</em>) -- Transmitted symbol sequence.</p></li>
-<li><p><strong>M</strong> (<em>int</em>) -- Modulation order.</p></li>
-<li><p><strong>constType</strong> (<em>string</em>) -- Modulation type: 'qam', 'psk', 'pam' or 'ook'.</p></li>
-<li><p><strong>px</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) -- Prior symbol probabilities.</p></li>
+<li><p><strong>rx</strong> (<em>np.array</em>) – Received symbol sequence.</p></li>
+<li><p><strong>tx</strong> (<em>np.array</em>) – Transmitted symbol sequence.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Modulation order.</p></li>
+<li><p><strong>constType</strong> (<em>string</em>) – Modulation type: ‘qam’, ‘psk’, ‘pam’ or ‘ook’.</p></li>
+<li><p><strong>px</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) – Prior symbol probabilities.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>BER</strong> (<em>np.array</em>) -- Bit-error-rate.</p></li>
-<li><p><strong>SER</strong> (<em>np.array</em>) -- Symbol-error-rate.</p></li>
-<li><p><strong>SNR</strong> (<em>np.array</em>) -- Estimated SNR from the received constellation.</p></li>
+<li><p><strong>BER</strong> (<em>np.array</em>) – Bit-error-rate.</p></li>
+<li><p><strong>SER</strong> (<em>np.array</em>) – Symbol-error-rate.</p></li>
+<li><p><strong>SNR</strong> (<em>np.array</em>) – Estimated SNR from the received constellation.</p></li>
 </ul>
 </p>
 </dd>
@@ -642,22 +788,23 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">monteCarloGMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">monteCarloGMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitMap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#monteCarloGMI"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Monte Carlo based generalized mutual information (GMI) estimation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rx</strong> (<em>np.array</em>) -- Received symbol sequence.</p></li>
-<li><p><strong>tx</strong> (<em>np.array</em>) -- Transmitted symbol sequence.</p></li>
-<li><p><strong>M</strong> (<em>int</em>) -- Modulation order.</p></li>
-<li><p><strong>constType</strong> (<em>string</em>) -- Modulation type: 'qam' or 'psk'</p></li>
-<li><p><strong>px</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) -- Prior symbol probabilities. The default is [].</p></li>
+<li><p><strong>rx</strong> (<em>np.array</em>) – Received symbol sequence.</p></li>
+<li><p><strong>tx</strong> (<em>np.array</em>) – Transmitted symbol sequence.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Modulation order.</p></li>
+<li><p><strong>constType</strong> (<em>string</em>) – Modulation type: ‘qam’ or ‘psk’</p></li>
+<li><p><strong>px</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) – Prior symbol probabilities. The default is [].</p></li>
+<li><p><strong>bitMap</strong> (<em>(</em><em>M</em><em>, </em><em>b</em><em>) </em><em>np.array</em>) – Bit mapping matrix. The default is None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>GMI</strong> (<em>np.array</em>) -- Generalized mutual information values.</p></li>
-<li><p><strong>NGMI</strong> (<em>np.array</em>) -- Normalized mutual information.</p></li>
+<li><p><strong>GMI</strong> (<em>np.array</em>) – Generalized mutual information values.</p></li>
+<li><p><strong>NGMI</strong> (<em>np.array</em>) – Normalized mutual information.</p></li>
 </ul>
 </p>
 </dd>
@@ -668,20 +815,20 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">monteCarloMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">monteCarloMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#monteCarloMI"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Monte Carlo based mutual information (MI) estimation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rx</strong> (<em>np.array</em>) -- Received symbol sequence.</p></li>
-<li><p><strong>tx</strong> (<em>np.array</em>) -- Transmitted symbol sequence.</p></li>
-<li><p><strong>M</strong> (<em>int</em>) -- Modulation order.</p></li>
-<li><p><strong>constType</strong> (<em>string</em>) -- Modulation type: 'qam' or 'psk'</p></li>
-<li><p><strong>pX</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) -- p.m.f. of the constellation symbols. The default is [].</p></li>
+<li><p><strong>rx</strong> (<em>np.array</em>) – Received symbol sequence.</p></li>
+<li><p><strong>tx</strong> (<em>np.array</em>) – Transmitted symbol sequence.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Modulation order.</p></li>
+<li><p><strong>constType</strong> (<em>string</em>) – Modulation type: ‘qam’ or ‘psk’</p></li>
+<li><p><strong>px</strong> (<em>(</em><em>M</em><em>, </em><em>1</em><em>) </em><em>np.array</em>) – p.m.f. of the constellation symbols. The default is [].</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>MI</strong> -- Estimated MI values.</p>
+<dd class="field-even"><p><strong>MI</strong> – Estimated MI values.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
@@ -693,18 +840,18 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">theoryBER</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EbN0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">theoryBER</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EbN0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#theoryBER"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Theoretical (approx.) bit error probability for PAM/QAM/PSK in AWGN channel.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>M</strong> (<em>int</em>) -- Modulation order.</p></li>
-<li><p><strong>EbN0</strong> (<em>scalar</em>) -- Signal-to-noise ratio (SNR) per bit in dB.</p></li>
-<li><p><strong>constType</strong> (<em>string</em>) -- Modulation type: 'pam', 'qam' or 'psk'</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Modulation order.</p></li>
+<li><p><strong>EbN0</strong> (<em>scalar</em>) – Signal-to-noise ratio (SNR) per bit in dB.</p></li>
+<li><p><strong>constType</strong> (<em>string</em>) – Modulation type: ‘pam’, ‘qam’ or ‘psk’</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>Pb</strong> -- Theoretical probability of bit error.</p>
+<dd class="field-even"><p><strong>Pb</strong> – Theoretical probability of bit error.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>scalar</p>
@@ -712,7 +859,7 @@ by comparing <em class="xref py py-obj">bitsRx</em> to <em class="xref py py-obj
 </dl>
 <p class="rubric">Notes</p>
 <p>The values of error probability obtained with this function are good approximations for moderate to high SNR regime (see [1]).
-All cases assume Gray mapped constellations. For low SNR values and high constellation cardinalities (Pb&gt;1e-1), the results
+All cases assume Gray mapped constellations. For low SNR values and high constellation cardinalities (<span class="math notranslate nohighlight">\(P_b\)</span>&gt;1e-1), the results
 should underestimate the real error probability.</p>
 <p class="rubric">References</p>
 <p>[1] Proakis, J. G., &amp; Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.</p>
@@ -720,133 +867,187 @@ should underestimate the real error probability.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">theoryMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SNR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pX</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Calculate mutual information for discrete input continuous output the memoryless AWGN channel (DCMC).</p>
+<span class="sig-name descname"><span class="pre">theoryGMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SNR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitMap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pX</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#theoryGMI"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculate generalized mutual information (GMI) for discrete input continuous output the memoryless AWGN channel (DCMC).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>M</strong> (<em>int</em>) -- Number of symbols in the constellation.</p></li>
-<li><p><strong>constType</strong> (<em>str</em>) -- Type of constellation ('qam', 'psk').</p></li>
-<li><p><strong>SNR</strong> (<em>float</em>) -- Signal-to-noise ratio in dB.</p></li>
-<li><p><strong>pX</strong> (<em>array_like</em><em>, </em><em>optional</em>) -- Probability of each transmitted symbol (default is None).</p></li>
-<li><p><strong>symetry</strong> (<em>bool</em><em>, </em><em>optional</em>) -- Flag to exploit rotational symmetry of the constellation (default is True).</p></li>
-<li><p><strong>lim</strong> (<em>int</em><em>, </em><em>optional</em>) -- Limit for numerical integration (default is np.inf).</p></li>
-<li><p><strong>tol</strong> (<em>float</em><em>, </em><em>optional</em>) -- Tolerance for numerical integration error (default is 1e-3).</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of symbols in the constellation.</p></li>
+<li><p><strong>constType</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Type of constellation (‘qam’, ‘psk’).</p></li>
+<li><p><strong>SNR</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Signal-to-noise ratio in dB.</p></li>
+<li><p><strong>bitMap</strong> (<em>array_like</em>) – Bit mapping of the constellation symbols (shape: M x log2(M)).</p></li>
+<li><p><strong>pX</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Probability of each transmitted symbol (default is None).</p></li>
+<li><p><strong>lim</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Limit for numerical integration (default is np.inf).</p></li>
+<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Tolerance for numerical integration error (default is 1e-3).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Mutual information for the given parameters.</p>
+<dd class="field-even"><p>Theoretical GMI for the given parameters.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)">float</a></p>
 </dd>
 </dl>
 <p class="rubric">References</p>
 <p>[1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.</p>
 </dd></dl>
 
-</section>
-<section id="sources-of-discrete-sequences-optic-comm-sources">
-<h2>Sources of discrete sequences (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.sources</span></code>)<a class="headerlink" href="#sources-of-discrete-sequences-optic-comm-sources" title="Permalink to this heading"></a></h2>
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.sources.bitSource.html#optic.comm.sources.bitSource" title="optic.comm.sources.bitSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bitSource</span></code></a>(nbits[, mode, order, seed])</p></td>
-<td><p>Generate a sequence of bits of length <em class="xref py py-obj">nbits</em> either as a random bit sequence or a pseudo-random binary sequence (PRBS).</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.sources.prbsGenerator.html#optic.comm.sources.prbsGenerator" title="optic.comm.sources.prbsGenerator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prbsGenerator</span></code></a>([order])</p></td>
-<td><p>Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.sources.symbolSource.html#optic.comm.sources.symbolSource" title="optic.comm.sources.symbolSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">symbolSource</span></code></a>(nSymbols[, M, constType, dist, ...])</p></td>
-<td><p>Generate a random symbol sequence of length nSymbols based on the specified modulation scheme and order.</p></td>
-</tr>
-</tbody>
-</table>
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">bitSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Generate a sequence of bits of length <em class="xref py py-obj">nbits</em> either as a random bit sequence
-or a pseudo-random binary sequence (PRBS).</p>
+<span class="sig-name descname"><span class="pre">theoryMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SNR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pX</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/metrics.html#theoryMI"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculate mutual information for discrete input continuous output the memoryless AWGN channel (DCMC).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>nbits</strong> (<em>int</em>) -- The number of bits in the sequence.</p></li>
-<li><p><strong>mode</strong> (<em>{'random'</em><em>, </em><em>'prbs'}</em><em>, </em><em>optional</em>) -- The mode of the bit generation. If 'random', a sequence of random bits is generated.
-If 'prbs', a pseudo-random binary sequence (PRBS) is generated. Default is 'random'.</p></li>
-<li><p><strong>order</strong> (<em>int</em><em>, </em><em>optional</em>) -- The order of the PRBS generator. Only used if <em class="xref py py-obj">mode</em> is 'prbs'. If not specified, a
-default order of 23 is used.</p></li>
-<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) -- The seed for the random number generator. Only applicable when <em class="xref py py-obj">mode</em> is 'random'.
-If not provided, a random seed will be used.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of symbols in the constellation.</p></li>
+<li><p><strong>constType</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Type of constellation (‘qam’, ‘psk’).</p></li>
+<li><p><strong>SNR</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Signal-to-noise ratio in dB.</p></li>
+<li><p><strong>pX</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Probability of each transmitted symbol (default is None).</p></li>
+<li><p><strong>symmetry</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Flag to exploit rotational symmetry of the constellation (default is True).</p></li>
+<li><p><strong>lim</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Limit for numerical integration (default is np.inf).</p></li>
+<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Tolerance for numerical integration error (default is 1e-3).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>bits</strong> -- An array of bits of length <em class="xref py py-obj">nbits</em>, either randomly generated or from a PRBS.</p>
+<dd class="field-even"><p>Mutual information for the given parameters.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] A. Alvarado, T. Fehenberger, B. Chen, e F. M. J. Willems, “Achievable Information Rates for Fiber Optics: Applications and Computations”, Journal of Lightwave Technology, vol. 36, nº 2, p. 424–439, jan. 2018, doi: 10.1109/JLT.2017.2786351.</p>
+</dd></dl>
+
+<section id="sources-of-discrete-sequences-optic-comm-sources">
+<h2>Sources of discrete sequences (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.sources</span></code>)<a class="headerlink" href="#sources-of-discrete-sequences-optic-comm-sources" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.sources.bitSource.html#optic.comm.sources.bitSource" title="optic.comm.sources.bitSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bitSource</span></code></a>(param)</p></td>
+<td><p>Generate a sequence of bits of length <em class="xref py py-obj">nBits</em> either as a random bit sequence or a pseudo-random binary sequence (PRBS).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.sources.prbsGenerator.html#optic.comm.sources.prbsGenerator" title="optic.comm.sources.prbsGenerator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prbsGenerator</span></code></a>([order, length, seed])</p></td>
+<td><p>Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.sources.symbolSource.html#optic.comm.sources.symbolSource" title="optic.comm.sources.symbolSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">symbolSource</span></code></a>(param)</p></td>
+<td><p>Generate a random symbol sequence based on the specified modulation scheme, order, and pmf.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.sources.cazacSequence.html#optic.comm.sources.cazacSequence" title="optic.comm.sources.cazacSequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cazacSequence</span></code></a>(N[, M])</p></td>
+<td><p>Generate a CAZAC (Zadoff-Chu) sequence of length <em class="xref py py-obj">N</em>.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">bitSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/sources.html#bitSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generate a sequence of bits of length <em class="xref py py-obj">nBits</em> either as a random bit sequence
+or a pseudo-random binary sequence (PRBS).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>param</strong> (<a class="reference internal" href="generated/optic.utils.parameters.html#optic.utils.parameters" title="optic.utils.parameters"><em>optic.utils.parameters</em></a>) – <p>Parameters for the bit source:</p>
+<ul class="simple">
+<li><p>nBits : int, optional. The number of bits in the sequence. [default: 1000]</p></li>
+<li><p>mode : str, optional. The mode of the bit generation. If ‘random’, a sequence of random bits is generated. If ‘prbs’, a pseudo-random binary sequence (PRBS) is generated [default: ‘random’].</p></li>
+<li><p>order : int, optional. The order of the PRBS generator. Only used if <em class="xref py py-obj">mode</em> is ‘prbs’ [default: 23].</p></li>
+<li><p>seed : int, optional. The seed for the random number generator. Only applicable when <em class="xref py py-obj">mode</em> is ‘random’ [default: None].</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bits</strong> – An array of bits of length <em class="xref py py-obj">nBits</em>, either randomly generated or from a PRBS.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p>[1] Wikipedia, &quot;Pseudorandom binary sequence,&quot; <a class="reference external" href="https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence">https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence</a></p>
+<p>[1] Wikipedia, “Pseudorandom binary sequence,” <a class="reference external" href="https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence">https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence</a></p>
 <p>[2] Proakis, J. G., &amp; Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">prbsGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">23</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.</p>
+<span class="sig-name descname"><span class="pre">cazacSequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/sources.html#cazacSequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generate a CAZAC (Zadoff-Chu) sequence of length <em class="xref py py-obj">N</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>order</strong> (<em>int</em>) -- The order of the PRBS sequence. Supported orders are 7, 9, 11, 13, 15, 23, 31.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The length of the CAZAC sequence.</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The root of the CAZAC sequence. Default is 1.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>bits</strong> -- A NumPy array of bits representing the PRBS sequence.</p>
+<dd class="field-even"><p><strong>sequence</strong> – A NumPy array containing the generated CAZAC sequence.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p>[1] Wikipedia, &quot;Pseudorandom binary sequence,&quot; <a class="reference external" href="https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence">https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence</a></p>
+<p>[1] D. Chu, “Polyphase codes with good periodic correlation properties (Corresp.),” IEEE Transactions on Information Theory, 18 (4), pp. 531-532, 1972.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">symbolSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nSymbols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constType</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'qam'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uniform'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shapingFactor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Generate a random symbol sequence of length nSymbols based on the specified modulation scheme and order.</p>
+<span class="sig-name descname"><span class="pre">prbsGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">23</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/sources.html#prbsGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generate a Pseudo-Random Binary Sequence (PRBS) of the given order.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>nSymbols</strong> (<em>int</em>) -- Number of symbols to generate.</p></li>
-<li><p><strong>M</strong> (<em>int</em>) -- Modulation order. This defines the size of the constellation. Default is 4.</p></li>
-<li><p><strong>constType</strong> (<em>str</em><em>, </em><em>optional</em>) -- The type of modulation scheme. Supported types are 'qam', 'pam', 'psk', and
-'apsk'. Default is 'qam'.</p></li>
-<li><p><strong>dist</strong> (<em>str</em><em>, </em><em>optional</em>) -- The probability distribution to use for generating symbols. Can be 'uniform'
-or 'Maxwell-Boltzmann'. Default is 'uniform'.</p></li>
-<li><p><strong>shapingFactor</strong> (<em>float</em><em>, </em><em>optional</em>) -- The shaping factor used when the distribution is 'Maxwell-Boltzmann'. This
-controls the Gaussian shaping of the constellation points. Default is 0.0.</p></li>
-<li><p><strong>px</strong> (<em>array-like</em><em>, </em><em>optional</em>) -- Probability distribution of the constellation points. If <em class="xref py py-obj">None</em>, the distribution
-is determined by <em class="xref py py-obj">dist</em>. Default is <em class="xref py py-obj">None</em>.</p></li>
-<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) -- Seed for the random number generator to ensure reproducibility. Default is <em class="xref py py-obj">None</em>.</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The order of the PRBS sequence. Supported orders are 7, 9, 11, 13, 15, 23, 31.</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The length of the PRBS sequence to generate. If not specified, the length is <span class="math notranslate nohighlight">\(2^{order} - 1\)</span>.</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The seed for the linear feedback shift register (LFSR). Default is 1.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>symbols</strong> -- A NumPy array of symbols randomly drawn from the specified constellation with the given probability distribution.</p>
+<dd class="field-even"><p><strong>bits</strong> – A NumPy array of bits representing the PRBS sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] Wikipedia, “Pseudorandom binary sequence,” <a class="reference external" href="https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence">https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">symbolSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/sources.html#symbolSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generate a random symbol sequence based on the specified modulation scheme, order, and pmf.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>optic.utils.parameters object</em>) – <p>Parameters of the symbol source:</p>
+<ul class="simple">
+<li><p>nSymbols : int, optional. The number of symbols to generate. [default: 1000]</p></li>
+<li><p>M : int, optional. The modulation order, defining the size of the constellation. [default: 4]</p></li>
+<li><p>constType : str, optional. The type of modulation scheme. Supported types are ‘qam’, ‘pam’, ‘psk’, and ‘apsk’. [default: ‘qam’].</p></li>
+<li><p>dist : str, optional. The probability distribution for generating symbols. Options are ‘uniform’ or ‘maxwell-boltzmann’ [default: ‘uniform’].</p></li>
+<li><p>shapingFactor : float, optional. The shaping factor applied when <em class="xref py py-obj">dist</em> is ‘maxwell-boltzmann’. Controls the shaping of the constellation points. [default: 0.0].</p></li>
+<li><p>px : array-like, optional. Custom probability distribution for the constellation points. If <em class="xref py py-obj">None</em>, the distribution is determined by <em class="xref py py-obj">dist</em>. [default: None].</p></li>
+<li><p>seed : int, optional. Seed for the random number generator to ensure reproducibility [default: None].</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>symbols</strong> – A NumPy array containing the generated symbols from the specified constellation, based on the given probability distribution.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>The function generates symbols from a specified modulation scheme and applies either a uniform or Maxwell-Boltzmann
-distribution to the constellation points. The Maxwell-Boltzmann distribution has its shape parametrized shaped by the
-<em class="xref py py-obj">shapingFactor</em>. Instead of using the default distributions, a custom probability distribution <em class="xref py py-obj">px</em> can be provided.</p>
+<p>The function generates symbols using a specified modulation scheme following a uniform or Maxwell-Boltzmann distribution to the constellation
+points. The Maxwell-Boltzmann distribution is shaped by the <em class="xref py py-obj">shapingFactor</em>. If a custom probability distribution <em class="xref py py-obj">px</em> is provided, it will
+override the default distribution.</p>
+<p>If the <em class="xref py py-obj">constType</em> is set to ‘qam’, ‘pam’, ‘psk’, or ‘apsk’, the corresponding constellation is used. Custom modulation schemes are not supported.</p>
+<p>The <em class="xref py py-obj">seed</em> parameter ensures the same sequence of symbols is generated across different runs when set.</p>
 <p class="rubric">References</p>
-<p>[1] Junho Cho and Peter J. Winzer, &quot;Probabilistic Constellation Shaping for Optical Fiber Communications,&quot; J. Lightwave Technol. 37, 1590-1607 (2019)</p>
+<p>[1] Junho Cho and Peter J. Winzer, “Probabilistic Constellation Shaping for Optical Fiber Communications,” J. Lightwave Technol. 37, 1590-1607 (2019).</p>
 </dd></dl>
 
-</section>
 <section id="ofdm-utilities-optic-comm-ofdm">
-<h2>OFDM utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.ofdm</span></code>)<a class="headerlink" href="#ofdm-utilities-optic-comm-ofdm" title="Permalink to this heading"></a></h2>
+<h2>OFDM utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.ofdm</span></code>)<a class="headerlink" href="#ofdm-utilities-optic-comm-ofdm" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.ofdm.hermit.html#optic.comm.ofdm.hermit" title="optic.comm.ofdm.hermit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hermit</span></code></a>(V)</p></td>
@@ -858,31 +1059,32 @@ distribution to the constellation points. The Maxwell-Boltzmann distribution has
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.ofdm.calcSymbolRate.html#optic.comm.ofdm.calcSymbolRate" title="optic.comm.ofdm.calcSymbolRate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calcSymbolRate</span></code></a>(M, Rb, Nfft, Np, G, hermitSym)</p></td>
 <td><p>Calculate the symbol rate of a given OFDM configuration.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.ofdm.modulateOFDM.html#optic.comm.ofdm.modulateOFDM" title="optic.comm.ofdm.modulateOFDM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modulateOFDM</span></code></a>(symb, param)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.ofdm.modulateOFDM.html#optic.comm.ofdm.modulateOFDM" title="optic.comm.ofdm.modulateOFDM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modulateOFDM</span></code></a>(symb[, param])</p></td>
 <td><p>Modulate OFDM signal.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.ofdm.demodulateOFDM.html#optic.comm.ofdm.demodulateOFDM" title="optic.comm.ofdm.demodulateOFDM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">demodulateOFDM</span></code></a>(sig, param)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.ofdm.demodulateOFDM.html#optic.comm.ofdm.demodulateOFDM" title="optic.comm.ofdm.demodulateOFDM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">demodulateOFDM</span></code></a>(sig[, param])</p></td>
 <td><p>Demodulate OFDM signal.</p></td>
 </tr>
 </tbody>
 </table>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">calcSymbolRate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nfft</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Np</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hermitSym</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">calcSymbolRate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nfft</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Np</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hermitSym</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/ofdm.html#calcSymbolRate"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Calculate the symbol rate of a given OFDM configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>M</strong> (<em>scalar</em>) -- constellation order</p></li>
-<li><p><strong>Rb</strong> (<em>scalar</em>) -- bit rate</p></li>
-<li><p><strong>Nfft</strong> (<em>scalar</em>) -- size of FFT</p></li>
-<li><p><strong>Np</strong> (<em>scalar</em>) -- number of pilot subcarriers</p></li>
-<li><p><strong>G</strong> (<em>scalar</em>) -- cyclic prefix length</p></li>
-<li><p><strong>hermitSym</strong> (<em>boolean</em>) -- True: Real OFDM symbols / False: Complex OFDM symbols</p></li>
+<li><p><strong>M</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Constellation order</p></li>
+<li><p><strong>Rb</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Bit rate</p></li>
+<li><p><strong>Nfft</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Size of FFT</p></li>
+<li><p><strong>Np</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – number of pilot subcarriers</p></li>
+<li><p><strong>G</strong> (<em>scalar</em>) – cyclic prefix length</p></li>
+<li><p><strong>hermitSym</strong> (<em>boolean</em>) – True: Real OFDM symbols / False: Complex OFDM symbols</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>Rs</strong> -- OFDM symbol rate</p>
+<dd class="field-even"><p><strong>Rs</strong> – OFDM symbol rate</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>scalar</p>
@@ -892,21 +1094,21 @@ distribution to the constellation points. The Maxwell-Boltzmann distribution has
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">demodulateOFDM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">demodulateOFDM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/ofdm.html#demodulateOFDM"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Demodulate OFDM signal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sig</strong> (<em>np.np.array</em>) -- Complex-valued array representing the OFDM signal sequence received at one sample per symbol.</p></li>
-<li><p><strong>param</strong> (<em>optic.utils.parameters object</em>) -- <p>An object containing the parameters for OFDM demodulation.</p>
+<li><p><strong>sig</strong> (<em>np.np.array</em>) – Complex-valued array representing the OFDM signal sequence received at one sample per symbol.</p></li>
+<li><p><strong>param</strong> (<em>optic.utils.parameters object</em><em>, </em><em>optional</em>) – <p>Parameters for OFDM demodulation.</p>
 <ul>
-<li><p>Nfft : scalar, optional. Size of the FFT. Default is 512.</p></li>
-<li><p>N : scalar, optional. Number of transmitted subcarriers. Default is calculated based on <em class="xref py py-obj">Nfft</em>.</p></li>
-<li><p>G : scalar, optional. Cyclic prefix length. Default is 4.</p></li>
-<li><p>hermitSymmetry : bool, optional.If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.</p></li>
-<li><p>pilot : complex-valued scalar, optional. Pilot symbol. Default is 1 + 1j.</p></li>
-<li><p>pilotCarriers : np.array, optional.Indexes of pilot subcarriers. Default is an empty array.</p></li>
-<li><p>returnChannel : bool, optional. If True, return the estimated channel. Default is False.</p></li>
+<li><p>param.Nfft : scalar, optional. Size of the FFT [default: 512].</p></li>
+<li><p>param.G : scalar, optional. Cyclic prefix length [default: 4].</p></li>
+<li><p>param.hermitSymmetry : bool, optional. If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols [default: False].</p></li>
+<li><p>param.pilot : complex-valued scalar, optional. Pilot symbol [default: 1 + 1j].</p></li>
+<li><p>param.pilotCarriers : np.array, optional. Indexes of pilot subcarriers [default: an empty array].</p></li>
+<li><p>param.nullCarriers : np.array, optional. Indexes of null subcarriers [default: an empty array].</p></li>
+<li><p>param.returnChannel : bool, optional. If True, return the estimated channel [default: False].</p></li>
 </ul>
 </p></li>
 </ul>
@@ -916,7 +1118,7 @@ distribution to the constellation points. The Maxwell-Boltzmann distribution has
 If <em class="xref py py-obj">returnChannel</em> is True, returns a tuple containing the demodulated symbols sequence received and the estimated channel.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.array or tuple</p>
+<dd class="field-odd"><p>np.array or <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -930,14 +1132,14 @@ If <em class="xref py py-obj">returnChannel</em> is True, returns a tuple contai
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">hermit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">hermit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/ofdm.html#hermit"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Hermitian simmetry block.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>V</strong> (<em>complex-valued np.array</em>) -- input array</p>
+<dd class="field-odd"><p><strong>V</strong> (<em>complex-valued np.array</em>) – input array</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>Vh</strong> -- vector with hermitian simmetry</p>
+<dd class="field-even"><p><strong>Vh</strong> – vector with hermitian simmetry</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>complex-valued np.array</p>
@@ -947,20 +1149,21 @@ If <em class="xref py py-obj">returnChannel</em> is True, returns a tuple contai
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">modulateOFDM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">modulateOFDM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/ofdm.html#modulateOFDM"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Modulate OFDM signal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symb</strong> (<em>np.np.array</em>) -- Complex-valued array of modulation symbols representing the symbols sequence to be transmitted.</p></li>
-<li><p><strong>param</strong> (<em>optic.utils.parameters object</em>) -- <p>An object containing the parameters for OFDM modulation.
-- Nfft : scalar, optional. Size of the FFT. Default is 512.</p>
+<li><p><strong>symb</strong> (<em>np.np.array</em>) – Complex-valued array of modulation symbols representing the symbols sequence to be transmitted.</p></li>
+<li><p><strong>param</strong> (<em>optic.utils.parameters object</em><em>, </em><em>optional</em>) – <p>Parameters for OFDM modulation.</p>
 <ul>
-<li><p>G : scalar, optional. Cyclic prefix length. Default is 4.</p></li>
-<li><p>hermitSymmetry : bool, optional. If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. Default is False.</p></li>
-<li><p>pilot : complex-valued scalar, optional. Pilot symbol. Default is 1 + 1j.</p></li>
-<li><p>pilotCarriers : np.array, optional. Indexes of pilot subcarriers. Default is an empty array.</p></li>
-<li><p>SpS : int, optional. Oversampling factor. Default is 2.</p></li>
+<li><p>param.Nfft : scalar, optional. Size of the FFT. [default: 512].</p></li>
+<li><p>param.G : scalar, optional. Cyclic prefix length. [default: 4].</p></li>
+<li><p>param.hermitSymmetry : bool, optional. If True, indicates real OFDM symbols; if False, indicates complex OFDM symbols. [default: False].</p></li>
+<li><p>param.pilot : complex-valued scalar, optional. Pilot symbol. [default: 1 + 1j].</p></li>
+<li><p>param.pilotCarriers : np.array, optional. Indexes of pilot subcarriers. [default: empty array].</p></li>
+<li><p>param.nullCarriers : np.array, optional. Indexes of null subcarriers. [default: empty array].</p></li>
+<li><p>param.SpS : int, optional. Oversampling factor. [default: 2].</p></li>
 </ul>
 </p></li>
 </ul>
@@ -978,17 +1181,17 @@ If <em class="xref py py-obj">returnChannel</em> is True, returns a tuple contai
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">zeroPad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-name descname"><span class="pre">zeroPad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/ofdm.html#zeroPad"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Pad an input array with zeros on both sides.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>array_like</em>) -- Input array to be padded.</p></li>
-<li><p><strong>L</strong> (<em>int</em>) -- Number of zeros to pad on each side of the array.</p></li>
+<li><p><strong>x</strong> (<em>array_like</em>) – Input array to be padded.</p></li>
+<li><p><strong>L</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of zeros to pad on each side of the array.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>padded_array</strong> -- Padded array with zeros added at the beginning and end.</p>
+<dd class="field-even"><p><strong>padded_array</strong> – Padded array with zeros added at the beginning and end.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
@@ -999,7 +1202,486 @@ If <em class="xref py py-obj">returnChannel</em> is True, returns a tuple contai
 its length by <em class="xref py py-obj">2*L</em>.</p>
 </dd></dl>
 
+<section id="forward-error-correction-fec-utilities-optic-comm-fec">
+<h2>Forward error correction (FEC) utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">optic.comm.fec</span></code>)<a class="headerlink" href="#forward-error-correction-fec-utilities-optic-comm-fec" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.fec.par2gen.html#optic.comm.fec.par2gen" title="optic.comm.fec.par2gen"><code class="xref py py-obj docutils literal notranslate"><span class="pre">par2gen</span></code></a>(H)</p></td>
+<td><p>Convert a binary parity-check matrix H into a systematic generator matrix G over GF(2).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.fec.gaussElim.html#optic.comm.fec.gaussElim" title="optic.comm.fec.gaussElim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gaussElim</span></code></a>(M)</p></td>
+<td><p>Perform Gaussian elimination over GF(2) to reduce a binary matrix to row echelon form.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.fec.encoder.html#optic.comm.fec.encoder" title="optic.comm.fec.encoder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encoder</span></code></a>(G, bits[, systematic])</p></td>
+<td><p>Encode binary sequences using a generator matrix over GF(2).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.fec.encodeDVBS2.html#optic.comm.fec.encodeDVBS2" title="optic.comm.fec.encodeDVBS2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encodeDVBS2</span></code></a>(bits, A)</p></td>
+<td><p>Encode multiple binary sequences using a DVB-S2 LDPC parity-check matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.fec.encodeTriang.html#optic.comm.fec.encodeTriang" title="optic.comm.fec.encodeTriang"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encodeTriang</span></code></a>(bits, P1, P2)</p></td>
+<td><p>Encode binary sequences using two parity matrices for LDPC encoding.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.fec.sumProductAlgorithm.html#optic.comm.fec.sumProductAlgorithm" title="optic.comm.fec.sumProductAlgorithm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sumProductAlgorithm</span></code></a>(llrs, checkNodes, ...[, ...])</p></td>
+<td><p>Performs belief propagation decoding using the sum-product algorithm (SPA) for multiple codewords.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.fec.minSumAlgorithm.html#optic.comm.fec.minSumAlgorithm" title="optic.comm.fec.minSumAlgorithm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minSumAlgorithm</span></code></a>(llrs, checkNodes, varNodes, ...)</p></td>
+<td><p>Performs belief propagation decoding using the Min-Sum Algorithm (MSA) for multiple codewords.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.fec.encodeLDPC.html#optic.comm.fec.encodeLDPC" title="optic.comm.fec.encodeLDPC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encodeLDPC</span></code></a>(bits, param)</p></td>
+<td><p>Encode binary sequences using a parity-check matrix of a LDPC code.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.fec.decodeLDPC.html#optic.comm.fec.decodeLDPC" title="optic.comm.fec.decodeLDPC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decodeLDPC</span></code></a>(llrs, param)</p></td>
+<td><p>Decode multiple LDPC codewords using the belief propagation algorithms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.fec.writeAlist.html#optic.comm.fec.writeAlist" title="optic.comm.fec.writeAlist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">writeAlist</span></code></a>(H, filename)</p></td>
+<td><p>Save a binary parity-check matrix H (numpy array) to ALIST format.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.fec.readAlist.html#optic.comm.fec.readAlist" title="optic.comm.fec.readAlist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">readAlist</span></code></a>(filename)</p></td>
+<td><p>Read an ALIST file and reconstruct the binary parity-check matrix H.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.fec.triangularize.html#optic.comm.fec.triangularize" title="optic.comm.fec.triangularize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">triangularize</span></code></a>(H)</p></td>
+<td><p>Convert binary matrix H into lower-triangular form using only row and column permutations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.fec.triangP1P2.html#optic.comm.fec.triangP1P2" title="optic.comm.fec.triangP1P2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">triangP1P2</span></code></a>(H)</p></td>
+<td><p>Convert a binary parity-check matrix H into a lower-triangular form and extract matrices P1 and P2.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.fec.inverseMatrixGF2.html#optic.comm.fec.inverseMatrixGF2" title="optic.comm.fec.inverseMatrixGF2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inverseMatrixGF2</span></code></a>(A)</p></td>
+<td><p>Invert a square binary matrix over GF(2) using Gauss-Jordan elimination.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.fec.plotBinaryMatrix.html#optic.comm.fec.plotBinaryMatrix" title="optic.comm.fec.plotBinaryMatrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plotBinaryMatrix</span></code></a>(H)</p></td>
+<td><p>Plot the binary matrix H with dots at positions where H[i,j] = 1.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.fec.parseAlist.html#optic.comm.fec.parseAlist" title="optic.comm.fec.parseAlist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parseAlist</span></code></a>(path)</p></td>
+<td><p>Parse an LDPC ALIST file and return basic parameters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.fec.summarizeAlistFolder.html#optic.comm.fec.summarizeAlistFolder" title="optic.comm.fec.summarizeAlistFolder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summarizeAlistFolder</span></code></a>(folderPath)</p></td>
+<td><p>Scan a folder for .alist files and print summary table.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/optic.comm.fec.hammingParityCheckMatrix.html#optic.comm.fec.hammingParityCheckMatrix" title="optic.comm.fec.hammingParityCheckMatrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hammingParityCheckMatrix</span></code></a>(m[, extended])</p></td>
+<td><p>Generate the parity-check matrix H for a Hamming code with m check bits .</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/optic.comm.fec.encodeHamming.html#optic.comm.fec.encodeHamming" title="optic.comm.fec.encodeHamming"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encodeHamming</span></code></a>(bits, param)</p></td>
+<td><p>Encode binary sequences using a Hamming code.</p></td>
+</tr>
+</tbody>
+</table>
 </section>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">decodeLDPC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">llrs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#decodeLDPC"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Decode multiple LDPC codewords using the belief propagation algorithms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>llrs</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>n</em><em>, </em><em>numCodewords</em><em>)</em>) – Array of log-likelihood ratios (LLRs) for each bit of the received codewords.
+Codewords are assumed to be disposed in columns.</p></li>
+<li><p><strong>param</strong> (<em>optic.utils.parameters object</em>) – <p>Object containing the following attributes:</p>
+<ul>
+<li><p>H : Sparse binary parity-check matrix of shape (m, n) [default: None].</p></li>
+<li><p>maxIter : Maximum number of iterations for belief propagation [default: 25].</p></li>
+<li><p>alg : Decoding algorithm to use (‘SPA’ for sum-product or ‘MSA’ for min-sum) [default: ‘SPA’].</p></li>
+<li><p>prec : Numerical precision to use in computations (default is np.float32) [default: np.float32].</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>decodedBits</strong> (<em>np.array of shape (n, numCodewords)</em>) – Array of decoded bits for each codeword.</p></li>
+<li><p><strong>outputLLRs</strong> (<em>np.array of shape (n, numCodewords)</em>) – Array of updated log-likelihood ratios (LLRs) after decoding.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">encodeDVBS2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#encodeDVBS2"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Encode multiple binary sequences using a DVB-S2 LDPC parity-check matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bits</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>k</em><em>, </em><em>N</em><em>)</em>) – Binary input sequences to be encoded. Each column represents a bit sequence of length <span class="math notranslate nohighlight">\(k\)</span>.</p></li>
+<li><p><strong>A</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>m</em><em>, </em><em>k</em><em>)</em>) – Matrix corresponding to the first <span class="math notranslate nohighlight">\(k\)</span> columns of the parity-check matrix <span class="math notranslate nohighlight">\(H\)</span>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>codewords</strong> – Binary encoded codewords. Each column is a codeword of length <span class="math notranslate nohighlight">\(n\)</span> corresponding
+to the respective input bit sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array of shape (n, N)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">encodeHamming</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#encodeHamming"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Encode binary sequences using a Hamming code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bits</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>k</em><em>, </em><em>N</em><em>)</em>) – Binary input sequences to encode. Each column is a bit sequence of length <span class="math notranslate nohighlight">\(k\)</span>.</p></li>
+<li><p><strong>param</strong> (<em>optic.utils.parameters object</em>) – <p>Object containing the following attributes:</p>
+<ul>
+<li><p>m : Number of check bits for the Hamming code [default: 3].</p></li>
+<li><p>extended : boolean indication of whether to use the extended Hamming code [default: False].</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>codewords</strong> – Encoded binary codewords. Each column corresponds to a codeword of length <span class="math notranslate nohighlight">\(n\)</span> resulting
+from applying the Hamming encoding to the respective input bit sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array of shape (n, N)</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] R. W. Hamming, “Error detecting and error correcting codes,” Bell System Technical Journal, vol. 29, no. 2, pp. 147-160, April 1950.</p>
+<p>[2] S. Lin and D. J. Costello, “Error Control Coding: Fundamentals and Applications,” 2nd Edition, Pearson, 2004.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">encodeLDPC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#encodeLDPC"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Encode binary sequences using a parity-check matrix of a LDPC code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bits</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>k</em><em>, </em><em>N</em><em>)</em>) – Binary input sequences to be encoded. Each column is a bit sequence of length <span class="math notranslate nohighlight">\(k\)</span> bits.</p></li>
+<li><p><strong>param</strong> (<em>optic.utils.parameters object</em>) – <p>Object containing the following attributes:</p>
+<ul>
+<li><p>mode : Mode of operation (‘DVBS2’, ‘IEEE_802.11nD2’, or ‘AR4JA’)[default: ‘DVBS2’].</p></li>
+<li><p>n : Codeword length <span class="math notranslate nohighlight">\(n\)</span> [default: 64800].</p></li>
+<li><p>R : Code rate <span class="math notranslate nohighlight">\(R\)</span> [default: ‘4/5’].</p></li>
+<li><p>H : Binary parity-check matrix <span class="math notranslate nohighlight">\(H\)</span> of shape <span class="math notranslate nohighlight">\((n - k, n)\)</span> [default: None].</p></li>
+<li><p>G : Binary generator matrix <span class="math notranslate nohighlight">\(G\)</span> of shape <span class="math notranslate nohighlight">\((k, n)\)</span> [default: None].</p></li>
+<li><p>systematic : boolean indicator if the generator matrix is assumed to be in systematic form. [default: True]</p></li>
+<li><p>P1 : Matrix of shape (m, k) used for encoding in triangular mode [default: None].</p></li>
+<li><p>P2 : Matrix of shape (m, m) used for encoding in triangular mode [default: None].</p></li>
+<li><p>path : Path to the folder containing ALIST files for the specified mode [default: None].</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>codewords</strong> – Binary encoded codewords. Each column is a codeword of length <span class="math notranslate nohighlight">\(n\)</span> corresponding to the respective input bit sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array of shape (n, N)</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] T. J. Richardson and R. L. Urbanke, “Efficient encoding of low-density parity-check codes,” IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">encodeTriang</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#encodeTriang"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Encode binary sequences using two parity matrices for LDPC encoding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bits</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>k</em><em>, </em><em>N</em><em>)</em>) – Binary input sequences. Each column is a bit sequence to be encoded.</p></li>
+<li><p><strong>P1</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>m1</em><em>, </em><em>k</em><em>)</em>) – First parity matrix.</p></li>
+<li><p><strong>P2</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>m2</em><em>, </em><em>k</em><em>)</em>) – Second parity matrix.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>codewords</strong> – Encoded codewords, one per column.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array of shape (k + m1 + m2, N)</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] T. J. Richardson and R. L. Urbanke, “Efficient encoding of low-density parity-check codes,” IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">encoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">systematic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#encoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Encode binary sequences using a generator matrix over GF(2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>k</em><em>, </em><em>n</em><em>)</em>) – Binary generator matrix.</p></li>
+<li><p><strong>bits</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>k</em><em>, </em><em>N</em><em>)</em>) – Binary input sequences to encode. Each column is a bit sequence of length <span class="math notranslate nohighlight">\(k\)</span>.</p></li>
+<li><p><strong>systematic</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, the generator matrix is assumed to be in systematic form. If False, the
+generator matrix is treated as a general linear transformation (default is True).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>codewords</strong> – Encoded binary codewords. Each column corresponds to a codeword of length <span class="math notranslate nohighlight">\(n\)</span> resulting
+from applying the generator matrix to the respective input bit sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array of shape (n, N)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">gaussElim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#gaussElim"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Perform Gaussian elimination over GF(2) to reduce a binary matrix to row echelon form.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>M</strong> (<em>np.array</em><em> of </em><em>uint8</em>) – Input binary matrix (dense, 2D). All operations are over GF(2).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>matrix</strong> – Matrix in row echelon form (mod 2).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array of uint8</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">hammingParityCheckMatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extended</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#hammingParityCheckMatrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generate the parity-check matrix H for a Hamming code with m check bits .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of check bits.</p></li>
+<li><p><strong>extended</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, generate the parity-check matrix for the extended Hamming code (default is False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>H</strong> – Parity-check matrix for the Hamming code, where m = n - k and k is the number of message bits.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array of shape (m, n)</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>For standard Hamming codes, the code parameters are <span class="math notranslate nohighlight">\(n = 2^m - 1\)</span> and <span class="math notranslate nohighlight">\(k = n - m\)</span>.</p></li>
+<li><p>For extended Hamming codes, the code parameters are <span class="math notranslate nohighlight">\(n = 2^m\)</span> and <span class="math notranslate nohighlight">\(k = n - m - 1\)</span>.</p></li>
+</ul>
+<p class="rubric">References</p>
+<p>[1] R. W. Hamming, “Error detecting and error correcting codes,” Bell System Technical Journal, vol. 29, no. 2, pp. 147-160, April 1950.</p>
+<p>[2] S. Lin and D. J. Costello, “Error Control Coding: Fundamentals and Applications,” 2nd Edition, Pearson, 2004.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">inverseMatrixGF2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#inverseMatrixGF2"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Invert a square binary matrix over GF(2) using Gauss-Jordan elimination.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>A</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>n</em><em>, </em><em>n</em><em>)</em><em>, </em><em>dtype=np.uint8</em>) – Binary square matrix.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>Ainv</strong> (<em>np.array of shape (n, n), dtype=np.uint8</em>) – Inverse of A over GF(2), if invertible. If not invertible, returns the identity matrix.</p></li>
+<li><p><strong>success</strong> (<em>bool</em>) – True if A is invertible, False otherwise.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">minSumAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">llrs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkNodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">varNodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxIter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.float32'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#minSumAlgorithm"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs belief propagation decoding using the Min-Sum Algorithm (MSA) for multiple codewords.
+Optimized to use sparse edge-based message passing and O(d_c) check node updates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>llrs</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>n</em><em>, </em><em>numCodewords</em><em>)</em>) – Log-likelihood ratios (LLRs) of the received codeword bits.</p></li>
+<li><p><strong>checkNodes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>np.array</em>) – List of length <span class="math notranslate nohighlight">\(m\)</span>, where each entry contains the indices of variable nodes
+connected to the corresponding check node.</p></li>
+<li><p><strong>varNodes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>np.array</em>) – List of length <span class="math notranslate nohighlight">\(n\)</span>, where each entry contains the indices of check nodes
+connected to the corresponding variable node.</p></li>
+<li><p><strong>maxIter</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of iterations for belief propagation.</p></li>
+<li><p><strong>prec</strong> (<em>data-type</em><em>, </em><em>optional</em>) – Numerical precision to use in computations (default is np.float32).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>finalLLR</strong> (<em>np.array of shape (n,)</em>) – Updated LLR values for the decoded codeword after the final iteration.</p></li>
+<li><p><strong>numIter</strong> (<em>int</em>) – Number of iterations performed before successful decoding or reaching <em class="xref py py-obj">maxIter</em>.</p></li>
+<li><p><strong>frameDecodingFail</strong> (<em>np.array of shape (numCodewords,)</em>) – Array indicating whether decoding was successful (0) or failed (1) for each codeword.
+A value of 0 indicates successful decoding, while 1 indicates failure.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] M. P. C. Fossorier, M. Mihaljevic and H. Imai, “Reduced complexity iterative decoding of low-density parity check codes based on belief propagation,” IEEE Transactions on Communications, vol. 47, no. 5, pp. 673-680, May 1999</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">par2gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#par2gen"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Convert a binary parity-check matrix H into a systematic generator matrix G over GF(2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>H</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>n - k</em><em>, </em><em>n</em><em>)</em>) – Parity-check matrix with entries in {0, 1}.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>G</strong> (<em>np.array of shape (k, n)</em>) – Systematic generator matrix corresponding to the input parity-check matrix H.
+The form of G is <span class="math notranslate nohighlight">\([I_k | P]\)</span>, where <span class="math notranslate nohighlight">\(I_k\)</span> is the identity matrix and <span class="math notranslate nohighlight">\(P\)</span> is a binary matrix.</p></li>
+<li><p><strong>colSwaps</strong> (<em>np.array of shape (n,)</em>) – Indices representing the column permutations applied to H to obtain Hm.
+These permutations are required to match the systematic form used in G.</p></li>
+<li><p><strong>Hm</strong> (<em>np.array of shape (n - k, n)</em>) – The modified parity-check matrix after Gaussian elimination and column reordering.
+This matrix has the identity portion on the right-hand side, corresponding to
+a standard systematic form <span class="math notranslate nohighlight">\([P^T | I_{n-k}]\)</span>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This method assumes that the parity-check matrix H is full rank and that the identity
+portion can be isolated on the right via column permutations.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">parseAlist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#parseAlist"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Parse an LDPC ALIST file and return basic parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the folder with the ALIST files.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">plotBinaryMatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#plotBinaryMatrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Plot the binary matrix H with dots at positions where H[i,j] = 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>H</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>m</em><em>, </em><em>n</em><em>)</em>) – Binary matrix.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">readAlist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#readAlist"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Read an ALIST file and reconstruct the binary parity-check matrix H.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the ALIST file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>H</strong> – Reconstructed binary parity-check matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array of shape (m, n)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">sumProductAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">llrs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkNodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">varNodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxIter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec=&lt;class</span> <span class="pre">'numpy.float32'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#sumProductAlgorithm"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs belief propagation decoding using the sum-product algorithm (SPA) for multiple codewords.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>llrs</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>n</em><em>, </em><em>numCodewords</em><em>)</em>) – Array of log-likelihood ratios (LLRs) for each bit of the received codeword.</p></li>
+<li><p><strong>checkNodes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>np.array</em>) – List of length <span class="math notranslate nohighlight">\(m\)</span>, where each element is a 1D array containing the indices
+of variable nodes (bits) involved in the corresponding check node (parity-check equation).</p></li>
+<li><p><strong>varNodes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>np.array</em>) – List of length <span class="math notranslate nohighlight">\(n\)</span>, where each element is a 1D array containing the indices
+of check nodes that the corresponding variable node participates in.</p></li>
+<li><p><strong>maxIter</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of belief propagation iterations.</p></li>
+<li><p><strong>prec</strong> (<em>data-type</em><em>, </em><em>optional</em>) – Data type for the computations (default is np.float32).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>finalLLR</strong> (<em>np.array of shape (n,)</em>) – Updated log-likelihood ratios after message passing.</p></li>
+<li><p><strong>numIter</strong> (<em>int</em>) – Number of iterations executed until decoding converged or reached <em class="xref py py-obj">maxIter</em>.</p></li>
+<li><p><strong>frameDecodingFail</strong> (<em>np.array of shape (numCodewords,)</em>) – Array indicating whether decoding was successful (0) or failed (1) for each codeword.
+A value of 0 indicates successful decoding, while 1 indicates failure.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] F. R. Kschischang, B. J. Frey and H. . -A. Loeliger, “Factor graphs and the sum-product algorithm,” IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 498-519, Feb 2001.</p>
+<p>[2] T. J. Richardson and R. L. Urbanke, “The capacity of low-density parity-check codes under message-passing decoding,” IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 599-618, Feb 2001.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">summarizeAlistFolder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folderPath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#summarizeAlistFolder"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Scan a folder for .alist files and print summary table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>folderPath</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the folder containing ALIST files.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">triangP1P2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#triangP1P2"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Convert a binary parity-check matrix H into a lower-triangular form and extract matrices P1 and P2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>H</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>m</em><em>, </em><em>n</em><em>)</em>) – Binary parity-check matrix. It is used to derive the matrices P1 and P2.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>P1</strong> (<em>np.array of shape (m1, k)</em>) – First parity matrix.</p></li>
+<li><p><strong>P2</strong> (<em>np.array of shape (m2, k)</em>) – Second parity matrix.</p></li>
+<li><p><strong>triangH</strong> (<em>np.array of shape (m, n)</em>) – Triangularized H matrix.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] T. J. Richardson and R. L. Urbanke, “Efficient encoding of low-density parity-check codes,” IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">triangularize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#triangularize"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Convert binary matrix H into lower-triangular form using only row and column permutations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>H</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>m</em><em>, </em><em>n</em><em>)</em><em>, </em><em>dtype=np.uint8</em>) – Binary parity-check matrix <span class="math notranslate nohighlight">\(H\)</span>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>triangH</strong> (<em>np.array of shape (m, n), dtype=np.uint8</em>) – Triangularized matrix.</p></li>
+<li><p><strong>rowPerm</strong> (<em>np.array of shape (m,), dtype=np.int32</em>) – Row permutation indices.</p></li>
+<li><p><strong>colPerm</strong> (<em>np.array of shape (n,), dtype=np.int32</em>) – Column permutation indices.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>[1] T. J. Richardson and R. L. Urbanke, “Efficient encoding of low-density parity-check codes,” IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">writeAlist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optic/comm/fec.html#writeAlist"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Save a binary parity-check matrix H (numpy array) to ALIST format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>H</strong> (<em>np.array</em><em> of </em><em>shape</em><em> (</em><em>m</em><em>, </em><em>n</em><em>)</em>) – Binary parity-check matrix.</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of the ALIST file to be written.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -1013,7 +1695,7 @@ its length by <em class="xref py py-obj">2*L</em>.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+    <p>&#169; Copyright 2023-2026, Edson P. da Silva, Adolfo F. Herbster.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

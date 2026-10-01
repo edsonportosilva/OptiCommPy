@@ -1,25 +1,22 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="English">
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>optic.plot.plotPSD &mdash; OptiCommPy alpha 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+  <title>optic.plot.plotPSD &mdash; OptiCommPy 0.11.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f3b36f1a"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -38,9 +35,6 @@
           <a href="../index.html" class="icon icon-home">
             OptiCommPy
           </a>
-              <div class="version">
-                0.9
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -66,8 +60,12 @@
 <li class="toctree-l3"><a class="reference internal" href="optic.plot.plotColoredConst.html">optic.plot.plotColoredConst</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.plot.plotDecisionBoundaries.html">optic.plot.plotDecisionBoundaries</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optic.plot.eyediagram.html">optic.plot.eyediagram</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.plot.plotPSD</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">optic.plot.plotPSD</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optic.plot.plotPSD"><code class="docutils literal notranslate"><span class="pre">plotPSD</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="optic.plot.randomCmap.html">optic.plot.randomCmap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optic.plot.animateConstGIF.html">optic.plot.animateConstGIF</a></li>
 </ul>
 </li>
 </ul>
@@ -101,26 +99,26 @@
            <div itemprop="articleBody">
              
   <section id="optic-plot-plotpsd">
-<h1>optic.plot.plotPSD<a class="headerlink" href="#optic-plot-plotpsd" title="Permalink to this heading"></a></h1>
+<h1>optic.plot.plotPSD<a class="headerlink" href="#optic-plot-plotpsd" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="optic.plot.plotPSD">
-<span class="sig-name descname"><span class="pre">plotPSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NFFT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4096</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#optic.plot.plotPSD" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plotPSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NFFT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4096</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/optic/plot.html#plotPSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#optic.plot.plotPSD" title="Link to this definition"></a></dt>
 <dd><p>Plot the power spectrum density (PSD) of a signal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sig</strong> (<em>np.array</em>) -- input signal.</p></li>
-<li><p><strong>Fs</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- signal's sampling frequency. The default is 1.</p></li>
-<li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) -- signal's central frequency. The default is 0.</p></li>
-<li><p><strong>NFFT</strong> (<em>scalar int</em><em>, </em><em>optional</em>) -- FFT size. The default is 4096.</p></li>
-<li><p><strong>fig</strong> (<em>figure object</em><em>, </em><em>optional</em>) -- matplotlib figure handle. The default is [].</p></li>
-<li><p><strong>label</strong> (<em>string</em><em>, </em><em>optional</em>) -- PSD plot label. The default is [].</p></li>
+<li><p><strong>sig</strong> (<em>np.array</em>) – input signal.</p></li>
+<li><p><strong>Fs</strong> (<em>scalar</em><em>, </em><em>optional</em>) – signal’s sampling frequency. The default is 1.</p></li>
+<li><p><strong>Fc</strong> (<em>scalar</em><em>, </em><em>optional</em>) – signal’s central frequency. The default is 0.</p></li>
+<li><p><strong>NFFT</strong> (<em>scalar int</em><em>, </em><em>optional</em>) – FFT size. The default is 4096.</p></li>
+<li><p><strong>fig</strong> (<em>figure object</em><em>, </em><em>optional</em>) – matplotlib figure handle. The default is [].</p></li>
+<li><p><strong>label</strong> (<em>string</em><em>, </em><em>optional</em>) – PSD plot label. The default is [].</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>fig</strong> (<em>matplotlib figure object</em>) -- matplotlib figure object where the plot is generated.</p></li>
-<li><p><em>matplotlib axes object</em> -- matplotlib axes object where the plot is displayed.</p></li>
+<li><p><strong>fig</strong> (<em>matplotlib figure object</em>) – matplotlib figure object where the plot is generated.</p></li>
+<li><p><em>matplotlib axes object</em> – matplotlib axes object where the plot is displayed.</p></li>
 </ul>
 </p>
 </dd>
@@ -140,7 +138,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Edson P. da Silva, Adolfo F. Herbster.</p>
+    <p>&#169; Copyright 2023-2026, Edson P. da Silva, Adolfo F. Herbster.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

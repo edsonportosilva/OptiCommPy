@@ -3,6 +3,7 @@ Physical Models
 
 .. automodule:: optic.models.devices
     :members:
+    :exclude-members: checkModulatorInputs
     :noindex:
 
 .. automodule:: optic.models.channels
@@ -16,7 +17,7 @@ Physical Models
 
 .. automodule:: optic.models.modelsGPU
     :members:
-    :exclude-members: convergenceCondition, nlinPhaseRot
+    :exclude-members: convergenceCondition, nlinPhaseRot, gaussianComplexNoise
     :noindex:
 
 .. automodule:: optic.models.tx
