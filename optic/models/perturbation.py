@@ -41,7 +41,7 @@ def calcPertCoeffMatrix(param):
         - param.length : total fiber length [km] [default: 800 km]
         - param.pulseWidth : pulse width (fraction of symbol period) [default: 0.5]
         - param.gamma : fiber nonlinear coefficient [1/W/km] [default: 1.3 1/W/km]
-        - param.Fc : carrier frequency [Hz] [default: 193.2e12 Hz]
+        - param.Fc : carrier frequency [Hz] [default: 193.1e12 Hz]
         - param.powerWeighted : power-weighted coefficient calculation? Boolean variable [default: False]
         - param.Rs : symbol rate [baud] [default: 32e9 baud]
         - param.powerWeightN : power-weighting order [default: 10]
@@ -67,10 +67,6 @@ def calcPertCoeffMatrix(param):
     so that :math:`C_{ifwm}[m,n] = C_{ifwm}[n,m]`, and the IXPM coefficients are
     non-zero only in the column :math:`m = 0` and in the row :math:`n = 0`.
 
-    The default carrier frequency of this function (193.2 THz) is different from the
-    one of :func:`perturbationNLIN` (193.1 THz), which sets it before calling this
-    function.
-
     The power-weighted calculation (``param.powerWeighted = True``) requires the
     incomplete gamma function of a complex argument, which
     :func:`scipy.special.gammaincc` does not support, so it currently raises a
@@ -88,7 +84,7 @@ def calcPertCoeffMatrix(param):
         param, "pulseWidth", 0.5
     )  # Pulse width (fraction of symbol period)
     gamma = getattr(param, "gamma", 1.3)  # Nonlinear coefficient (1/W/km)
-    Fc = getattr(param, "Fc", 193.2e12)  # Carrier frequency (Hz)
+    Fc = getattr(param, "Fc", 193.1e12)  # Carrier frequency (Hz)
     powerWeighted = getattr(
         param, "powerWeighted", False
     )  # Power-weighted calculation (bool)
@@ -254,7 +250,9 @@ def _pairTerms(Cf, ii, jj, L):
 
 
 @njit(parallel=True, fastmath=True, cache=True)
-def _fwmKernel(xr, xi, yr, yi, symM, symN, symR, symI, ordM, ordN, ordR, ordI, D, N, block):
+def _fwmKernel(
+    xr, xi, yr, yi, symM, symN, symR, symI, ordM, ordN, ordR, ordI, D, N, block
+):
     """
     Four-wave mixing sums of the first-order perturbation model.
 
@@ -306,7 +304,9 @@ def _fwmKernel(xr, xi, yr, yi, symM, symN, symR, symI, ordM, ordN, ordR, ordI, D
                 pi = xmr * xni + xmi * xnr
                 qr = ymr * ynr - ymi * yni  # q = ym * yn
                 qi = ymr * yni + ymi * ynr
-                wr = (xmr * ynr - xmi * yni) + (xnr * ymr - xni * ymi)  # w = xm*yn + xn*ym
+                wr = (xmr * ynr - xmi * yni) + (
+                    xnr * ymr - xni * ymi
+                )  # w = xm*yn + xn*ym
                 wi = (xmr * yni + xmi * ynr) + (xnr * ymi + xni * ymr)
 
                 # A = 2 p conj(xs) + w conj(ys),  B = w conj(xs) + 2 q conj(ys)
