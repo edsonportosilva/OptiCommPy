@@ -581,7 +581,8 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None, fill=False, fillAl
         matplotlib figure handle, to plot over an existing figure. The default is
         None, which creates a new figure.
     label : string, optional
-        PSD plot label. The default is None.
+        PSD plot label. If the signal has more than one mode (column), the label
+        of each mode is ``"<label>: Mode <k>"``. The default is None (no legend).
     fill : bool, optional
         Whether to shade the area below the PSD line of each mode with the color of
         the line. The default is False.
@@ -601,15 +602,21 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None, fill=False, fillAl
         fig = plt.figure()
 
     ax = fig.gca()
+    modes = _columns(sig).T
 
-    for indMode, mode in enumerate(_columns(sig).T):
+    for indMode, mode in enumerate(modes):
+        if label is not None and len(modes) > 1:  # the modes are told apart in the legend
+            modeLabel = f"{label}: Mode {indMode}"
+        else:
+            modeLabel = label
+
         *_, lines = ax.psd(
             mode,
             Fs=Fs,
             Fc=Fc,
             NFFT=NFFT,
             sides="twosided",
-            label=None if label is None else f"{label}: Mode {indMode}",
+            label=modeLabel,
             return_line=True,
         )
 
