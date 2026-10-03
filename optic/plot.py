@@ -352,6 +352,9 @@ def plotDecisionBoundaries(
 
 # ---------------------------------------------------------------- eyediagram
 
+# fraction of the peak density below which a bin of the 'fancy' eye diagram is empty
+_EYE_EMPTY_DENSITY = 2e-2
+
 
 def _eyeWaveforms(sigIn, Nsamples, label):
     """(waveform, label) of the parts to be plotted: real and, if complex, imaginary."""
@@ -375,7 +378,21 @@ def _eyeCoordinates(y, SpS, n):
     return xPlot, yPlot
 
 
-def _eyeHistogram(ax, xPlot, yPlot, SpS, n):
+def _eyeAxes(ax, nParts, dpi):
+    """Axes of each eye diagram: the given ones (one per waveform part), or new ones."""
+    if ax is None:
+        return [plt.subplots(dpi=dpi)[1] for _ in range(nParts)]
+
+    axesList = list(np.ravel(ax))
+    if len(axesList) != nParts:
+        raise ValueError(
+            f"ax must hold {nParts} axes (one for each eye diagram), got {len(axesList)}"
+        )
+
+    return axesList
+
+
+def _eyeHistogram(ax, xPlot, yPlot, SpS, n, cmap, bgColor):
     """Eye diagram as a smoothed 2D histogram of the interpolated waveform."""
     nsymb = yPlot.size // SpS
     if nsymb < 500000:  # tile the signal to ensure a high enough density
@@ -389,36 +406,51 @@ def _eyeHistogram(ax, xPlot, yPlot, SpS, n):
     ]
 
     H, _, yEdges = np.histogram2d(xPlot, yPlot, bins=350, range=imRange)
+    density = gaussian_filter(H.T, sigma=1.0)
+    cmap = _colormap(cmap)
+
+    if bgColor is not None:  # paint the bins without waveform with bgColor
+        density = np.ma.masked_less(density, _EYE_EMPTY_DENSITY * density.max())
+        cmap = cmap.with_extremes(bad=bgColor)
 
     ax.imshow(
-        gaussian_filter(H.T, sigma=1.0),
-        cmap="turbo",
+        density,
+        cmap=cmap,
         origin="lower",
         aspect="auto",
         extent=[0, n, yEdges[0], yEdges[-1]],
     )
 
 
-def _eyeLines(ax, xPlot, yPlot, label):
+def _eyeLines(ax, xPlot, yPlot, label, lineProps):
     """Eye diagram as the overlapped traces of the interpolated waveform."""
     # break the line where the time wraps around, so that it does not streak across
     yPlot[np.where(np.diff(xPlot) < 0)[0]] = np.nan
 
-    ax.plot(
-        xPlot,
-        yPlot,
-        color="blue",
-        linewidth=0.5,
-        alpha=0.85,
-        label=label if label else None,
-    )
+    props = {"color": "blue", "linewidth": 0.5, "alpha": 0.85, "label": label if label else None}
+    props.update(lineProps or {})
+
+    ax.plot(xPlot, yPlot, **props)
     ax.set_xlim(np.min(xPlot), np.max(xPlot))
 
-    if label:
+    if props["label"]:
         ax.legend(loc="upper left")
 
 
-def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel="", dpi=None):
+def eyediagram(
+    sigIn,
+    Nsamples,
+    SpS,
+    n=3,
+    ptype="fast",
+    plotlabel="",
+    dpi=None,
+    cmap="turbo",
+    bgColor=None,
+    lineProps=None,
+    ax=None,
+    show=True,
+):
     """
     Plot the eye diagram of a modulated signal waveform.
 
@@ -439,13 +471,35 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel="", dpi=None):
         Label for the plot legend. Defaults to "".
     dpi : int, optional
         Dots per inch for the figure. If None, the default matplotlib DPI is used. Defaults to None.
+    cmap : str or Colormap, optional
+        Colormap of the density of the 'fancy' eye diagram. Defaults to 'turbo'.
+    bgColor : color or None, optional
+        Background color of the 'fancy' eye diagram, i.e., the color of the regions
+        not crossed by the waveform. If None, they take the lowest color of `cmap`.
+        Any matplotlib color is accepted, and 'none' plots the eye diagram without
+        background (the regions are transparent and show the axes facecolor).
+        Defaults to None.
+    lineProps : dict, optional
+        Properties of the traces of the 'fast' eye diagram, passed to
+        ``Axes.plot`` (e.g. ``{"color": "k", "linewidth": 1, "linestyle": "--",
+        "alpha": 0.3}``). They override the defaults ``color="blue"``,
+        ``linewidth=0.5`` and ``alpha=0.85``. Defaults to None.
+    ax : Axes or sequence of Axes, optional
+        Axes where the eye diagrams are drawn, one for each eye diagram (two for a
+        complex signal). If None, a new figure is created for each eye diagram.
+        Defaults to None.
+    show : bool, optional
+        Whether to show the figures. Set it to False to draw or annotate on the
+        eye diagrams before showing them. Defaults to True.
 
     Returns
     -------
     figList : list of Figure
         The figure of each eye diagram.
     axesList : list of Axes
-        The axes of each eye diagram.
+        The axes of each eye diagram. They can be used to draw or annotate on top
+        of the eye diagrams, in the time unit of the horizontal axis (symbol
+        periods) and in the amplitude unit of the signal.
 
     Notes
     -----
@@ -453,38 +507,63 @@ def eyediagram(sigIn, Nsamples, SpS, n=3, ptype="fast", plotlabel="", dpi=None):
     diagram is made with `Nsamples` points of the interpolated waveform, which cover
     about ``Nsamples / 1024`` symbols. The 'fancy' eye diagram is a smoothed 2D
     histogram of the waveform, and the 'fast' one overlaps its traces.
+
+    Examples
+    --------
+    Annotate the decision threshold and the sampling instant of an eye diagram:
+
+    >>> figs, axes = eyediagram(sig, 50000, SpS, ptype="fancy", bgColor="none", show=False)
+    >>> axes[0].axhline(0.5, color="w", linestyle="--")
+    >>> axes[0].axvline(1.0, color="w", linestyle=":")
+    >>> axes[0].annotate("threshold", xy=(0.1, 0.55), color="w")
+    >>> plt.show()
     """
     if ptype not in ("fast", "fancy"):
         raise ValueError("ptype must be either 'fast' or 'fancy'")
 
-    figList, axesList = [], []
+    waveforms = _eyeWaveforms(sigIn, Nsamples, plotlabel.strip() if plotlabel else "")
+    axesList = _eyeAxes(ax, len(waveforms), dpi)
 
-    for y, label in _eyeWaveforms(sigIn, Nsamples, plotlabel.strip() if plotlabel else ""):
-        fig, ax = plt.subplots(dpi=dpi)
-        figList.append(fig)
-        axesList.append(ax)
-
+    for (y, label), axEye in zip(waveforms, axesList):
         xPlot, yPlot = _eyeCoordinates(y, SpS, n)
 
         if ptype == "fancy":
-            _eyeHistogram(ax, xPlot, yPlot, SpS, n)
+            _eyeHistogram(axEye, xPlot, yPlot, SpS, n, cmap, bgColor)
         else:
-            _eyeLines(ax, xPlot, yPlot, label)
+            _eyeLines(axEye, xPlot, yPlot, label, lineProps)
 
-        ax.set_xlabel("Symbol period ($T_s$)")
-        ax.set_ylabel("Amplitude")
-        ax.set_title(label)
-        ax.grid(alpha=0.15)
+        axEye.set_xlabel("Symbol period ($T_s$)")
+        axEye.set_ylabel("Amplitude")
+        axEye.set_title(label)
+        axEye.grid(alpha=0.15)
+
+    if show:
         plt.show(block=False)
         plt.pause(0.01)  # Allow the plot to update
 
-    return figList, axesList
+    return [axEye.figure for axEye in axesList], axesList
 
 
 # ------------------------------------------------------------ spectrum, GIF
 
 
-def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
+def _fillBelow(ax, line, alpha):
+    """Shade the area below a line, down to the bottom of the axes, without changing their limits."""
+    x, y = line.get_xdata(), line.get_ydata()
+    finite = np.isfinite(y)  # log10 of a null PSD is -inf
+    if not finite.any():
+        return
+
+    # the shade goes far below the lowest level of the line, so that it always reaches
+    # the bottom of the axes, but it is kept out of the data limits used for autoscaling
+    floor = np.min(y[finite]) - 1e3
+    dataLim, ylim = ax.dataLim.frozen(), ax.get_ylim()
+    ax.fill_between(x, y, floor, where=finite, color=line.get_color(), alpha=alpha, linewidth=0)
+    ax.dataLim.set(dataLim)
+    ax.set_ylim(ylim, auto=None)  # keeps the limits (and ticks) set by Axes.psd, and autoscaling on
+
+
+def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None, fill=False, fillAlpha=0.25):
     """
     Plot the power spectrum density (PSD) of a signal.
 
@@ -503,6 +582,12 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
         None, which creates a new figure.
     label : string, optional
         PSD plot label. The default is None.
+    fill : bool, optional
+        Whether to shade the area below the PSD line of each mode with the color of
+        the line. The default is False.
+    fillAlpha : float, optional
+        Transparency of the shaded area, from 0 (transparent) to 1 (opaque). Only
+        used if `fill` is True. The default is 0.25.
 
     Returns
     -------
@@ -518,14 +603,18 @@ def plotPSD(sig, Fs=1, Fc=0, NFFT=4096, fig=None, label=None):
     ax = fig.gca()
 
     for indMode, mode in enumerate(_columns(sig).T):
-        ax.psd(
+        *_, lines = ax.psd(
             mode,
             Fs=Fs,
             Fc=Fc,
             NFFT=NFFT,
             sides="twosided",
             label=None if label is None else f"{label}: Mode {indMode}",
+            return_line=True,
         )
+
+        if fill:
+            _fillBelow(ax, lines[0], fillAlpha)
 
     if label is not None:
         ax.legend(loc="lower left")
