@@ -263,6 +263,61 @@ class TestEyeDiagram:
 
         assert len(figs) == 1
 
+    def test_fancy_colormap_and_default_background(self):
+        _, axes = oplot.eyediagram(self.wave, 4000, 8, 3, "fancy", cmap="viridis")
+
+        image = axes[0].images[0]
+        assert image.get_cmap().name.startswith("viridis")
+        assert not np.ma.is_masked(image.get_array())  # the background is the lowest colormap color
+        assert plt.get_cmap("viridis").get_bad()[3] == 0  # the registered colormap is untouched
+
+    @pytest.mark.parametrize("bgColor, rgba", [("black", (0, 0, 0, 1)), ("none", (0, 0, 0, 0))])
+    def test_fancy_background_color(self, bgColor, rgba):
+        _, axes = oplot.eyediagram(self.wave, 4000, 8, 3, "fancy", bgColor=bgColor)
+
+        image = axes[0].images[0]
+        density = image.get_array()
+        assert np.ma.is_masked(density) and density.count() > 0  # empty bins only are masked
+        assert tuple(image.get_cmap().get_bad()) == rgba
+
+    def test_fast_line_properties(self):
+        lineProps = {"color": "red", "linewidth": 2, "linestyle": "--", "label": "custom"}
+        _, axes = oplot.eyediagram(self.wave, 4000, 8, 3, "fast", plotlabel="Rx", lineProps=lineProps)
+
+        line = axes[0].get_lines()[0]
+        assert line.get_color() == "red" and line.get_linewidth() == 2 and line.get_linestyle() == "--"
+        assert line.get_alpha() == 0.85  # default kept
+        assert [t.get_text() for t in axes[0].get_legend().get_texts()] == ["custom"]
+
+    @pytest.mark.parametrize("ptype", ["fast", "fancy"])
+    def test_drawing_on_top_of_the_eye_diagram_keeps_its_limits(self, ptype):
+        _, axes = oplot.eyediagram(self.wave, 4000, 8, 3, ptype, show=False)
+        ax = axes[0]
+        xlim, ylim = ax.get_xlim(), ax.get_ylim()
+
+        ax.axhline(0.0, color="w")
+        ax.plot([1.0, 1.0], [-0.5, 0.5], "k--")
+        ax.annotate("sampling", xy=(1.0, 0.0))
+
+        assert ax.get_xlim() == xlim and ax.get_ylim() == ylim
+        assert ax.texts[0].get_text() == "sampling"
+
+    def test_eye_diagrams_are_drawn_on_the_given_axes(self):
+        fig, (axReal, axImag) = plt.subplots(1, 2)
+        sig = self.wave + 1j * self.wave
+
+        figs, axes = oplot.eyediagram(sig, 1500, 8, 2, "fast", ax=(axReal, axImag), show=False)
+
+        assert axes == [axReal, axImag] and figs == [fig, fig]
+        assert len(plt.get_fignums()) == 1
+        assert axReal.get_lines() and axImag.get_lines()
+
+    def test_number_of_given_axes_must_match_the_number_of_eye_diagrams(self):
+        _, ax = plt.subplots()
+
+        with pytest.raises(ValueError):
+            oplot.eyediagram(self.wave + 1j * self.wave, 1500, 8, 2, "fast", ax=ax)
+
 
 class TestPSD:
     def test_labels_modes_and_limits(self):
@@ -273,6 +328,12 @@ class TestPSD:
         assert [t.get_text() for t in ax.get_legend().get_texts()] == ["Rx: Mode 0", "Rx: Mode 1"]
         assert ax.get_xlim() == pytest.approx((193.1e12 - 32e9, 193.1e12 + 32e9))
         assert len(ax.get_lines()) == 2
+
+    @pytest.mark.parametrize("shape", [(1024,), (1024, 1)])
+    def test_single_mode_signals_are_labeled_with_the_label_only(self, shape):
+        fig, ax = oplot.plotPSD(qamSymbols(1024).reshape(shape), NFFT=128, label="Rx")
+
+        assert [t.get_text() for t in ax.get_legend().get_texts()] == ["Rx"]
 
     def test_no_legend_without_label(self):
         fig, ax = oplot.plotPSD(qamSymbols(1024), NFFT=128)
@@ -293,6 +354,46 @@ class TestPSD:
         fig, ax = oplot.plotPSD(qamSymbols(1024), NFFT=128, fig=[])
 
         assert ax.figure is fig
+
+    def test_no_shade_by_default(self):
+        fig, ax = oplot.plotPSD(qamSymbols(1024), NFFT=128)
+
+        assert len(ax.collections) == 0
+
+    def test_shade_below_each_line_with_its_color_and_transparency(self):
+        fig, ax = oplot.plotPSD(qamSymbols(2048, 2), NFFT=128, fill=True, fillAlpha=0.4)
+
+        assert len(ax.collections) == len(ax.get_lines()) == 2
+        for line, shade in zip(ax.get_lines(), ax.collections):
+            np.testing.assert_allclose(shade.get_facecolor()[0][:3], matplotlib.colors.to_rgb(line.get_color()))
+            assert shade.get_alpha() == 0.4
+            # the shade is bounded above by the PSD line and reaches below the bottom of the axes
+            vertices = shade.get_paths()[0].vertices
+            assert vertices[:, 1].max() == pytest.approx(np.max(line.get_ydata()))
+            assert vertices[:, 1].min() < ax.get_ylim()[0]
+
+    def test_shade_does_not_change_the_axes_limits(self):
+        _, axLine = oplot.plotPSD(qamSymbols(2048, 2), NFFT=128)
+        _, axFill = oplot.plotPSD(qamSymbols(2048, 2), NFFT=128, fill=True)
+
+        assert axFill.get_ylim() == pytest.approx(axLine.get_ylim())
+        assert axFill.get_xlim() == pytest.approx(axLine.get_xlim())
+
+    def test_shaded_plots_over_a_given_figure(self):
+        fig, ax = oplot.plotPSD(qamSymbols(1024), NFFT=128, fill=True, label="A")
+        oplot.plotPSD(0.01 * qamSymbols(1024, seed=1), NFFT=128, fig=fig, fill=True, label="B")
+
+        assert len(ax.collections) == 2
+        # the axes follow the lower PSD, and both shades still reach their bottom
+        assert ax.get_ylim()[0] < np.min(ax.get_lines()[1].get_ydata())
+        for shade in ax.collections:
+            assert shade.get_paths()[0].vertices[:, 1].min() < ax.get_ylim()[0]
+
+    @pytest.mark.filterwarnings("ignore:divide by zero encountered in log10")
+    def test_null_PSD_is_not_shaded(self):
+        fig, ax = oplot.plotPSD(np.zeros(1024), NFFT=128, fill=True)
+
+        assert len(ax.collections) == 0
 
 
 class TestAnimationAndColormap:
