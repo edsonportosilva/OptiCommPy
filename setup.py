@@ -11,7 +11,6 @@ MAINTAINER = "Edson Porto da Silva"
 MAINTAINER_EMAIL = "edsonporto88@gmail.com"
 URL = "https://github.com/edsonportosilva/OptiCommPy"
 LICENSE = "GPL-3.0 license"
-VERSION = "0.11.0"
 
 # This is a list of files to install, and where
 # (relative to the 'root' dir, where setup.py is)
@@ -25,7 +24,8 @@ setup(
     description=DESCRIPTION,
     license=LICENSE,
     url=URL,
-    version=VERSION,
+    # version is derived from the Git tag of the release (setuptools-scm)
+    use_scm_version={"fallback_version": "0.11.0"},
     # Name the folder where your packages live:
     # (If you have other packages (dirs) or modules (py files) then
     # put them into the package directory - they will be found
