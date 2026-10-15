@@ -2,7 +2,7 @@
 
 All notable changes to OptiCommPy are documented in this file.
 
-## [0.11.0] - 2026-10-15
+## [v0.11.0-alpha] - 2026-10-15
 
 Changes since v0.10.0-alpha.
 
