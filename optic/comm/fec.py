@@ -768,6 +768,11 @@ def writeAlist(H, filename):
         Binary parity-check matrix.
     filename : str
         Name of the ALIST file to be written.
+
+    Returns
+    -------
+    None
+        The matrix is written to the file `filename`.
     """
     if type(H) == csr_matrix:
         H = csr_matrix.todense(H).astype(np.uint8)
@@ -1080,6 +1085,11 @@ def plotBinaryMatrix(H):
     ----------
     H : np.array of shape (m, n)
         Binary matrix.
+
+    Returns
+    -------
+    None
+        The figure is shown with matplotlib.
     """
     H = np.asarray(H)
     rows, cols = np.where(H == 1)
@@ -1103,8 +1113,13 @@ def parseAlist(path):
     Parameters
     ----------
     path : str
-        Path to the folder with the ALIST files.
+        Path to the ALIST file.
 
+    Returns
+    -------
+    info : dict
+        Code parameters: length n, number of checks m, rate, maximum variable
+        node degree (max_col_w) and maximum check node degree (max_row_w).
     """
     with open(path, "r") as f:
         lines = f.readlines()
@@ -1145,6 +1160,10 @@ def summarizeAlistFolder(folderPath):
     folderPath : str
         Path to the folder containing ALIST files.
 
+    Returns
+    -------
+    None
+        The summary table is printed.
     """
     table = PrettyTable()
     table.field_names = [

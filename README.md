@@ -179,7 +179,7 @@ For suggestions or questions about OptiCommPy, get in touch by e-mail (edsonport
 
 If OptiCommPy is useful for your work, consider supporting its development:
 
-[![Sponsor](https://img.shields.io/badge/Sponsor-❤️-pink?logo=github)](https://github.com/sponsors//edsonportosilva)
+[![Sponsor](https://img.shields.io/badge/Sponsor-❤️-pink?logo=github)](https://github.com/sponsors/edsonportosilva)
 
 ## Citing OptiCommPy
 

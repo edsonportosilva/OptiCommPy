@@ -16,6 +16,10 @@ Digital Signal Processing (DSP)
     :exclude-members: 
     :noindex:
 
+.. automodule:: optic.dsp.coreGPU
+    :members:
+    :noindex:
+
 .. automodule:: optic.dsp.carrierRecovery
     :members:
     :noindex:

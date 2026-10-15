@@ -823,6 +823,22 @@ def manakovDBP(Ei, param):
 
 
 def setPowerforParSSFM(sig, powers):
+    """
+    Set the power of each mode of a signal to be propagated in parallel by the SSFM.
+
+    Parameters
+    ----------
+    sig : np.array
+        Signal with columns ordered as (X, Y) polarization pairs of each channel.
+    powers : np.array
+        Total power of each channel (both polarizations) [dBm].
+
+    Returns
+    -------
+    sig : np.array
+        The same array, with each polarization scaled to half the power of its
+        channel.
+    """
     powers_lin = 10 ** (powers / 10) * 1e-3
     powers_lin = powers_lin.repeat(2) / 2
 

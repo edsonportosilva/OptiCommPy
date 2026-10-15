@@ -1367,6 +1367,46 @@ def condEntropyBit1D(y, const, bitMap, pX, i, σ):
 
 
 def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
+    """
+    Calculate the NLIN variance of a Nyquist WDM link with the GN model.
+
+    Parameters
+    ----------
+    Rs : scalar
+        Symbol rate of each channel [baud].
+    Nch : int
+        Number of WDM channels.
+    Δf : scalar
+        Channel spacing [Hz].
+    α : scalar
+        Fiber attenuation coefficient [dB/km].
+    γ : scalar
+        Fiber nonlinear coefficient [1/W/km].
+    Ls : scalar
+        Span length [km].
+    Ns : int
+        Number of spans.
+    Ptx_dBm : scalar
+        Launch power per channel [dBm].
+    D : scalar
+        Fiber dispersion parameter [ps/nm/km].
+    Bref : scalar
+        Reference noise bandwidth [Hz].
+    Fc : scalar
+        Central optical frequency [Hz].
+
+    Returns
+    -------
+    var_NLI : scalar
+        Power of the nonlinear interference noise [W] in the bandwidth Bref,
+        accumulated over Ns spans.
+
+    References
+    ----------
+    [1] P. Poggiolini, "The GN Model of Non-Linear Propagation in Uncompensated
+    Coherent Optical Systems," J. Lightwave Technol., vol. 30, no. 24,
+    pp. 3857-3879, 2012.
+    """
     # Reference: [1] P. Poggiolini, "The GN Model of Non-Linear Propagation in
     # Uncompensated Coherent Optical Systems," in Journal of Lightwave
     # Technology, vol. 30, no. 24, pp. 3857-3879, Dec.15, 2012,
@@ -1417,6 +1457,35 @@ def GN_Model_NyquistWDM(Rs, Nch, Δf, α, γ, Ls, Ns, Ptx_dBm, D, Bref, Fc):
 
 
 def ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc):
+    """
+    Calculate the accumulated ASE noise power in a multi-span EDFA link.
+
+    Parameters
+    ----------
+    α : scalar
+        Fiber attenuation coefficient [dB/km].
+    Ls : scalar
+        Span length [km].
+    Ns : int
+        Number of spans.
+    NF : scalar
+        Amplifier noise figure [dB].
+    Bref : scalar
+        Reference noise bandwidth [Hz].
+    Fc : scalar
+        Central optical frequency [Hz].
+
+    Returns
+    -------
+    N_ase : scalar
+        ASE noise power [W] in the bandwidth Bref, in two polarizations,
+        accumulated over Ns spans.
+
+    References
+    ----------
+    [1] R.-J. Essiambre et al., "Capacity Limits of Optical Fiber Networks,"
+    J. Lightwave Technol., vol. 28, no. 4, pp. 662-701, 2010, Eq. (54).
+    """
     # ASE noise power calculation:
     G = α * Ls  # amplifier gain (dB)
 
@@ -1433,6 +1502,41 @@ def ASE_NyquistWDM(α, Ls, Ns, NF, Bref, Fc):
 
 
 def GNmodel_OSNR(Rs, Nch, Δf, Ptx, paramCh=None, Bref=12.5e9):
+    """
+    Calculate the OSNR of a Nyquist WDM link as a function of launch power.
+
+    Parameters
+    ----------
+    Rs : scalar
+        Symbol rate of each channel [baud].
+    Nch : int
+        Number of WDM channels.
+    Δf : scalar
+        Channel spacing [Hz].
+    Ptx : np.array
+        Launch powers per channel [dBm].
+    paramCh : core.parameters, optional
+        Channel parameters:
+
+        - paramCh.Ltotal: total link length [km]. The default is 800.
+        - paramCh.Lspan: span length [km]. The default is 50.
+        - paramCh.alpha: fiber attenuation [dB/km]. The default is 0.2.
+        - paramCh.D: dispersion parameter [ps/nm/km]. The default is 16.
+        - paramCh.gamma: nonlinear coefficient [1/W/km]. The default is 1.3.
+        - paramCh.Fc: central optical frequency [Hz]. The default is 193.1e12.
+        - paramCh.NF: amplifier noise figure [dB]. The default is 4.5.
+    Bref : scalar, optional
+        Reference noise bandwidth [Hz]. The default is 12.5e9.
+
+    Returns
+    -------
+    OSNR : np.array
+        Linear OSNR for each launch power in Ptx.
+    P_nli : np.array
+        Nonlinear interference noise power [W] for each launch power.
+    P_ase : np.array
+        ASE noise power [W] for each launch power.
+    """
     if paramCh is None:
         paramCh = []
     # check input parameters

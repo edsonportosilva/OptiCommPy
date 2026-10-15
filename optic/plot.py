@@ -671,6 +671,11 @@ def animateConstGIF(
     radius : int, optional
         Radius for setting plot limits. Default is 2.
 
+    Returns
+    -------
+    None
+        The animation is saved to the file `figName`.
+
     Notes
     -----
     The animation is saved with ImageMagick, or with Pillow if ImageMagick is not

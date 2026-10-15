@@ -252,6 +252,33 @@ def getOverlapInt(n2_norm, properties, param_edf):
 
 
 def get_mode_radius(model, radius, V, v, u):
+    """
+    Determine the mode radius of the fiber for a given mode-field model.
+
+    Parameters
+    ----------
+    model : str
+        Mode-field model: 'Bessel', 'Marcuse', 'Whitley', 'Desurvire' or
+        'Myslinski'.
+    radius : scalar
+        Fiber core radius [m].
+    V : np.array
+        Normalized frequency.
+    v : np.array
+        Normalized transverse attenuation constant of the cladding.
+    u : np.array
+        Normalized transverse propagation constant of the core.
+
+    Returns
+    -------
+    w_gauss : np.array
+        Mode radius of the Gaussian-approximated field [m].
+
+    Raises
+    ------
+    TypeError
+        If model is not one of the supported models.
+    """
     if model == "Bessel":
         w_gauss = radius * V / u * kv(1, v) / kv(0, v) * jv(0, u)
     elif model == "Marcuse":
@@ -270,6 +297,20 @@ def get_mode_radius(model, radius, V, v, u):
 
 
 def updtCnst(param):
+    """
+    Update the constants used by the EDFA rate and propagation equations.
+
+    Parameters
+    ----------
+    param : core.parameters
+        EDFA parameters, including the fields b, rho, tal, absCoef, gainCoef,
+        freq, lossS and noiseBand.
+
+    Returns
+    -------
+    param : core.parameters
+        The same object with the fields const1 to const5 updated.
+    """
     xi = np.pi * param.b**2 * param.rho / param.tal
     param.const1 = (1 / (Planck * xi)) * (param.absCoef / param.freq)
     param.const2 = (1 / (Planck * xi)) * (param.absCoef + param.gainCoef) / param.freq
@@ -282,6 +323,29 @@ def updtCnst(param):
 # Calculates gamma, field profile (ik), absorption and emission cross-section (or
 # absorption and gain coeficients)
 def edfParams(param_edfa):
+    """
+    Calculate the EDF mode profile and the absorption and gain parameters.
+
+    Parameters
+    ----------
+    param_edfa : core.parameters
+        EDFA parameters, including the Giles parameter file (file, fileunit),
+        fiber geometry (a, b, na, rho, longSteps), mode model (gmtc) and
+        algorithm (algo).
+
+    Returns
+    -------
+    param_edf : core.parameters
+        EDF parameters: wavelengths (lbFl), radial grid (dr, r), overlap factor
+        (gamma), field profile (i_k, for 'Giles_spatial'), absorption and
+        emission cross-sections (absCross, emiCross) and absorption and gain
+        coefficients (absCoef, gainCoef).
+
+    Raises
+    ------
+    TypeError
+        If param_edfa.fileunit is not 'nm', 'm', 'Hz' or 'THz'.
+    """
     # Create EDF struct
     param_edf = parameters()
     # Load Gile's file
@@ -356,6 +420,26 @@ def edfParams(param_edfa):
 
 
 def edfaArgs(param_edfa):
+    """
+    Set default values and validate the arguments of the EDFA state model.
+
+    Parameters
+    ----------
+    param_edfa : core.parameters
+        EDFA parameters. Missing fields receive default values (control type,
+        PID gains, EDF geometry, pumps and solver tolerances).
+
+    Returns
+    -------
+    param_edfa : core.parameters
+        The same object with all fields defined.
+
+    Raises
+    ------
+    TypeError
+        If the control type or the algorithm is invalid, or if the Giles
+        parameter file does not exist.
+    """
     # gain or power control parameters
     param_edfa.type = getattr(param_edfa, "type", "AGC")
     param_edfa.value = getattr(
@@ -417,6 +501,31 @@ def edfaArgs(param_edfa):
 
 
 def edfaSM(Ei, Fs, Fc, param_edfa):
+    """
+    Advanced EDFA model based on the solution of the rate and propagation equations.
+
+    Parameters
+    ----------
+    Ei : np.array
+        Input optical signal, with one column per polarization.
+    Fs : scalar
+        Sampling frequency [Hz].
+    Fc : scalar
+        Central optical frequency [Hz].
+    param_edfa : core.parameters
+        EDFA parameters (see :func:`edfaArgs` for the fields and defaults).
+
+    Returns
+    -------
+    Eout : np.array
+        Amplified optical signal, including ASE noise.
+    PpumpF : np.array
+        Forward pump power at the input and output of the EDF [W].
+    PpumpB : np.array
+        Backward pump power at the input and output of the EDF [W].
+    noisef : np.array
+        Forward ASE noise amplitude added to the signal.
+    """
     ## Verify arguments
     param_edfa = edfaArgs(param_edfa)
 
