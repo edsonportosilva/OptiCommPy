@@ -41,7 +41,7 @@ from scipy.sparse import coo_matrix, csc_matrix, csr_matrix
 
 
 def par2gen(H):
-    """
+    r"""
     Convert a binary parity-check matrix H into a systematic generator matrix G over GF(2).
 
     Parameters
@@ -66,6 +66,34 @@ def par2gen(H):
     -----
     This method assumes that the parity-check matrix H is full rank and that the identity
     portion can be isolated on the right via column permutations.
+
+    **Theory.** A linear block code :math:`\mathcal{C}` with parameters :math:`(n, k)` is the
+    null space of its parity-check matrix :math:`H` (:math:`m = n-k` rows) over GF(2):
+
+    .. math::
+        \mathcal{C} = \{\mathbf{c} \in \mathrm{GF}(2)^n : H\mathbf{c}^T = \mathbf{0}\}.
+
+    The same code is the row space of a generator matrix :math:`G` (:math:`k \times n`),
+    i.e., :math:`\mathbf{c} = \mathbf{u}G` for every message :math:`\mathbf{u}`, so that
+    :math:`HG^T = 0`. Gaussian elimination over GF(2) (row additions are XORs) does not change
+    the null space of :math:`H`, and brings it to the form (after a column permutation
+    :math:`\Pi`)
+
+    .. math::
+        H\Pi = [P^T \,|\, I_{n-k}].
+
+    Any codeword :math:`\mathbf{c}\Pi = [\mathbf{u} \,|\, \mathbf{p}]` must satisfy
+    :math:`P^T\mathbf{u}^T + \mathbf{p}^T = 0`, which over GF(2) gives
+    :math:`\mathbf{p} = \mathbf{u}P`. Hence
+
+    .. math::
+        G = [I_k \,|\, P], \qquad HG^T = P^T + P^T = 0 \;\; (\mathrm{mod}\; 2).
+
+    The column permutation :math:`\Pi` (returned as ``colSwaps``) must be applied to the
+    columns of the received codewords before decoding with ``Hm``. Since :math:`G` is dense
+    even when :math:`H` is sparse, encoding with :math:`G` costs :math:`O(nk)` operations
+    per codeword, which motivates the structured encoders
+    (:func:`encodeDVBS2`, :func:`encodeTriang`).
     """
     n = H.shape[1]
     k = n - H.shape[0]
@@ -101,7 +129,7 @@ def par2gen(H):
 
 @njit(cache=True)
 def gaussElim(M):
-    """
+    r"""
     Perform Gaussian elimination over GF(2) to reduce a binary matrix to row echelon form.
 
     Parameters
@@ -113,6 +141,18 @@ def gaussElim(M):
     -------
     matrix : np.array of uint8
         Matrix in row echelon form (mod 2).
+
+    Notes
+    -----
+    Over GF(2), addition is the XOR operation and multiplication is the AND operation, so
+    the only nonzero scalar is 1 and no division is needed. For each pivot column the
+    routine (i) finds a row with a 1 in that column, (ii) swaps it to the pivot row and
+    (iii) XORs the pivot row into every other row having a 1 in that column. The result is
+    the reduced row echelon form, with each pivot column containing a single 1. These
+    elementary row operations are invertible and therefore preserve the row space (and the
+    null space) of :math:`M`; in particular, the code defined by a parity-check matrix
+    :math:`H` is unchanged. The cost is :math:`O(m^2 n)` bit operations for an
+    :math:`m \times n` matrix.
     """
     rowCount, columnCount = M.shape
     lead = 0
@@ -151,7 +191,7 @@ def gaussElim(M):
 
 
 def encodeLDPC(bits, param):
-    """
+    r"""
     Encode binary sequences using a parity-check matrix of a LDPC code.
 
     Parameters
@@ -180,6 +220,46 @@ def encodeLDPC(bits, param):
     ----------
     [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
 
+    Notes
+    -----
+    **LDPC codes.** A low-density parity-check (LDPC) code is a linear block code defined by a
+    *sparse* parity-check matrix :math:`H` of size :math:`m \times n`, where :math:`m = n-k`
+    (for a full-rank :math:`H`). A word :math:`\mathbf{c}` is a codeword if and only if
+
+    .. math::
+        H\mathbf{c}^T = \mathbf{0} \pmod 2,
+
+    i.e., each row of :math:`H` is a *parity-check equation* (the XOR of the bits it selects
+    must be zero). The code rate is :math:`R = k/n = 1 - m/n`. :math:`H` is represented by a
+    Tanner graph, a bipartite graph with :math:`n` variable nodes (code bits), :math:`m` check
+    nodes (parity equations) and an edge between variable node :math:`j` and check node
+    :math:`i` whenever :math:`H_{ij}=1`. Sparsity (few edges per node) is what makes the
+    iterative decoding in :func:`decodeLDPC` low-complexity.
+
+    **Encoding.** Encoding means finding :math:`\mathbf{c}` such that :math:`H\mathbf{c}^T=0`
+    and :math:`\mathbf{c}` contains the :math:`k` message bits :math:`\mathbf{u}`. Writing a
+    systematic codeword :math:`\mathbf{c} = [\mathbf{u} \,|\, \mathbf{p}]` and
+    :math:`H = [H_u \,|\, H_p]`, the parity bits solve
+
+    .. math::
+        H_p \mathbf{p}^T = H_u \mathbf{u}^T \pmod 2.
+
+    The function selects the cheapest strategy available for the chosen ``mode``:
+
+    - ``'DVBS2'``: :math:`H_p` is a dual-diagonal (staircase) matrix, so the system is solved
+      by a simple accumulator, see :func:`encodeDVBS2`.
+    - ``'IEEE_802.11nD2'``: if :math:`H` can be put in an approximate lower-triangular form
+      (Richardson-Urbanke [1]), the parities are obtained with sparse operations and
+      back-substitution, see :func:`triangP1P2` and :func:`encodeTriang`. Otherwise, a dense
+      generator matrix is obtained with :func:`par2gen` and used by :func:`encoder`.
+    - ``'AR4JA'``: encoding with the dense systematic generator matrix
+      :math:`G=[I_k \,|\, P]` obtained from :math:`H` (:func:`par2gen`), i.e.,
+      :math:`\mathbf{c} = \mathbf{u}G`.
+
+    The matrices computed in the first call are stored back in ``param`` (``H``, ``G``,
+    ``P1``, ``P2``) so that subsequent calls (and :func:`decodeLDPC`) reuse them. Note that
+    ``par2gen`` and ``triangP1P2`` may permute the columns of :math:`H`; ``param.H`` is
+    updated accordingly.
     """
     # check input parameters
     mode = getattr(param, "mode", "DVBS2")
@@ -253,7 +333,7 @@ def encodeLDPC(bits, param):
 
 @njit(parallel=True, fastmath=True, cache=True)
 def encodeDVBS2(bits, A):
-    """
+    r"""
     Encode multiple binary sequences using a DVB-S2 LDPC parity-check matrix.
 
     Parameters
@@ -268,6 +348,34 @@ def encodeDVBS2(bits, A):
     codewords : np.array of shape (n, N)
         Binary encoded codewords. Each column is a codeword of length :math:`n` corresponding
         to the respective input bit sequence.
+
+    Notes
+    -----
+    DVB-S2 LDPC codes are irregular repeat-accumulate (IRA) codes. Their parity-check matrix
+    has the form :math:`H = [A \,|\, B]`, where :math:`A` is sparse (:math:`m \times k`) and
+    :math:`B` is the :math:`m \times m` dual-diagonal matrix
+
+    .. math::
+        B = \begin{bmatrix}
+        1 & & & \\
+        1 & 1 & & \\
+        & \ddots & \ddots & \\
+        & & 1 & 1
+        \end{bmatrix}.
+
+    For a systematic codeword :math:`\mathbf{c} = [\mathbf{u} \,|\, \mathbf{p}]`, the
+    condition :math:`H\mathbf{c}^T = 0` reads :math:`A\mathbf{u}^T + B\mathbf{p}^T = 0`.
+    Because of the structure of :math:`B`, row :math:`i` of this system is
+    :math:`(A\mathbf{u}^T)_i + p_i + p_{i-1} = 0`, which gives the *accumulator* recursion
+
+    .. math::
+        p_0 = (A\mathbf{u}^T)_0, \qquad
+        p_i = p_{i-1} \oplus (A\mathbf{u}^T)_i, \quad i = 1, \dots, m-1,
+
+    where :math:`\oplus` is the XOR operation. Thus, the parity bits are the running XOR
+    (prefix sum mod 2) of the "intermediate parities" :math:`A\mathbf{u}^T`. No matrix
+    inversion is required and the cost is dominated by the sparse product
+    :math:`A\mathbf{u}^T`. Codewords are processed in parallel.
     """
     A = A.astype(np.uint8)
     bits = bits.astype(np.uint8)
@@ -301,7 +409,7 @@ def encodeDVBS2(bits, A):
 
 @njit(parallel=True, fastmath=True, cache=True)
 def encoder(G, bits, systematic=True):
-    """
+    r"""
     Encode binary sequences using a generator matrix over GF(2).
 
     Parameters
@@ -319,6 +427,20 @@ def encoder(G, bits, systematic=True):
     codewords : np.array of shape (n, N)
         Encoded binary codewords. Each column corresponds to a codeword of length :math:`n` resulting
         from applying the generator matrix to the respective input bit sequence.
+
+    Notes
+    -----
+    A linear block code with :math:`k` information bits and block length :math:`n` is the
+    set of all GF(2) linear combinations of the :math:`k` rows of :math:`G`:
+
+    .. math::
+        \mathbf{c} = \mathbf{u}G \pmod 2, \qquad c_j = \bigoplus_{i=1}^{k} u_i G_{ij}.
+
+    In the systematic case, :math:`G = [I_k \,|\, P]`, so the first :math:`k` bits of the
+    codeword are the message itself, :math:`\mathbf{c} = [\mathbf{u} \,|\, \mathbf{u}P]`,
+    and only the :math:`n-k` parity bits need to be computed. Products and sums are
+    replaced by AND and XOR, respectively, as they are over GF(2). The generator matrix
+    is consistent with the parity-check matrix, :math:`HG^T = 0`.
     """
     G = G.T
     n, k = G.shape
@@ -346,7 +468,7 @@ def encoder(G, bits, systematic=True):
 
 @njit(parallel=True, fastmath=True, cache=True)
 def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
-    """
+    r"""
     Performs belief propagation decoding using the sum-product algorithm (SPA) for multiple codewords.
 
     Parameters
@@ -379,6 +501,60 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     [1] F. R. Kschischang, B. J. Frey and H. . -A. Loeliger, "Factor graphs and the sum-product algorithm," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 498-519, Feb 2001.
 
     [2] T. J. Richardson and R. L. Urbanke, "The capacity of low-density parity-check codes under message-passing decoding," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 599-618, Feb 2001.
+
+    Notes
+    -----
+    **Soft information.** The decoder works with log-likelihood ratios (LLRs). For a code bit
+    :math:`c_v` and channel observation :math:`y_v`,
+
+    .. math::
+        L_v = \ln\frac{P(c_v=0 \mid y_v)}{P(c_v=1 \mid y_v)},
+
+    so that :math:`\mathrm{sign}(L_v)` is the hard decision (:math:`L_v<0 \Rightarrow c_v=1`)
+    and :math:`|L_v|` is its reliability. For BPSK over an AWGN channel with noise variance
+    :math:`\sigma^2`, :math:`L_v = 2y_v/\sigma^2`.
+
+    **Message passing on the Tanner graph.** Let :math:`\mathcal{N}(c)` be the variable nodes
+    connected to check node :math:`c` and :math:`\mathcal{N}(v)` the check nodes connected to
+    variable node :math:`v`. Belief propagation (BP) approximates the bitwise MAP decision by
+    exchanging *extrinsic* messages along the edges, which is exact if the graph has no
+    cycles and a very good approximation for long sparse codes. Each iteration performs:
+
+    1. *Check-to-variable update.* The message from check :math:`c` to variable :math:`v` is
+       the LLR of the event "the parity of the other bits in :math:`c` is consistent with
+       :math:`c_v`". Since the XOR of independent bits has
+       :math:`\tanh(L/2) = \prod \tanh(L_i/2)`, we have
+
+       .. math::
+           m_{c\to v} = 2\,\mathrm{atanh}\!\left(\prod_{v'\in\mathcal{N}(c)\setminus v}
+           \tanh\frac{m_{v'\to c}}{2}\right).
+
+       The product is clipped to :math:`\pm 0.999999` for numerical stability of
+       :math:`\mathrm{atanh}`.
+
+    2. *Variable-to-check update.* The channel LLR is combined with all incoming check
+       messages except the one from the destination check (extrinsic principle):
+
+       .. math::
+           m_{v\to c} = L_v + \sum_{c'\in\mathcal{N}(v)\setminus c} m_{c'\to v}.
+
+       It is computed efficiently as the total sum minus :math:`m_{c\to v}`.
+
+    3. *A posteriori LLR and hard decision.*
+
+       .. math::
+           \tilde{L}_v = L_v + \sum_{c\in\mathcal{N}(v)} m_{c\to v}, \qquad
+           \hat{c}_v = \begin{cases} 1, & \tilde{L}_v < 0 \\ 0, & \text{otherwise.}\end{cases}
+
+    4. *Stopping criterion.* If the syndrome :math:`H\hat{\mathbf{c}}^T` is zero, the
+       estimate is a valid codeword and decoding stops early. Otherwise, the iterations
+       continue until ``maxIter`` is reached, and the frame is flagged as failed.
+
+    The variable-to-check messages are initialized with the channel LLRs
+    (:math:`m_{v\to c}=L_v`). Messages are stored per edge in flat arrays (CSR-like offsets),
+    and the complexity per iteration is :math:`O(E\,d_c)` with :math:`E` the number of edges
+    and :math:`d_c` the check-node degree. This is the optimal BP check update, at the cost
+    of transcendental functions; see :func:`minSumAlgorithm` for a cheaper approximation.
     """
     m = len(checkNodes)
     n = len(varNodes)
@@ -504,7 +680,7 @@ def sumProductAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
 
 @njit(parallel=True, fastmath=True, cache=True)
 def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
-    """
+    r"""
     Performs belief propagation decoding using the Min-Sum Algorithm (MSA) for multiple codewords.
     Optimized to use sparse edge-based message passing and O(d_c) check node updates.
 
@@ -536,6 +712,36 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
     References
     ----------
     [1] M. P. C. Fossorier, M. Mihaljevic and H. Imai, "Reduced complexity iterative decoding of low-density parity check codes based on belief propagation," IEEE Transactions on Communications, vol. 47, no. 5, pp. 673-680, May 1999
+
+    Notes
+    -----
+    The min-sum algorithm follows the same message-passing schedule as
+    :func:`sumProductAlgorithm` (see its notes for the LLR definition, the variable-node
+    update, the a posteriori LLR and the syndrome-based stopping criterion), but replaces
+    the costly check-node update by an approximation. Writing
+    :math:`m_{v'\to c} = \mathrm{sign}(m_{v'\to c})\,|m_{v'\to c}|`, the sum-product rule
+    is dominated by the least reliable input, because
+    :math:`2\,\mathrm{atanh}\left(\prod_i \tanh(x_i/2)\right) \approx
+    \prod_i \mathrm{sign}(x_i)\,\min_i |x_i|`. The check update becomes
+
+    .. math::
+        m_{c\to v} = \left(\prod_{v'\in\mathcal{N}(c)\setminus v}
+        \mathrm{sign}(m_{v'\to c})\right)
+        \min_{v'\in\mathcal{N}(c)\setminus v} |m_{v'\to c}|.
+
+    It requires only comparisons, sign flips and additions, with no :math:`\tanh` or
+    :math:`\mathrm{atanh}`. The implementation obtains all extrinsic outputs of a check
+    node in :math:`O(d_c)` operations (instead of :math:`O(d_c^2)`) by storing the two
+    smallest magnitudes :math:`\min_1 \le \min_2` and the product of all signs: the output
+    magnitude is :math:`\min_2` for the edge that supplied :math:`\min_1` and :math:`\min_1`
+    for all others; the extrinsic sign is the total sign product times the edge's own sign
+    (equivalent to dividing it out, since signs are :math:`\pm 1`).
+
+    The approximation always overestimates the magnitude of the exact check message, which
+    makes the decoder somewhat over-confident and costs a fraction of a dB in performance
+    relative to the sum-product algorithm. Since the min-sum rule is homogeneous
+    (scaling all LLRs scales all messages), it does not require knowledge of the noise
+    variance.
     """
     m = len(checkNodes)
     n = len(varNodes)
@@ -682,7 +888,7 @@ def minSumAlgorithm(llrs, checkNodes, varNodes, maxIter, prec=np.float32):
 
 
 def decodeLDPC(llrs, param):
-    """
+    r"""
     Decode multiple LDPC codewords using the belief propagation algorithms.
 
     Parameters
@@ -704,6 +910,43 @@ def decodeLDPC(llrs, param):
         Array of decoded bits for each codeword.
     outputLLRs : np.array of shape (n, numCodewords)
         Array of updated log-likelihood ratios (LLRs) after decoding.
+    frameErrors : np.array of shape (numCodewords,)
+        Flags indicating decoding success (0) or failure (1) for each codeword.
+
+    Notes
+    -----
+    **Decoding problem.** Given the channel LLRs :math:`L_v = \ln\frac{P(c_v=0|y_v)}{P(c_v=1|y_v)}`,
+    the optimal bitwise (MAP) decoder computes, for each bit,
+    :math:`P(c_v \mid \mathbf{y})` marginalized over all codewords satisfying
+    :math:`H\mathbf{c}^T=0`. This is intractable for long codes. LDPC decoding instead uses
+    belief propagation (BP) on the Tanner graph of :math:`H`: variable nodes (bits) and check
+    nodes (parity equations) iteratively exchange extrinsic LLR messages. The probability
+    factorizes as
+
+    .. math::
+        P(\mathbf{c}\mid\mathbf{y}) \propto \prod_{v=1}^{n} P(y_v\mid c_v)
+        \prod_{i=1}^{m} \mathbb{1}\!\left[\textstyle\bigoplus_{v\in\mathcal{N}(i)} c_v = 0\right],
+
+    and BP computes the marginals by passing messages along the factor graph's edges. The
+    sparsity of :math:`H` keeps the cost per iteration linear in the number of edges, and
+    the sparse graph has few short cycles so that messages are nearly independent.
+
+    Two check-node rules are available (see the respective functions for the equations):
+
+    - ``'SPA'`` (:func:`sumProductAlgorithm`): exact BP rule with :math:`\tanh/\mathrm{atanh}`.
+    - ``'MSA'`` (:func:`minSumAlgorithm`): the min-sum approximation, cheaper with a small
+      performance loss.
+
+    In both cases the decoder stops, for each codeword, as soon as the hard decisions
+    satisfy all parity checks (zero syndrome) or when ``maxIter`` is reached. Note that a
+    zero syndrome only certifies a valid codeword, not necessarily the transmitted one, and
+    that ``frameErrors`` reports parity failures, not bit errors.
+
+    **Practical aspects.** Input LLRs are clipped to :math:`[-200, 200]` to avoid numerical
+    overflow. If fewer than :math:`n` LLRs are given per codeword (punctured code), the
+    missing positions are filled with :math:`L_v=0` (erasures, no channel information), the
+    decoder recovers them from the parity checks, and they are removed from the output. The
+    hard decisions are :math:`\hat{c}_v = 1` if :math:`\tilde{L}_v<0`, and 0 otherwise.
     """
     # check input parameters
     H = getattr(param, "H", None)
@@ -958,7 +1201,7 @@ def triangularize(H):
 
 
 def triangP1P2(H):
-    """
+    r"""
     Convert a binary parity-check matrix H into a lower-triangular form and extract matrices P1 and P2.
 
     Parameters
@@ -978,6 +1221,47 @@ def triangP1P2(H):
     References
     ----------
     [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
+
+    Notes
+    -----
+    Following [1], row and column permutations (which do not change the code, up to a
+    reordering of the bits) bring :math:`H` to an approximate lower-triangular form
+
+    .. math::
+        H = \begin{bmatrix} A & B & T \\ C & D & E \end{bmatrix},
+
+    where :math:`T` is :math:`(m-g)\times(m-g)` lower triangular with ones on the diagonal
+    (hence invertible), :math:`A` is :math:`(m-g)\times k`, :math:`B` is
+    :math:`(m-g)\times g`, :math:`C` is :math:`g\times k`, :math:`D` is :math:`g\times g`
+    and :math:`E` is :math:`g\times(m-g)`. The *gap* :math:`g` measures how far :math:`H`
+    is from being triangular; the encoding complexity grows as :math:`O(n + g^2)`.
+
+    Writing the codeword as :math:`\mathbf{c} = [\mathbf{u} \,|\, \mathbf{p}_1 \,|\,
+    \mathbf{p}_2]`, with :math:`\mathbf{p}_1` of length :math:`g` and :math:`\mathbf{p}_2` of
+    length :math:`m-g`, the condition :math:`H\mathbf{c}^T=0` gives two block equations:
+
+    .. math::
+        A\mathbf{u}^T + B\mathbf{p}_1^T + T\mathbf{p}_2^T &= 0, \\
+        C\mathbf{u}^T + D\mathbf{p}_1^T + E\mathbf{p}_2^T &= 0.
+
+    Solving the first for :math:`\mathbf{p}_2^T = T^{-1}(A\mathbf{u}^T + B\mathbf{p}_1^T)` and
+    substituting into the second (multiplying the first equation by :math:`ET^{-1}` and
+    adding, as all arithmetic is over GF(2)):
+
+    .. math::
+        \underbrace{(ET^{-1}B + D)}_{\tilde{D}}\,\mathbf{p}_1^T =
+        \underbrace{(ET^{-1}A + C)}_{\tilde{C}}\,\mathbf{u}^T.
+
+    If :math:`\tilde{D}` is invertible, then
+
+    .. math::
+        \mathbf{p}_1^T = \underbrace{\tilde{D}^{-1}\tilde{C}}_{P_1}\mathbf{u}^T, \qquad
+        \mathbf{p}_2^T = \underbrace{T^{-1}(A + BP_1)}_{P_2}\mathbf{u}^T.
+
+    This function precomputes :math:`P_1` and :math:`P_2` (dense, but only :math:`g` and
+    :math:`m-g` rows) so that parities are obtained by matrix products (see
+    :func:`encodeTriang`). If :math:`T` or :math:`\tilde{D}` is singular, ``None`` is
+    returned and a generator-matrix encoder should be used instead.
     """
     H = csr_matrix.todense(H).astype(np.uint8)
 
@@ -1023,7 +1307,7 @@ def triangP1P2(H):
 
 @njit(parallel=True, cache=True)
 def encodeTriang(bits, P1, P2):
-    """
+    r"""
     Encode binary sequences using two parity matrices for LDPC encoding.
 
     Parameters
@@ -1043,6 +1327,20 @@ def encodeTriang(bits, P1, P2):
     References
     ----------
     [1] T. J. Richardson and R. L. Urbanke, "Efficient encoding of low-density parity-check codes," IEEE Transactions on Information Theory, vol. 47, no. 2, pp. 638-656, Feb 2001.
+
+    Notes
+    -----
+    With :math:`P_1` and :math:`P_2` computed by :func:`triangP1P2` from the
+    approximately lower-triangular form of :math:`H`, the systematic codeword is
+
+    .. math::
+        \mathbf{c} = [\mathbf{u} \,|\, \mathbf{p}_1 \,|\, \mathbf{p}_2], \qquad
+        \mathbf{p}_1^T = P_1\mathbf{u}^T, \quad \mathbf{p}_2^T = P_2\mathbf{u}^T
+        \pmod 2,
+
+    which satisfies :math:`H\mathbf{c}^T=0`. Matrix-vector products over GF(2) use AND for
+    multiplication and XOR for accumulation. The codeword is returned in the column order
+    of the triangularized :math:`H` produced by :func:`triangP1P2`.
     """
     bits = bits.astype(np.uint8)
     m1 = P1.shape[0]
