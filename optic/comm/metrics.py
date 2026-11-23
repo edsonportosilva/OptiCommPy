@@ -23,13 +23,14 @@ Metrics for signal and performance characterization (:mod:`optic.comm.metrics`)
 
 """Metrics for signal and performance characterization."""
 import logging as logg
+import math
 from collections import defaultdict
 
 import numpy as np
 import scipy.constants as const
 from numba import njit, prange
 from scipy.integrate import dblquad, quad
-from scipy.special import erf
+from scipy.special import erfc
 
 from optic.comm.modulation import demodulateGray, grayMapping, minEuclid
 from optic.dsp.core import pnorm, signalPower
@@ -733,7 +734,7 @@ def Qfunc(x):
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
     """
-    return 0.5 - 0.5 * erf(x / np.sqrt(2))
+    return 0.5 * erfc(x / np.sqrt(2))
 
 
 def calcEVM(symb, M, constType, symbTx=None):
@@ -831,15 +832,15 @@ def theoryBER(M, EbN0, constType):
     ----------
     M : int
         Modulation order.
-    EbN0 : scalar
+    EbN0 : scalar or np.array
         Signal-to-noise ratio (SNR) per bit in dB.
     constType : string
         Modulation type: 'pam', 'qam' or 'psk'
 
     Returns
     -------
-    Pb : scalar
-        Theoretical probability of bit error.
+    Pb : scalar or np.array
+        Theoretical probability of bit error, with the same shape as `EbN0`.
 
     Notes
     -----
@@ -913,73 +914,206 @@ def theoryBER(M, EbN0, constType):
     [3] Pawula, R. F., Rice, S. O., & Roberts, J. H. Distribution of the phase angle between two vectors perturbed by Gaussian noise. IEEE Transactions on Communications, 30(8), 1828-1841, 1982.
 
     """
-    EbN0lin = 10 ** (EbN0 / 10)
+    M = int(M)
     k = np.log2(M)
+    EbN0lin = 10 ** (np.asarray(EbN0, dtype=np.float64) / 10)
+    snr = EbN0lin.ravel()
 
-    def grayPAMBER(L, x):
-        # exact BER of Gray-mapped L-PAM, x = d_min / (2σ) [2]
-        m = int(np.log2(L))
-        Pb = 0
-        for b in range(1, m + 1):
-            for i in range(int((1 - 2 ** (-b)) * L)):
-                n = (i * 2 ** (b - 1)) // L
-                w = (-1) ** n * (2 ** (b - 1) - np.floor(i * 2 ** (b - 1) / L + 0.5))
-                Pb = Pb + 2 * w * Qfunc((2 * i + 1) * x)
-        return Pb / (L * m)
+    Ps = np.zeros(snr.size)
+    Pb = np.zeros(snr.size)
 
     if constType == "qam":
         L = int(np.round(np.sqrt(M)))
-        x = np.sqrt(3 * k * EbN0lin / (M - 1))
-
-        # exact symbol error probability (square M-QAM)
-        PL = 2 * (1 - 1 / L) * Qfunc(x)
-        Ps = 1 - (1 - PL) ** 2
-
-        # exact bit error probability (square M-QAM, Gray mapping)
-        Pb = grayPAMBER(L, x)
+        for ind in range(snr.size):
+            x = np.sqrt(3 * k * snr[ind] / (M - 1))
+            PsPAM, Pb[ind] = grayPAMErrProb(L, x)
+            Ps[ind] = 1 - (1 - PsPAM) ** 2
     elif constType == "psk":
-        M = int(M)
-        kb = int(k)
-
-        # mean Hamming distance between Gray labels of symbols m positions apart
-        g = np.arange(M) ^ (np.arange(M) >> 1)
-        dH = np.zeros(M)
-        for m in range(1, M):
-            xor = g ^ np.roll(g, -m)
-            dH[m] = np.mean([bin(v).count("1") for v in xor])
-
-        def F(ψ, EsN0):
-            # P(ψ < phase error < π) [3]
-            if ψ >= np.pi:
-                return 0.0
-            f = lambda θ: np.exp(-EsN0 * np.sin(ψ) ** 2 / np.sin(θ) ** 2)
-            return quad(f, 0, np.pi - ψ)[0] / (2 * np.pi)
-
-        def pskErrProb(EsN0):
-            Ps_ = 2 * F(np.pi / M, EsN0)
-            Pb_ = 0.0
-            for m in range(1, M):
-                mf = min(m, M - m)
-                if 2 * mf == M:
-                    Pm = 2 * F((M - 1) * np.pi / M, EsN0)
-                else:
-                    Pm = F((2 * mf - 1) * np.pi / M, EsN0) - F(
-                        (2 * mf + 1) * np.pi / M, EsN0
-                    )
-                Pb_ += dH[m] * Pm
-            return Ps_, Pb_ / kb
-
-        # exact symbol and bit error probabilities (M-PSK, Gray mapping)
-        Ps, Pb = np.vectorize(pskErrProb, otypes=[float, float])(k * EbN0lin)
+        nodes, weights = np.polynomial.legendre.leggauss(256)
+        dH = grayHammingProfile(M)
+        for ind in range(snr.size):
+            Ps[ind], Pb[ind] = grayPSKErrProb(M, k * snr[ind], dH, nodes, weights)
     elif constType == "pam":
-        x = np.sqrt(6 * k * EbN0lin / (M**2 - 1))
+        for ind in range(snr.size):
+            x = np.sqrt(6 * k * snr[ind] / (M**2 - 1))
+            Ps[ind], Pb[ind] = grayPAMErrProb(M, x)
 
-        # exact symbol error probability (M-PAM)
-        Ps = 2 * (1 - 1 / M) * Qfunc(x)
+    return Pb.reshape(EbN0lin.shape)[()]
 
-        # exact bit error probability (M-PAM, Gray mapping)
-        Pb = grayPAMBER(int(M), x)
-    return Pb
+
+@njit(cache=True)
+def QfuncScalar(x):
+    r"""
+    Calculate the Gaussian Q-function for a scalar input (numba compatible).
+
+    Parameters
+    ----------
+    x : float
+        function input.
+
+    Returns
+    -------
+    float
+        value of :math:`Q(x) = \frac{1}{2}\mathrm{erfc}(x/\sqrt{2})`.
+    """
+    return 0.5 * math.erfc(x / math.sqrt(2.0))
+
+
+@njit(cache=True)
+def grayPAMErrProb(L, x):
+    r"""
+    Exact symbol and bit error probabilities of Gray-mapped L-PAM in AWGN.
+
+    Parameters
+    ----------
+    L : int
+        Number of PAM levels (power of 2).
+    x : float
+        Ratio between half the minimum distance and the noise standard deviation,
+        :math:`x = d_{min}/(2\sigma)`.
+
+    Returns
+    -------
+    Ps : float
+        Symbol error probability.
+    Pb : float
+        Bit error probability.
+
+    Notes
+    -----
+    Implements eqs. (3a) and (3b) of :func:`theoryBER`, following [1].
+
+    References
+    ----------
+    [1] Cho, K., & Yoon, D. On the general BER expression of one- and two-dimensional amplitude modulations. IEEE Transactions on Communications, 50(7), 1074-1080, 2002.
+    """
+    m = int(np.log2(L))
+    Ps = 2 * (1 - 1 / L) * QfuncScalar(x)
+
+    Pb = 0.0
+    for b in range(1, m + 1):
+        p = 2 ** (b - 1)
+        for i in range(int((1 - 2.0 ** (-b)) * L)):
+            sign = 1.0 - 2.0 * (((i * p) // L) % 2)
+            w = sign * (p - math.floor(i * p / L + 0.5))
+            Pb += 2 * w * QfuncScalar((2 * i + 1) * x)
+
+    return Ps, Pb / (L * m)
+
+
+@njit(cache=True)
+def grayHammingProfile(M):
+    r"""
+    Average Hamming distance between Gray labels of M-PSK symbols m positions apart.
+
+    Parameters
+    ----------
+    M : int
+        Modulation order.
+
+    Returns
+    -------
+    dH : np.array
+        Array of length :math:`M` with :math:`\bar{d}_m`, :math:`m = 0, \ldots, M-1`
+        (eq. (2c) of :func:`theoryBER`), for the binary reflected Gray code
+        :math:`g_i = i \oplus \lfloor i/2 \rfloor`.
+    """
+    dH = np.zeros(M)
+    for m in range(1, M):
+        total = 0
+        for i in range(M):
+            j = (i + m) % M
+            v = (i ^ (i >> 1)) ^ (j ^ (j >> 1))
+            while v:
+                total += v & 1
+                v >>= 1
+        dH[m] = total / M
+    return dH
+
+
+@njit(cache=True)
+def pskPhaseTail(ψ, EsN0, nodes, weights):
+    r"""
+    Probability that the M-PSK phase error falls in :math:`(\psi, \pi)`.
+
+    Parameters
+    ----------
+    ψ : float
+        Phase threshold in :math:`[0, \pi]`.
+    EsN0 : float
+        Signal-to-noise ratio per symbol (linear).
+    nodes, weights : np.array
+        Gauss-Legendre quadrature nodes and weights on :math:`[-1, 1]`.
+
+    Returns
+    -------
+    float
+        :math:`F(\psi)` from eq. (2a) of :func:`theoryBER` [1].
+
+    References
+    ----------
+    [1] Pawula, R. F., Rice, S. O., & Roberts, J. H. Distribution of the phase angle between two vectors perturbed by Gaussian noise. IEEE Transactions on Communications, 30(8), 1828-1841, 1982.
+    """
+    b = np.pi - ψ
+    if b <= 0:
+        return 0.0
+
+    a = EsN0 * math.sin(ψ) ** 2
+    acc = 0.0
+    for n in range(nodes.size):
+        θ = 0.5 * b * (nodes[n] + 1)
+        acc += weights[n] * math.exp(-a / math.sin(θ) ** 2)
+
+    return 0.5 * b * acc / (2 * np.pi)
+
+
+@njit(cache=True)
+def grayPSKErrProb(M, EsN0, dH, nodes, weights):
+    r"""
+    Exact symbol and bit error probabilities of Gray-mapped M-PSK in AWGN.
+
+    Parameters
+    ----------
+    M : int
+        Modulation order.
+    EsN0 : float
+        Signal-to-noise ratio per symbol (linear).
+    dH : np.array
+        Average Hamming distances from :func:`grayHammingProfile`.
+    nodes, weights : np.array
+        Gauss-Legendre quadrature nodes and weights on :math:`[-1, 1]`.
+
+    Returns
+    -------
+    Ps : float
+        Symbol error probability.
+    Pb : float
+        Bit error probability.
+
+    Notes
+    -----
+    Implements eqs. (2b) and (2c) of :func:`theoryBER`.
+    """
+    Δ = np.pi / M
+    half = max(M // 2, 1)
+
+    # F((2j+1)π/M) at the decision boundaries, j = 0, ..., M/2 - 1
+    tail = np.zeros(half)
+    for j in range(half):
+        tail[j] = pskPhaseTail((2 * j + 1) * Δ, EsN0, nodes, weights)
+
+    Ps = 2 * tail[0]
+
+    Pb = 0.0
+    for m in range(1, M):
+        mf = min(m, M - m)
+        if 2 * mf == M:
+            Pm = 2 * tail[mf - 1]
+        else:
+            Pm = tail[mf - 1] - tail[mf]
+        Pb += dH[m] * Pm
+
+    return Ps, Pb / np.log2(M)
 
 
 @njit(cache=True, fastmath=True)
