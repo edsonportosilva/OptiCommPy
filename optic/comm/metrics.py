@@ -843,7 +843,7 @@ def theoryBER(M, EbN0, constType):
 
     Notes
     -----
-    The values of error probability obtained with this function are good approximations for moderate to high SNR regime (see [1]).
+    For square QAM the expressions are exact. For PSK and PAM, the values of error probability obtained with this function are good approximations for moderate to high SNR regime (see [1]).
     All cases assume Gray mapped constellations. For low SNR values and high constellation cardinalities (:math:`P_b`>1e-1), the results
     should underestimate the real error probability.
 
@@ -851,11 +851,17 @@ def theoryBER(M, EbN0, constType):
     :math:`E_b/N_0` and :math:`k = \log_2 M` bits per symbol, the approximations
     used are:
 
-    - Square M-QAM, with :math:`L = \sqrt{M}`:
+    - Square M-QAM, with :math:`L = \sqrt{M}` and
+      :math:`x = \sqrt{\frac{3k}{M-1}\frac{E_b}{N_0}}` (exact expressions [2]):
 
       .. math::
-          P_b \approx \frac{2\left(1 - 1/L\right)}{\log_2 L}\,
-          Q\left(\sqrt{\frac{3\log_2 L}{L^2 - 1}\,\frac{2E_b}{N_0}}\right). \tag{1}
+          P_s = 1 - \left[1 - 2\left(1 - \frac{1}{L}\right)Q(x)\right]^2, \tag{1a}
+
+      .. math::
+          P_b = \frac{2}{L\log_2 L}\sum_{b=1}^{\log_2 L}
+          \sum_{i=0}^{(1-2^{-b})L-1} (-1)^{\left\lfloor \frac{i2^{b-1}}{L}\right\rfloor}
+          \left(2^{b-1} - \left\lfloor \frac{i2^{b-1}}{L} + \frac{1}{2}\right\rfloor\right)
+          Q\big((2i+1)\,x\big). \tag{1b}
 
     - M-PSK:
 
@@ -878,20 +884,34 @@ def theoryBER(M, EbN0, constType):
     ----------
     [1] Proakis, J. G., & Salehi, M. Digital Communications (5th Edition). McGraw-Hill Education, 2008.
 
+    [2] Cho, K., & Yoon, D. On the general BER expression of one- and two-dimensional amplitude modulations. IEEE Transactions on Communications, 50(7), 1074-1080, 2002.
+
     """
     EbN0lin = 10 ** (EbN0 / 10)
     k = np.log2(M)
 
     if constType == "qam":
-        L = np.sqrt(M)
-        Pb = (
-            2
-            * (1 - 1 / L)
-            / np.log2(L)
-            * Qfunc(np.sqrt(3 * np.log2(L) / (L**2 - 1) * (2 * EbN0lin)))
-        )
+        L = int(np.round(np.sqrt(M)))
+        m = int(np.log2(L))
+        x = np.sqrt(3 * k * EbN0lin / (M - 1))
+
+        # exact symbol error probability (square M-QAM)
+        PL = 2 * (1 - 1 / L) * Qfunc(x)
+        Ps = 1 - (1 - PL) ** 2
+
+        # exact bit error probability (square M-QAM, Gray mapping)
+        Pb = 0
+        for b in range(1, m + 1):
+            for i in range(int((1 - 2 ** (-b)) * L)):
+                n = (i * 2 ** (b - 1)) // L
+                w = (-1) ** n * (2 ** (b - 1) - np.floor(i * 2 ** (b - 1) / L + 0.5))
+                Pb = Pb + 2 * w * Qfunc((2 * i + 1) * x)
+        Pb = Pb / (L * m)
     elif constType == "psk":
-        Ps = 2 * Qfunc(np.sqrt(2 * k * EbN0lin) * np.sin(np.pi / M))
+        if M > 2:
+            Ps = 2 * Qfunc(np.sqrt(2 * k * EbN0lin) * np.sin(np.pi / M))
+        else:
+            Ps = Qfunc(np.sqrt(2 * EbN0lin))
         Pb = Ps / k
     elif constType == "pam":
         Ps = (2 * (M - 1) / M) * Qfunc(np.sqrt(6 * np.log2(M) / (M**2 - 1) * EbN0lin))
