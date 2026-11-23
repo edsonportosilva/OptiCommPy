@@ -937,6 +937,8 @@ def theoryBER(M, EbN0, constType):
         for ind in range(snr.size):
             x = np.sqrt(6 * k * snr[ind] / (M**2 - 1))
             Ps[ind], Pb[ind] = grayPAMErrProb(M, x)
+    else:
+        raise ValueError("constType must be 'qam', 'psk', or 'pam'.")
 
     return Pb.reshape(EbN0lin.shape)[()]
 
