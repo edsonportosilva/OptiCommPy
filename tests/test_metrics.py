@@ -95,12 +95,29 @@ class TestTheoryBER:
         assert theoryBER(4, 10, "qam") < theoryBER(16, 10, "qam")
         assert theoryBER(16, 10, "qam") < theoryBER(64, 10, "qam")
 
+    @pytest.mark.parametrize("EbN0dB", [2, 6])
+    def test_bpsk_matches_qfunc_for_scalar_snr(self, EbN0dB):
+        expected = Qfunc(np.sqrt(2 * 10 ** (EbN0dB / 10)))
+
+        assert theoryBER(2, EbN0dB, "psk") == pytest.approx(
+            expected, rel=1e-12, abs=0
+        )
+
+    def test_bpsk_matches_qfunc_for_array_snr(self):
+        EbN0dB = np.array([2, 6])
+        expected = Qfunc(np.sqrt(2 * 10 ** (EbN0dB / 10)))
+
+        np.testing.assert_allclose(
+            theoryBER(2, EbN0dB, "psk"), expected, rtol=1e-12, atol=0
+        )
+
 
 class TestQfunc:
     def test_reference_values(self):
         assert Qfunc(0) == pytest.approx(0.5)
         assert Qfunc(1) == pytest.approx(0.158655, abs=1e-6)
         assert Qfunc(3) == pytest.approx(1.349898e-3, rel=1e-5)
+        assert Qfunc(10) == pytest.approx(7.61985302416047e-24, rel=1e-12, abs=0)
 
     def test_is_symmetric_about_zero(self):
         for x in [0.5, 1.0, 2.0, 4.0]:

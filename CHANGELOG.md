@@ -2,6 +2,14 @@
 
 All notable changes to OptiCommPy are documented in this file.
 
+## [Unreleased]
+
+### Changed
+- **Metrics:** `theoryBER` now returns the exact bit error probability of Gray-mapped square M-QAM, M-PAM (Cho & Yoon) and M-PSK (Pawula's phase distribution) for any SNR, replacing the high-SNR approximations; it accepts arrays of `EbN0` values and runs on Numba-compiled helpers.
+
+### Fixed
+- `Qfunc` is computed with `erfc`, so it no longer returns zero for arguments above about 8.3.
+
 ## [v0.11.0] - 2026-10-15
 
 Changes since v0.10.0-alpha.
@@ -31,4 +39,5 @@ Changes since v0.10.0-alpha.
 - Viterbi & Viterbi carrier phase recovery for PSK/APSK constellations.
 - Photodiode noise seeds are now independent across receiver channels; PSD labels in single-mode plots.
 
+[Unreleased]: https://github.com/edsonportosilva/OptiCommPy/compare/v0.11.0...HEAD
 [0.11.0]: https://github.com/edsonportosilva/OptiCommPy/releases/tag/v0.11.0
