@@ -117,6 +117,7 @@ class TestQfunc:
         assert Qfunc(0) == pytest.approx(0.5)
         assert Qfunc(1) == pytest.approx(0.158655, abs=1e-6)
         assert Qfunc(3) == pytest.approx(1.349898e-3, rel=1e-5)
+        assert Qfunc(10) == pytest.approx(7.61985302416047e-24, rel=1e-12, abs=0)
 
     def test_is_symmetric_about_zero(self):
         for x in [0.5, 1.0, 2.0, 4.0]:
